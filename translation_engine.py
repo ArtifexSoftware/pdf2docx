@@ -1,13 +1,12 @@
 import urllib.request
 import urllib.parse
+import socket
 import json
 import re
 import execjs  # pip install PyExecJS
 import requests
 
-request_headers = {
-    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
-}
+
 
 class Py4Js():
 
@@ -53,6 +52,34 @@ class Py4Js():
     def getTk(self, text):
         return self.ctx.call("TL", text)
 
+def urllib_request(url, data, method='get', timeout=10, proxy={}):
+    # requesting data
+    request_headers = {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
+    }
+    data = urllib.parse.urlencode(data)
+
+    # send request: get/post
+    if method=='get':
+        request = urllib.request.Request(url+data, headers=request_headers)
+    else:
+        request = urllib.request.Request(url, data=data.encode(), headers=request_headers)
+
+    # proxy
+    proxy_support = urllib.request.ProxyHandler(proxy)
+    opener = urllib.request.build_opener(proxy_support)
+    urllib.request.install_opener(opener)
+
+    # timeout
+    # socket.setdefaulttimeout(timeout)
+    
+    # response
+    response = urllib.request.urlopen(request)
+    res = response.read().decode('utf-8')
+
+    return res
+
+
 def google_translate(source, to_lan='zh-CN', from_lan='en'):
     if len(source) > 4891:
         raise Exception('input characters out of limitation')
@@ -69,7 +96,7 @@ def google_translate(source, to_lan='zh-CN', from_lan='en'):
         'tk': tk,
         'sl': from_lan,
         'tl': to_lan,
-        'client': 't',
+        'client': 'webapp',
         'dt': 'at',
         'dt': 'bd',
         'dt': 'ex',
@@ -84,34 +111,24 @@ def google_translate(source, to_lan='zh-CN', from_lan='en'):
         'oe': 'UTF-8'        
     }
 
-    # send request
-    data = urllib.parse.urlencode(data)
-    request = urllib.request.Request(url+data, headers=request_headers)
-    response = urllib.request.urlopen(request)
-
     # check results
-    page = response.read().decode('utf-8')
+    page = urllib_request(url, data)
     res_json = json.loads(page)
     res = ''.join(item[0] for item in res_json[0] if item) if res_json[0] else None
     return res
 
 def google_translate1(source, to_lan='zh', from_lan='en'):
     # request url and parameters
-    url = 'http://translate.google.cn/m?'
+    url = 'https://translate.google.cn/m?'
     data = {
         'sl': from_lan,
         'hl': to_lan,
         'q': source.replace('\n', ' ')
-    }
-
-    # send request
-    data = urllib.parse.urlencode(data)
-    request = urllib.request.Request(url+data, headers=request_headers)
-    response = urllib.request.urlopen(request)
-    page = response.read().decode('utf-8')
+    }    
 
     # check results
     # <div dir="ltr" class="t0">...</div>
+    page = urllib_request(url, data)
     pattern = '<div dir="ltr" class="t0">(.+?)</div>'
     res_found = re.findall(pattern, page)
     res = res_found[0] if res_found else None
@@ -131,14 +148,9 @@ def youdao_translate(source, to_lan='zh', from_lan='en'):
         "action": "FY_BY_REALTIME",
         "typoResult": "true"
     }
-     
-    # send POST request
-    data = urllib.parse.urlencode(data).encode()     
-    request = urllib.request.Request(url, data=data, headers=request_headers)
-    response = urllib.request.urlopen(request)
-    page = response.read().decode('utf-8')
 
     # check results
+    page = urllib_request(url, data, 'post')
     res_json = json.loads(page)
     if res_json['errorCode'] == 0:
         res = ''.join([item['tgt'] for item in res_json['translateResult'][0]])
@@ -159,13 +171,8 @@ def bing_translate(source, to_lan='zh-CHS', from_lan='en'):
         'doctype': 'json'
     }
 
-    # send POST request
-    data = urllib.parse.urlencode(data).encode()     
-    request = urllib.request.Request(url, data=data, headers=request_headers)
-    response = urllib.request.urlopen(request)
-
     # check results
-    page = response.read().decode('utf-8')
+    page = urllib_request(url, data, 'post')
     res_json = json.loads(page)
     res = res_json['translationResponse'] if res_json['statusCode'] == 200 else None
     return res
@@ -262,7 +269,7 @@ class BaiduTrans:
 
 if __name__ == '__main__':
     
-    src = '''This book is targeted primarily toward engineers and engineer ing students of advanced standing (sophomores, seniors and graduate students). Familiar ity with a
+    src = '''This book is targeted primarily toward engineers and engineering students of advanced standing (sophomores, seniors and graduate students). Familiar ity with a
     computer language is required; knowledge of basic engineer ing mechanics is useful,
     but not essential.
     The text attempts to place emphasis on numer ical methods, not programming.
@@ -291,11 +298,12 @@ if __name__ == '__main__':
     In the same vein, the solution of eigenvalue problems concentrates on methods that
     efficiently extract specific eigenvalues from banded matr ices.'''
 
+    # src = '''This book is targeted primarily toward engineers and engineering students.'''
 
-    print('Google translate:')
-    print(google_translate(src))
-    # print('google translate 1:')
-    # print(google_translate1(src))
+    # print('Google translate:')
+    # print(google_translate(src))
+    print('google translate 1:')
+    print(google_translate1(src))
     # print('Youdao translate:')
     # print(youdao_translate(src))
     # print('Bing translate:')
