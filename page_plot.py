@@ -5,35 +5,73 @@ def getColor(i):
 	colors = ['r', 'g', 'b', 'c', 'm', 'y']
 	return colors[int(i)%len(colors)]
 
-def Rectangle(bbox, linewidth=0.5, linecolor='r', fillcolor='none'):
+def rectangle(bbox, linewidth=0.5, linecolor='r', fillcolor='none'):
 	x0, y0, x1, y1 = bbox
 	return patches.Rectangle((x0, y0), x1-x0, y1-y0, linewidth=linewidth, edgecolor=linecolor, facecolor=fillcolor)
 
-def plot_page(pdf):
-	width, height = pdf['width'], pdf['height']
-	blocks = pdf['blocks']
+def page_margin(list_bbox, width):
+	# check candidates for left margin:
+	# left margin should not intersect with any other bbox
+	list_bbox.sort(key=lambda x: (x[0], x[2]))
+	lm_bbox, num = list_bbox[0], 0
+	candidate = []
+	for bbox in list_bbox:		
+		if bbox[0] == lm_bbox[0]:
+			num += 1
+		else:
+			candidate.append((lm_bbox, num))			
+			num = 0
+			if bbox[0] < lm_bbox[2]:
+				break
+		lm_bbox = bbox	
+
+	# get left margin which is supported by bboxes as more as possible
+	candidate.sort(key=lambda x: x[1], reverse=True)
+	left = candidate[0][0][0]
+
+	# right margin
+	x_max = max(map(lambda x: x[2], list_bbox))
+	right = width-left if width-left > x_max else x_max
+
+	# top/bottom margin
+	top = min(map(lambda x: x[1], list_bbox))
+	bottom = max(map(lambda x: x[3], list_bbox))
+
+	return left, right, top, bottom
+
+def plot_page(page_structure):
+	w, h = page_structure['width'], page_structure['height']
+	blocks = page_structure['blocks']
 
 	# figure
-	fig, ax = plt.subplots(figsize=(5.0, 5*height/width))
+	fig, ax = plt.subplots(figsize=(5.0, 5*h/w))
 	ax.set_xticks([])
 	ax.set_yticks([])
-	ax.set_xlim(0, width)
-	ax.set_ylim(0, height)
+	ax.set_xlim(0, w)
+	ax.set_ylim(0, h)
 	ax.xaxis.set_ticks_position('top')
 	ax.yaxis.set_ticks_position('left')
 	ax.invert_yaxis()
-	ax.set_aspect('equal')	
+	ax.set_aspect('equal')
+
+	# plot left/right margin
+	list_bbox = list(map(lambda x: x['bbox'], blocks))
+	L, R, T, B = page_margin(list_bbox, w)
+	ax.plot([L, L], [0, h], 'r--', linewidth=0.5)
+	ax.plot([R, R,], [0, h], 'r--', linewidth=0.5)
+	ax.plot([0, w,], [T, T], 'r--', linewidth=0.5)
+	ax.plot([0, w,], [B, B], 'r--', linewidth=0.5)
 
 	# plot block position
 	for i, block in enumerate(blocks):		
 
 		# lines in current block
 		for line in block.get('lines', []):
-			patch = Rectangle(line['bbox'], linecolor='w', fillcolor=getColor(i))
+			patch = rectangle(line['bbox'], linecolor='w', fillcolor=getColor(i))
 			ax.add_patch(patch)
 
 		# block border
-		patch = Rectangle(block['bbox'], linecolor='k')
+		patch = rectangle(block['bbox'], linecolor='k')
 		ax.add_patch(patch)
 
 	plt.show()

@@ -1,10 +1,10 @@
 import fitz
-from operator import itemgetter
 import re
-from plot import plot_page
-from functools import reduce
+from page_plot import plot_page
 
-pdf_file = 'D:/11_Translation_Web/pdf2word/case.pdf'
+
+
+pdf_file = 'D:/WorkSpace/TestSpace/PDFTranslation/examples/example.pdf'
 
 doc = fitz.open(pdf_file)
 
@@ -51,20 +51,19 @@ doc = fitz.open(pdf_file)
 
 
 # for page in doc:
-#     blocks = page.getText('dict')
-#     plot_page(blocks)
+#     layout = page.getText('dict')
+#     plot_page(layout)
 #     break
 
-page = doc[201]
-blocks = page.getText('dict')
+page = doc[0]
+layout = page.getText('dict')
+layout['blocks'].sort(key=lambda item: (item['bbox'][1], item['bbox'][0]))
 
+# original layout
+plot_page(layout)
 
+# combine lines in a block
+combined_lines = layout['blocks'].copy()
 
-
-
-
-blocks['blocks'].sort(key=lambda item: (item['bbox'][1], item['bbox'][0]))
-print(blocks)
-plot_page(blocks)
 
     

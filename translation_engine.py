@@ -270,40 +270,39 @@ class BaiduTrans:
 if __name__ == '__main__':
     
     src = '''This book is targeted primarily toward engineers and engineering students of advanced standing (sophomores, seniors and graduate students). Familiar ity with a
-    computer language is required; knowledge of basic engineer ing mechanics is useful,
-    but not essential.
-    The text attempts to place emphasis on numer ical methods, not programming.
-    Most engineers are not programmers, but problem solvers. They want to know what
-    methods can be applied to a given problem, what are their strengths and pitfalls and
-    how to implement them. Engineers are not expected to wr ite computer code for basic
-    tasks from scratch; they are more likely to utilize functions and subroutines that have
-    been already wr itten and tested. Thus programming by engineers is largely confined
-    to assembling existing pieces of code into a coherent package that solves the problem
-    at hand.
-    The “piece” of code is usually a function that implements a specific task. For the
-    user the details of the code are unimpor tant. What matters is the inter face (what goes
-    in and what comes out) and an understanding of the method on which the algor ithm
-    is based. Since no numer ical algor ithm is infallible, the impor tance of understanding
-    the underlying method cannot be overemphasized; it is, in fact, the rationale behind
-    lear ning numer ical methods.
-    This book attempts to confor m to the views outlined above. Each numer ical
-    method is explained in detail and its shor tcomings are pointed out. The examples that
-    follow individual topics fall into two categor ies: hand computations that illustrate the
-    inner workings of the method and small programs that show how the computer code is
-    utilized in solving a problem. Problems that require programming are marked with  .
-    The mater ial consists of the usual topics covered in an engineer ing course on
-    numer ical methods: solution of equations, interpolation and data fitting, numer ical
-    differentiation and integration, solution of ordinar y differential equations and eigenvalue problems. The choice of methods within each topic is tilted toward relevance
-    to engineer ing problems. For example, there is an extensive discussion of symmetric, sparsely populated coefficient matr ices in the solution of simultaneous equations.
-    In the same vein, the solution of eigenvalue problems concentrates on methods that
-    efficiently extract specific eigenvalues from banded matr ices.'''
+        computer language is required; knowledge of basic engineer ing mechanics is useful,
+        but not essential.
+        The text attempts to place emphasis on numer ical methods, not programming.
+        Most engineers are not programmers, but problem solvers. They want to know what
+        methods can be applied to a given problem, what are their strengths and pitfalls and
+        how to implement them. Engineers are not expected to wr ite computer code for basic
+        tasks from scratch; they are more likely to utilize functions and subroutines that have
+        been already wr itten and tested. Thus programming by engineers is largely confined
+        to assembling existing pieces of code into a coherent package that solves the problem
+        at hand.
+        The “piece” of code is usually a function that implements a specific task. For the
+        user the details of the code are unimpor tant. What matters is the inter face (what goes
+        in and what comes out) and an understanding of the method on which the algor ithm
+        is based. Since no numer ical algor ithm is infallible, the impor tance of understanding
+        the underlying method cannot be overemphasized; it is, in fact, the rationale behind
+        lear ning numer ical methods.
+        This book attempts to confor m to the views outlined above. Each numer ical
+        method is explained in detail and its shor tcomings are pointed out. The examples that
+        follow individual topics fall into two categor ies: hand computations that illustrate the
+        inner workings of the method and small programs that show how the computer code is
+        utilized in solving a problem. Problems that require programming are marked with  .
+        The mater ial consists of the usual topics covered in an engineer ing course on
+        numer ical methods: solution of equations, interpolation and data fitting, numer ical
+        differentiation and integration, solution of ordinar y differential equations and eigenvalue problems. The choice of methods within each topic is tilted toward relevance
+        to engineer ing problems. For example, there is an extensive discussion of symmetric, sparsely populated coefficient matr ices in the solution of simultaneous equations.
+        In the same vein, the solution of eigenvalue problems concentrates on methods that
+        efficiently extract specific eigenvalues from banded matr ices.'''
 
-    # src = '''This book is targeted primarily toward engineers and engineering students.'''
 
-    # print('Google translate:')
-    # print(google_translate(src))
-    print('google translate 1:')
-    print(google_translate1(src))
+    print('Google translate:')
+    print(google_translate(src))
+    # print('google translate 1:')
+    # print(google_translate1(src))
     # print('Youdao translate:')
     # print(youdao_translate(src))
     # print('Bing translate:')
