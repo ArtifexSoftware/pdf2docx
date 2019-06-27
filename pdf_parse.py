@@ -10,7 +10,7 @@ import util
 
 class PDFParser:
     def __init__(self, file_path):
-        self.doc = fitz.open(file_path)
+        self.doc = fitz.open(file_path)        
 
     def plot_layout(self, axis, layout):
         '''plot page layout for debug'''
@@ -47,6 +47,17 @@ class PDFParser:
             patch = util.rectangle(block['bbox'], linecolor='k')
             axis.add_patch(patch)
 
+    @staticmethod
+    def lines_margin(line1, line2):
+        # horizontal
+        d1 = line1['bbox'][0]-line2['bbox'][0]
+        d2 = line1['bbox'][1]-line2['bbox'][1]
+        w = line1['bbox'][2]-line1['bbox'][0] # width of first line
+
+        if not line1['dir']==(1.0, 0.0): # vertical
+            d1, d2 = d2, d1
+            w = line1['bbox'][3]-line1['bbox'][1]
+        return d1, d2, w
 
     @staticmethod 
     def cmp_line_align_vertical(line1, line2):
@@ -54,16 +65,10 @@ class PDFParser:
            an ideal solution:
                 lines.sort(key=lambda line: (line['bbox'][0], line['bbox'][1]))
            but two approximate but not definitely equal values should be also considered as equal in this case
-        '''
-        if line1['dir']==(1.0, 0.0): # horizontal
-            d1 = line1['bbox'][0]-line2['bbox'][0]
-            d2 = line1['bbox'][1]-line2['bbox'][1]
-        else:
-            d1 = line1['bbox'][1]-line2['bbox'][1]
-            d2 = line1['bbox'][0]-line2['bbox'][0]
-
-        if abs(d1) < 1:
-            if abs(d2) < 1:
+        '''        
+        d1, d2, w = PDFParser.lines_margin(line1, line2)
+        if abs(d1) < w:
+            if abs(d2) < util.DM:
                 return 0
             else:
                 return -1 if d2<0 else 1
@@ -139,21 +144,16 @@ class PDFParser:
 
             # sort lines: align left
             lines = block['lines']
-            lines.sort(key=cmp_to_key(self.cmp_line_align_vertical))
+            lines.sort(key=cmp_to_key(PDFParser.cmp_line_align_vertical))
 
             # group by left boundary if text is in horizontal direction
             # group by top boundary if text is in vertical direction
             # remove duplicated at the same time
             ref, groups = lines[0], [[lines[0]]]
-            horizontal = ref['dir']==(1.0, 0.0)
             for line in lines:
-                d1 = line['bbox'][0]-ref['bbox'][0]
-                d2 = line['bbox'][1]-ref['bbox'][1]
-                if not horizontal:
-                    d1, d2 = d2, d1
-
-                if abs(d1) < 1:                   
-                    if abs(d2) < 1: # duplicated line
+                d1, d2, w = PDFParser.lines_margin(ref, line)
+                if abs(d1) < w:                   
+                    if abs(d2) < util.DM: # duplicated line
                         continue
                     else: # line with same left/top border
                         groups[-1].append(line)
@@ -181,11 +181,24 @@ class PDFParser:
                 spans = []
                 for line in group:
                     spans.extend(line['spans'])
-                temp_span['text'] = ''.join(map(self.process_line, spans))
+                temp_span['text'] = ''.join(map(PDFParser.process_line, spans))
                 temp_line['spans'] = temp_span
 
                 # done for a block
                 combined_lines.append(temp_line)
+
+            # detect bullet:
+            # - two sets in one line
+            # - the first set contains 1 or 2 char
+            if len(combined_lines)==2:
+                print(combined_lines)
+                line1, line2 = combined_lines
+                if abs(line1['bbox'][3]-line2['bbox'][3])<util.DM and len(line1['spans']['text'].strip())<3:
+                    line = line2.copy()
+                    line['wmode'] = 1 # bullet
+                    line['mark'] = line1['spans']['text'].strip() + ' '
+                    line['bbox'] = block['bbox']
+                    combined_lines = [line]
 
             block['lines'] = combined_lines
 
@@ -201,8 +214,8 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
    
     # pdf_file = 'D:/11_Translation_Web/pdf2word/test.pdf'
-    pdf_file = 'D:/WorkSpace/TestSpace/PDFTranslation/examples/case.pdf'
-    page_num = 428
+    pdf_file = 'D:/WorkSpace/TestSpace/PDFTranslation/examples/example.pdf'
+    page_num = 0
 
     parser = PDFParser(pdf_file)
     layout0 = parser.page_layout_raw(page_num)
@@ -218,9 +231,13 @@ if __name__ == '__main__':
     for block in layout['blocks']:
         if block['type']==1: continue
         for line in block['lines']:
-            # print(google_translate(line['spans']['text']))
             print(line['spans']['text'])
+            if line['wmode']==1:
+                print(line['mark'], google_translate(line['spans']['text']))
+            else:
+                print(google_translate(line['spans']['text']))                
             print()
+        print('======================')
 
 
 

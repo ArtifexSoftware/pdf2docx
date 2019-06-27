@@ -1,6 +1,9 @@
 import matplotlib.patches as patches
 
 
+# border margin
+DM = 1.0
+
 def getColor(i):
 	colors = ['r', 'g', 'b', 'c', 'm', 'y']
 	return colors[int(i)%len(colors)]
