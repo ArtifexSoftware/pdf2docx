@@ -1,9 +1,7 @@
 import fitz
 import re
-import matplotlib.patches as patches
-import matplotlib.pyplot as plt
 from functools import cmp_to_key
-
+from translation_engine import google_translate
 import util
 
 
@@ -14,60 +12,63 @@ class PDFParser:
     def __init__(self, file_path):
         self.doc = fitz.open(file_path)
 
-    def plot_layout(self, layout):
+    def plot_layout(self, axis, layout):
         '''plot page layout for debug'''
 
         w, h = layout['width'], layout['height']
         blocks = layout['blocks']
 
-        # figure
-        fig, ax = plt.subplots(figsize=(5.0, 5*h/w))
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.set_xlim(0, w)
-        ax.set_ylim(0, h)
-        ax.xaxis.set_ticks_position('top')
-        ax.yaxis.set_ticks_position('left')
-        ax.invert_yaxis()
-        ax.set_aspect('equal')
+        # plot setting
+        axis.set_xticks([])
+        axis.set_yticks([])
+        axis.set_xlim(0, w)
+        axis.set_ylim(0, h)
+        axis.xaxis.set_ticks_position('top')
+        axis.yaxis.set_ticks_position('left')
+        axis.invert_yaxis()
+        axis.set_aspect('equal')
 
         # plot left/right margin
         list_bbox = list(map(lambda x: x['bbox'], blocks))
         L, R, T, B = self.page_margin(layout)
-        ax.plot([L, L], [0, h], 'r--', linewidth=0.5)
-        ax.plot([R, R,], [0, h], 'r--', linewidth=0.5)
-        ax.plot([0, w,], [T, T], 'r--', linewidth=0.5)
-        ax.plot([0, w,], [B, B], 'r--', linewidth=0.5)
+        axis.plot([L, L], [0, h], 'r--', linewidth=0.5)
+        axis.plot([R, R,], [0, h], 'r--', linewidth=0.5)
+        axis.plot([0, w,], [T, T], 'r--', linewidth=0.5)
+        axis.plot([0, w,], [B, B], 'r--', linewidth=0.5)
 
         # plot block position
         for i, block in enumerate(blocks):
             # lines in current block
             for line in block.get('lines', []):
                 patch = util.rectangle(line['bbox'], linecolor='w', fillcolor=util.getColor(i))
-                ax.add_patch(patch)
+                axis.add_patch(patch)
 
             # block border
             patch = util.rectangle(block['bbox'], linecolor='k')
-            ax.add_patch(patch)
+            axis.add_patch(patch)
 
-        plt.show()
 
     @staticmethod 
-    def cmp_line_align_left(line1, line2):
-        '''sort lines with top-left point: smaller left border comes first.
+    def cmp_line_align_vertical(line1, line2):
+        '''sort lines with top-left point: vertical to text direction.
            an ideal solution:
                 lines.sort(key=lambda line: (line['bbox'][0], line['bbox'][1]))
            but two approximate but not definitely equal values should be also considered as equal in this case
         '''
-        dx = line1['bbox'][0]-line2['bbox'][0]
-        if abs(dx) < 1:
-            dy = line1['bbox'][1]-line2['bbox'][1]
-            if abs(dy) < 1:
+        if line1['dir']==(1.0, 0.0): # horizontal
+            d1 = line1['bbox'][0]-line2['bbox'][0]
+            d2 = line1['bbox'][1]-line2['bbox'][1]
+        else:
+            d1 = line1['bbox'][1]-line2['bbox'][1]
+            d2 = line1['bbox'][0]-line2['bbox'][0]
+
+        if abs(d1) < 1:
+            if abs(d2) < 1:
                 return 0
             else:
-                return -1 if dy<0 else 1
+                return -1 if d2<0 else 1
         else:
-            return -1 if dx<0 else 1
+            return -1 if d1<0 else 1
 
     @staticmethod
     def process_line(span):
@@ -138,17 +139,23 @@ class PDFParser:
 
             # sort lines: align left
             lines = block['lines']
-            lines.sort(key=cmp_to_key(self.cmp_line_align_left))
+            lines.sort(key=cmp_to_key(self.cmp_line_align_vertical))
 
-            # group by left boundary, remove duplicated at the same time
-            ref, groups = None, []
+            # group by left boundary if text is in horizontal direction
+            # group by top boundary if text is in vertical direction
+            # remove duplicated at the same time
+            ref, groups = lines[0], [[lines[0]]]
+            horizontal = ref['dir']==(1.0, 0.0)
             for line in lines:
-                if ref and abs(line['bbox'][0]-ref['bbox'][0]) < 1:
-                    # duplicated line
-                    if abs(line['bbox'][1]-ref['bbox'][1]) < 1:
+                d1 = line['bbox'][0]-ref['bbox'][0]
+                d2 = line['bbox'][1]-ref['bbox'][1]
+                if not horizontal:
+                    d1, d2 = d2, d1
+
+                if abs(d1) < 1:                   
+                    if abs(d2) < 1: # duplicated line
                         continue
-                    # line with same left border
-                    else:
+                    else: # line with same left/top border
                         groups[-1].append(line)
                 else:
                     # new line set
@@ -190,20 +197,28 @@ class PDFParser:
 
 
 if __name__ == '__main__':
+
+    import matplotlib.pyplot as plt
    
-    pdf_file = 'D:/11_Translation_Web/pdf2word/test.pdf'
+    # pdf_file = 'D:/11_Translation_Web/pdf2word/test.pdf'
+    pdf_file = 'D:/WorkSpace/TestSpace/PDFTranslation/examples/case.pdf'
+    page_num = 428
+
     parser = PDFParser(pdf_file)
+    layout0 = parser.page_layout_raw(page_num)
+    layout = parser.page_layout_merged_lines(page_num)
 
-    # layout0 = parser.page_layout_raw(555)
-    # parser.plot_layout(layout0)
-
-    layout = parser.page_layout_merged_lines(0)
-    parser.plot_layout(layout)
+    ax1 = plt.subplot(121)
+    ax2 = plt.subplot(122)
+    parser.plot_layout(ax1, layout0)
+    parser.plot_layout(ax2, layout)
+    plt.show()
 
     # get combined text
     for block in layout['blocks']:
         if block['type']==1: continue
         for line in block['lines']:
+            # print(google_translate(line['spans']['text']))
             print(line['spans']['text'])
             print()
 

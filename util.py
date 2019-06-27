@@ -1,5 +1,5 @@
 import matplotlib.patches as patches
-import matplotlib.pyplot as plt
+
 
 def getColor(i):
 	colors = ['r', 'g', 'b', 'c', 'm', 'y']
