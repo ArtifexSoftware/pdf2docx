@@ -299,10 +299,10 @@ if __name__ == '__main__':
         efficiently extract specific eigenvalues from banded matr ices.'''
 
 
-    print('Google translate:')
-    print(google_translate(src))
-    # print('google translate 1:')
-    # print(google_translate1(src))
+    # print('Google translate:')
+    # print(google_translate(src))
+    print('google translate 1:')
+    print(google_translate1(src))
     # print('Youdao translate:')
     # print(youdao_translate(src))
     # print('Bing translate:')

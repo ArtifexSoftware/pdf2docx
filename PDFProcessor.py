@@ -1,16 +1,22 @@
 import fitz
 import re
 from functools import cmp_to_key
-from translation_engine import google_translate
+from TranslationEngine import google_translate
 import util
 
 
 class PDFReader:
     def __init__(self, file_path):
-        self.doc = fitz.open(file_path)
+        self.__doc = fitz.open(file_path)
+
+    def __getitem__(self, index):
+        if index >= len(self.__doc):
+            raise IndexError
+        else:
+            return self.__doc[index]         
 
     def raw_layout(self, page_num=0):
-        page = self.doc[page_num]
+        page = self.__doc[page_num]
         layout = page.getText('dict')
         # reading order: from top to bottom, from left to right
         layout['blocks'].sort(key=lambda block: (block['bbox'][1], block['bbox'][0]))
@@ -37,7 +43,8 @@ class PDFParser:
         # TODO
 
         # merge blocks
-        layout = PDFParser.merge_blocks(layout)
+        layout = PDFParser.merge_vertical_blocks(layout)
+        layout = PDFParser.merge_horizontal_blocks(layout)
 
         return layout
 
@@ -180,11 +187,12 @@ class PDFParser:
         return layout
 
     @staticmethod
-    def merge_blocks(layout):
-        '''a sentence may be seperated in different blocks, so this step is to merge them back
-           - previous line is not the end and current line is not the begin
-           - skip if current line is a bullet item
-           - suppose pragraph margin is larger than line margin
+    def merge_vertical_blocks(layout):
+        '''a sentence may be seperated in different blocks, 
+           so this step is to merge them back
+            - previous line is not the end and current line is not the begin
+            - skip if current line is a bullet item
+            - suppose pragraph margin is larger than line margin
         '''
         merged_blocks = []
         ref = None
@@ -231,6 +239,67 @@ class PDFParser:
 
             # update reference block
             ref = merged_blocks[-1]
+
+        layout['blocks'] = merged_blocks
+        return layout
+
+    @staticmethod
+    def merge_horizontal_blocks(layout):
+        '''merge associated blocks in same line, which is preceeding steps for creating docx
+           type of the merged block:
+            - one line block -> paragraph (0)
+            - multi 'lines' but in a single line -> paragraph (0)
+            - otherwise, table(2)
+        '''
+        grouped_blocks, vertical_blocks = [[]], []
+        iblocks = iter(layout['blocks'])
+        while True:
+            block = next(iblocks, None)
+            if not block:
+                break
+
+            # collect vertical blocks or image block directly
+            if block['type']==1 or block['lines'][0]['dir'] != (1.0,0.0):
+                vertical_blocks.append(block)
+                continue
+
+            # collect horizontal blocks in a same line
+            for ref in grouped_blocks[-1]:
+                if (util.is_horizontal_aligned(ref['bbox'], block['bbox']) and 
+                    not util.is_vertical_aligned(ref['bbox'], block['bbox'])):
+                    flag = True
+                    break
+            else:
+                flag = False
+
+            if flag:
+                grouped_blocks[-1].append(block)
+            else:
+                grouped_blocks.append([block])
+
+        # combine blocks
+        merged_blocks = vertical_blocks # do not have to merge vertical blocks
+        for blocks in grouped_blocks[1:]: # skip the first [] when initialize grouped_blocks 
+            # update bbox
+            left = min(map(lambda x: x['bbox'][0], blocks))
+            top = min(map(lambda x: x['bbox'][1], blocks))
+            right = max(map(lambda x: x['bbox'][2], blocks))
+            bottom = max(map(lambda x: x['bbox'][3], blocks))
+
+            # block type for docx generation
+            if len(blocks)==1:
+                t = 0
+            elif abs(bottom-top-blocks[0]['lines'][0]['spans']['size'])<util.DM:
+                t = 0
+            else:
+                t = 2
+
+            # merged block
+            merged_blocks.append({
+                'type': t,
+                'bbox': (left, top, right, bottom),
+                'lines': list(map(lambda block:block['lines'][0], blocks))
+                })
 
         layout['blocks'] = merged_blocks
         return layout
@@ -314,11 +383,11 @@ if __name__ == '__main__':
 
     import matplotlib.pyplot as plt
    
-    pdf_file = 'D:/11_Translation_Web/pdf2word/case.pdf'
-    # pdf_file = 'D:/WorkSpace/TestSpace/PDFTranslation/examples/example.pdf'    
+    # pdf_file = 'D:/11_Translation_Web/pdf2word/case.pdf'
+    pdf_file = 'D:/WorkSpace/TestSpace/PDFTranslation/examples/origin.pdf'    
 
     doc = PDFReader(pdf_file)
-    page_num = 153
+    page_num = 0
 
     ax1 = plt.subplot(121)
     ax2 = plt.subplot(122)
@@ -332,17 +401,10 @@ if __name__ == '__main__':
     plt.show()
 
     # get combined text
+    types = ['paragraph', 'image', 'table']
     for block in layout2['blocks']:
-        if block['type']==1: continue
-        for line in block['lines']:
+        print('------ ', types[block['type']], ' -------')
+        for line in block.get('lines', []):
             if line['wmode']==1:
-                print(line['mark'], line['spans']['text'])
-            else:
-                print(line['spans']['text'])             
-            print()
-        print('======================')
-
-
-
-
-    
+                print(line['mark'], end='')
+            print(line['spans']['text'])
