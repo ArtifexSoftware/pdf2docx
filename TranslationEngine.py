@@ -4,80 +4,6 @@ import socket
 import json
 import re
 import execjs  # pip install PyExecJS
-import requests
-
-
-
-class Py4Js():
-
-    def __init__(self):
-        self.ctx = execjs.compile('''
-            function TL(a) { 
-                var k = ""; 
-                var b = 406644; 
-                var b1 = 3293161072; 
-                var jd = "."; 
-                var $b = "+-a^+6"; 
-                var Zb = "+-3^+b+-f"; 
-                for (var e = [], f = 0, g = 0; g < a.length; g++) { 
-                    var m = a.charCodeAt(g); 
-                    128 > m ? e[f++] = m : (2048 > m ? e[f++] = m >> 6 | 192 : (55296 == (m & 64512) && g + 1 < a.length && 56320 == (a.charCodeAt(g + 1) & 64512) ? (m = 65536 + ((m & 1023) << 10) + (a.charCodeAt(++g) & 1023), 
-                    e[f++] = m >> 18 | 240, 
-                    e[f++] = m >> 12 & 63 | 128) : e[f++] = m >> 12 | 224, 
-                    e[f++] = m >> 6 & 63 | 128), 
-                    e[f++] = m & 63 | 128) 
-                } 
-                a = b; 
-                for (f = 0; f < e.length; f++) a += e[f], 
-                a = RL(a, $b); 
-                a = RL(a, Zb); 
-                a ^= b1 || 0; 
-                0 > a && (a = (a & 2147483647) + 2147483648); 
-                a %= 1E6; 
-                return a.toString() + jd + (a ^ b) 
-            }; 
-            function RL(a, b) { 
-                var t = "a"; 
-                var Yb = "+"; 
-                for (var c = 0; c < b.length - 2; c += 3) { 
-                    var d = b.charAt(c + 2), 
-                    d = d >= t ? d.charCodeAt(0) - 87 : Number(d), 
-                    d = b.charAt(c + 1) == Yb ? a >>> d: a << d; 
-                    a = b.charAt(c) == Yb ? a + d & 4294967295 : a ^ d 
-                } 
-                return a 
-            } 
-        ''')
-
-    def getTk(self, text):
-        return self.ctx.call("TL", text)
-
-def urllib_request(url, data, method='get', timeout=10, proxy={}):
-    # requesting data
-    request_headers = {
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
-    }
-    data = urllib.parse.urlencode(data)
-
-    # send request: get/post
-    if method=='get':
-        request = urllib.request.Request(url+data, headers=request_headers)
-    else:
-        request = urllib.request.Request(url, data=data.encode(), headers=request_headers)
-
-    # proxy
-    proxy_support = urllib.request.ProxyHandler(proxy)
-    opener = urllib.request.build_opener(proxy_support)
-    urllib.request.install_opener(opener)
-
-    # timeout
-    # socket.setdefaulttimeout(timeout)
-    
-    # response
-    response = urllib.request.urlopen(request)
-    res = response.read().decode('utf-8')
-
-    return res
 
 
 def google_translate(source, to_lan='zh-CN', from_lan='en'):
@@ -177,95 +103,76 @@ def bing_translate(source, to_lan='zh-CHS', from_lan='en'):
     res = res_json['translationResponse'] if res_json['statusCode'] == 200 else None
     return res
 
-class BaiduTrans:
-    def __init__(self):
-        self.sess = requests.Session()
-        self.headers = {
-            'User-Agent':
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
-        }
-        self.JS_CODE = '''
-            function a(r, o) {
-                for (var t = 0; t < o.length - 2; t += 3) {
-                    var a = o.charAt(t + 2);
-                    a = a >= "a" ? a.charCodeAt(0) - 87 : Number(a),
-                    a = "+" === o.charAt(t + 1) ? r >>> a: r << a,
-                    r = "+" === o.charAt(t) ? r + a & 4294967295 : r ^ a
-                }
-                return r
-            }
-            var C = null;
-            var token = function(r, _gtk) {
-                var o = r.length;
-                o > 30 && (r = "" + r.substr(0, 10) + r.substr(Math.floor(o / 2) - 5, 10) + r.substring(r.length, r.length - 10));
-                var t = void 0,
-                t = null !== C ? C: (C = _gtk || "") || "";
-                for (var e = t.split("."), h = Number(e[0]) || 0, i = Number(e[1]) || 0, d = [], f = 0, g = 0; g < r.length; g++) {
-                    var m = r.charCodeAt(g);
-                    128 > m ? d[f++] = m: (2048 > m ? d[f++] = m >> 6 | 192 : (55296 === (64512 & m) && g + 1 < r.length && 56320 === (64512 & r.charCodeAt(g + 1)) ? (m = 65536 + ((1023 & m) << 10) + (1023 & r.charCodeAt(++g)), d[f++] = m >> 18 | 240, d[f++] = m >> 12 & 63 | 128) : d[f++] = m >> 12 | 224, d[f++] = m >> 6 & 63 | 128), d[f++] = 63 & m | 128)
-                }
-                for (var S = h,
-                u = "+-a^+6",
-                l = "+-3^+b+-f",
-                s = 0; s < d.length; s++) S += d[s],
-                S = a(S, u);
-                return S = a(S, l),
-                S ^= i,
-                0 > S && (S = (2147483647 & S) + 2147483648),
-                S %= 1e6,
-                S.toString() + "." + (S ^ h)
-            }
-        '''
-        
-        # get token and gtk
-        # load twice for the latest data, otherwise error: 998
-        self.token = None
-        self.gtk = None
-        self.__loadMainPage()
-        self.__loadMainPage()
- 
-    def __loadMainPage(self):
-        """
-            load main page : https://fanyi.baidu.com/
-            and get token, gtk
-        """
-        url = 'https://fanyi.baidu.com'
- 
-        try:
-            r = self.sess.get(url, headers=self.headers)
-            self.token = re.findall(r"token: '(.*?)',", r.text)[0]
-            self.gtk = re.findall(r"window.gtk = '(.*?)';", r.text)[0]
-        except Exception as e:
-            raise e
- 
-    def translate(self, source, from_lan='en', to_lan='zh'):
-        """
-            max query count = 2
-            get translate result from https://fanyi.baidu.com/v2transapi
-        """
-        url = 'https://fanyi.baidu.com/v2transapi'
-        source = source.replace('\n', ' ')
-        sign = execjs.compile(self.JS_CODE).call('token', source, self.gtk) 
-        data = {
-            'from': from_lan,
-            'to': to_lan,
-            'query': source,
-            'simple_means_flag': 3,
-            'sign': sign,
-            'token': self.token,
-        }
-        try:
-            r = self.sess.post(url=url, data=data)
-        except Exception as e:
-            raise e
-        
-        if r.status_code == 200:
-            json = r.json()
-            if 'error' in json:
-                raise Exception('baidu sdk error: {}'.format(json['error']))
-            return json["trans_result"]["data"][0]['dst']
-        return None
+class Py4Js():
 
+    def __init__(self):
+        self.ctx = execjs.compile('''
+            function TL(a) { 
+                var k = ""; 
+                var b = 406644; 
+                var b1 = 3293161072; 
+                var jd = "."; 
+                var $b = "+-a^+6"; 
+                var Zb = "+-3^+b+-f"; 
+                for (var e = [], f = 0, g = 0; g < a.length; g++) { 
+                    var m = a.charCodeAt(g); 
+                    128 > m ? e[f++] = m : (2048 > m ? e[f++] = m >> 6 | 192 : (55296 == (m & 64512) && g + 1 < a.length && 56320 == (a.charCodeAt(g + 1) & 64512) ? (m = 65536 + ((m & 1023) << 10) + (a.charCodeAt(++g) & 1023), 
+                    e[f++] = m >> 18 | 240, 
+                    e[f++] = m >> 12 & 63 | 128) : e[f++] = m >> 12 | 224, 
+                    e[f++] = m >> 6 & 63 | 128), 
+                    e[f++] = m & 63 | 128) 
+                } 
+                a = b; 
+                for (f = 0; f < e.length; f++) a += e[f], 
+                a = RL(a, $b); 
+                a = RL(a, Zb); 
+                a ^= b1 || 0; 
+                0 > a && (a = (a & 2147483647) + 2147483648); 
+                a %= 1E6; 
+                return a.toString() + jd + (a ^ b) 
+            }; 
+            function RL(a, b) { 
+                var t = "a"; 
+                var Yb = "+"; 
+                for (var c = 0; c < b.length - 2; c += 3) { 
+                    var d = b.charAt(c + 2), 
+                    d = d >= t ? d.charCodeAt(0) - 87 : Number(d), 
+                    d = b.charAt(c + 1) == Yb ? a >>> d: a << d; 
+                    a = b.charAt(c) == Yb ? a + d & 4294967295 : a ^ d 
+                } 
+                return a 
+            } 
+        ''')
+
+    def getTk(self, text):
+        return self.ctx.call("TL", text)
+
+def urllib_request(url, data, method='get', timeout=10, proxy={}):
+    # requesting data
+    request_headers = {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
+    }
+    data = urllib.parse.urlencode(data)
+
+    # send request: get/post
+    if method=='get':
+        request = urllib.request.Request(url+data, headers=request_headers)
+    else:
+        request = urllib.request.Request(url, data=data.encode(), headers=request_headers)
+
+    # proxy
+    proxy_support = urllib.request.ProxyHandler(proxy)
+    opener = urllib.request.build_opener(proxy_support)
+    urllib.request.install_opener(opener)
+
+    # timeout
+    # socket.setdefaulttimeout(timeout)
+    
+    # response
+    response = urllib.request.urlopen(request)
+    res = response.read().decode('utf-8')
+
+    return res
 
 if __name__ == '__main__':
     
@@ -307,6 +214,3 @@ if __name__ == '__main__':
     # print(youdao_translate(src))
     # print('Bing translate:')
     # print(bing_translate(src))
-    # print('Baidu translate:')
-    # BD = BaiduTrans()
-    # print(BD.translate(src))
