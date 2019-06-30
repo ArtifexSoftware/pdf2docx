@@ -5,10 +5,12 @@ PDF text and format pre-processor
 ---
 
 Recognize content and format based on page layout data extracted
-from PDF file with package PyMuPDF.
+from PDF file with package PyMuPDF. The length unit for each boundary
+box is pt, which is 1/72 Inch.
 
 The structure of results is similar to the raw layout dict, but with
 meaning of some parameters changed, e.g.
+ - page margin
  - type of block: paragraph(0), image(1), table(2);
  - wmode of line: text(0), bullet(1);
  - spans of line is changed from a list of dict to a single dict, and
@@ -19,6 +21,7 @@ An example of processed layout result:
 {
   "width": 504.0,
   "height": 661.5,
+  "margin": [20.399999618530273, 574.9200077056885, 37.559967041015625, 806.4000244140625],
   "blocks": [
     {
       "type": 0,
@@ -87,45 +90,10 @@ def page_layout(layout):
     layout = _merge_vertical_blocks(layout)
     layout = _merge_horizontal_blocks(layout)
 
+    # margin
+    layout['margin'] = _page_margin(layout)
+
     return layout
-
-def page_margin(layout):
-    '''get page margin:
-       - left: as small as possible in x direction and should not intersect with any other bbox
-       - right: MAX(width-left, max(bbox[3]))
-       - top: MIN(bbox[1])
-       - bottom: MIN(bbox[3])
-    '''       
-
-    # check candidates for left margin:
-    list_bbox = list(map(lambda x: x['bbox'], layout['blocks']))
-    list_bbox.sort(key=lambda x: (x[0], x[2]))
-    lm_bbox, num = list_bbox[0], 0
-    candidates = []
-    for bbox in list_bbox:
-        if abs(bbox[0]-lm_bbox[0])<1:
-            num += 1
-        else:
-            candidates.append((lm_bbox, num))            
-            num = 1
-            if bbox[0] < lm_bbox[2]:
-                break
-        lm_bbox = bbox  
-
-    # get left margin which is supported by bboxes as more as possible
-    candidates.sort(key=lambda x: x[1], reverse=True)
-    left = candidates[0][0][0]
-
-    # right margin
-    x_max = max(map(lambda x: x[2], list_bbox))
-    width = layout['width']
-    right = width-left if width-left > x_max else x_max
-
-    # top/bottom margin
-    top = min(map(lambda x: x[1], list_bbox))
-    bottom = max(map(lambda x: x[3], list_bbox))
-
-    return left, right, top, bottom
 
 def plot_layout(axis, layout, title='page layout'):
     '''plot page layout for debug'''
@@ -145,12 +113,11 @@ def plot_layout(axis, layout, title='page layout'):
     axis.set_aspect('equal')
 
     # plot left/right margin
-    list_bbox = list(map(lambda x: x['bbox'], blocks))
-    L, R, T, B = page_margin(layout)
-    axis.plot([L, L], [0, h], 'r--', linewidth=0.5)
-    axis.plot([R, R,], [0, h], 'r--', linewidth=0.5)
-    axis.plot([0, w,], [T, T], 'r--', linewidth=0.5)
-    axis.plot([0, w,], [B, B], 'r--', linewidth=0.5)
+    dL, dR, dT, dB = _page_margin(layout)
+    axis.plot([dL, dL], [0, h], 'r--', linewidth=0.5)
+    axis.plot([w-dR, w-dR,], [0, h], 'r--', linewidth=0.5)
+    axis.plot([0, w,], [dT, dT], 'r--', linewidth=0.5)
+    axis.plot([0, w,], [h-dB, h-dB], 'r--', linewidth=0.5)
 
     # plot block position
     for i, block in enumerate(blocks):
@@ -162,6 +129,44 @@ def plot_layout(axis, layout, title='page layout'):
         # block border
         patch = util.rectangle(block['bbox'], linecolor='k')
         axis.add_patch(patch)
+
+def _page_margin(layout):
+    '''get page margin:
+       - left: as small as possible in x direction and should not intersect with any other bbox
+       - right: MIN(left, width-max(bbox[3]))
+       - top: MIN(bbox[1])
+       - bottom: height-MAX(bbox[3])
+    '''       
+
+    # check candidates for left margin:
+    list_bbox = list(map(lambda x: x['bbox'], layout['blocks']))
+    list_bbox.sort(key=lambda x: (x[0], x[2]))
+    lm_bbox, num = list_bbox[0], 0
+    candidates = []
+    for bbox in list_bbox:
+        if abs(bbox[0]-lm_bbox[0])<util.DM:
+            num += 1
+        else:
+            candidates.append((lm_bbox, num))            
+            num = 1
+            # if bbox[0] < lm_bbox[2]:
+            #     break
+        lm_bbox = bbox  
+
+    # get left margin which is supported by bboxes as more as possible
+    candidates.sort(key=lambda x: x[1], reverse=True)
+    left = candidates[0][0][0]
+
+    # right margin
+    x_max = max(map(lambda x: x[2], list_bbox))
+    w, h = layout['width'], layout['height']
+    right = min(w-x_max, left)
+
+    # top/bottom margin
+    top = min(map(lambda x: x[1], list_bbox))
+    bottom = h-max(map(lambda x: x[3], list_bbox))
+
+    return left, right, top, bottom
 
 def _merge_lines(layout):
     '''a completed pragraph is divied with lines in PDF reader,
@@ -420,7 +425,7 @@ if __name__ == '__main__':
 
     # read PDF file   
     # pdf_file = 'D:/11_Translation_Web/pdf2word/case.pdf'
-    pdf_file = 'D:/WorkSpace/TestSpace/PDFTranslation/examples/origin.pdf'
+    pdf_file = 'D:/WorkSpace/TestSpace/PDFTranslation/src/res/origin.pdf'
     doc = Reader(pdf_file)
 
     # plot page layout
