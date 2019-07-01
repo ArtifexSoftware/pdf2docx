@@ -10,9 +10,9 @@ box is pt, which is 1/72 Inch.
 
 The structure of results is similar to the raw layout dict, but with
 meaning of some parameters changed, e.g.
- - page margin
- - type of block: paragraph(0), table(1);
- - wmode of line: text(0), bullet(1), image(2);
+ - add page margin
+ - change type of block: paragraph(0), table(1);
+ - change wmode of line: text(0), bullet(1), image(2);
  - spans of line is changed from a list of dict to a single dict, and
    with a new key `mark` added for wmode=1, which is the bullet symbol.
  - properties of image block, e.g. width, height, are moved to `lines`
@@ -174,7 +174,15 @@ def _page_margin(layout):
 
 def _merge_lines(layout):
     '''a completed pragraph is divied with lines in PDF reader,
-       so try to combine associated lines in a block into a paragraph
+       so try to combine associated lines in a block into a paragraph.
+
+       for image block, it is converted from original data format to a
+       similar text block format:
+
+       raw image block: {'type':1, 'bbox', 'width', 'height', 'ext', 'image'} 
+       ==>
+       converted text block: {'type':0, 'bbox', 'lines': [
+            'wmode':2, 'dir', 'bbox', 'width', 'height', 'ext', 'image']}
     '''
     for block in layout['blocks']:
         # image block: convert to text block format
@@ -337,7 +345,6 @@ def _merge_horizontal_blocks(layout):
     '''merge associated blocks in same line, which is preceeding steps for creating docx
        type of the merged block:
         - one line block -> paragraph (0)
-        - multi 'lines' but in a single line -> paragraph (0)
         - otherwise, table(1)
     '''
     grouped_blocks, vertical_blocks = [[]], []
@@ -347,7 +354,7 @@ def _merge_horizontal_blocks(layout):
         if not block:
             break
 
-        # ignore empty line behind an image
+        # ignore empty lines
         line = block['lines'][0]
         if line['wmode']==0 and not line['spans']['text'].strip(): # empty line
             # check previous block
@@ -437,8 +444,8 @@ if __name__ == '__main__':
 
 
     # read PDF file   
-    pdf_file = 'D:/11_Translation_Web/pdf2word/example.pdf'
-    # pdf_file = 'D:/WorkSpace/TestSpace/PDFTranslation/src/res/origin.pdf'
+    # pdf_file = 'D:/11_Translation_Web/pdf2word/example.pdf'
+    pdf_file = 'D:/WorkSpace/TestSpace/PDFTranslation/src/res/origin.pdf'
     doc = Reader(pdf_file)
 
     # plot page layout
