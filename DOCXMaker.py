@@ -1,5 +1,8 @@
 '''
 create .docx file based on PDF layout data with python package python-docx.
+@created: 2019-06-28
+@author: yunjian.wu@siemens.com
+---
 
 typical blocks in layout data and associated docx maker method:
     paragraph block: one or more 'line' sets with region defined with bbox. multi-line sets will be
@@ -180,7 +183,7 @@ def add_line(paragraph, line):
         # we could create a temporary image file first and delete it after inserting to word,
         # but a file-like stream is supported and it's more convenient
         span = paragraph.add_run()
-        span.add_picture(BytesIO(line['image']), width=Pt(line['width']*72/120))
+        span.add_picture(BytesIO(line['image']), width=Pt(line['bbox'][2]-line['bbox'][0]))
     else:
         text = line['spans']['text']
         flags = line['spans']['flags']

@@ -4,14 +4,15 @@ import PDFProcessor
 import DOCXMaker
 
 
-output = 'D:/11_Translation_Web/pdf2word'
+# output = 'D:/11_Translation_Web/pdf2word'
+output = 'D:/WorkSpace/TestSpace/PDFTranslation/src/res'
 pdf_file = os.path.join(output, 'case.pdf')
 docx_file = os.path.join(output, 'demo.docx')
 
 pdf = PDFProcessor.Reader(pdf_file)
 docx = Document()
 
-for page in pdf[0:1]:
+for page in pdf[7:15]:
 	raw = pdf.layout(page)
 	layout = PDFProcessor.layout(raw)
 	DOCXMaker.make_page(docx, layout)

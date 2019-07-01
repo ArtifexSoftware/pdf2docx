@@ -23,8 +23,14 @@ def is_start_sentence(text):
 	text = text.strip()
 	if not text:
 		return True
+
+	# generally not starts with a digit 
+	elif text[0].isdigit():
+		return False		
+
+	# not starts with a lowcase alphabet
 	else:
-		return not text[0].islower() # conservative
+		return not text[0].islower() # conservatively
 
 def is_vertical_aligned(bbox1, bbox2, horizontal=True):
 	'''check whether two boxes have intersection in vertical direction.
