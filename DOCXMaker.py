@@ -137,7 +137,6 @@ def make_table(doc, table, block, page_width, page_margin):
 
     # set column width
     table.rows[-1].height = Pt(block['bbox'][3]-block['bbox'][1])
-    print('height','-->', (block['bbox'][3]-block['bbox'][1])/72*2.54)
     right_boundaries = boundaries[1:] + [page_width-page_margin[1]]
     for cell, l, r in zip(cells, boundaries, right_boundaries):
         cell.width = Pt(r-l)

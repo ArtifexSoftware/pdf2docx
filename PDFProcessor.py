@@ -140,7 +140,7 @@ def _page_margin(layout):
        - right: MIN(left, width-max(bbox[3]))
        - top: MIN(bbox[1])
        - bottom: height-MAX(bbox[3])
-    '''       
+    '''
 
     # check candidates for left margin:
     list_bbox = list(map(lambda x: x['bbox'], layout['blocks']))
@@ -155,7 +155,11 @@ def _page_margin(layout):
             num = 1
             # if bbox[0] < lm_bbox[2]:
             #     break
-        lm_bbox = bbox  
+        lm_bbox = bbox
+
+    # if nothing found, e.g. whole page is an image, return zero
+    if not candidates:
+        return (0.0, 0.0, 0.0, 0.0)
 
     # get left margin which is supported by bboxes as more as possible
     candidates.sort(key=lambda x: x[1], reverse=True)
@@ -287,23 +291,28 @@ def _merge_vertical_blocks(layout):
     '''a sentence may be seperated in different blocks, so this step is to merge them back
 
         - previous line is not the end and current line is not the begin
+        - two lines should in same font and size
         - skip if current line is a bullet item / image
         - suppose pragraph margin is larger than line margin
         - remove overlap/duplicated blocks
     '''
     merged_blocks = []
     ref = None
-    ref_margin = 0.0
+    line_space = 0.0
     for block in layout['blocks']:
-
         merged = False
 
         if not ref:
             merged_blocks.append(block)
-        elif ref['lines'][0]['wmode']==2 or block['lines'][0]['wmode']==2:
+
+        # ignore image/bullet line
+        elif ref['lines'][0]['wmode']==2 or block['lines'][0]['wmode']!=0:
             merged_blocks.append(block)
+
+        # ignore empty lines
         elif not ref['lines'][0]['spans']['text'].strip() or not block['lines'][0]['spans']['text'].strip():
             merged_blocks.append(block)
+
         else:
             dx = block['bbox'][0]-ref['bbox'][0]
             dy = block['bbox'][1]-ref['bbox'][3]
@@ -312,13 +321,24 @@ def _merge_vertical_blocks(layout):
 
             if abs(dx) >= w or abs(dy)>=h:
                 merged_blocks.append(block)
-            elif block['lines'][0]['wmode'] != 0: # bullet item or image are excluded
-                merged_blocks.append(block)
-            else:
-                text1 = ref['lines'][0]['spans']['text']
-                text2 = block['lines'][0]['spans']['text']
 
-                if abs(dy-ref_margin)<util.DM or (not util.is_end_sentence(text1) and not util.is_start_sentence(text2)):
+            else:
+                span1 = ref['lines'][0]['spans']
+                span2 = block['lines'][0]['spans']
+
+                # abnormal line space
+                if abs(dy-line_space)>=util.DM:
+                    merged_blocks.append(block)
+
+                # abnormal font
+                elif span1['font']!=span2['font'] or span1['size']!=span2['size']: 
+                    merged_blocks.append(block)
+
+                # completence of line
+                elif util.is_end_sentence(span1['text']) or util.is_start_sentence(span2['text']):
+                    merged_blocks.append(block)
+
+                else:
                     merged = True
                     # combine block to ref
                     left = min(block['bbox'][0], ref['bbox'][0])
@@ -328,12 +348,9 @@ def _merge_vertical_blocks(layout):
                     merged_blocks[-1]['bbox'] = (left, top, right, bottom)
                     merged_blocks[-1]['lines'][0]['bbox'] = (left, top, right, bottom)
                     merged_blocks[-1]['lines'][0]['spans']['text'] += block['lines'][0]['spans']['text']
-                    
-                else:
-                    merged_blocks.append(block)                    
 
         # update reference line margin if merged
-        ref_margin = dy if merged else 0.0
+        line_space = dy if merged else 0.0
 
         # update reference block
         ref = merged_blocks[-1]
@@ -390,7 +407,7 @@ def _merge_horizontal_blocks(layout):
         bottom = max(map(lambda x: x['bbox'][3], blocks))
 
         # merged block if there is no overlap between two adjacent blocks
-        top_pre_block = merged_blocks[-1]['bbox'][1]
+        top_pre_block = merged_blocks[-1]['bbox'][1] if merged_blocks else 0.0
         if abs(top-top_pre_block)>util.DM:
             merged_blocks.append({
                 'type': 0 if len(blocks)==1 else 1,
@@ -445,11 +462,11 @@ if __name__ == '__main__':
 
     # read PDF file   
     # pdf_file = 'D:/11_Translation_Web/pdf2word/example.pdf'
-    pdf_file = 'D:/WorkSpace/TestSpace/PDFTranslation/src/res/origin.pdf'
+    pdf_file = 'D:/WorkSpace/TestSpace/PDFTranslation/src/res/case.pdf'
     doc = Reader(pdf_file)
 
     # plot page layout
-    page_num = 0
+    page_num = 3
     ax1 = plt.subplot(121)
     ax2 = plt.subplot(122)    
     layout1 = doc.layout(doc[page_num])
