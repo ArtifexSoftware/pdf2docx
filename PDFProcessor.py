@@ -11,10 +11,11 @@ box is pt, which is 1/72 Inch.
 The structure of results is similar to the raw layout dict, but with
 meaning of some parameters changed, e.g.
  - page margin
- - type of block: paragraph(0), image(1), table(2);
- - wmode of line: text(0), bullet(1);
+ - type of block: paragraph(0), table(1);
+ - wmode of line: text(0), bullet(1), image(2);
  - spans of line is changed from a list of dict to a single dict, and
    with a new key `mark` added for wmode=1, which is the bullet symbol.
+ - properties of image block, e.g. width, height, are moved to `lines`
 
 An example of processed layout result:
 
@@ -58,20 +59,23 @@ class Reader:
         self.__doc = fitz.open(file_path)
 
     def __getitem__(self, index):
-        if index >= self.__doc.pageCount:
-            raise IndexError
+        if isinstance(index, slice):
+            stop = index.stop if not index.stop is None else self.__doc.pageCount
+            res = [self.__doc[i] for i in range(stop)]
+            return res[index]
         else:
-            return self.__doc.loadPage(index)
+            return self.__doc[index]
 
-    def raw_layout(self, page_num=0):
-        page = self.__doc.loadPage(page_num)
+    @staticmethod
+    def layout(page):
+        '''raw layout of PDF page'''
         layout = page.getText('dict')
         # reading order: from top to bottom, from left to right
         layout['blocks'].sort(key=lambda block: (block['bbox'][1], block['bbox'][0]))
         return layout
 
-def page_layout(layout):
-    '''page layout process:
+def layout(layout):
+    '''processed page layout:
         - merge lines in block to a complete sentence
         - split block with multi-lines into seperated blocks
         - merge blocks to further complete sentence
@@ -173,72 +177,81 @@ def _merge_lines(layout):
        so try to combine associated lines in a block into a paragraph
     '''
     for block in layout['blocks']:
-        # skip image block
+        # image block: convert to text block format
         if block['type']==1:
-            continue
+            block['type'] = 0 # treat as normal block
+            block['lines'] = [{
+                'wmode': 2, # 0 text, 1 bullet, 2 image
+                'dir': (1.0, 0.0),
+                'bbox': block['bbox'],
+                'width': block['width'],
+                'height': block['height'],
+                'ext': block['ext'],
+                'image': block['image']
+            }]
+            block.pop('image')
 
-        # sort lines: align left
-        lines = block['lines']
-        lines.sort(key=cmp_to_key(__cmp_align_vertical))
+        else:
+            # sort lines: align left
+            lines = block['lines']
+            lines.sort(key=cmp_to_key(__cmp_align_vertical))
 
-        # group by left boundary if text is in horizontal direction
-        # group by top boundary if text is in vertical direction
-        # remove duplicated at the same time
-        ref, groups = lines[0], [[lines[0]]]
-        for line in lines:
-            if util.is_vertical_aligned(ref['bbox'], line['bbox'], ref['dir']==(1.0, 0.0)):                   
-                if abs(ref['bbox'][1]-line['bbox'][1]) < util.DM: # duplicated line
-                    continue
-                else: # line with same left/top border
-                    groups[-1].append(line)
-            else:
-                # new line set
-                groups.append([line])
+            # group by left boundary if text is in horizontal direction
+            # group by top boundary if text is in vertical direction
+            # remove duplicated at the same time
+            ref, groups = lines[0], [[lines[0]]]
+            for line in lines:
+                if util.is_vertical_aligned(ref['bbox'], line['bbox'], ref['dir']==(1.0, 0.0)): 
+                    if abs(ref['bbox'][1]-line['bbox'][1]) >= util.DM: # avoid duplicated lines
+                        groups[-1].append(line)
+                else:
+                    # new line set
+                    groups.append([line])
 
-            ref = line
+                ref = line
 
-        # combined lines:
-        # lines in same set are considered as a paragraph
-        combined_lines = []
-        for group in groups:
-            temp_line = group[0].copy()
+            # combined lines:
+            # lines in same set are considered as a paragraph
+            combined_lines = []
+            for group in groups:
+                temp_line = group[0].copy()
 
-            # update bbox
-            left = min(map(lambda x: x['bbox'][0], group))
-            top = min(map(lambda x: x['bbox'][1], group))
-            right = max(map(lambda x: x['bbox'][2], group))
-            bottom = max(map(lambda x: x['bbox'][3], group))
-            temp_line['bbox'] = (left, top, right, bottom)
+                # update bbox
+                left = min(map(lambda x: x['bbox'][0], group))
+                top = min(map(lambda x: x['bbox'][1], group))
+                right = max(map(lambda x: x['bbox'][2], group))
+                bottom = max(map(lambda x: x['bbox'][3], group))
+                temp_line['bbox'] = (left, top, right, bottom)
 
-            # combine spans
-            temp_span = group[0]['spans'][0]
-            spans = []
-            for line in group:
-                spans.extend(line['spans'])
-            temp_span['text'] = ''.join(map(__process_line, spans))
-            temp_line['spans'] = temp_span
+                # combine spans
+                temp_span = group[0]['spans'][0]
+                spans = []
+                for line in group:
+                    spans.extend(line['spans'])
+                temp_span['text'] = ''.join(map(__process_line, spans))
+                temp_line['spans'] = temp_span
 
-            # done for a block
-            combined_lines.append(temp_line)
+                # done for a block
+                combined_lines.append(temp_line)
 
-        # detect bullet:
-        # - two sets in one line
-        # - the first set contains 1 or 2 char
-        # - the gap between them should not larger than the max length  of them
-        if len(combined_lines)==2:
-            line1, line2 = combined_lines
-            max_length = max(line1['bbox'][2]-line1['bbox'][0], line2['bbox'][2]-line2['bbox'][0])
-            margin_left = line2['bbox'][0]-line1['bbox'][2]
-            if (util.is_horizontal_aligned(line1['bbox'], line2['bbox'], line1['dir']==(1.0,0.0)) and 
-                margin_left<max_length and 
-                len(line1['spans']['text'].strip())<3 ):
-                line = line2.copy()
-                line['wmode'] = 1 # bullet
-                line['mark'] = line1['spans']['text'].strip() + ' '
-                line['bbox'] = block['bbox']
-                combined_lines = [line]
+            # detect bullet:
+            # - two sets in one line
+            # - the first set contains 1 or 2 char
+            # - the gap between them should not larger than the max length  of them
+            if len(combined_lines)==2:
+                line1, line2 = combined_lines
+                max_length = max(line1['bbox'][2]-line1['bbox'][0], line2['bbox'][2]-line2['bbox'][0])
+                margin_left = line2['bbox'][0]-line1['bbox'][2]
+                if (util.is_horizontal_aligned(line1['bbox'], line2['bbox'], line1['dir']==(1.0,0.0)) and 
+                    margin_left<max_length and 
+                    len(line1['spans']['text'].strip())<3 ):
+                    line = line2.copy()
+                    line['wmode'] = 1 # bullet
+                    line['mark'] = line1['spans']['text'].strip() + ' '
+                    line['bbox'] = block['bbox']
+                    combined_lines = [line]
 
-        block['lines'] = combined_lines
+            block['lines'] = combined_lines
 
     return layout
 
@@ -247,10 +260,7 @@ def _split_blocks(layout):
        which will be used to merge block in next step
     '''
     blocks = []
-    for block in layout['blocks']:
-        if block['type']==1:
-            blocks.append(block)
-            continue
+    for block in layout['blocks']:        
         lines = block['lines']
         if len(lines) > 1:
             for line in lines:
@@ -266,23 +276,25 @@ def _split_blocks(layout):
     return layout
 
 def _merge_vertical_blocks(layout):
-    '''a sentence may be seperated in different blocks, 
-       so this step is to merge them back
+    '''a sentence may be seperated in different blocks, so this step is to merge them back
+
         - previous line is not the end and current line is not the begin
-        - skip if current line is a bullet item
+        - skip if current line is a bullet item / image
         - suppose pragraph margin is larger than line margin
+        - remove overlap/duplicated blocks
     '''
     merged_blocks = []
     ref = None
     ref_margin = 0.0
     for block in layout['blocks']:
-        if block['type']==1:
-            merged_blocks.append(block)
-            continue
 
         merged = False
 
-        if not ref or not ref['lines'][0]['spans']['text'].strip() or not block['lines'][0]['spans']['text'].strip():
+        if not ref:
+            merged_blocks.append(block)
+        elif ref['lines'][0]['wmode']==2 or block['lines'][0]['wmode']==2:
+            merged_blocks.append(block)
+        elif not ref['lines'][0]['spans']['text'].strip() or not block['lines'][0]['spans']['text'].strip():
             merged_blocks.append(block)
         else:
             dx = block['bbox'][0]-ref['bbox'][0]
@@ -290,9 +302,9 @@ def _merge_vertical_blocks(layout):
             w = ref['bbox'][2]-ref['bbox'][0]
             h = ref['bbox'][3]-ref['bbox'][1]
 
-            if abs(dx) >= w or abs(dy)>=h:                   
+            if abs(dx) >= w or abs(dy)>=h:
                 merged_blocks.append(block)
-            elif block['lines'][0]['wmode']==1: # bullet item
+            elif block['lines'][0]['wmode'] != 0: # bullet item or image are excluded
                 merged_blocks.append(block)
             else:
                 text1 = ref['lines'][0]['spans']['text']
@@ -326,7 +338,7 @@ def _merge_horizontal_blocks(layout):
        type of the merged block:
         - one line block -> paragraph (0)
         - multi 'lines' but in a single line -> paragraph (0)
-        - otherwise, table(2)
+        - otherwise, table(1)
     '''
     grouped_blocks, vertical_blocks = [[]], []
     iblocks = iter(layout['blocks'])
@@ -335,8 +347,15 @@ def _merge_horizontal_blocks(layout):
         if not block:
             break
 
-        # collect vertical blocks or image block directly
-        if block['type']==1 or block['lines'][0]['dir'] != (1.0,0.0):
+        # ignore empty line behind an image
+        line = block['lines'][0]
+        if line['wmode']==0 and not line['spans']['text'].strip(): # empty line
+            # check previous block
+            if grouped_blocks[-1] and grouped_blocks[-1][-1]['lines'][0]['wmode']==2:
+                continue
+
+        # collect vertical blocks directly
+        if block['lines'][0]['dir'] != (1.0,0.0):
             vertical_blocks.append(block)
             continue
 
@@ -363,20 +382,14 @@ def _merge_horizontal_blocks(layout):
         right = max(map(lambda x: x['bbox'][2], blocks))
         bottom = max(map(lambda x: x['bbox'][3], blocks))
 
-        # block type for docx generation
-        if len(blocks)==1:
-            t = 0
-        elif abs(bottom-top-blocks[0]['lines'][0]['spans']['size'])<util.DM:
-            t = 0
-        else:
-            t = 2
-
-        # merged block
-        merged_blocks.append({
-            'type': t,
-            'bbox': (left, top, right, bottom),
-            'lines': list(map(lambda block:block['lines'][0], blocks))
-            })
+        # merged block if there is no overlap between two adjacent blocks
+        top_pre_block = merged_blocks[-1]['bbox'][1]
+        if abs(top-top_pre_block)>util.DM:
+            merged_blocks.append({
+                'type': 0 if len(blocks)==1 else 1,
+                'bbox': (left, top, right, bottom),
+                'lines': list(map(lambda block:block['lines'][0], blocks))
+                })
 
     layout['blocks'] = merged_blocks
     return layout
@@ -424,18 +437,18 @@ if __name__ == '__main__':
 
 
     # read PDF file   
-    # pdf_file = 'D:/11_Translation_Web/pdf2word/case.pdf'
-    pdf_file = 'D:/WorkSpace/TestSpace/PDFTranslation/src/res/origin.pdf'
+    pdf_file = 'D:/11_Translation_Web/pdf2word/example.pdf'
+    # pdf_file = 'D:/WorkSpace/TestSpace/PDFTranslation/src/res/origin.pdf'
     doc = Reader(pdf_file)
 
     # plot page layout
     page_num = 0
     ax1 = plt.subplot(121)
     ax2 = plt.subplot(122)    
-    layout1 = doc.raw_layout(page_num)
+    layout1 = doc.layout(doc[page_num])
     plot_layout(ax1, layout1, 'Original Layout')
 
-    layout2 = page_layout(layout1)
+    layout2 = layout(layout1)
     plot_layout(ax2, layout2, 'Processed Layout')
     plt.show()
 
@@ -443,10 +456,14 @@ if __name__ == '__main__':
     print(layout2)
 
     # page text
-    types = ['paragraph', 'image', 'table']
+    types = ['paragraph', 'table']
     for block in layout2['blocks']:
         print('------ ', types[block['type']], ' -------')
         for line in block.get('lines', []):
-            if line['wmode']==1:
-                print(line['mark'], end='')
-            print(line['spans']['text'])
+            if line['wmode']==0:
+                print(line['spans']['text'])
+            elif line['wmode']==1:
+                print(line['mark'], line['spans']['text'])
+            else:
+                print('this is an image.')
+            print()
