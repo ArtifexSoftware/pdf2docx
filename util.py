@@ -17,6 +17,9 @@ def is_end_sentence(text):
 	   - sentence delimiter at the end of a sentence
 	'''
 	text = text.strip()
+	if not text:
+		return True # keep empy line
+
 	return text[-1].endswith(('.', '?', '!', ':'))
 
 def is_start_sentence(text):
@@ -28,13 +31,16 @@ def is_start_sentence(text):
 	elif text[0].isdigit():
 		return False		
 
-	# not starts with a lowcase alphabet
+	# not starts with a low case alphabet
 	else:
 		return not text[0].islower() # conservatively
 
-def is_vertical_aligned(bbox1, bbox2, horizontal=True):
-	'''check whether two boxes have intersection in vertical direction.
+def is_vertical_aligned(bbox1, bbox2, horizontal=True, factor=0.5):
+	'''check whether two boxes have enough intersection in vertical direction.
 	   vertical direction is perpendicular to reading direction
+
+	   an enough intersection is defined based on the minimum width of two boxes:
+	   L1+L2-L>factor*min(L1,L2)
 	'''
 	if horizontal: # reading direction: x
 		L1 = bbox1[2]-bbox1[0]
@@ -45,7 +51,8 @@ def is_vertical_aligned(bbox1, bbox2, horizontal=True):
 		L2 = bbox2[3]-bbox2[1]
 		L = max(bbox1[3], bbox2[3]) - min(bbox1[1], bbox2[1])
 
-	return L1+L2 > L
+	return L1+L2-L>factor*min(L1,L2)
+
 
 def is_horizontal_aligned(bbox1, bbox2, horizontal=True):
 	'''it is opposite to vertical align situation'''
