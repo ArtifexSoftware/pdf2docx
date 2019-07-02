@@ -28,8 +28,17 @@ class Reader:
     def layout(page):
         '''raw layout of PDF page'''
         layout = page.getText('dict')
+
+        # remove blocks exceeds page region: negtive bbox
+        layout['blocks'] = list(filter(
+            lambda block: all(x>0 for x in block['bbox']), 
+            layout['blocks']))
+
         # reading order: from top to bottom, from left to right
-        layout['blocks'].sort(key=lambda block: (block['bbox'][1], block['bbox'][0]))
+        layout['blocks'].sort(
+            key=lambda block: (block['bbox'][1], 
+                block['bbox'][0]))
+
         return layout
 
     @staticmethod
@@ -64,16 +73,16 @@ class Writer:
 
 if __name__ == '__main__':
 
-	output = 'D:/11_Translation_Web/pdf2word'
-	# output = 'D:/WorkSpace/TestSpace/PDFTranslation/src/res'
+	# output = 'D:/11_Translation_Web/pdf2word'
+	output = 'D:/WorkSpace/TestSpace/PDFTranslation/src/res'
 	pdf_file = os.path.join(output, 'case.pdf')
 	docx_file = os.path.join(output, 'demo.docx')
 
 	pdf = Reader(pdf_file)
 	docx = Writer()
 
-	for page in pdf[7:]:
-		layout = pdf.parse(page)
+	for page in pdf[7:11]:
+		layout = pdf.parse(page, True)
 		docx.make_page(layout)
 
 	docx.save(docx_file)

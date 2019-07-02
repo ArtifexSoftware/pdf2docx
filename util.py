@@ -4,6 +4,9 @@ import matplotlib.patches as patches
 # border margin
 DM = 1.0
 
+# inch to point
+ITP = 72.0
+
 def getColor(i):
 	colors = ['r', 'g', 'b', 'c', 'm', 'y']
 	return colors[int(i)%len(colors)]

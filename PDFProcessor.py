@@ -69,16 +69,16 @@ def layout(layout):
     layout = _merge_lines(layout)
 
     # split blocks
-    # layout = _split_blocks(layout)
+    layout = _split_blocks(layout)
 
     # detect table here
     # TODO
 
     # merge blocks verticaly
-    # layout = _merge_vertical_blocks(layout)
+    layout = _merge_vertical_blocks(layout)
 
     # merge blocks horizontally
-    # layout = _merge_horizontal_blocks(layout)
+    layout = _merge_horizontal_blocks(layout)
 
     # margin
     layout['margin'] = _page_margin(layout)
@@ -174,18 +174,25 @@ def _page_margin(layout):
     lm_bbox, num = list_bbox[0], 0
     candidates = []
     for bbox in list_bbox:
+        # count of blocks with save left border
         if abs(bbox[0]-lm_bbox[0])<util.DM:
             num += 1
         else:
-            candidates.append((lm_bbox, num))            
-            num = 1
-            if bbox[0] < lm_bbox[2]:
-                break
-        lm_bbox = bbox
+            # stop counting if current block border is not equal to previous,
+            # then get the maximum count of aligned blocks
+            candidates.append((lm_bbox, num))
 
-    # if nothing found, e.g. whole page is an image, return zero
+            # start to count current block border. this border is invalid if intersection with 
+            # previous block occurs, so count it as -1
+            num = 1 if bbox[0]>lm_bbox[2] else -1
+
+        lm_bbox = bbox
+    else:
+        candidates.append((lm_bbox, num)) # add last group
+
+    # if nothing found, e.g. whole page is an image, return standard margin
     if not candidates:
-        return (0.0, 0.0, 0.0, 0.0)
+        return (util.ITP, ) * 4 # 1 Inch = 72 pt
 
     # get left margin which is supported by bboxes as more as possible
     candidates.sort(key=lambda x: x[1], reverse=True)
@@ -200,7 +207,7 @@ def _page_margin(layout):
     top = min(map(lambda x: x[1], list_bbox))
     bottom = h-max(map(lambda x: x[3], list_bbox))
 
-    return left, right, top, bottom
+    return left, right, top, min(util.ITP, bottom)
 
 def _merge_lines(layout):
     '''a completed pragraph is divied with lines in PDF reader,
@@ -356,10 +363,13 @@ def _merge_vertical_blocks(layout):
         - suppose pragraph margin is larger than line margin
         - remove overlap/duplicated blocks
     '''
+
+    blocks = layout['blocks']
     merged_blocks = []
-    ref = None
-    line_space = 0.0
-    for block in layout['blocks']:
+    ref = None # previous merged block
+    ref_line_space = 0.0 # line space for the recently merged blocks
+
+    for block in blocks:
         merged = False
 
         if not ref:
@@ -369,48 +379,51 @@ def _merge_vertical_blocks(layout):
         elif ref['lines'][0]['wmode']==2 or block['lines'][0]['wmode']!=0:
             merged_blocks.append(block)
 
-        # ignore empty lines
-        elif not ref['lines'][0]['spans']['text'].strip() or not block['lines'][0]['spans']['text'].strip():
-            merged_blocks.append(block)
-
         else:
-            dx = block['bbox'][0]-ref['bbox'][0]
-            dy = block['bbox'][1]-ref['bbox'][3]
-            w = ref['bbox'][2]-ref['bbox'][0]
-            h = ref['bbox'][3]-ref['bbox'][1]
+            dy = block['bbox'][1]-ref['bbox'][3] # line space
+            h = ref['bbox'][3]-ref['bbox'][1] # previous blcok height
+            span1 = ref['lines'][0]['spans']
+            span2 = block['lines'][0]['spans']
 
-            if abs(dx) >= w or abs(dy)>=h:
+            # ignore empty lines
+            if not ref['lines'][0]['spans']['text'].strip() or not block['lines'][0]['spans']['text'].strip():
                 merged_blocks.append(block)
 
+            # ignore blocks not aligned in vertical direction
+            elif not util.is_vertical_aligned(ref['bbox'], block['bbox']):
+                merged_blocks.append(block)        
+
+            # ignore abnormal line space:
+            # (a) line space is larger than height of previous block
+            elif dy>h:
+                merged_blocks.append(block)
+
+            # (b) current line space is different from line space of recently merged blocks
+            elif ref_line_space and abs(dy-ref_line_space)>=util.DM:
+                merged_blocks.append(block)
+            
+            # ignore abnormal font
+            elif span1['font']!=span2['font'] or span1['size']!=span2['size']: 
+                merged_blocks.append(block)
+
+            # ignore if sentence completence is not satisfied
+            elif util.is_end_sentence(span1['text']) or util.is_start_sentence(span2['text']):
+                merged_blocks.append(block)
+
+            # finally, it could be merged
             else:
-                span1 = ref['lines'][0]['spans']
-                span2 = block['lines'][0]['spans']
+                merged = True
+                # combine block to ref
+                left = min(block['bbox'][0], ref['bbox'][0])
+                right = max(block['bbox'][2], ref['bbox'][2])
+                top = min(block['bbox'][1], ref['bbox'][1])
+                bottom = max(block['bbox'][3], ref['bbox'][3])
+                merged_blocks[-1]['bbox'] = (left, top, right, bottom)
+                merged_blocks[-1]['lines'][0]['bbox'] = (left, top, right, bottom)
+                merged_blocks[-1]['lines'][0]['spans']['text'] += block['lines'][0]['spans']['text']
 
-                # abnormal line space
-                if abs(dy-line_space)>=util.DM:
-                    merged_blocks.append(block)
-
-                # abnormal font
-                elif span1['font']!=span2['font'] or span1['size']!=span2['size']: 
-                    merged_blocks.append(block)
-
-                # completence of line
-                elif util.is_end_sentence(span1['text']) or util.is_start_sentence(span2['text']):
-                    merged_blocks.append(block)
-
-                else:
-                    merged = True
-                    # combine block to ref
-                    left = min(block['bbox'][0], ref['bbox'][0])
-                    right = max(block['bbox'][2], ref['bbox'][2])
-                    top = min(block['bbox'][1], ref['bbox'][1])
-                    bottom = max(block['bbox'][3], ref['bbox'][3])
-                    merged_blocks[-1]['bbox'] = (left, top, right, bottom)
-                    merged_blocks[-1]['lines'][0]['bbox'] = (left, top, right, bottom)
-                    merged_blocks[-1]['lines'][0]['spans']['text'] += block['lines'][0]['spans']['text']
-
-        # update reference line margin if merged
-        line_space = dy if merged else 0.0
+        # update reference line space if merged
+        ref_line_space = dy if merged else 0.0
 
         # update reference block
         ref = merged_blocks[-1]
@@ -419,20 +432,23 @@ def _merge_vertical_blocks(layout):
     return layout
 
 def _merge_horizontal_blocks(layout):
-    '''merge associated blocks in same line, which is preceeding steps for creating docx.
+    '''merge associated blocks in same line, which is preceding steps for creating docx.
 
        type of the merged blocks:
         - one line block -> paragraph (0)
         - otherwise, table(1)
     '''
 
+    # raw layout has been sorted, but after splitting block step, the split blocks may be
+    # in wrong order locally. so re-sort all blocks first in this step.
+    layout['blocks'].sort(key=lambda block: (block['bbox'][1], block['bbox'][0]))
+
     # group blocks with condition: aligned horizontally
     grouped_blocks, vertical_blocks = [[]], []
     iblocks = iter(layout['blocks'])
     while True:
         block = next(iblocks, None)
-        if not block:
-            break
+        if not block: break
 
         # ignore empty lines after an image
         line = block['lines'][0]
