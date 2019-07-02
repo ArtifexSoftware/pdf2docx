@@ -1,7 +1,7 @@
 '''
 PDF text and format pre-processor
 @created: 2019-06-24
-@author: yunjian.wu@siemens.com
+@author: train8808@gmail.com
 ---
 
 Recognize content and format based on page layout data extracted
@@ -48,31 +48,9 @@ An example of processed layout result:
 
 '''
 
-import fitz
 from functools import cmp_to_key
 import util
 
-
-class Reader:
-    '''direct wrapper of PyMuPDF'''
-    def __init__(self, file_path):
-        self.__doc = fitz.open(file_path)
-
-    def __getitem__(self, index):
-        if isinstance(index, slice):
-            stop = index.stop if not index.stop is None else self.__doc.pageCount
-            res = [self.__doc[i] for i in range(stop)]
-            return res[index]
-        else:
-            return self.__doc[index]
-
-    @staticmethod
-    def layout(page):
-        '''raw layout of PDF page'''
-        layout = page.getText('dict')
-        # reading order: from top to bottom, from left to right
-        layout['blocks'].sort(key=lambda block: (block['bbox'][1], block['bbox'][0]))
-        return layout
 
 def layout(layout):
     '''processed page layout:
@@ -91,17 +69,59 @@ def layout(layout):
     layout = _merge_lines(layout)
 
     # split blocks
-    layout = _split_blocks(layout)
+    # layout = _split_blocks(layout)
 
     # detect table here
     # TODO
 
-    # merge blocks
-    layout = _merge_vertical_blocks(layout)
-    layout = _merge_horizontal_blocks(layout)
+    # merge blocks verticaly
+    # layout = _merge_vertical_blocks(layout)
+
+    # merge blocks horizontally
+    # layout = _merge_horizontal_blocks(layout)
 
     # margin
     layout['margin'] = _page_margin(layout)
+
+    return layout
+
+def layout_debug(layout):
+    '''plot page layout during parsing process'''
+
+    import matplotlib.pyplot as plt
+
+    # original layout
+    ax1 = plt.subplot(151)
+    plot_layout(ax1, layout, 'raw')
+    
+
+    # merge lines in block
+    layout = _merge_lines(layout)
+    ax2 = plt.subplot(152)
+    plot_layout(ax2, layout, 'merge lines')
+
+    # split blocks
+    layout = _split_blocks(layout)
+    ax3 = plt.subplot(153)
+    plot_layout(ax3, layout, 'split blocks')
+
+    # detect table here
+    # TODO
+
+    # merge blocks vertically
+    layout = _merge_vertical_blocks(layout)
+    ax4 = plt.subplot(154)
+    plot_layout(ax4, layout, 'merge blocks vertically')
+
+    # merge blocks horizontally
+    layout = _merge_horizontal_blocks(layout)
+    ax5 = plt.subplot(155)
+    plot_layout(ax5, layout, 'merge blocks horizontally')
+
+    # margin
+    layout['margin'] = _page_margin(layout)
+
+    plt.show()
 
     return layout
 
@@ -159,8 +179,8 @@ def _page_margin(layout):
         else:
             candidates.append((lm_bbox, num))            
             num = 1
-            # if bbox[0] < lm_bbox[2]:
-            #     break
+            if bbox[0] < lm_bbox[2]:
+                break
         lm_bbox = bbox
 
     # if nothing found, e.g. whole page is an image, return zero
@@ -221,12 +241,12 @@ def _merge_lines(layout):
             # group by left boundary if text is in horizontal direction
             # group by top boundary if text is in vertical direction
             # remove duplicated at the same time
-            ref, groups = lines[0], [[lines[0]]]
+            ref, groups = None, []
             for line in lines:
                 # it may be merged if aligned vertically
-                if util.is_vertical_aligned(ref['bbox'], line['bbox'], ref['dir']==(1.0, 0.0)): 
+                if ref and util.is_vertical_aligned(ref['bbox'], line['bbox'], ref['dir']==(1.0, 0.0)): 
                     # avoid duplicated lines
-                    if abs(ref['bbox'][1]-line['bbox'][1]) < util.DM: 
+                    if abs(ref['bbox'][0]-line['bbox'][0])<util.DM and abs(ref['bbox'][1]-line['bbox'][1])<util.DM: 
                         pass
                     else:
                         span1, span2 = ref['spans'][0], line['spans'][0]
@@ -246,6 +266,7 @@ def _merge_lines(layout):
                     # new line set
                     groups.append([line])
 
+                # update reference line
                 ref = line
 
             # combined lines:
@@ -283,6 +304,7 @@ def _merge_lines(layout):
                 if (util.is_horizontal_aligned(line1['bbox'], line2['bbox'], line1['dir']==(1.0,0.0)) and 
                     margin_left<max_length and 
                     len(line1['spans']['text'].strip())<3 ):
+
                     line = line2.copy()
                     line['wmode'] = 1 # bullet
                     line['mark'] = line1['spans']['text'].strip() + ' '
@@ -294,11 +316,18 @@ def _merge_lines(layout):
     return layout
 
 def _split_blocks(layout):
-    '''split block with multi-lines into single line block,
-       which will be used to merge block in next step
+    '''split block with multi-lines into single line block, which will be used to 
+       merge block in next step. 
+       Besides, remove duplicated blocks.
     '''
-    blocks = []
-    for block in layout['blocks']:        
+    blocks, ref = [], None
+    for block in layout['blocks']:
+
+        # check duplication
+        if ref and ref['bbox']==block['bbox']:
+            continue
+
+        # split blocks
         lines = block['lines']
         if len(lines) > 1:
             for line in lines:
@@ -310,6 +339,10 @@ def _split_blocks(layout):
                 blocks.append(splited_block)
         else:
             blocks.append(block)
+
+        # update reference block
+        ref = block
+
     layout['blocks'] = blocks
     return layout
 
@@ -415,8 +448,7 @@ def _merge_horizontal_blocks(layout):
 
         # collect horizontal blocks in a same line
         for ref in grouped_blocks[-1]:
-            if (util.is_horizontal_aligned(ref['bbox'], block['bbox']) and 
-                not util.is_vertical_aligned(ref['bbox'], block['bbox'])):
+            if util.is_horizontal_aligned(ref['bbox'], block['bbox']):
                 flag = True
                 break
         else:
@@ -437,8 +469,8 @@ def _merge_horizontal_blocks(layout):
         bottom = max(map(lambda x: x['bbox'][3], blocks))
 
         # merged block if there is no overlap between two adjacent blocks
-        top_pre_block = merged_blocks[-1]['bbox'][1] if merged_blocks else 0.0
-        if abs(top-top_pre_block)>util.DM:
+        bbox_pre_block = merged_blocks[-1]['bbox'] if merged_blocks else [0.0]*4
+        if abs(left-bbox_pre_block[0])>util.DM or abs(top-bbox_pre_block[1])>util.DM:
             merged_blocks.append({
                 'type': 0 if len(blocks)==1 else 1,
                 'bbox': (left, top, right, bottom),
@@ -484,41 +516,3 @@ def __process_line(span):
     elif not text.endswith(' '):
         text += ' '
     return text
-
-
-if __name__ == '__main__':
-
-    import matplotlib.pyplot as plt
-
-
-    # read PDF file   
-    # pdf_file = 'D:/11_Translation_Web/pdf2word/example.pdf'
-    pdf_file = 'D:/WorkSpace/TestSpace/PDFTranslation/src/res/case.pdf'
-    doc = Reader(pdf_file)
-
-    # plot page layout
-    page_num = 4
-    ax1 = plt.subplot(121)
-    ax2 = plt.subplot(122)    
-    layout1 = doc.layout(doc[page_num])
-    plot_layout(ax1, layout1, 'Original Layout')
-
-    layout2 = layout(layout1)
-    plot_layout(ax2, layout2, 'Processed Layout')
-    plt.show()
-
-    # layout dict
-    print(layout2)
-
-    # page text
-    types = ['paragraph', 'table']
-    for block in layout2['blocks']:
-        print('------ ', types[block['type']], ' -------')
-        for line in block.get('lines', []):
-            if line['wmode']==0:
-                print(line['spans']['text'])
-            elif line['wmode']==1:
-                print(line['mark'], line['spans']['text'])
-            else:
-                print('this is an image.')
-            print()
