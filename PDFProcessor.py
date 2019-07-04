@@ -48,15 +48,13 @@ An example of processed layout result:
 
 '''
 
-from functools import cmp_to_key
 import util
 
 
 def layout(layout):
     '''processed page layout:
-        - merge lines in block to a complete sentence
         - split block with multi-lines into seperated blocks
-        - merge blocks vertically to further complete sentence
+        - merge blocks vertically to complete sentence
         - merge blocks horizontally for convenience of docx generation
 
        args:
@@ -64,9 +62,6 @@ def layout(layout):
 
            ```layout = page.getText('dict')```
     '''
-
-    # merge lines in block
-    layout = _merge_lines(layout)
 
     # split blocks
     layout = _split_blocks(layout)
@@ -91,32 +86,27 @@ def layout_debug(layout):
     import matplotlib.pyplot as plt
 
     # original layout
-    ax1 = plt.subplot(151)
-    plot_layout(ax1, layout, 'raw')
+    ax = plt.subplot(151)
+    plot_layout(ax, layout, 'raw')
     
-
-    # merge lines in block
-    layout = _merge_lines(layout)
-    ax2 = plt.subplot(152)
-    plot_layout(ax2, layout, 'merge lines')
 
     # split blocks
     layout = _split_blocks(layout)
-    ax3 = plt.subplot(153)
-    plot_layout(ax3, layout, 'split blocks')
+    ax = plt.subplot(152)
+    plot_layout(ax, layout, 'split blocks')
 
     # detect table here
     # TODO
 
     # merge blocks vertically
     layout = _merge_vertical_blocks(layout)
-    ax4 = plt.subplot(154)
-    plot_layout(ax4, layout, 'merge blocks vertically')
+    ax = plt.subplot(153)
+    plot_layout(ax, layout, 'merge blocks vertically')
 
     # merge blocks horizontally
     layout = _merge_horizontal_blocks(layout)
-    ax5 = plt.subplot(155)
-    plot_layout(ax5, layout, 'merge blocks horizontally')
+    ax = plt.subplot(154)
+    plot_layout(ax, layout, 'merge blocks horizontally')
 
     # margin
     layout['margin'] = _page_margin(layout)
@@ -209,9 +199,9 @@ def _page_margin(layout):
 
     return left, right, top, min(util.ITP, bottom)
 
-def _merge_lines(layout):
-    '''a completed pragraph is divied with lines in PDF reader,
-       so try to combine associated lines in a block into a paragraph.
+def _split_blocks(layout):
+    '''split block with multi-lines into single line block, which will be used to 
+       merge block in next step. Besides, remove duplicated blocks.
 
        args:
             layout: raw layout data
@@ -219,13 +209,19 @@ def _merge_lines(layout):
        notes:
            for image block, it is converted from original data format to a
            similar text block format:
-
-           raw image block: {'type':1, 'bbox', 'width', 'height', 'ext', 'image'} 
-           ==>
-           converted text block: {'type':0, 'bbox', 'lines': [
+           raw image block: 
+                    {'type':1, 'bbox', 'width', 'height', 'ext', 'image'} 
+           converted text block: 
+                    {'type':0, 'bbox', 'lines': [
                 'wmode':2, 'dir', 'bbox', 'width', 'height', 'ext', 'image']}
     '''
+    blocks, ref = [], None
     for block in layout['blocks']:
+
+        # check duplication
+        if ref and ref['bbox']==block['bbox']:
+            continue
+
         # image block: convert to text block format
         if block['type']==1:
             block['type'] = 0 # treat as normal block
@@ -240,112 +236,24 @@ def _merge_lines(layout):
             }]
             block.pop('image')
 
-        else:
-            # sort lines: align left
+        # split text blocks
+        else: 
             lines = block['lines']
-            lines.sort(key=cmp_to_key(__cmp_align_vertical))
 
-            # group by left boundary if text is in horizontal direction
-            # group by top boundary if text is in vertical direction
-            # remove duplicated at the same time
-            ref, groups = None, []
+            # combine spans in line
             for line in lines:
-                # it may be merged if aligned vertically
-                if ref and util.is_vertical_aligned(ref['bbox'], line['bbox'], ref['dir']==(1.0, 0.0)): 
-                    # avoid duplicated lines
-                    if abs(ref['bbox'][0]-line['bbox'][0])<util.DM and abs(ref['bbox'][1]-line['bbox'][1])<util.DM: 
-                        pass
-                    else:
-                        span1, span2 = ref['spans'][0], line['spans'][0]
+                jonied_span_text = ' '.join(map(__process_line, line['spans']))
+                line['spans'] = line['spans'][0]
+                line['spans']['text'] = jonied_span_text
 
-                        # abnormal font
-                        if span1['font']!=span2['font'] or span1['size']!=span2['size']: 
-                            groups.append([line])
-
-                        # completence of line
-                        elif util.is_end_sentence(span1['text']) or util.is_start_sentence(span2['text']):
-                            groups.append([line])
-
-                        # finally it could be merged
-                        else:
-                            groups[-1].append(line)
-                else:
-                    # new line set
-                    groups.append([line])
-
-                # update reference line
-                ref = line
-
-            # combined lines:
-            # lines in same set are considered as a paragraph
-            combined_lines = []
-            for group in groups:
-                temp_line = group[0].copy()
-
-                # update bbox
-                left = min(map(lambda x: x['bbox'][0], group))
-                top = min(map(lambda x: x['bbox'][1], group))
-                right = max(map(lambda x: x['bbox'][2], group))
-                bottom = max(map(lambda x: x['bbox'][3], group))
-                temp_line['bbox'] = (left, top, right, bottom)
-
-                # combine spans
-                temp_span = group[0]['spans'][0]
-                spans = []
-                for line in group:
-                    spans.extend(line['spans'])
-                temp_span['text'] = ''.join(map(__process_line, spans))
-                temp_line['spans'] = temp_span
-
-                # done for a block
-                combined_lines.append(temp_line)
-
-            # detect bullet:
-            # - two sets in one line
-            # - the first set contains 1 or 2 char
-            # - the gap between them should not larger than the max length  of them
-            if len(combined_lines)==2:
-                line1, line2 = combined_lines
-                max_length = max(line1['bbox'][2]-line1['bbox'][0], line2['bbox'][2]-line2['bbox'][0])
-                margin_left = line2['bbox'][0]-line1['bbox'][2]
-                if (util.is_horizontal_aligned(line1['bbox'], line2['bbox'], line1['dir']==(1.0,0.0)) and 
-                    margin_left<max_length and 
-                    len(line1['spans']['text'].strip())<3 ):
-
-                    line = line2.copy()
-                    line['wmode'] = 1 # bullet
-                    line['mark'] = line1['spans']['text'].strip() + ' '
-                    line['bbox'] = block['bbox']
-                    combined_lines = [line]
-
-            block['lines'] = combined_lines
-
-    return layout
-
-def _split_blocks(layout):
-    '''split block with multi-lines into single line block, which will be used to 
-       merge block in next step. 
-       Besides, remove duplicated blocks.
-    '''
-    blocks, ref = [], None
-    for block in layout['blocks']:
-
-        # check duplication
-        if ref and ref['bbox']==block['bbox']:
-            continue
-
-        # split blocks
-        lines = block['lines']
-        if len(lines) > 1:
-            for line in lines:
+                # convert each line to a block
                 splited_block = {
                     'type': block['type'],
                     'bbox': line['bbox'],
                     'lines': [line]
                 }
+
                 blocks.append(splited_block)
-        else:
-            blocks.append(block)
 
         # update reference block
         ref = block
@@ -432,11 +340,7 @@ def _merge_vertical_blocks(layout):
     return layout
 
 def _merge_horizontal_blocks(layout):
-    '''merge associated blocks in same line, which is preceding steps for creating docx.
-
-       type of the merged blocks:
-        - one line block -> paragraph (0)
-        - otherwise, table(1)
+    '''merge associated blocks in same line, which is preceding steps for creating docx.       
     '''
 
     # raw layout has been sorted, but after splitting block step, the split blocks may be
@@ -487,48 +391,41 @@ def _merge_horizontal_blocks(layout):
         # merged block if there is no overlap between two adjacent blocks
         bbox_pre_block = merged_blocks[-1]['bbox'] if merged_blocks else [0.0]*4
         if abs(left-bbox_pre_block[0])>util.DM or abs(top-bbox_pre_block[1])>util.DM:
-            merged_blocks.append({
-                'type': 0 if len(blocks)==1 else 1,
+            merged_block = {
+                'type': 0,
                 'bbox': (left, top, right, bottom),
                 'lines': list(map(lambda block:block['lines'][0], blocks))
-                })
+            }
+            merged_block['type'] = __block_type(merged_block)
+            merged_blocks.append(merged_block)
 
     layout['blocks'] = merged_blocks
     return layout
 
-def __cmp_align_vertical(set1, set2):
-    '''sort set (blocks or lines in block) with top-left point: vertical to text direction.
-
-       an ideal solution:
-            ```lines.sort(key=lambda line: (line['bbox'][0], line['bbox'][1]))```
-       but two approximate but not definitely equal values should be also considered as equal in this case
+def __block_type(block, factor=0.5):
+    ''' type of the block:
+        - paragraph (0): one line block or multi-line sets in a single word line
+        - table(1): otherwise
     '''
-    if set1.get('dir', (1.0, 0.0))==(1.0, 0.0): # reading direction: x
-        L1 = set1['bbox'][2]-set1['bbox'][0]
-        L2 = set2['bbox'][2]-set2['bbox'][0]
-        L = max(set1['bbox'][2], set2['bbox'][2]) - min(set1['bbox'][0], set2['bbox'][0])
-        h = set1['bbox'][1]-set2['bbox'][1]
-        dm = set1['bbox'][0] - set2['bbox'][0]
-    else:
-        L1 = set1['bbox'][3]-set1['bbox'][1]
-        L2 = set2['bbox'][3]-set2['bbox'][1]
-        L = max(set1['bbox'][3], set2['bbox'][3]) - min(set1['bbox'][1], set2['bbox'][1])
-        h = set1['bbox'][0]-set2['bbox'][0]
-        dm = set1['bbox'][1]-set2['bbox'][1]
 
-    if L1+L2>L: # vertically align
-        if abs(h) < util.DM:
-            return 0
-        else:
-            return -1 if h<0 else 1
+    lines = block['lines']
+
+    if len(lines)==1:
+        return 0
     else:
-        return -1 if dm<0 else 1
+        # multi-line sets aligned in one line:
+        # the factor of minimum line height to block height should lower than a threshold
+        line_height = min(map(lambda line: line['spans']['size'], lines))
+        block_height = block['bbox'][3] - block['bbox'][1]
+
+        return 0 if line_height/block_height > factor else 1
+
 
 def __process_line(span):
     '''combine text in lines to a complete sentence'''
-    text = span['text']
+    text = span['text'].strip()
     if text.endswith(('‐', '-')): # these two '-' are not same
         text = text[0:-1]
-    elif not text.endswith(' '):
+    else:
         text += ' '
     return text
