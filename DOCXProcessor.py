@@ -34,10 +34,6 @@ def make_page(doc, layout):
        each block has already been marked with 'paragraph' (one line only) or 'table' (multi-
        horizontally aligned lines) type. Avoid overusing table format, seperated table will be
        considered as 'paragraph' before making page.
-
-       seperated table satisfies following two conditions:
-        - next block is a paragraph so that merge table row is not necessary
-        - multi-line sets in a single word line
     '''
 
     # calculate after-space of paragraph block, set before-space also if previous block is table.
@@ -52,11 +48,6 @@ def make_page(doc, layout):
                 break
         else:
             next_block = None
-
-        # convert seperated table
-        if block['type']==1 and abs(block['bbox'][3]-block['bbox'][1]-block['lines'][0]['spans']['size'])<util.DM:
-            if not next_block or next_block['type']==0:
-                block['type'] = 0
 
         # paragraph1 to paragraph2: set after space for patagraph1
         # table to paragraph: set before space for paragraph
@@ -221,7 +212,7 @@ def add_line(paragraph, line):
         span = paragraph.add_run(text.strip())
         span.italic = bool(flags & 2**1)
         span.bold = bool(flags & 2**4)
-        span.font.name = font
+        span.font.name = font.split(',')[0] # Calibri,bold => Calibri
         span.font.size = Pt(size)
 
 def indent_table(table, indent):
