@@ -23,6 +23,7 @@ from docx.shared import Pt
 from docx.enum.section import WD_SECTION
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from docx.shared import RGBColor
 
 from .. import util
 
@@ -108,13 +109,9 @@ def make_paragraph(doc, block, page_margin):
     pf.space_after = Pt(block.get('after_space', 0.0))
 
     # add text / image: multi-line sets are seperated with TAB
-    first = True
     for line in lines:
         pos = line['bbox'][0]-page_margin[0]
-        if first:
-            pf.left_indent = Pt(pos)
-            first = False
-        else:
+        if pos:
             pf.tab_stops.add_tab_stop(Pt(pos))
             p.add_run('\t')
 
@@ -198,22 +195,19 @@ def add_line(paragraph, line):
         span = paragraph.add_run()
         span.add_picture(BytesIO(line['image']), width=Pt(line['bbox'][2]-line['bbox'][0]))
     else:
-        text = line['spans']['text']
-        flags = line['spans']['flags']
-        font = line['spans']['font']
-        size = line['spans']['size']
-
-        # line['flags'] is an integer, encoding bools of font properties:
-        # bit 0: superscripted (2^0)
-        # bit 1: italic (2^1)
-        # bit 2: serifed (2^2)
-        # bit 3: monospaced (2^3)
-        # bit 4: bold (2^4)
-        span = paragraph.add_run(text.strip())
-        span.italic = bool(flags & 2**1)
-        span.bold = bool(flags & 2**4)
-        span.font.name = font.split(',')[0] # Calibri,bold => Calibri
-        span.font.size = Pt(size)
+        for span in line['spans']:
+            # line['flags'] is an integer, encoding bool of font properties:
+            # bit 0: superscripted (2^0)
+            # bit 1: italic (2^1)
+            # bit 2: serifed (2^2)
+            # bit 3: monospaced (2^3)
+            # bit 4: bold (2^4)
+            docx_span = paragraph.add_run(span['text'])
+            docx_span.italic = bool(span['flags'] & 2**1)
+            docx_span.bold = bool(span['flags'] & 2**4)
+            docx_span.font.name = util.parse_font_name(span['font'])
+            docx_span.font.size = Pt(span['size'])
+            docx_span.font.color.rgb = RGBColor(*util.to_RGB(span['color']))
 
 def indent_table(table, indent):
     '''indent table

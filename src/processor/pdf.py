@@ -1,50 +1,69 @@
 '''
-PDF text and format pre-processor
+Recognize content and format from PDF file with PyMuPDF
 @created: 2019-06-24
 @author: train8808@gmail.com
 ---
 
-Recognize content and format based on page layout data extracted
-from PDF file with package PyMuPDF. The length unit for each boundary
-box is pt, which is 1/72 Inch.
+The raw page content extracted with with PyMuPDF, especially in JSON 
+format is described per link:
+https://pymupdf.readthedocs.io/en/latest/textpage/
 
-The structure of results is similar to the raw layout dict, but with
-meaning of some parameters changed, e.g.
+The parsed results of this module is similar to the raw layout dict, 
+but with some new features added, e.g.
  - add page margin
- - change type of block: paragraph(0), table(1);
- - change wmode of line: text(0), bullet(1), image(2);
- - spans of line is changed from a list of dict to a single dict, and
-   with a new key `mark` added for wmode=1, which is the bullet symbol.
- - properties of image block, e.g. width, height, are moved to `lines`
+ - regroup lines in adjacent blocks considering context
+ - recognize list format: block.type=2
+ - recognize table format: block.type=3
 
 An example of processed layout result:
+    {
+    "width": 504.0,
+    "height": 661.5,
+    "margin": [20.4000, 574.9200, 37.5600, 806.4000],
+    "blocks": [{...}, {...}, ...]
+    }
 
-{
-  "width": 504.0,
-  "height": 661.5,
-  "margin": [20.399999618530273, 574.9200077056885, 37.559967041015625, 806.4000244140625],
-  "blocks": [
+Note: The length unit for each boundary box is pt, which is 1/72 Inch.
+
+where the type of blocks is extended from `text` and `image` to `list` 
+and `table`:
+
+- text block:
     {
       "type": 0,
       "bbox": [72.0,62.310791015625,175.2935028076172,81.2032470703125],
       "lines": [
         {
-          "wmode": 0,
-          "dir": [1.0,0.0],
+          "wmode": 0, # writing mode (int): 0 = horizontal, 1 = vertical
+          "dir": [1.0,0.0], # writing direction
           "bbox": [72.0,62.310791015625,175.2935028076172,81.2032470703125],
-          "spans": {
+          "spans": [{
             "size": 15.770000457763672,
             "flags": 20,
             "font": "MyriadPro-SemiboldCond",
             "text": "Adjust Your Headers "
-          }
+          },
+          {...} # more spans in line
+          ]
         },
-        {...} # more lines
+        {...} # more lines in block
       ]
-    },
-    {...} # more blocks
-   ]
-}
+    }
+
+- image block
+    {
+      "type": 1,
+      "bbox": [72.0,62.310791015625,175.2935028076172,81.2032470703125],
+      "ext": "png",
+      "width": ,
+      "height": '
+      "image": ,
+      ...
+    }
+
+- list block
+
+- table block
 
 '''
 
@@ -69,7 +88,7 @@ def layout(layout):
     # detect table here
     # TODO
 
-    # merge blocks verticaly
+    # merge blocks vertically
     layout = _merge_vertical_blocks(layout)
 
     # merge blocks horizontally
@@ -86,32 +105,32 @@ def layout_debug(layout):
     import matplotlib.pyplot as plt
 
     # original layout
-    ax = plt.subplot(151)
-    plot_layout(ax, layout, 'raw')
+    # ax = plt.subplot(151)
+    # plot_layout(ax, layout, 'raw')
     
 
-    # split blocks
-    layout = _split_blocks(layout)
-    ax = plt.subplot(152)
-    plot_layout(ax, layout, 'split blocks')
+    # # split blocks
+    # layout = _split_blocks(layout)
+    # ax = plt.subplot(152)
+    # plot_layout(ax, layout, 'split blocks')
 
     # detect table here
     # TODO
 
-    # merge blocks vertically
-    layout = _merge_vertical_blocks(layout)
-    ax = plt.subplot(153)
-    plot_layout(ax, layout, 'merge blocks vertically')
+    # # merge blocks vertically
+    # layout = _merge_vertical_blocks(layout)
+    # ax = plt.subplot(153)
+    # plot_layout(ax, layout, 'merge blocks vertically')
 
-    # merge blocks horizontally
-    layout = _merge_horizontal_blocks(layout)
-    ax = plt.subplot(154)
-    plot_layout(ax, layout, 'merge blocks horizontally')
+    # # merge blocks horizontally
+    # layout = _merge_horizontal_blocks(layout)
+    # ax = plt.subplot(154)
+    # plot_layout(ax, layout, 'merge blocks horizontally')
 
     # margin
     layout['margin'] = _page_margin(layout)
 
-    plt.show()
+    # plt.show()
 
     return layout
 
@@ -240,20 +259,15 @@ def _split_blocks(layout):
         else: 
             lines = block['lines']
 
-            # combine spans in line
+            # convert each line to a block
             for line in lines:
-                jonied_span_text = ' '.join(map(__process_line, line['spans']))
-                line['spans'] = line['spans'][0]
-                line['spans']['text'] = jonied_span_text
-
-                # convert each line to a block
-                splited_block = {
+                split_block = {
                     'type': block['type'],
                     'bbox': line['bbox'],
                     'lines': [line]
                 }
 
-                blocks.append(splited_block)
+                blocks.append(split_block)
 
         # update reference block
         ref = block
@@ -268,7 +282,7 @@ def _merge_vertical_blocks(layout):
         - previous line is not the end and current line is not the begin
         - two lines should be in same font and size
         - skip if current line is a bullet item / image
-        - suppose pragraph margin is larger than line margin
+        - suppose paragraph margin is larger than line margin
         - remove overlap/duplicated blocks
     '''
 
@@ -314,7 +328,7 @@ def _merge_vertical_blocks(layout):
             elif span1['font']!=span2['font'] or span1['size']!=span2['size']: 
                 merged_blocks.append(block)
 
-            # ignore if sentence completence is not satisfied
+            # ignore if sentence completeness is not satisfied
             elif util.is_end_sentence(span1['text']) or util.is_start_sentence(span2['text']):
                 merged_blocks.append(block)
 

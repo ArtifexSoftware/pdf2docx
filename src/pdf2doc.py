@@ -10,7 +10,7 @@ class Reader:
     '''
         read PDF file `file_path` with PyMuPDF to get the layout data, including text, image and 
         the associated properties, e.g. boundary box, font, size, image width, height, then parse
-        it with consideration for sentence completence, DOCX generation structure.
+        it with consideration for sentence completeness, DOCX generation structure.
     '''
 
     def __init__(self, file_path):
@@ -29,7 +29,7 @@ class Reader:
         '''raw layout of PDF page'''
         layout = page.getText('dict')
 
-        # remove blocks exceeds page region: negtive bbox
+        # remove blocks exceeds page region: negative bbox
         layout['blocks'] = list(filter(
             lambda block: all(x>0 for x in block['bbox']), 
             layout['blocks']))

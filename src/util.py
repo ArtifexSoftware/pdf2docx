@@ -11,6 +11,19 @@ def getColor(i):
 	colors = ['r', 'g', 'b', 'c', 'm', 'y']
 	return colors[int(i)%len(colors)]
 
+def to_RGB(srgb):
+	# decimal to hex: 0x...
+	s = hex(srgb)[2:].zfill(6)
+	return [int(s[i:i+2], 16) for i in [0, 2, 4]]
+
+def parse_font_name(font_name):
+	'''parse raw font name extracted with pymupdf, e.g.
+		BCDGEE+Calibri-Bold, BCDGEE+Calibri
+	'''
+	font_name = font_name.split('+')[-1]
+	font_name = font_name.split('-')[0]
+	return font_name
+
 def rectangle(bbox, linewidth=0.5, linecolor='r', fillcolor='none'):
 	x0, y0, x1, y1 = bbox
 	return patches.Rectangle((x0, y0), x1-x0, y1-y0, linewidth=linewidth, edgecolor=linecolor, facecolor=fillcolor)
