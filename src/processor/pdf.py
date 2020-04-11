@@ -48,7 +48,7 @@ An example of processed layout result:
 
 '''
 
-import util
+from .. import util
 
 
 def layout(layout):

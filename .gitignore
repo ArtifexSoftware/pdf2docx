@@ -1,5 +1,4 @@
-res/
-
-
+*.pdf
+*.docx
 *.pyc
 *.jp*g

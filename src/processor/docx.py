@@ -23,7 +23,8 @@ from docx.shared import Pt
 from docx.enum.section import WD_SECTION
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-import util
+
+from .. import util
 
 
 
@@ -51,7 +52,6 @@ def make_page(doc, layout):
 
         # paragraph1 to paragraph2: set after space for patagraph1
         # table to paragraph: set before space for paragraph
-        before_space, after_space = 0.0, 0.0
         if next_block:
             space = max(next_block['bbox'][1]-block['bbox'][3], 0.0)
             if block['type']==0:
@@ -72,10 +72,10 @@ def make_page(doc, layout):
 
     # set page margin
     left,right,top,bottom = layout['margin']    
-    section.left_margin = Pt(layout['margin'][0])
-    section.right_margin = Pt(layout['margin'][1])
-    section.top_margin = Pt(layout['margin'][2])
-    section.bottom_margin = Pt(layout['margin'][3])
+    section.left_margin = Pt(left)
+    section.right_margin = Pt(right)
+    section.top_margin = Pt(top)
+    section.bottom_margin = Pt(bottom)
 
     # ref_table indicates whether previous block is in table format
     ref_table = None

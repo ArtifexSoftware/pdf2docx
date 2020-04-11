@@ -1,3 +1,2 @@
-PyMuPDF==1.14.16
-python-docx==0.8.10
-PyExecJS==1.5.1
+PyMuPDF
+python-docx

@@ -2,8 +2,8 @@ import os
 from docx import Document
 import fitz
 
-import PDFProcessor
-import DOCXProcessor
+from .processor import pdf as PDFProcessor
+from .processor import docx as DOCXProcessor
 
 
 class Reader:
@@ -68,21 +68,3 @@ class Writer:
         if os.path.exists(filename):
             os.remove(filename)
         self._doc.save(filename)
-
-
-
-if __name__ == '__main__':
-
-	# output = 'D:/11_Translation_Web/pdf2word'
-	output = 'D:/WorkSpace/TestSpace/PDFTranslation/src/res'
-	pdf_file = os.path.join(output, 'case.pdf')
-	docx_file = os.path.join(output, 'demo.docx')
-
-	pdf = Reader(pdf_file)
-	docx = Writer()
-
-	for page in pdf[7:11]:
-		layout = pdf.parse(page, True)
-		docx.make_page(layout)
-
-	docx.save(docx_file)
