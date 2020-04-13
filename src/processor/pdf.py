@@ -29,26 +29,20 @@ where the type of blocks is extended from `text` and `image` to `list`
 and `table`:
 
 - text block:
-    {
-      "type": 0,
-      "bbox": [72.0,62.310791015625,175.2935028076172,81.2032470703125],
-      "lines": [
+    In addition to the font style (size, color, weight), more text formats,
+    including highlight, underline, strike through line, are considered. So
+    the `span`-s in `line` are re-grouped with styles, and more keys are 
+    added to the original structure of `span`.
         {
-          "wmode": 0, # writing mode (int): 0 = horizontal, 1 = vertical
-          "dir": [1.0,0.0], # writing direction
-          "bbox": [72.0,62.310791015625,175.2935028076172,81.2032470703125],
-          "spans": [{
             "size": 15.770000457763672,
             "flags": 20,
             "font": "MyriadPro-SemiboldCond",
-            "text": "Adjust Your Headers "
-          },
-          {...} # more spans in line
-          ]
-        },
-        {...} # more lines in block
-      ]
-    }
+            "color": 14277081,
+            "text": "Adjust Your Headers",
+            # ----- new items -----
+            "type": [0,2], # 0-highlight, 1-underline, 2-strike-through-line
+            "bg-color": [14277081, 14277081]
+          }
 
 - image block
     {
@@ -67,7 +61,15 @@ and `table`:
 
 '''
 
+import fitz
+from operator import itemgetter
+import copy
+
 from .. import util
+
+
+# tolerant rectangle area
+DR = fitz.Rect(-util.DM, -util.DM, util.DM, util.DM) / 2.0
 
 
 def layout(layout):
@@ -78,8 +80,16 @@ def layout(layout):
 
        args:
            layout: raw layout data extracted from PDF with 
+                   ```layout = page.getText('dict')```
 
-           ```layout = page.getText('dict')```
+           words: words with bbox extracted from PDF with
+                  ```words = page.getTextWords()```
+           
+                  each word is represented by:
+                  (x0, y0, x1, y1, word, bno, lno, wno), where the first 4 
+                  entries are the word's rectangle coordinates, the last 3 
+                  are just technical info: block number, line number and 
+                  word number.
     '''
 
     # split blocks
@@ -99,13 +109,18 @@ def layout(layout):
 
     return layout
 
-def layout_debug(layout):
+def layout_debug(layout, words, rects):
     '''plot page layout during parsing process'''
 
-    import matplotlib.pyplot as plt
+    _preprocessing(layout, rects)
+
+    _parse_text_format(layout, words)
+
+
+    # import matplotlib.pyplot as plt
 
     # original layout
-    # ax = plt.subplot(151)
+    # ax = plt.subplot(111)
     # plot_layout(ax, layout, 'raw')
     
 
@@ -169,6 +184,197 @@ def plot_layout(axis, layout, title='page layout'):
         patch = util.rectangle(block['bbox'], linecolor='k')
         axis.add_patch(patch)
 
+
+def shape_rectangle(xref_stream):
+    ''' get rectangle shape by parsing page cross reference stream.
+
+        xref_streams:
+            doc._getXrefStream(xref).decode()
+        
+        The context meaning of rectangle shape may be:
+           - strike through line of text
+           - under line of text
+           - highlight area of text
+
+        Refer to https://github.com/pymupdf/PyMuPDF/issues/263,
+        typical mark of rectangle in xref stream:
+            1 1 0 rg # or 0 g
+            285.17 500.11 193.97 13.44 re f*
+        where,
+            - fill color is yellow (1,1,0)
+            - lower left corner: (285.17 500.11)
+            - width: 193.97
+            - height: 13.44
+        or just inherit preceding filling color without `rg`:
+            234.05 484.63 129.74 13.44 re f*
+
+        return a list of rectangles:
+            [{
+                "bbox": [x0, y0, x1, y1],
+                "color": sRGB
+             }
+             {...}
+            ]
+
+        Note: (0,0) locates at the lower left corner of a page.
+    '''
+    res = []
+    lines = xref_stream.split()
+    current_color = 0
+    for (i, line) in enumerate(lines):
+
+        if line!='re' or lines[i+1] not in ('f', 'f*'): continue
+
+        # bbox with (0,0) at lower left corner of the page
+        # four elements before this line
+        x, y, w, h = map(float, lines[i-4:i])
+        x0 = x
+        y0 = y + h
+        x1 = x + w
+        y1 = y
+
+        # check filling color
+        j = i - 5
+        if lines[j]=='g': # 0 g
+            g = float(lines[j-1])
+            c = util.RGB_value((g, g, g))
+        elif lines[j]=='rg': # 1 1 0 rg
+            r, g, b = map(float, lines[j-3:j])
+            c = util.RGB_value((r, g, b))
+        else:
+            # use preceding color
+            c = current_color
+        current_color = c
+
+        # add rectangle
+        res.append({
+            'bbox': [x0, y0, x1, y1],
+            'color': c
+        })
+        
+    return res
+
+
+
+
+# ---------------------------------------------
+def _preprocessing(layout, rects):
+    '''preprocessing for the raw layout of PDF page'''
+    # remove blocks exceeds page region: negative bbox
+    layout['blocks'] = list(filter(
+        lambda block: all(x>0 for x in block['bbox']), 
+        layout['blocks']))
+
+    # reorder to reading direction:
+    # from up to down, from left to right
+    layout['blocks'].sort(
+        key=lambda block: (block['bbox'][1], 
+            block['bbox'][0]))
+
+    # assign rectangle shapes to associated block
+    h = layout['height']
+    for rect in rects:
+        x0,y0,x1,y1 = rect['bbox']
+        rect['_rect'] = fitz.Rect(x0, h-y0, x1, h-y1)
+
+    for block in layout['blocks']:
+        if block['type']==1: continue
+        block['_rects'] = []
+        block_rect = fitz.Rect(*block['bbox']) + DR # a bit enlarge
+        for rect in rects:
+            if block_rect.contains(rect['_rect']):
+                block['_rects'].append(rect)
+
+
+def _parse_text_format(layout, words):
+    '''parse text format with rectangle style'''
+    for block in layout['blocks']:
+        if block['type']==1: continue
+        if not block['_rects']: continue
+
+        # use each rectangle (a specific text format) to split line spans
+        for rect in block['_rects']:
+            for line in block['lines']:
+                # any intersection in this line?
+                line_rect = fitz.Rect(*line['bbox'])
+                intsec = rect['_rect'] & ( line_rect + DR )
+                if not intsec: continue
+
+                # yes, then try to split the spans in this line
+                split_spans = [] # try to split
+                for span in line['spans']: 
+                    # any intersection in this span?
+                    span_rect = fitz.Rect(*span['bbox'])
+                    intsec = rect['_rect'] & ( span_rect + DR )
+
+                    # no, then add this span as it is
+                    if not intsec:
+                        split_spans.append(span)
+
+                    # yes, then split spans:
+                    # - add new style to the intersection part
+                    # - keep the original style for the rest
+                    else:
+                        # expand the intersection area, e.g. for strike through line,
+                        # the intersection is a `line`, i.e. a rectangle with very small height,
+                        # so expand the height direction to span height
+                        intsec = fitz.Rect(intsec.x0, span_rect.y0, intsec.x1, span_rect.y1)
+
+                        # split span with the intersection: span-intersection-span
+                        # 
+                        # left part if exists
+                        if intsec.x0 > span_rect.x0:
+                            split_spans.append(copy.deepcopy(span))
+                            # update bbox -> move bottom right corner, i.e.
+                            # split_spans[-1]['bbox'][2]=intsec.x0
+                            split_spans[-1]['bbox'] = [span_rect.x0, span_rect.y0, intsec.x0, span_rect.y1]
+
+                            # update text
+                            split_spans[-1]['text'] = _text_in_rect(words, split_spans[-1]['bbox'])
+
+                        # middle part: intersection part
+                        split_spans.append(copy.deepcopy(span))
+                        split_spans[-1]['bbox'] = [intsec.x0, intsec.y0, intsec.x0, intsec.y1]
+                        split_spans[-1]['text'] = _text_in_rect(words, intsec)
+                        # add new style
+                        # TODO
+
+                        # right part if exists
+                        if intsec.x1 < span_rect.x1:
+                            split_spans.append(copy.deepcopy(span))
+                            # update bbox -> move top left corner, i.e.
+                            # split_spans[-1]['bbox'][0]=intsec.x0
+                            split_spans[-1]['bbox'] = [intsec.x1, span_rect.y0, span_rect.x1, span_rect.y1]
+
+                            # update text
+                            split_spans[-1]['text'] = _text_in_rect(words, split_spans[-1]['bbox'])
+
+                # update line spans
+                line['spans'] = split_spans
+
+        for rect in block['_rects']:
+            rect.pop('_rect')
+                    
+
+
+
+def _text_in_rect(words, rect):
+    '''get text within rect, refer to:
+       https://github.com/pymupdf/PyMuPDF-Utilities/blob/master/examples/textboxtract.py
+    '''
+    if isinstance(rect, list):
+        rect = fitz.Rect(rect)
+
+    # word format: (x0, y0, x1, y1, 'word', 6, 1, 1)
+    f = lambda word: fitz.Rect(word[:4]) in rect
+    mywords = list(filter(f, words))
+
+    # sort by y1, x0 of the word rect
+    mywords.sort(key=itemgetter(3, 0))
+    texts = [w[4] for w in mywords]
+
+    return ' '.join(texts)
+
 def _page_margin(layout):
     '''get page margin:
        - left: as small as possible in x direction and should not intersect with any other bbox
@@ -217,6 +423,9 @@ def _page_margin(layout):
     bottom = h-max(map(lambda x: x[3], list_bbox))
 
     return left, right, top, min(util.ITP, bottom)
+
+
+
 
 def _split_blocks(layout):
     '''split block with multi-lines into single line block, which will be used to 

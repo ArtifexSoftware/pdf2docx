@@ -24,31 +24,40 @@ class Reader:
         else:
             return self._doc[index]
 
-    @staticmethod
-    def layout(page):
-        '''raw layout of PDF page'''
-        layout = page.getText('dict')
+    def rects(self, page):
+        '''get shape, especially rectangle from page source
+        '''
+        res = []
+        for xref in page._getContents():
+            page_content = self._doc._getXrefStream(xref).decode()
+            res.extend(PDFProcessor.shape_rectangle(page_content))
+        return res
 
-        # remove blocks exceeds page region: negative bbox
-        layout['blocks'] = list(filter(
-            lambda block: all(x>0 for x in block['bbox']), 
-            layout['blocks']))
+    def annots(self, page):
+        annot = page.firstAnnot
 
-        # reading order: from top to bottom, from left to right
-        layout['blocks'].sort(
-            key=lambda block: (block['bbox'][1], 
-                block['bbox'][0]))
+        print(len(list(page.annots())))
 
-        return layout
-
-    @staticmethod
-    def parse(page, debug=False):
-        '''precessed layout'''
-        raw = Reader.layout(page)
-        if debug:
-        	return PDFProcessor.layout_debug(raw)
+        while annot:
+            if annot.type[0] in (8, 9, 10, 11): # one of the 4 types above
+                rect = annot.rect # this is the rectangle the annot covers
+                # extract the text within that rect ...
+                print(annot.rect)
+            annot = annot.next # None returned after last annot
         else:
-        	return PDFProcessor.layout(raw)
+            print('nothing found')
+
+
+    def parse(self, page, debug=False):
+        '''precessed layout'''
+        raw_dict = page.getText('dict')
+        words = page.getTextWords()
+        rects = self.rects(page)
+
+        if debug:
+        	return PDFProcessor.layout_debug(raw_dict, words, rects)
+        else:
+        	return PDFProcessor.layout(raw_dict)
 
 
 class Writer:

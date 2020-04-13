@@ -7,14 +7,26 @@ DM = 1.0
 # inch to point
 ITP = 72.0
 
+
+
 def getColor(i):
+	'''get a color based on index'''
 	colors = ['r', 'g', 'b', 'c', 'm', 'y']
 	return colors[int(i)%len(colors)]
 
-def to_RGB(srgb):
+def RGB_component(srgb):
+	'''srgb value to R,G,B components, e.g. 16711680 -> (255, 0, 0)'''
 	# decimal to hex: 0x...
 	s = hex(srgb)[2:].zfill(6)
 	return [int(s[i:i+2], 16) for i in [0, 2, 4]]
+
+def RGB_value(rgb):
+	'''RGB components to decimal value, e.g. (1,0,0) -> 16711680'''
+	res = 0
+	for (i,x) in enumerate(rgb):
+		res += int(x*(16**2-1)) * 16**(4-2*i)
+	return int(res)
+
 
 def parse_font_name(font_name):
 	'''parse raw font name extracted with pymupdf, e.g.

@@ -39,7 +39,7 @@ def make_page(doc, layout):
     '''
 
     # calculate after-space of paragraph block, set before-space also if previous block is table.
-    # besides, mark seperated table blcoks as 'paragraph'
+    # besides, mark seperated table blocks as 'paragraph'
     blocks = layout['blocks']
     num = len(blocks)
     for i,block in enumerate(blocks):
@@ -84,7 +84,8 @@ def make_page(doc, layout):
         # make paragraphs
         if block['type']==0:
             ref_table = None
-            if block['lines'][0]['dir'] == (1.0 ,0):
+            # suppose all lines in a block are in same writing direction
+            if block['lines'][0]['wmode'] == 0:
                 make_paragraph(doc, block, layout['margin'])
             else:
                 make_vertical_paragraph(doc, block)
@@ -207,7 +208,7 @@ def add_line(paragraph, line):
             docx_span.bold = bool(span['flags'] & 2**4)
             docx_span.font.name = util.parse_font_name(span['font'])
             docx_span.font.size = Pt(span['size'])
-            docx_span.font.color.rgb = RGBColor(*util.to_RGB(span['color']))
+            docx_span.font.color.rgb = RGBColor(*util.RGB_component(span['color']))
 
 def indent_table(table, indent):
     '''indent table

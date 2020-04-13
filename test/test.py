@@ -9,6 +9,7 @@ from src.pdf2doc import Reader, Writer
 
 import json
 
+
 if __name__ == '__main__':
 
     output = os.path.join(os.path.dirname(script_path), 'demo')
@@ -20,10 +21,18 @@ if __name__ == '__main__':
     docx = Writer()
 
     for page in pdf[0:1]:
-        with open(os.path.join(output, 'xxx.txt'), 'w', encoding='utf-8') as f:
-            res = page.getText('dict')
-            f.write(json.dumps(res))
-        layout = pdf.parse(page, True)
-        docx.make_page(layout)
 
-    docx.save(docx_file)
+
+        layout = pdf.parse(page, True)
+        with open(os.path.join(output, 'xxx.txt'), 'w', encoding='utf-8') as f:
+            f.write(json.dumps(layout))
+
+        # xref = page._getContents()[0]
+        # cont = pdf._doc._getXrefStream(xref).decode()
+        # with open(os.path.join(output, 'xxx.txt'), 'w', encoding='utf-8') as f:
+        #     for line in cont.split():
+        #         f.write(line+'\n')
+
+        # docx.make_page(layout)
+
+    # docx.save(docx_file)
