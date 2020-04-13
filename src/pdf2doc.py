@@ -53,11 +53,7 @@ class Reader:
         raw_dict = page.getText('dict')
         words = page.getTextWords()
         rects = self.rects(page)
-
-        if debug:
-        	return PDFProcessor.layout_debug(raw_dict, words, rects, filename)
-        else:
-        	return PDFProcessor.layout(raw_dict)
+        return PDFProcessor.layout(raw_dict, words, rects, debug, filename)
 
 
 class Writer:

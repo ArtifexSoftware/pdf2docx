@@ -68,58 +68,51 @@ import copy
 from .. import util
 
 
-def layout(layout):
-    '''processed page layout:
-        - split block with multi-lines into seperated blocks
-        - merge blocks vertically to complete sentence
-        - merge blocks horizontally for convenience of docx generation
+def layout(layout, words, rects, debug=False, filename=None):
+    ''' processed page layout:
+            - split block with multi-lines into seperated blocks
+            - merge blocks vertically to complete sentence
+            - merge blocks horizontally for convenience of docx generation
 
-       args:
-           layout: raw layout data extracted from PDF with 
-                   ```layout = page.getText('dict')```
+        args:
+            layout: raw layout data extracted from PDF with
+                ```layout = page.getText('dict')```
+                   
+            words: words with bbox extracted from PDF with
+                ```words = page.getTextWords()```           
+                each word is represented by:
+                (x0, y0, x1, y1, word, bno, lno, wno), where the first 4 
+                entries are the word's rectangle coordinates, the last 3 
+                are just technical info: block number, line number and 
+                word number.
 
-           words: words with bbox extracted from PDF with
-                  ```words = page.getTextWords()```
-           
-                  each word is represented by:
-                  (x0, y0, x1, y1, word, bno, lno, wno), where the first 4 
-                  entries are the word's rectangle coordinates, the last 3 
-                  are just technical info: block number, line number and 
-                  word number.
+            rects: a list of rectangle shapes extracted from PDF xref_stream,
+                [{'bbox': [float,float,float,float], 'color': int }]
+            
+            debug: plot layout for illustration if True
+            
+            filename: pdf filename for the plotted layout
+            
     '''
+    if debug and not filename:
+        raise Exception('Please specify `filename` for layout plotting when debug=True.')
 
-    # split blocks
-    layout = _split_blocks(layout)
-
-    # detect table here
-    # TODO
-
-    # merge blocks vertically
-    layout = _merge_vertical_blocks(layout)
-
-    # merge blocks horizontally
-    layout = _merge_horizontal_blocks(layout)
-
-    # margin
-    layout['margin'] = _page_margin(layout)
-
-    return layout
-
-def layout_debug(layout, words, rects, filename=None):
-    '''plot page layout during parsing process'''
-
-    doc = fitz.open()
+    # doc for layout plotting
+    doc = fitz.open() if debug else None
+    kwargs = {
+        'debug': debug,
+        'doc': doc,
+        'filename': filename
+    }
     
     # raw layout
-    plot_layout(doc, layout)
+    if debug: plot_layout(doc, layout, 'Raw Layout')
 
     # preprocessing, e.g. order, clean negative block
-    _preprocessing(layout, rects)
-    plot_layout(doc, layout)
+    _preprocessing(layout, rects, **kwargs)
 
     # parse text format, e.g. highlight, underline
-    _parse_text_format(layout, words)
-    plot_layout(doc, layout)
+    _parse_text_format(layout, words, **kwargs)
 
     # original layout
     # ax = plt.subplot(111)
@@ -147,27 +140,27 @@ def layout_debug(layout, words, rects, filename=None):
     # margin
     layout['margin'] = _page_margin(layout)
 
-    if not filename:
-        filename = 'layout_illustration.pdf'
-    doc.save(filename)
-    doc.close()
+    # save layout plotting as pdf file
+    if doc:
+        doc.save(filename)
+        doc.close()
 
     return layout
 
 
-def plot_layout(doc, layout):
+def plot_layout(doc, layout, title):
     '''plot layout elements with line and rectangle from PyMuPDF
        doc: fitz document object
     '''
     # insert a new page
     w, h = layout['width'], layout['height']
     doc.insertPage(-1, width=w, height=h)
-    page = doc[-1]
+    page = doc[-1]    
 
     # plot page margin
-    c = util.getColor('red')
+    red = util.getColor('red')
     args = {
-        'color': c,
+        'color': red,
         'width': 0.5
     }
     dL, dR, dT, dB = _page_margin(layout)
@@ -176,12 +169,15 @@ def plot_layout(doc, layout):
     page.drawLine((0, dT), (w, dT), **args) # top
     page.drawLine((0, h-dB), (w, h-dB), **args) # bottom
 
+    # plot title within the top margin
+    page.insertText((dL, dT*0.75), title, color=red, fontsize=dT/2.0)
+
     # plot blocks
     for block in layout['blocks']:
         # block border
-        c = util.getColor('blue')
+        blue = util.getColor('blue')
         r = fitz.Rect(block['bbox'])
-        page.drawRect(r, color=c, fill=None, overlay=False)
+        page.drawRect(r, color=blue, fill=None, overlay=False)
 
         # spans in current block
         for line in block.get('lines', []): # TODO: other types, e.g. image, list, table
@@ -261,10 +257,27 @@ def shape_rectangle(xref_stream):
     return res
 
 
-
-
 # ---------------------------------------------
-def _preprocessing(layout, rects):
+
+def _debug_plot(title):
+    '''plot layout for debug'''
+    def wrapper(func):
+        def inner(*args, **kwargs):
+            # execute function
+            func(*args, **kwargs)
+
+            # check if plot layout
+            debug = kwargs.get('debug', False)
+            doc = kwargs.get('doc', None)
+            if debug and doc:
+                layout = args[0]
+                plot_layout(doc, layout, title)
+        
+        return inner
+    return wrapper
+
+@_debug_plot('Preprocessing')
+def _preprocessing(layout, rects, **kwargs):
     '''preprocessing for the raw layout of PDF page'''
     # remove blocks exceeds page region: negative bbox
     layout['blocks'] = list(filter(
@@ -291,8 +304,8 @@ def _preprocessing(layout, rects):
             if block_rect.contains(rect['_rect']):
                 block['_rects'].append(rect)
 
-
-def _parse_text_format(layout, words):
+@_debug_plot('Parse Text Format')
+def _parse_text_format(layout, words, **kwargs):
     '''parse text format with rectangle style'''
     for block in layout['blocks']:
         if block['type']==1: continue
