@@ -23,7 +23,7 @@ if __name__ == '__main__':
     for page in pdf[0:1]:
 
 
-        layout = pdf.parse(page, True)
+        layout = pdf.parse(page, True, os.path.join(output, 'illustration.pdf'))
         with open(os.path.join(output, 'xxx.txt'), 'w', encoding='utf-8') as f:
             f.write(json.dumps(layout))
 

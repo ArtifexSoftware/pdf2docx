@@ -48,14 +48,14 @@ class Reader:
             print('nothing found')
 
 
-    def parse(self, page, debug=False):
+    def parse(self, page, debug=False, filename=None):
         '''precessed layout'''
         raw_dict = page.getText('dict')
         words = page.getTextWords()
         rects = self.rects(page)
 
         if debug:
-        	return PDFProcessor.layout_debug(raw_dict, words, rects)
+        	return PDFProcessor.layout_debug(raw_dict, words, rects, filename)
         else:
         	return PDFProcessor.layout(raw_dict)
 

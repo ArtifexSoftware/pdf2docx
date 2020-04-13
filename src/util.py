@@ -1,4 +1,6 @@
-import matplotlib.patches as patches
+import random
+import fitz
+from fitz.utils import getColorList, getColorInfoList
 
 
 # border margin
@@ -7,18 +9,28 @@ DM = 1.0
 # inch to point
 ITP = 72.0
 
+# tolerant rectangle area
+DR = fitz.Rect(-DM, -DM, DM, DM) / 2.0
 
 
-def getColor(i):
-	'''get a color based on index'''
-	colors = ['r', 'g', 'b', 'c', 'm', 'y']
-	return colors[int(i)%len(colors)]
+def getColor(name=None):
+	'''get a named RGB color (or random color) from fitz predefined colors'''
+	# get color index
+	if name and name.upper() in getColorList():
+		pos = getColorList().index(name.upper())
+	else:
+		pos = random.randint(0, len(getColorList())-1)
+		
+	c = getColorInfoList()[pos]
+	return (c[1] / 255.0, c[2] / 255.0, c[3] / 255.0)
+
 
 def RGB_component(srgb):
 	'''srgb value to R,G,B components, e.g. 16711680 -> (255, 0, 0)'''
 	# decimal to hex: 0x...
 	s = hex(srgb)[2:].zfill(6)
 	return [int(s[i:i+2], 16) for i in [0, 2, 4]]
+
 
 def RGB_value(rgb):
 	'''RGB components to decimal value, e.g. (1,0,0) -> 16711680'''
@@ -36,9 +48,6 @@ def parse_font_name(font_name):
 	font_name = font_name.split('-')[0]
 	return font_name
 
-def rectangle(bbox, linewidth=0.5, linecolor='r', fillcolor='none'):
-	x0, y0, x1, y1 = bbox
-	return patches.Rectangle((x0, y0), x1-x0, y1-y0, linewidth=linewidth, edgecolor=linecolor, facecolor=fillcolor)
 
 def is_end_sentence(text):
 	'''simple rule to check the completence of text
