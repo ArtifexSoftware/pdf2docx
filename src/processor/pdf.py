@@ -132,7 +132,7 @@ def layout(layout, words, rects, **kwargs):
    
 
 
-def rectangles(xref_stream):
+def rectangles(xref_stream, height):
     ''' get rectangle shape by parsing page cross reference stream.
 
         xref_streams:
@@ -157,13 +157,11 @@ def rectangles(xref_stream):
 
         return a list of rectangles:
             [{
-                "bbox": [x0, y0, x1, y1],
+                "bbox": (x0, y0, x1, y1),
                 "color": sRGB
              }
              {...}
             ]
-
-        Note: (0,0) locates at the lower left corner of a page.
     '''
     res = []
     lines = xref_stream.split()
@@ -195,7 +193,7 @@ def rectangles(xref_stream):
 
         # add rectangle
         res.append({
-            'bbox': [x0, y0, x1, y1],
+            'bbox': (x0, height-y0, x1, height-y1), # convert to PyMuPDF coordinates system
             'color': c
         })
         
@@ -238,14 +236,10 @@ def plot_rectangles(doc, layout, rects, title):
 
     # draw rectangle one by one
     for rect in rects:
-        # transfer original from lower left to top left
-        r = copy.deepcopy(rect['bbox'])
-        r[1] = layout['height'] - r[1]
-        r[3] = layout['height'] - r[3]
         # fill color
         c = util.RGB_component(rect['color'])
         c = [_/255.0 for _ in c]
-        page.drawRect(r, color=c, fill=c, overlay=False)
+        page.drawRect(rect['bbox'], color=c, fill=c, overlay=False)
 
 
 
@@ -275,6 +269,7 @@ def _new_page_with_margin(doc, layout, title):
 
     return page
 
+
 def _debug_plot(title, plot=True):
     '''plot layout for debug'''
     def wrapper(func):
@@ -292,6 +287,7 @@ def _debug_plot(title, plot=True):
         return inner
     return wrapper
 
+
 @_debug_plot('Preprocessing', True)
 def _preprocessing(layout, rects, **kwargs):
     '''preprocessing for the raw layout of PDF page'''
@@ -306,13 +302,7 @@ def _preprocessing(layout, rects, **kwargs):
         key=lambda block: (block['bbox'][1], 
             block['bbox'][0]))
 
-    # shift reference origin from bottom left to top left, and 
     # assign rectangle shapes to associated block
-    h = layout['height']
-    for rect in rects:
-        rect['bbox'][1] = h - rect['bbox'][1]
-        rect['bbox'][3] = h - rect['bbox'][3]
-
     for block in layout['blocks']:
         if block['type']==1: continue
         block['_rects'] = []
@@ -334,11 +324,9 @@ def _parse_text_format(layout, words, **kwargs):
 
         # use each rectangle (a specific text format) to split line spans
         for rect in block['_rects']:
-            # attention: preceding step _preprocessing must be performed,
-            # so that the coordinates of rect bbox is updated
+
             the_rect = fitz.Rect(*rect['bbox'])
 
-            print('new rect checking...')
             for line in block['lines']:
                 # any intersection in this line?
                 line_rect = fitz.Rect(*line['bbox'])
@@ -346,75 +334,89 @@ def _parse_text_format(layout, words, **kwargs):
                 if not intsec: continue
 
                 # yes, then try to split the spans in this line
-                split_spans = [] # try to split
+                split_spans = []
                 for span in line['spans']: 
-                    # any intersection in this span?
-                    span_rect = fitz.Rect(*span['bbox'])
-                    intsec = the_rect & ( span_rect + util.DR )
-
-                    # no, then add this span as it is
-                    if not intsec:
-                        split_spans.append(span)
-
-                    # yes, then split spans:
-                    # - add new style to the intersection part
-                    # - keep the original style for the rest
-                    else:
-                        # expand the intersection area, e.g. for strike through line,
-                        # the intersection is a `line`, i.e. a rectangle with very small height,
-                        # so expand the height direction to span height
-                        intsec.y0 = span_rect.y0
-                        intsec.y1 = span_rect.y1
-
-                        # split span with the intersection: span-intersection-span
-                        # 
-                        # left part if exists
-                        if intsec.x0 > span_rect.x0:
-                            split_spans.append(copy.deepcopy(span))
-                            # update bbox -> move bottom right corner, i.e.
-                            # split_spans[-1]['bbox'][2]=intsec.x0
-                            split_spans[-1]['bbox'] = (span_rect.x0, span_rect.y0, intsec.x0, span_rect.y1)
-
-                            # update text
-                            split_spans[-1]['text'] = _text_in_rect(words, split_spans[-1]['bbox'])
-                            print('    left: ',split_spans[-1]['bbox'][0],split_spans[-1]['bbox'][2],split_spans[-1]['text'])
-
-                        # middle part: intersection part
-                        split_spans.append(copy.deepcopy(span))
-                        split_spans[-1]['bbox'] = (intsec.x0, intsec.y0, intsec.x1, intsec.y1)
-                        split_spans[-1]['text'] = _text_in_rect(words, intsec)
-                        # add new style
-                        # TODO
-                        print('    middle: ',split_spans[-1]['bbox'][0],split_spans[-1]['bbox'][2],split_spans[-1]['text'])
-
-                        # right part if exists
-                        if intsec.x1 < span_rect.x1:
-                            split_spans.append(copy.deepcopy(span))
-                            # update bbox -> move top left corner, i.e.
-                            # split_spans[-1]['bbox'][0]=intsec.x1
-                            split_spans[-1]['bbox'] = (intsec.x1, span_rect.y0, span_rect.x1, span_rect.y1)
-
-                            # update text
-                            split_spans[-1]['text'] = _text_in_rect(words, split_spans[-1]['bbox'])
-                            print('    right: ',split_spans[-1]['bbox'][0],split_spans[-1]['bbox'][2],split_spans[-1]['text'])
-
-                    print('  end of span')
+                    # split span with the intersection: span-intersection-span
+                    tmp_span = _split_span_with_rect(span, rect, words)
+                    split_spans.extend(tmp_span)
+                                                   
                 # update line spans                
                 line['spans'] = split_spans
 
-                    
 
+def _split_span_with_rect(span, rect, words):
+    '''split span with the intersection: span-intersection-span'''
+
+    # split spans
+    split_spans = []
+
+    # any intersection in this span?
+    span_rect = fitz.Rect(*span['bbox'])
+    the_rect = fitz.Rect(*rect['bbox'])
+    # do not enlarge span_rect here to avoid introduce extra intersection
+    intsec = the_rect & span_rect
+
+    # no, then add this span as it is
+    if not intsec:
+        split_spans.append(span)
+
+    # yes, then split spans:
+    # - add new style to the intersection part
+    # - keep the original style for the rest
+    else:
+        # expand the intersection area, e.g. for strike through line,
+        # the intersection is a `line`, i.e. a rectangle with very small height,
+        # so expand the height direction to span height
+        intsec.y0 = span_rect.y0
+        intsec.y1 = span_rect.y1
+
+        # split span with the intersection: span-intersection-span
+        # 
+        # left part if exists
+        if intsec.x0 > span_rect.x0:
+            split_spans.append(copy.deepcopy(span))
+            # update bbox -> move bottom right corner, i.e.
+            # split_spans[-1]['bbox'][2] -> intsec.x0
+            split_spans[-1]['bbox'] = (span_rect.x0, span_rect.y0, intsec.x0, span_rect.y1)
+
+            # update text
+            split_spans[-1]['text'] = _text_in_rect(words, split_spans[-1]['bbox'])
+
+        # middle part: intersection part
+        if intsec.x0 < intsec.x1:
+            split_spans.append(copy.deepcopy(span))
+            split_spans[-1]['bbox'] = (intsec.x0, intsec.y0, intsec.x1, intsec.y1)
+            split_spans[-1]['text'] = _text_in_rect(words, split_spans[-1]['bbox'])
+            
+            # add new style
+            new_style = util.rect_to_style(rect, split_spans[-1]['bbox'])
+            if new_style:
+                if 'style' in split_spans[-1]:
+                    split_spans[-1]['style'].append(new_style)
+                else:
+                    split_spans[-1]['style'] = [new_style]
+
+        # right part if exists
+        if intsec.x1 < span_rect.x1:
+            split_spans.append(copy.deepcopy(span))
+            # update bbox -> move top left corner, i.e.
+            # split_spans[-1]['bbox'][0] -> intsec.x1
+            split_spans[-1]['bbox'] = (intsec.x1, span_rect.y0, span_rect.x1, span_rect.y1)
+            split_spans[-1]['text'] = _text_in_rect(words, split_spans[-1]['bbox'])
+
+    return split_spans
+ 
 
 
 def _text_in_rect(words, rect):
     '''get text within rect, refer to:
        https://github.com/pymupdf/PyMuPDF-Utilities/blob/master/examples/textboxtract.py
     '''
-    if isinstance(rect, list):
+    if isinstance(rect, (tuple, list)):
         rect = fitz.Rect(rect)
 
-    # word format: (x0, y0, x1, y1, 'word', 6, 1, 1)
-    f = lambda word: fitz.Rect(word[:4]) in rect
+    # words in rect
+    f = lambda word: util.is_word_in_rect(word, rect)
     mywords = list(filter(f, words))
 
     # sort by y1, x0 of the word rect
@@ -422,6 +424,8 @@ def _text_in_rect(words, rect):
     texts = [w[4] for w in mywords]
 
     return ' '.join(texts)
+
+
 
 def _page_margin(layout):
     '''get page margin:

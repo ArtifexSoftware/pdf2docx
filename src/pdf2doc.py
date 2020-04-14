@@ -28,10 +28,14 @@ class Reader:
         '''get shape, especially rectangle from page source
         '''
         res = []
+        # use page height to convert the default origin from bottom left (PDF)
+        # to top right (PyMuPDF)
+        height = page.MediaBox.y1
         for xref in page._getContents():
             page_content = self._doc._getXrefStream(xref).decode()
-            print(page_content)
-            res.extend(PDFProcessor.rectangles(page_content))
+            rects = PDFProcessor.rectangles(page_content, height)
+            res.extend(rects)
+        
         return res
 
     def annots(self, page):
