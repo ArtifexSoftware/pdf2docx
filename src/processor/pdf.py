@@ -40,8 +40,10 @@ and `table`:
             "color": 14277081,
             "text": "Adjust Your Headers",
             # ----- new items -----
-            "type": [0,2], # 0-highlight, 1-underline, 2-strike-through-line
-            "bg-color": [14277081, 14277081]
+            "style": [{
+                "type": 0, # 0-highlight, 1-underline, 2-strike-through-line
+                "color": 14277081
+                }, {...}]            
           }
 
 - image block
@@ -68,7 +70,7 @@ import copy
 from .. import util
 
 
-def layout(layout, words, rects, debug=False, filename=None):
+def layout(layout, words, rects, **kwargs):
     ''' processed page layout:
             - split block with multi-lines into seperated blocks
             - merge blocks vertically to complete sentence
@@ -88,27 +90,17 @@ def layout(layout, words, rects, debug=False, filename=None):
 
             rects: a list of rectangle shapes extracted from PDF xref_stream,
                 [{'bbox': [float,float,float,float], 'color': int }]
-            
-            debug: plot layout for illustration if True
-            
-            filename: pdf filename for the plotted layout
-            
+
+            kwargs: dict for layout plotting
+                kwargs = {
+                    'debug': bool,
+                    'doc': fitz document or None,
+                    'filename': str
+                }            
     '''
-    if debug and not filename:
-        raise Exception('Please specify `filename` for layout plotting when debug=True.')
 
-    # doc for layout plotting
-    doc = fitz.open() if debug else None
-    kwargs = {
-        'debug': debug,
-        'doc': doc,
-        'filename': filename
-    }
-    
-    # raw layout
-    if debug: plot_layout(doc, layout, 'Raw Layout')
-
-    # preprocessing, e.g. order, clean negative block
+    # preprocessing, e.g. change block order, clean negative block, 
+    # update rectangle reference point
     _preprocessing(layout, rects, **kwargs)
 
     # parse text format, e.g. highlight, underline
@@ -137,57 +129,10 @@ def layout(layout, words, rects, debug=False, filename=None):
     # ax = plt.subplot(154)
     # plot_layout(ax, layout, 'merge blocks horizontally')
 
-    # margin
-    layout['margin'] = _page_margin(layout)
-
-    # save layout plotting as pdf file
-    if doc:
-        doc.save(filename)
-        doc.close()
-
-    return layout
+   
 
 
-def plot_layout(doc, layout, title):
-    '''plot layout elements with line and rectangle from PyMuPDF
-       doc: fitz document object
-    '''
-    # insert a new page
-    w, h = layout['width'], layout['height']
-    doc.insertPage(-1, width=w, height=h)
-    page = doc[-1]    
-
-    # plot page margin
-    red = util.getColor('red')
-    args = {
-        'color': red,
-        'width': 0.5
-    }
-    dL, dR, dT, dB = _page_margin(layout)
-    page.drawLine((dL, 0), (dL, h), **args) # left border
-    page.drawLine((w-dR, 0), (w-dR, h), **args) # right border
-    page.drawLine((0, dT), (w, dT), **args) # top
-    page.drawLine((0, h-dB), (w, h-dB), **args) # bottom
-
-    # plot title within the top margin
-    page.insertText((dL, dT*0.75), title, color=red, fontsize=dT/2.0)
-
-    # plot blocks
-    for block in layout['blocks']:
-        # block border
-        blue = util.getColor('blue')
-        r = fitz.Rect(block['bbox'])
-        page.drawRect(r, color=blue, fill=None, overlay=False)
-
-        # spans in current block
-        for line in block.get('lines', []): # TODO: other types, e.g. image, list, table
-            for span in line.get('spans', []):
-                c = util.getColor() # random color
-                r = fitz.Rect(span['bbox'])
-                page.drawRect(r, color=c, fill=c, overlay=False) 
-
-
-def shape_rectangle(xref_stream):
+def rectangles(xref_stream, height):
     ''' get rectangle shape by parsing page cross reference stream.
 
         xref_streams:
@@ -212,13 +157,11 @@ def shape_rectangle(xref_stream):
 
         return a list of rectangles:
             [{
-                "bbox": [x0, y0, x1, y1],
+                "bbox": (x0, y0, x1, y1),
                 "color": sRGB
              }
              {...}
             ]
-
-        Note: (0,0) locates at the lower left corner of a page.
     '''
     res = []
     lines = xref_stream.split()
@@ -250,16 +193,84 @@ def shape_rectangle(xref_stream):
 
         # add rectangle
         res.append({
-            'bbox': [x0, y0, x1, y1],
+            'bbox': (x0, height-y0, x1, height-y1), # convert to PyMuPDF coordinates system
             'color': c
         })
         
     return res
 
 
+def plot_layout(doc, layout, title):
+    '''plot layout with PyMuPDF
+       doc: fitz document object
+    '''
+    # insert a new page with borders
+    page = _new_page_with_margin(doc, layout, title)    
+
+    # plot blocks
+    for block in layout['blocks']:
+        # block border
+        blue = util.getColor('blue')
+        r = fitz.Rect(block['bbox'])
+        page.drawRect(r, color=blue, fill=None, overlay=False)
+
+        # spans in current block
+        for line in block.get('lines', []): # TODO: other types, e.g. image, list, table
+            for span in line.get('spans', []):
+                c = util.getColor() # random color
+                r = fitz.Rect(span['bbox'])
+                page.drawRect(r, color=c, fill=c, overlay=False)
+
+
+def plot_rectangles(doc, layout, rects, title):
+    ''' plot rectangles with PyMuPDF
+
+        width, height: page width/height
+        rects: a list of rectangles recognized from xref stream
+        doc: fitz document object
+    '''
+    if not rects: return
+
+    # insert a new page
+    page = _new_page_with_margin(doc, layout, title)
+
+    # draw rectangle one by one
+    for rect in rects:
+        # fill color
+        c = util.RGB_component(rect['color'])
+        c = [_/255.0 for _ in c]
+        page.drawRect(rect['bbox'], color=c, fill=c, overlay=False)
+
+
+
 # ---------------------------------------------
 
-def _debug_plot(title):
+def _new_page_with_margin(doc, layout, title):
+    ''' insert a new page and plot margin borders'''
+    # insert a new page
+    w, h = layout['width'], layout['height']
+    doc.insertPage(-1, width=w, height=h)
+    page = doc[-1]
+    
+    # plot page margin
+    red = util.getColor('red')
+    args = {
+        'color': red,
+        'width': 0.5
+    }
+    dL, dR, dT, dB = layout.get('margin', _page_margin(layout)) 
+    page.drawLine((dL, 0), (dL, h), **args) # left border
+    page.drawLine((w-dR, 0), (w-dR, h), **args) # right border
+    page.drawLine((0, dT), (w, dT), **args) # top
+    page.drawLine((0, h-dB), (w, h-dB), **args) # bottom
+
+    # plot title within the top margin
+    page.insertText((dL, dT*0.75), title, color=red, fontsize=dT/2.0)
+
+    return page
+
+
+def _debug_plot(title, plot=True):
     '''plot layout for debug'''
     def wrapper(func):
         def inner(*args, **kwargs):
@@ -269,14 +280,15 @@ def _debug_plot(title):
             # check if plot layout
             debug = kwargs.get('debug', False)
             doc = kwargs.get('doc', None)
-            if debug and doc:
+            if plot and debug and doc is not None:
                 layout = args[0]
                 plot_layout(doc, layout, title)
         
         return inner
     return wrapper
 
-@_debug_plot('Preprocessing')
+
+@_debug_plot('Preprocessing', True)
 def _preprocessing(layout, rects, **kwargs):
     '''preprocessing for the raw layout of PDF page'''
     # remove blocks exceeds page region: negative bbox
@@ -291,20 +303,19 @@ def _preprocessing(layout, rects, **kwargs):
             block['bbox'][0]))
 
     # assign rectangle shapes to associated block
-    h = layout['height']
-    for rect in rects:
-        x0,y0,x1,y1 = rect['bbox']
-        rect['_rect'] = fitz.Rect(x0, h-y0, x1, h-y1)
-
     for block in layout['blocks']:
         if block['type']==1: continue
         block['_rects'] = []
         block_rect = fitz.Rect(*block['bbox']) + util.DR # a bit enlarge
         for rect in rects:
-            if block_rect.contains(rect['_rect']):
+            if block_rect.contains(rect['bbox']):
                 block['_rects'].append(rect)
+    
+    # margin
+    layout['margin'] = _page_margin(layout)
 
-@_debug_plot('Parse Text Format')
+
+@_debug_plot('Parse Text Format', True)
 def _parse_text_format(layout, words, **kwargs):
     '''parse text format with rectangle style'''
     for block in layout['blocks']:
@@ -313,85 +324,112 @@ def _parse_text_format(layout, words, **kwargs):
 
         # use each rectangle (a specific text format) to split line spans
         for rect in block['_rects']:
-            print('new rect checking...')
+
+            the_rect = fitz.Rect(*rect['bbox'])
+
             for line in block['lines']:
                 # any intersection in this line?
                 line_rect = fitz.Rect(*line['bbox'])
-                intsec = rect['_rect'] & ( line_rect + util.DR )
+                intsec = the_rect & ( line_rect + util.DR )
                 if not intsec: continue
 
                 # yes, then try to split the spans in this line
-                split_spans = [] # try to split
+                split_spans = []
                 for span in line['spans']: 
-                    # any intersection in this span?
-                    span_rect = fitz.Rect(*span['bbox'])
-                    intsec = rect['_rect'] & ( span_rect + util.DR )
-
-                    # no, then add this span as it is
-                    if not intsec:
-                        split_spans.append(span)
-
-                    # yes, then split spans:
-                    # - add new style to the intersection part
-                    # - keep the original style for the rest
-                    else:
-                        # expand the intersection area, e.g. for strike through line,
-                        # the intersection is a `line`, i.e. a rectangle with very small height,
-                        # so expand the height direction to span height
-                        intsec.y0 = span_rect.y0
-                        intsec.y1 = span_rect.y1
-
-                        # split span with the intersection: span-intersection-span
-                        # 
-                        # left part if exists
-                        if intsec.x0 > span_rect.x0:
-                            split_spans.append(copy.deepcopy(span))
-                            # update bbox -> move bottom right corner, i.e.
-                            # split_spans[-1]['bbox'][2]=intsec.x0
-                            split_spans[-1]['bbox'] = (span_rect.x0, span_rect.y0, intsec.x0, span_rect.y1)
-
-                            # update text
-                            split_spans[-1]['text'] = _text_in_rect(words, split_spans[-1]['bbox'])
-                            print('    left: ',split_spans[-1]['bbox'][0],split_spans[-1]['bbox'][2],split_spans[-1]['text'])
-
-                        # middle part: intersection part
-                        split_spans.append(copy.deepcopy(span))
-                        split_spans[-1]['bbox'] = (intsec.x0, intsec.y0, intsec.x1, intsec.y1)
-                        split_spans[-1]['text'] = _text_in_rect(words, intsec)
-                        # add new style
-                        # TODO
-                        print('    middle: ',split_spans[-1]['bbox'][0],split_spans[-1]['bbox'][2],split_spans[-1]['text'])
-
-                        # right part if exists
-                        if intsec.x1 < span_rect.x1:
-                            split_spans.append(copy.deepcopy(span))
-                            # update bbox -> move top left corner, i.e.
-                            # split_spans[-1]['bbox'][0]=intsec.x1
-                            split_spans[-1]['bbox'] = (intsec.x1, span_rect.y0, span_rect.x1, span_rect.y1)
-
-                            # update text
-                            split_spans[-1]['text'] = _text_in_rect(words, split_spans[-1]['bbox'])
-                            print('    right: ',split_spans[-1]['bbox'][0],split_spans[-1]['bbox'][2],split_spans[-1]['text'])
-
-                    print('  end of span')
+                    # split span with the intersection: span-intersection-span
+                    tmp_span = _split_span_with_rect(span, rect, words)
+                    split_spans.extend(tmp_span)
+                                                   
                 # update line spans                
                 line['spans'] = split_spans
 
-        for rect in block['_rects']:
-            rect.pop('_rect')
-                    
 
+def _split_span_with_rect(span, rect, words):
+    '''split span with the intersection: span-intersection-span'''
+
+    # split spans
+    split_spans = []
+
+    # any intersection in this span?
+    span_rect = fitz.Rect(*span['bbox'])
+    the_rect = fitz.Rect(*rect['bbox'])
+    # do not enlarge span_rect here to avoid introduce extra intersection
+    intsec = the_rect & span_rect
+
+    # no, then add this span as it is
+    if not intsec:
+        split_spans.append(span)
+
+    # yes, then split spans:
+    # - add new style to the intersection part
+    # - keep the original style for the rest
+    else:
+        # expand the intersection area, e.g. for strike through line,
+        # the intersection is a `line`, i.e. a rectangle with very small height,
+        # so expand the height direction to span height
+        intsec.y0 = span_rect.y0
+        intsec.y1 = span_rect.y1
+
+        # split span with the intersection: span-intersection-span
+        # 
+        # left part if exists
+        if intsec.x0 > span_rect.x0:
+            split_span = copy.deepcopy(span)
+            # update bbox -> move bottom right corner, i.e.
+            # split_span['bbox'][2] -> intsec.x0
+            split_span['bbox'] = (span_rect.x0, span_rect.y0, intsec.x0, span_rect.y1)
+
+            # update text: invalid span if text is empty
+            text = _text_in_rect(words, split_span['bbox'])
+            if text:
+                split_span['text'] = text + ' '
+                split_spans.append(split_span)
+
+        # middle part: intersection part
+        if intsec.x0 < intsec.x1:
+            split_span = copy.deepcopy(span)            
+            split_span['bbox'] = (intsec.x0, intsec.y0, intsec.x1, intsec.y1)
+
+            # update text: invalid span if text is empty
+            text = _text_in_rect(words, split_span['bbox'])
+            if text:
+                split_span['text'] = text + ' '
+                # add new style
+                new_style = util.rect_to_style(rect, split_span['bbox'])
+                if new_style:
+                    if 'style' in split_span:
+                        split_span['style'].append(new_style)
+                    else:
+                        split_span['style'] = [new_style]
+
+                split_spans.append(split_span)
+
+        # right part if exists
+        if intsec.x1 < span_rect.x1:
+            split_span = copy.deepcopy(span)
+            # update bbox -> move top left corner, i.e.
+            # split_span['bbox'][0] -> intsec.x1
+            split_span['bbox'] = (intsec.x1, span_rect.y0, span_rect.x1, span_rect.y1)
+
+            # update text: invalid span if text is empty
+            text = _text_in_rect(words, split_span['bbox'])
+            if text:
+                split_span['text'] = text + ' '
+                split_spans.append(split_span)
+
+    return split_spans
+ 
 
 
 def _text_in_rect(words, rect):
     '''get text within rect, refer to:
        https://github.com/pymupdf/PyMuPDF-Utilities/blob/master/examples/textboxtract.py
     '''
-    if isinstance(rect, list):
+    if isinstance(rect, (tuple, list)):
         rect = fitz.Rect(rect)
 
-    # word format: (x0, y0, x1, y1, 'word', 6, 1, 1)
-    f = lambda word: fitz.Rect(word[:4]) in rect
+    # words in rect
+    f = lambda word: util.is_word_in_rect(word, rect)
     mywords = list(filter(f, words))
 
     # sort by y1, x0 of the word rect
@@ -399,6 +437,8 @@ def _text_in_rect(words, rect):
     texts = [w[4] for w in mywords]
 
     return ' '.join(texts)
+
+
 
 def _page_margin(layout):
     '''get page margin:

@@ -49,16 +49,15 @@ def make_page(doc, layout):
             if next_block['lines'][0]['dir']==(1.0, 0.0):
                 break
         else:
-            next_block = None
+            continue
 
-        # paragraph1 to paragraph2: set after space for patagraph1
+        # paragraph1 to paragraph2: set after space for paragraph1
         # table to paragraph: set before space for paragraph
-        if next_block:
-            space = max(next_block['bbox'][1]-block['bbox'][3], 0.0)
-            if block['type']==0:
-                block['after_space'] = space
-            elif next_block['type']==0:
-                next_block['before_space'] = space
+        space = max(next_block['bbox'][1]-block['bbox'][3], 0.0)
+        if block['type']==0:
+            block['after_space'] = space
+        elif next_block['type']==0:
+            next_block['before_space'] = space
 
     # new page section
     # a default section is created when initialize the document,
@@ -197,18 +196,36 @@ def add_line(paragraph, line):
         span.add_picture(BytesIO(line['image']), width=Pt(line['bbox'][2]-line['bbox'][0]))
     else:
         for span in line['spans']:
+            # add text
+            docx_span = paragraph.add_run(span['text'])
+
+            # style setting
+            # https://python-docx.readthedocs.io/en/latest/api/text.html#docx.text.run.Font
+
+            # basic font style
             # line['flags'] is an integer, encoding bool of font properties:
             # bit 0: superscripted (2^0)
             # bit 1: italic (2^1)
             # bit 2: serifed (2^2)
             # bit 3: monospaced (2^3)
-            # bit 4: bold (2^4)
-            docx_span = paragraph.add_run(span['text'])
+            # bit 4: bold (2^4)            
             docx_span.italic = bool(span['flags'] & 2**1)
             docx_span.bold = bool(span['flags'] & 2**4)
             docx_span.font.name = util.parse_font_name(span['font'])
             docx_span.font.size = Pt(span['size'])
             docx_span.font.color.rgb = RGBColor(*util.RGB_component(span['color']))
+
+            # font style parsed from PDF rectangles: 
+            # e.g. highlight, underline, strike-through-line
+            for style in span.get('style', []):
+                t = style['type']
+                if t==0:
+                    docx_span.font.highlight_color = util.to_Highlight_color(style['color'])
+                elif t==1:
+                    docx_span.font.underline = True
+                elif t==2:
+                    docx_span.font.strike = True
+
 
 def indent_table(table, indent):
     '''indent table
