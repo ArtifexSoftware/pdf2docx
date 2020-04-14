@@ -374,35 +374,48 @@ def _split_span_with_rect(span, rect, words):
         # 
         # left part if exists
         if intsec.x0 > span_rect.x0:
-            split_spans.append(copy.deepcopy(span))
+            split_span = copy.deepcopy(span)
             # update bbox -> move bottom right corner, i.e.
-            # split_spans[-1]['bbox'][2] -> intsec.x0
-            split_spans[-1]['bbox'] = (span_rect.x0, span_rect.y0, intsec.x0, span_rect.y1)
+            # split_span['bbox'][2] -> intsec.x0
+            split_span['bbox'] = (span_rect.x0, span_rect.y0, intsec.x0, span_rect.y1)
 
-            # update text
-            split_spans[-1]['text'] = _text_in_rect(words, split_spans[-1]['bbox'])
+            # update text: invalid span if text is empty
+            text = _text_in_rect(words, split_span['bbox'])
+            if text:
+                split_span['text'] = text + ' '
+                split_spans.append(split_span)
 
         # middle part: intersection part
         if intsec.x0 < intsec.x1:
-            split_spans.append(copy.deepcopy(span))
-            split_spans[-1]['bbox'] = (intsec.x0, intsec.y0, intsec.x1, intsec.y1)
-            split_spans[-1]['text'] = _text_in_rect(words, split_spans[-1]['bbox'])
-            
-            # add new style
-            new_style = util.rect_to_style(rect, split_spans[-1]['bbox'])
-            if new_style:
-                if 'style' in split_spans[-1]:
-                    split_spans[-1]['style'].append(new_style)
-                else:
-                    split_spans[-1]['style'] = [new_style]
+            split_span = copy.deepcopy(span)            
+            split_span['bbox'] = (intsec.x0, intsec.y0, intsec.x1, intsec.y1)
+
+            # update text: invalid span if text is empty
+            text = _text_in_rect(words, split_span['bbox'])
+            if text:
+                split_span['text'] = text + ' '
+                # add new style
+                new_style = util.rect_to_style(rect, split_span['bbox'])
+                if new_style:
+                    if 'style' in split_span:
+                        split_span['style'].append(new_style)
+                    else:
+                        split_span['style'] = [new_style]
+
+                split_spans.append(split_span)
 
         # right part if exists
         if intsec.x1 < span_rect.x1:
-            split_spans.append(copy.deepcopy(span))
+            split_span = copy.deepcopy(span)
             # update bbox -> move top left corner, i.e.
-            # split_spans[-1]['bbox'][0] -> intsec.x1
-            split_spans[-1]['bbox'] = (intsec.x1, span_rect.y0, span_rect.x1, span_rect.y1)
-            split_spans[-1]['text'] = _text_in_rect(words, split_spans[-1]['bbox'])
+            # split_span['bbox'][0] -> intsec.x1
+            split_span['bbox'] = (intsec.x1, span_rect.y0, span_rect.x1, span_rect.y1)
+
+            # update text: invalid span if text is empty
+            text = _text_in_rect(words, split_span['bbox'])
+            if text:
+                split_span['text'] = text + ' '
+                split_spans.append(split_span)
 
     return split_spans
  

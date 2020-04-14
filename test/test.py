@@ -34,6 +34,6 @@ if __name__ == '__main__':
         #     for line in cont.split():
         #         f.write(line+'\n')
 
-        # docx.make_page(layout)
+        docx.make_page(layout)
 
-    # docx.save(docx_file)
+    docx.save(docx_file)

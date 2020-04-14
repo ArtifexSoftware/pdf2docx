@@ -1,7 +1,7 @@
 import random
 import fitz
 from fitz.utils import getColorList, getColorInfoList
-
+from docx.enum.text import WD_COLOR_INDEX
 
 # border margin
 DM = 1.0
@@ -38,6 +38,20 @@ def RGB_value(rgb):
     for (i,x) in enumerate(rgb):
         res += int(x*(16**2-1)) * 16**(4-2*i)
     return int(res)
+
+
+def to_Highlight_color(sRGB):
+    '''pre-defined color index for highlighting text with python-docx'''
+    # part of pre-defined colors
+    color_map = {        
+        RGB_value((1,0,0)): WD_COLOR_INDEX.RED,
+        RGB_value((0,1,0)): WD_COLOR_INDEX.BRIGHT_GREEN,
+        RGB_value((0,0,1)): WD_COLOR_INDEX.BLUE,
+        RGB_value((1,1,0)): WD_COLOR_INDEX.YELLOW,
+        RGB_value((1,0,1)): WD_COLOR_INDEX.PINK,
+        RGB_value((0,1,1)): WD_COLOR_INDEX.TURQUOISE
+    }
+    return color_map.get(sRGB, WD_COLOR_INDEX.YELLOW)
 
 
 def parse_font_name(font_name):
