@@ -30,7 +30,8 @@ class Reader:
         res = []
         for xref in page._getContents():
             page_content = self._doc._getXrefStream(xref).decode()
-            res.extend(PDFProcessor.shape_rectangle(page_content))
+            print(page_content)
+            res.extend(PDFProcessor.rectangles(page_content))
         return res
 
     def annots(self, page):
@@ -49,11 +50,43 @@ class Reader:
 
 
     def parse(self, page, debug=False, filename=None):
-        '''precessed layout'''
-        raw_dict = page.getText('dict')
+        ''' parse page layout
+
+            args:
+                page: current page
+                debug: plot layout for illustration if True            
+                filename: pdf filename for the plotted layout
+        '''
+        if debug and not filename:
+            raise Exception('Please specify `filename` for layout plotting when debug=True.')
+
+        # layout plotting args
+        doc = fitz.open() if debug else None
+        kwargs = {
+            'debug': debug,
+            'doc': doc,
+            'filename': filename
+        }
+
+        # page source
+        layout = page.getText('dict')
         words = page.getTextWords()
         rects = self.rects(page)
-        return PDFProcessor.layout(raw_dict, words, rects, debug, filename)
+
+        # raw layout, rectangles
+        if debug:
+            PDFProcessor.plot_layout(doc, layout, 'Original PDF')
+            PDFProcessor.plot_rectangles(doc, layout, rects, 'Recognized Rectangles')
+
+        # parse page
+        PDFProcessor.layout(layout, words, rects, **kwargs)
+
+        # save layout plotting as pdf file
+        if debug:
+            doc.save(filename)
+            doc.close()
+
+        return layout
 
 
 class Writer:

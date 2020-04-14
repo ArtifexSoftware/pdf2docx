@@ -40,8 +40,10 @@ and `table`:
             "color": 14277081,
             "text": "Adjust Your Headers",
             # ----- new items -----
-            "type": [0,2], # 0-highlight, 1-underline, 2-strike-through-line
-            "bg-color": [14277081, 14277081]
+            "style": [{
+                "type": 0, # 0-highlight, 1-underline, 2-strike-through-line
+                "color": 14277081
+                }, {...}]            
           }
 
 - image block
@@ -68,7 +70,7 @@ import copy
 from .. import util
 
 
-def layout(layout, words, rects, debug=False, filename=None):
+def layout(layout, words, rects, **kwargs):
     ''' processed page layout:
             - split block with multi-lines into seperated blocks
             - merge blocks vertically to complete sentence
@@ -88,27 +90,17 @@ def layout(layout, words, rects, debug=False, filename=None):
 
             rects: a list of rectangle shapes extracted from PDF xref_stream,
                 [{'bbox': [float,float,float,float], 'color': int }]
-            
-            debug: plot layout for illustration if True
-            
-            filename: pdf filename for the plotted layout
-            
+
+            kwargs: dict for layout plotting
+                kwargs = {
+                    'debug': bool,
+                    'doc': fitz document or None,
+                    'filename': str
+                }            
     '''
-    if debug and not filename:
-        raise Exception('Please specify `filename` for layout plotting when debug=True.')
 
-    # doc for layout plotting
-    doc = fitz.open() if debug else None
-    kwargs = {
-        'debug': debug,
-        'doc': doc,
-        'filename': filename
-    }
-    
-    # raw layout
-    if debug: plot_layout(doc, layout, 'Raw Layout')
-
-    # preprocessing, e.g. order, clean negative block
+    # preprocessing, e.g. change block order, clean negative block, 
+    # update rectangle reference point
     _preprocessing(layout, rects, **kwargs)
 
     # parse text format, e.g. highlight, underline
@@ -137,57 +129,10 @@ def layout(layout, words, rects, debug=False, filename=None):
     # ax = plt.subplot(154)
     # plot_layout(ax, layout, 'merge blocks horizontally')
 
-    # margin
-    layout['margin'] = _page_margin(layout)
-
-    # save layout plotting as pdf file
-    if doc:
-        doc.save(filename)
-        doc.close()
-
-    return layout
+   
 
 
-def plot_layout(doc, layout, title):
-    '''plot layout elements with line and rectangle from PyMuPDF
-       doc: fitz document object
-    '''
-    # insert a new page
-    w, h = layout['width'], layout['height']
-    doc.insertPage(-1, width=w, height=h)
-    page = doc[-1]    
-
-    # plot page margin
-    red = util.getColor('red')
-    args = {
-        'color': red,
-        'width': 0.5
-    }
-    dL, dR, dT, dB = _page_margin(layout)
-    page.drawLine((dL, 0), (dL, h), **args) # left border
-    page.drawLine((w-dR, 0), (w-dR, h), **args) # right border
-    page.drawLine((0, dT), (w, dT), **args) # top
-    page.drawLine((0, h-dB), (w, h-dB), **args) # bottom
-
-    # plot title within the top margin
-    page.insertText((dL, dT*0.75), title, color=red, fontsize=dT/2.0)
-
-    # plot blocks
-    for block in layout['blocks']:
-        # block border
-        blue = util.getColor('blue')
-        r = fitz.Rect(block['bbox'])
-        page.drawRect(r, color=blue, fill=None, overlay=False)
-
-        # spans in current block
-        for line in block.get('lines', []): # TODO: other types, e.g. image, list, table
-            for span in line.get('spans', []):
-                c = util.getColor() # random color
-                r = fitz.Rect(span['bbox'])
-                page.drawRect(r, color=c, fill=c, overlay=False) 
-
-
-def shape_rectangle(xref_stream):
+def rectangles(xref_stream):
     ''' get rectangle shape by parsing page cross reference stream.
 
         xref_streams:
@@ -257,9 +202,80 @@ def shape_rectangle(xref_stream):
     return res
 
 
+def plot_layout(doc, layout, title):
+    '''plot layout with PyMuPDF
+       doc: fitz document object
+    '''
+    # insert a new page with borders
+    page = _new_page_with_margin(doc, layout, title)    
+
+    # plot blocks
+    for block in layout['blocks']:
+        # block border
+        blue = util.getColor('blue')
+        r = fitz.Rect(block['bbox'])
+        page.drawRect(r, color=blue, fill=None, overlay=False)
+
+        # spans in current block
+        for line in block.get('lines', []): # TODO: other types, e.g. image, list, table
+            for span in line.get('spans', []):
+                c = util.getColor() # random color
+                r = fitz.Rect(span['bbox'])
+                page.drawRect(r, color=c, fill=c, overlay=False)
+
+
+def plot_rectangles(doc, layout, rects, title):
+    ''' plot rectangles with PyMuPDF
+
+        width, height: page width/height
+        rects: a list of rectangles recognized from xref stream
+        doc: fitz document object
+    '''
+    if not rects: return
+
+    # insert a new page
+    page = _new_page_with_margin(doc, layout, title)
+
+    # draw rectangle one by one
+    for rect in rects:
+        # transfer original from lower left to top left
+        r = copy.deepcopy(rect['bbox'])
+        r[1] = layout['height'] - r[1]
+        r[3] = layout['height'] - r[3]
+        # fill color
+        c = util.RGB_component(rect['color'])
+        c = [_/255.0 for _ in c]
+        page.drawRect(r, color=c, fill=c, overlay=False)
+
+
+
 # ---------------------------------------------
 
-def _debug_plot(title):
+def _new_page_with_margin(doc, layout, title):
+    ''' insert a new page and plot margin borders'''
+    # insert a new page
+    w, h = layout['width'], layout['height']
+    doc.insertPage(-1, width=w, height=h)
+    page = doc[-1]
+    
+    # plot page margin
+    red = util.getColor('red')
+    args = {
+        'color': red,
+        'width': 0.5
+    }
+    dL, dR, dT, dB = layout.get('margin', _page_margin(layout)) 
+    page.drawLine((dL, 0), (dL, h), **args) # left border
+    page.drawLine((w-dR, 0), (w-dR, h), **args) # right border
+    page.drawLine((0, dT), (w, dT), **args) # top
+    page.drawLine((0, h-dB), (w, h-dB), **args) # bottom
+
+    # plot title within the top margin
+    page.insertText((dL, dT*0.75), title, color=red, fontsize=dT/2.0)
+
+    return page
+
+def _debug_plot(title, plot=True):
     '''plot layout for debug'''
     def wrapper(func):
         def inner(*args, **kwargs):
@@ -269,14 +285,14 @@ def _debug_plot(title):
             # check if plot layout
             debug = kwargs.get('debug', False)
             doc = kwargs.get('doc', None)
-            if debug and doc:
+            if plot and debug and doc is not None:
                 layout = args[0]
                 plot_layout(doc, layout, title)
         
         return inner
     return wrapper
 
-@_debug_plot('Preprocessing')
+@_debug_plot('Preprocessing', True)
 def _preprocessing(layout, rects, **kwargs):
     '''preprocessing for the raw layout of PDF page'''
     # remove blocks exceeds page region: negative bbox
@@ -290,21 +306,26 @@ def _preprocessing(layout, rects, **kwargs):
         key=lambda block: (block['bbox'][1], 
             block['bbox'][0]))
 
+    # shift reference origin from bottom left to top left, and 
     # assign rectangle shapes to associated block
     h = layout['height']
     for rect in rects:
-        x0,y0,x1,y1 = rect['bbox']
-        rect['_rect'] = fitz.Rect(x0, h-y0, x1, h-y1)
+        rect['bbox'][1] = h - rect['bbox'][1]
+        rect['bbox'][3] = h - rect['bbox'][3]
 
     for block in layout['blocks']:
         if block['type']==1: continue
         block['_rects'] = []
         block_rect = fitz.Rect(*block['bbox']) + util.DR # a bit enlarge
         for rect in rects:
-            if block_rect.contains(rect['_rect']):
+            if block_rect.contains(rect['bbox']):
                 block['_rects'].append(rect)
+    
+    # margin
+    layout['margin'] = _page_margin(layout)
 
-@_debug_plot('Parse Text Format')
+
+@_debug_plot('Parse Text Format', True)
 def _parse_text_format(layout, words, **kwargs):
     '''parse text format with rectangle style'''
     for block in layout['blocks']:
@@ -313,11 +334,15 @@ def _parse_text_format(layout, words, **kwargs):
 
         # use each rectangle (a specific text format) to split line spans
         for rect in block['_rects']:
+            # attention: preceding step _preprocessing must be performed,
+            # so that the coordinates of rect bbox is updated
+            the_rect = fitz.Rect(*rect['bbox'])
+
             print('new rect checking...')
             for line in block['lines']:
                 # any intersection in this line?
                 line_rect = fitz.Rect(*line['bbox'])
-                intsec = rect['_rect'] & ( line_rect + util.DR )
+                intsec = the_rect & ( line_rect + util.DR )
                 if not intsec: continue
 
                 # yes, then try to split the spans in this line
@@ -325,7 +350,7 @@ def _parse_text_format(layout, words, **kwargs):
                 for span in line['spans']: 
                     # any intersection in this span?
                     span_rect = fitz.Rect(*span['bbox'])
-                    intsec = rect['_rect'] & ( span_rect + util.DR )
+                    intsec = the_rect & ( span_rect + util.DR )
 
                     # no, then add this span as it is
                     if not intsec:
@@ -377,8 +402,6 @@ def _parse_text_format(layout, words, **kwargs):
                 # update line spans                
                 line['spans'] = split_spans
 
-        for rect in block['_rects']:
-            rect.pop('_rect')
                     
 
 
