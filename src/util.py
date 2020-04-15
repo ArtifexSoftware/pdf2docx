@@ -63,38 +63,19 @@ def parse_font_name(font_name):
     return font_name
 
 
-def is_word_in_rect(word, rect):
-    ''' word format: (x0, y0, x1, y1, 'word', 6, 1, 1)
-        word in words may come together with a punctuation, e.g. 'word.',
-        but the rect applies only on the 'word' part, so the rect can't cover the
-        whole word, even though a tolerance is included. On the other hand, using 
-        intersection may be an overkill.
-
-        so, a compromise is they have intersection, but the gap is small
-    '''
-    w_rect = fitz.Rect(word[:4])
-
-    # word in rect?
-    if w_rect in rect:
-        return True
-    else:
-        # intersection?
-        b1 = w_rect.intersects(rect)
-        
-        # the gap small enough?
-        if w_rect.x1 > rect.x1:
-            gap = w_rect.x1 - rect.x1
-        else:
-            gap = abs(rect.x0 - w_rect.x0)
-        b2 = gap / (rect.x1-rect.x0) < 0.15
-
-        return b1 and b2
-
-
 def rect_to_style(rect, span_bbox):
     ''' text style based on the position between rectangle and span
         rect: {'bbox': (,,,), 'color': int}
     '''
+    # if type exists, e.g. rect converted from annotation, 
+    # return it directly
+    if 'type' in rect:
+        return {
+            'type': rect['type'],
+            'color': rect['color']
+        }
+    
+    # otherwise, recognize type based on rect and the span it applying to
     # region height
     h_rect = rect['bbox'][3] - rect['bbox'][1]
     h_span = span_bbox[3] - span_bbox[1]

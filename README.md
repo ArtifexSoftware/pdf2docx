@@ -6,7 +6,9 @@
 ## Features
 
 - [x] Rebuild page layout in docx
-- [x] Parse and re-create text format, e.g. bold, italic, color, highlight, underline, strike-through-line (single strike only)
+- [x] Parse and re-create text format, e.g. font style, highlight, underline, strike
+    - [x] highlight, underline converted from docx
+    - [x] highlight, underline applied from PDF comments
 - [ ] Parse and re-create list style
 - [ ] Parse and re-create table
 
@@ -40,7 +42,7 @@ docx.save(docx_file)
 
 ### Text format
 
-It's able to re-build common text format, e.g. font color, bold, italic, highlight, and their combinations. However, there're still deviations existed in detail, e.g. color of underline (see words `HTML Output`), the applied range of text format (see words `bug-free`, `assumptions`).
+It's able to re-build common text format, e.g. font color, bold, italic, highlight, and their combinations. However, there're still deviations existed in detail, e.g. color of underline (see words `HTML Output`).
 
 - PDF
 

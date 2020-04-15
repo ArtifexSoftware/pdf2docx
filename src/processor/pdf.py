@@ -38,7 +38,8 @@ and `table`:
             "flags": 20,
             "font": "MyriadPro-SemiboldCond",
             "color": 14277081,
-            "text": "Adjust Your Headers",
+            "text": "Adjust Your Headers", # joined from chars
+            "chars": [{...}]
             # ----- new items -----
             "style": [{
                 "type": 0, # 0-highlight, 1-underline, 2-strike-through-line
@@ -70,7 +71,7 @@ import copy
 from .. import util
 
 
-def layout(layout, words, rects, **kwargs):
+def layout(layout, rects, **kwargs):
     ''' processed page layout:
             - split block with multi-lines into seperated blocks
             - merge blocks vertically to complete sentence
@@ -78,15 +79,7 @@ def layout(layout, words, rects, **kwargs):
 
         args:
             layout: raw layout data extracted from PDF with
-                ```layout = page.getText('dict')```
-                   
-            words: words with bbox extracted from PDF with
-                ```words = page.getTextWords()```           
-                each word is represented by:
-                (x0, y0, x1, y1, word, bno, lno, wno), where the first 4 
-                entries are the word's rectangle coordinates, the last 3 
-                are just technical info: block number, line number and 
-                word number.
+                ```layout = page.getText('dict')```                   
 
             rects: a list of rectangle shapes extracted from PDF xref_stream,
                 [{'bbox': [float,float,float,float], 'color': int }]
@@ -104,7 +97,7 @@ def layout(layout, words, rects, **kwargs):
     _preprocessing(layout, rects, **kwargs)
 
     # parse text format, e.g. highlight, underline
-    _parse_text_format(layout, words, **kwargs)
+    _parse_text_format(layout, **kwargs)
 
     # original layout
     # ax = plt.subplot(111)
@@ -129,31 +122,56 @@ def layout(layout, words, rects, **kwargs):
     # ax = plt.subplot(154)
     # plot_layout(ax, layout, 'merge blocks horizontally')
 
-   
+def rects_from_source(xref_stream, height):
+    ''' Get rectangle shape by parsing page cross reference stream.
 
-
-def rectangles(xref_stream, height):
-    ''' get rectangle shape by parsing page cross reference stream.
+        Note: 
+            these shapes are generally converted from pdf source, e.g. highlight, 
+            underline, which are different from PDF comments shape.
 
         xref_streams:
-            doc._getXrefStream(xref).decode()
+            doc._getXrefStream(xref).decode()        
+        height:
+            page height for coordinate system conversion
         
         The context meaning of rectangle shape may be:
            - strike through line of text
            - under line of text
            - highlight area of text
 
-        Refer to https://github.com/pymupdf/PyMuPDF/issues/263,
+        --------
+        
+        Refer to:
+        - Appendix A from PDF reference for associated operators:
+          https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdf_reference_archive/pdf_reference_1-7.pdf
+        - https://github.com/pymupdf/PyMuPDF/issues/263
+
         typical mark of rectangle in xref stream:
+            /P<</MCID 0>> BDC
+            ...
+            1 0 0 1 90.0240021 590.380005 cm
+            ...
             1 1 0 rg # or 0 g
+            ...
             285.17 500.11 193.97 13.44 re f*
+            ...
+            EMC
+
         where,
-            - fill color is yellow (1,1,0)
-            - lower left corner: (285.17 500.11)
-            - width: 193.97
-            - height: 13.44
-        or just inherit preceding filling color without `rg`:
-            234.05 484.63 129.74 13.44 re f*
+            - `MCID` indicates a Marked content, where rectangles exist
+            - `cm` specify a coordinate system transformation, 
+               here (0,0) translates to (90.0240021 590.380005)
+            - `q`/`Q` save/restores graphic status
+            - `rg` / `g` specify color mode: rgb / grey
+            - `re`, `f` or `f*`: fill rectangle path with pre-defined color, 
+               in this case,
+                - fill color is yellow (1,1,0)
+                - lower left corner: (285.17 500.11)
+                - width: 193.97
+                - height: 13.44
+
+        Note: coordinates system transformation should be considered if text format
+              is set from PDF file with edit mode. 
 
         return a list of rectangles:
             [{
@@ -164,39 +182,115 @@ def rectangles(xref_stream, height):
             ]
     '''
     res = []
+
+    # current working CS is coincident with the absolute origin (0, 0)
+    Ax, Ay = 0, 0
+    Wx, Wy = 0, 0
+
+    # current graphics color is black
+    Ac = util.RGB_value((0, 0, 0))
+    Wc = Ac
+
+    # check xref stream word by word (line always changes)    
+    begin_text_setting = False    
     lines = xref_stream.split()
-    current_color = 0
     for (i, line) in enumerate(lines):
+        # skip any lines between `BT` and `ET`, 
+        # since text seeting has no effects on shape        
+        if line=='BT':  # begin text
+            begin_text_setting = True
+       
+        elif line=='ET': # end text
+            begin_text_setting = False
 
-        if line!='re' or lines[i+1] not in ('f', 'f*'): continue
+        if begin_text_setting:
+            continue        
 
-        # bbox with (0,0) at lower left corner of the page
-        # four elements before this line
-        x, y, w, h = map(float, lines[i-4:i])
-        x0 = x
-        y0 = y + h
-        x1 = x + w
-        y1 = y
+        # CS transformation
+        if line=='cm':
+            # update working CS
+            Wx += float(lines[i-2])
+            Wy += float(lines[i-1])        
 
-        # check filling color
-        j = i - 5
-        if lines[j]=='g': # 0 g
-            g = float(lines[j-1])
-            c = util.RGB_value((g, g, g))
-        elif lines[j]=='rg': # 1 1 0 rg
-            r, g, b = map(float, lines[j-3:j])
-            c = util.RGB_value((r, g, b))
-        else:
-            # use preceding color
-            c = current_color
-        current_color = c
+        # painting color
+        # gray mode
+        elif line=='g': # 0 g
+            g = float(lines[i-1])
+            Wc = util.RGB_value((g, g, g))
 
-        # add rectangle
-        res.append({
-            'bbox': (x0, height-y0, x1, height-y1), # convert to PyMuPDF coordinates system
-            'color': c
-        })
+        # RGB mode
+        elif line=='rg': # 1 1 0 rg
+            r, g, b = map(float, lines[i-3:i])
+            Wc = util.RGB_value((r, g, b))
+
+        # save or restore graphics state:
+        # only consider transformation and color here
+        elif line=='q': # save
+            Ax, Ay = Wx, Wy
+            Ac = Wc
+            
+        elif line=='Q': # restore
+            Wx, Wy = Ax, Ay
+            Wc = Ac
+
+        # finally, come to the rectangle block
+        elif line=='re' and lines[i+1] in ('f', 'f*'):
+            # (x, y, w, h) before this line
+            x, y, w, h = map(float, lines[i-4:i])
+
+            # change bottom left point to top left,
+            # consider also the working CS
+            x0 = Wx + x
+            y0 = Wy + y + h
+            x1 = x0 + w
+            y1 = Wy + y
+
+            # add rectangle, meanwhile convert bbox to PyMuPDF coordinates system
+            res.append({
+                'bbox': (x0, height-y0, x1, height-y1), 
+                'color': Wc
+            })
         
+    return res
+
+def rects_from_annots(annots):
+    ''' get annotations(comment shapes) from PDF page
+        Note: 
+            consider highlight, underline, strike-through-line only. 
+
+        annots:
+            a list of PyMuPDF Annot objects        
+    '''
+    res = []
+
+    # map rect type from PyMuPDF
+    # Annotation types:
+    # https://pymupdf.readthedocs.io/en/latest/vars/#annotationtypes    
+    # PDF_ANNOT_HIGHLIGHT 8
+    # PDF_ANNOT_UNDERLINE 9
+    # PDF_ANNOT_SQUIGGLY 10
+    # PDF_ANNOT_STRIKEOUT 11
+    type_map = { 8: 0, 9: 1, 11: 2}
+
+    for annot in annots:
+
+        # consider highlight, underline, strike-through-line only.
+        # e.g. annot.type = (8, 'Highlight')
+        if not annot.type[0] in (8,9,11): 
+            continue
+        
+        # color, e.g. {'stroke': [1.0, 1.0, 0.0], 'fill': []}
+        c = annot.colors.get('stroke', (0,0,0)) # black by default
+
+        # convert rect coordinates
+        rect = annot.rect
+
+        res.append({
+            'type': type_map[annot.type[0]],
+            'bbox': (rect.x0, rect.y0, rect.x1, rect.y1),
+            'color': util.RGB_value(c)
+        })
+
     return res
 
 
@@ -249,8 +343,7 @@ def _new_page_with_margin(doc, layout, title):
     ''' insert a new page and plot margin borders'''
     # insert a new page
     w, h = layout['width'], layout['height']
-    doc.insertPage(-1, width=w, height=h)
-    page = doc[-1]
+    page = doc.newPage(width=w, height=h)
     
     # plot page margin
     red = util.getColor('red')
@@ -302,21 +395,32 @@ def _preprocessing(layout, rects, **kwargs):
         key=lambda block: (block['bbox'][1], 
             block['bbox'][0]))
 
-    # assign rectangle shapes to associated block
+    # assign rectangle shapes to associated block;
+    # get span text by joining chars
     for block in layout['blocks']:
+        # skip image
         if block['type']==1: continue
+
+        # assign rectangles
         block['_rects'] = []
         block_rect = fitz.Rect(*block['bbox']) + util.DR # a bit enlarge
         for rect in rects:
-            if block_rect.contains(rect['bbox']):
+            # any intersection?
+            if block_rect.intersects(rect['bbox']):
                 block['_rects'].append(rect)
+
+        # join chars
+        for line in block['lines']:
+            for span in line['spans']:
+                chars = [char['c'] for char in span['chars']]
+                span['text'] = ''.join(chars)
     
     # margin
     layout['margin'] = _page_margin(layout)
 
 
 @_debug_plot('Parse Text Format', True)
-def _parse_text_format(layout, words, **kwargs):
+def _parse_text_format(layout, **kwargs):
     '''parse text format with rectangle style'''
     for block in layout['blocks']:
         if block['type']==1: continue
@@ -324,9 +428,7 @@ def _parse_text_format(layout, words, **kwargs):
 
         # use each rectangle (a specific text format) to split line spans
         for rect in block['_rects']:
-
             the_rect = fitz.Rect(*rect['bbox'])
-
             for line in block['lines']:
                 # any intersection in this line?
                 line_rect = fitz.Rect(*line['bbox'])
@@ -337,14 +439,14 @@ def _parse_text_format(layout, words, **kwargs):
                 split_spans = []
                 for span in line['spans']: 
                     # split span with the intersection: span-intersection-span
-                    tmp_span = _split_span_with_rect(span, rect, words)
+                    tmp_span = _split_span_with_rect(span, rect)
                     split_spans.extend(tmp_span)
                                                    
                 # update line spans                
                 line['spans'] = split_spans
 
 
-def _split_span_with_rect(span, rect, words):
+def _split_span_with_rect(span, rect):
     '''split span with the intersection: span-intersection-span'''
 
     # split spans
@@ -379,10 +481,8 @@ def _split_span_with_rect(span, rect, words):
             # split_span['bbox'][2] -> intsec.x0
             split_span['bbox'] = (span_rect.x0, span_rect.y0, intsec.x0, span_rect.y1)
 
-            # update text: invalid span if text is empty
-            text = _text_in_rect(words, split_span['bbox'])
-            if text:
-                split_span['text'] = text + ' '
+            # update text
+            if _update_span_text(split_span, span):
                 split_spans.append(split_span)
 
         # middle part: intersection part
@@ -390,10 +490,8 @@ def _split_span_with_rect(span, rect, words):
             split_span = copy.deepcopy(span)            
             split_span['bbox'] = (intsec.x0, intsec.y0, intsec.x1, intsec.y1)
 
-            # update text: invalid span if text is empty
-            text = _text_in_rect(words, split_span['bbox'])
-            if text:
-                split_span['text'] = text + ' '
+            # update text
+            if _update_span_text(split_span, span):
                 # add new style
                 new_style = util.rect_to_style(rect, split_span['bbox'])
                 if new_style:
@@ -402,7 +500,7 @@ def _split_span_with_rect(span, rect, words):
                     else:
                         split_span['style'] = [new_style]
 
-                split_spans.append(split_span)
+                split_spans.append(split_span)                
 
         # right part if exists
         if intsec.x1 < span_rect.x1:
@@ -411,32 +509,32 @@ def _split_span_with_rect(span, rect, words):
             # split_span['bbox'][0] -> intsec.x1
             split_span['bbox'] = (intsec.x1, span_rect.y0, span_rect.x1, span_rect.y1)
 
-            # update text: invalid span if text is empty
-            text = _text_in_rect(words, split_span['bbox'])
-            if text:
-                split_span['text'] = text + ' '
+            # update text
+            if _update_span_text(split_span, span):
                 split_spans.append(split_span)
 
     return split_spans
  
 
 
-def _text_in_rect(words, rect):
-    '''get text within rect, refer to:
-       https://github.com/pymupdf/PyMuPDF-Utilities/blob/master/examples/textboxtract.py
+def _update_span_text(new_span, span):
+    '''get text within specified rect by checking bbox of char
     '''
-    if isinstance(rect, (tuple, list)):
-        rect = fitz.Rect(rect)
+    # bbox of new span
+    rect = fitz.Rect(new_span['bbox'])
 
-    # words in rect
-    f = lambda word: util.is_word_in_rect(word, rect)
-    mywords = list(filter(f, words))
+    # chars in new span rect
+    f = lambda char: fitz.Rect(char['bbox']) in rect
+    chars = list(filter(f, span['chars']))
+    
+    # skip if no chars found
+    if not chars: return False
 
-    # sort by y1, x0 of the word rect
-    mywords.sort(key=itemgetter(3, 0))
-    texts = [w[4] for w in mywords]
+    # else update new span
+    new_span['chars'] = chars
+    new_span['text'] = ''.join([char['c'] for char in chars])
 
-    return ' '.join(texts)
+    return True
 
 
 
