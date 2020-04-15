@@ -249,8 +249,7 @@ def _new_page_with_margin(doc, layout, title):
     ''' insert a new page and plot margin borders'''
     # insert a new page
     w, h = layout['width'], layout['height']
-    doc.insertPage(-1, width=w, height=h)
-    page = doc[-1]
+    page = doc.newPage(width=w, height=h)
     
     # plot page margin
     red = util.getColor('red')
