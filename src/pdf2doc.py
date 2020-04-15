@@ -46,7 +46,6 @@ class Reader:
         # which are different from PDF comments like highlight, rectangle.
         for xref in page._getContents():
             page_content = self._doc._getXrefStream(xref).decode()
-            print(page_content)
             rects = PDFProcessor.rects_from_source(page_content, height)
             res.extend(rects)
         

@@ -146,17 +146,39 @@ def rects_from_source(xref_stream, height):
            - under line of text
            - highlight area of text
 
-        Refer to https://github.com/pymupdf/PyMuPDF/issues/263,
+        --------
+        
+        Refer to:
+        - Appendix A from PDF reference for associated operators:
+          https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdf_reference_archive/pdf_reference_1-7.pdf
+        - https://github.com/pymupdf/PyMuPDF/issues/263
+
         typical mark of rectangle in xref stream:
+            /P<</MCID 0>> BDC
+            ...
+            1 0 0 1 90.0240021 590.380005 cm
+            ...
             1 1 0 rg # or 0 g
+            ...
             285.17 500.11 193.97 13.44 re f*
+            ...
+            EMC
+
         where,
-            - fill color is yellow (1,1,0)
-            - lower left corner: (285.17 500.11)
-            - width: 193.97
-            - height: 13.44
-        or just inherit preceding filling color without `rg`:
-            234.05 484.63 129.74 13.44 re f*
+            - `MCID` indicates a Marked content, where rectangles exist
+            - `cm` specify a coordinate system transformation, 
+               here (0,0) translates to (90.0240021 590.380005)
+            - `q`/`Q` save/restores graphic status
+            - `rg` / `g` specify color mode: rgb / grey
+            - `re`, `f` or `f*`: fill rectangle path with pre-defined color, 
+               in this case,
+                - fill color is yellow (1,1,0)
+                - lower left corner: (285.17 500.11)
+                - width: 193.97
+                - height: 13.44
+
+        Note: coordinates system transformation should be considered if text format
+              is set from PDF file with edit mode. 
 
         return a list of rectangles:
             [{
@@ -167,39 +189,74 @@ def rects_from_source(xref_stream, height):
             ]
     '''
     res = []
+
+    # current working CS is coincident with the absolute origin (0, 0)
+    Ax, Ay = 0, 0
+    Wx, Wy = 0, 0
+
+    # current graphics color is black
+    Ac = util.RGB_value((0, 0, 0))
+    Wc = Ac
+
+    # check xref stream word by word (line always changes)    
+    begin_text_setting = False    
     lines = xref_stream.split()
-    
-    current_color = 0
     for (i, line) in enumerate(lines):
+        # skip any lines between `BT` and `ET`, 
+        # since text seeting has no effects on shape        
+        if line=='BT':  # begin text
+            begin_text_setting = True
+       
+        elif line=='ET': # end text
+            begin_text_setting = False
 
-        if line!='re' or lines[i+1] not in ('f', 'f*'): continue
+        if begin_text_setting:
+            continue        
 
-        # bbox with (0,0) at lower left corner of the page
-        # four elements before this line
-        x, y, w, h = map(float, lines[i-4:i])
-        x0 = x
-        y0 = y + h
-        x1 = x + w
-        y1 = y
+        # CS transformation
+        if line=='cm':
+            # update working CS
+            Wx += float(lines[i-2])
+            Wy += float(lines[i-1])        
 
-        # check filling color
-        j = i - 5
-        if lines[j]=='g': # 0 g
-            g = float(lines[j-1])
-            c = util.RGB_value((g, g, g))
-        elif lines[j]=='rg': # 1 1 0 rg
-            r, g, b = map(float, lines[j-3:j])
-            c = util.RGB_value((r, g, b))
-        else:
-            # use preceding color
-            c = current_color
-        current_color = c
+        # painting color
+        # gray mode
+        elif line=='g': # 0 g
+            g = float(lines[i-1])
+            Wc = util.RGB_value((g, g, g))
 
-        # add rectangle
-        res.append({
-            'bbox': (x0, height-y0, x1, height-y1), # convert to PyMuPDF coordinates system
-            'color': c
-        })
+        # RGB mode
+        elif line=='rg': # 1 1 0 rg
+            r, g, b = map(float, lines[i-3:i])
+            Wc = util.RGB_value((r, g, b))
+
+        # save or restore graphics state:
+        # only consider transformation and color here
+        elif line=='q': # save
+            Ax, Ay = Wx, Wy
+            Ac = Wc
+            
+        elif line=='Q': # restore
+            Wx, Wy = Ax, Ay
+            Wc = Ac
+
+        # finally, come to the rectangle block
+        elif line=='re' and lines[i+1] in ('f', 'f*'):
+            # (x, y, w, h) before this line
+            x, y, w, h = map(float, lines[i-4:i])
+
+            # change bottom left point to top left,
+            # consider also the working CS
+            x0 = Wx + x
+            y0 = Wy + y + h
+            x1 = x0 + w
+            y1 = Wy + y
+
+            # add rectangle, meanwhile convert bbox to PyMuPDF coordinates system
+            res.append({
+                'bbox': (x0, height-y0, x1, height-y1), 
+                'color': Wc
+            })
         
     return res
 
