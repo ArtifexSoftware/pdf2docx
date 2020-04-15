@@ -25,33 +25,38 @@ class Reader:
             return self._doc[index]
 
     def rects(self, page):
-        '''get shape, especially rectangle from page source
+        ''' Get rectangle shapes from page source and comment annotations.            
+            return a list of rectangles:
+                [{
+                    "bbox": (x0, y0, x1, y1),
+                    "color": sRGB,
+                    'type': None
+                    },
+                    {...}
+                ]
         '''
         res = []
+
         # use page height to convert the default origin from bottom left (PDF)
         # to top right (PyMuPDF)
         height = page.MediaBox.y1
+
+        # get rectangle shapes from page source:
+        # these shapes are generally converted from docx, e.g. highlight, underline,
+        # which are different from PDF comments like highlight, rectangle.
         for xref in page._getContents():
             page_content = self._doc._getXrefStream(xref).decode()
-            rects = PDFProcessor.rectangles(page_content, height)
+            print(page_content)
+            rects = PDFProcessor.rects_from_source(page_content, height)
             res.extend(rects)
         
+        # get annotations(comment shapes) from PDF page: consider highlight, underline, 
+        # strike-through-line only.
+        annots = page.annots()
+        rects = PDFProcessor.rects_from_annots(annots)
+        res.extend(rects)
+
         return res
-
-    def annots(self, page):
-        annot = page.firstAnnot
-
-        print(len(list(page.annots())))
-
-        while annot:
-            if annot.type[0] in (8, 9, 10, 11): # one of the 4 types above
-                rect = annot.rect # this is the rectangle the annot covers
-                # extract the text within that rect ...
-                print(annot.rect)
-            annot = annot.next # None returned after last annot
-        else:
-            print('nothing found')
-
 
     def parse(self, page, debug=False, filename=None):
         ''' parse page layout

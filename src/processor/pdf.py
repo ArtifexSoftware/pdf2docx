@@ -129,14 +129,17 @@ def layout(layout, words, rects, **kwargs):
     # ax = plt.subplot(154)
     # plot_layout(ax, layout, 'merge blocks horizontally')
 
-   
+def rects_from_source(xref_stream, height):
+    ''' Get rectangle shape by parsing page cross reference stream.
 
-
-def rectangles(xref_stream, height):
-    ''' get rectangle shape by parsing page cross reference stream.
+        Note: 
+            these shapes are generally converted from pdf source, e.g. highlight, 
+            underline, which are different from PDF comments shape.
 
         xref_streams:
-            doc._getXrefStream(xref).decode()
+            doc._getXrefStream(xref).decode()        
+        height:
+            page height for coordinate system conversion
         
         The context meaning of rectangle shape may be:
            - strike through line of text
@@ -165,6 +168,7 @@ def rectangles(xref_stream, height):
     '''
     res = []
     lines = xref_stream.split()
+    
     current_color = 0
     for (i, line) in enumerate(lines):
 
@@ -197,6 +201,46 @@ def rectangles(xref_stream, height):
             'color': c
         })
         
+    return res
+
+def rects_from_annots(annots):
+    ''' get annotations(comment shapes) from PDF page
+        Note: 
+            consider highlight, underline, strike-through-line only. 
+
+        annots:
+            a list of PyMuPDF Annot objects        
+    '''
+    res = []
+
+    # map rect type from PyMuPDF
+    # Annotation types:
+    # https://pymupdf.readthedocs.io/en/latest/vars/#annotationtypes    
+    # PDF_ANNOT_HIGHLIGHT 8
+    # PDF_ANNOT_UNDERLINE 9
+    # PDF_ANNOT_SQUIGGLY 10
+    # PDF_ANNOT_STRIKEOUT 11
+    type_map = { 8: 0, 9: 1, 11: 2}
+
+    for annot in annots:
+
+        # consider highlight, underline, strike-through-line only.
+        # e.g. annot.type = (8, 'Highlight')
+        if not annot.type[0] in (8,9,11): 
+            continue
+        
+        # color, e.g. {'stroke': [1.0, 1.0, 0.0], 'fill': []}
+        c = annot.colors.get('stroke', (0,0,0)) # black by default
+
+        # convert rect coordinates
+        rect = annot.rect
+
+        res.append({
+            'type': type_map[annot.type[0]],
+            'bbox': (rect.x0, rect.y0, rect.x1, rect.y1),
+            'color': util.RGB_value(c)
+        })
+
     return res
 
 

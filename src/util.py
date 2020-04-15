@@ -95,6 +95,15 @@ def rect_to_style(rect, span_bbox):
     ''' text style based on the position between rectangle and span
         rect: {'bbox': (,,,), 'color': int}
     '''
+    # if type exists, e.g. rect converted from annotation, 
+    # return it directly
+    if 'type' in rect:
+        return {
+            'type': rect['type'],
+            'color': rect['color']
+        }
+    
+    # otherwise, recognize type based on rect and the span it applying to
     # region height
     h_rect = rect['bbox'][3] - rect['bbox'][1]
     h_span = span_bbox[3] - span_bbox[1]
