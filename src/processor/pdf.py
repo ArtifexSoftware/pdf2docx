@@ -38,7 +38,8 @@ and `table`:
             "flags": 20,
             "font": "MyriadPro-SemiboldCond",
             "color": 14277081,
-            "text": "Adjust Your Headers",
+            "text": "Adjust Your Headers", # joined from chars
+            "chars": [{...}]
             # ----- new items -----
             "style": [{
                 "type": 0, # 0-highlight, 1-underline, 2-strike-through-line
@@ -70,7 +71,7 @@ import copy
 from .. import util
 
 
-def layout(layout, words, rects, **kwargs):
+def layout(layout, rects, **kwargs):
     ''' processed page layout:
             - split block with multi-lines into seperated blocks
             - merge blocks vertically to complete sentence
@@ -78,15 +79,7 @@ def layout(layout, words, rects, **kwargs):
 
         args:
             layout: raw layout data extracted from PDF with
-                ```layout = page.getText('dict')```
-                   
-            words: words with bbox extracted from PDF with
-                ```words = page.getTextWords()```           
-                each word is represented by:
-                (x0, y0, x1, y1, word, bno, lno, wno), where the first 4 
-                entries are the word's rectangle coordinates, the last 3 
-                are just technical info: block number, line number and 
-                word number.
+                ```layout = page.getText('dict')```                   
 
             rects: a list of rectangle shapes extracted from PDF xref_stream,
                 [{'bbox': [float,float,float,float], 'color': int }]
@@ -104,7 +97,7 @@ def layout(layout, words, rects, **kwargs):
     _preprocessing(layout, rects, **kwargs)
 
     # parse text format, e.g. highlight, underline
-    _parse_text_format(layout, words, **kwargs)
+    _parse_text_format(layout, **kwargs)
 
     # original layout
     # ax = plt.subplot(111)
@@ -402,21 +395,32 @@ def _preprocessing(layout, rects, **kwargs):
         key=lambda block: (block['bbox'][1], 
             block['bbox'][0]))
 
-    # assign rectangle shapes to associated block
+    # assign rectangle shapes to associated block;
+    # get span text by joining chars
     for block in layout['blocks']:
+        # skip image
         if block['type']==1: continue
+
+        # assign rectangles
         block['_rects'] = []
         block_rect = fitz.Rect(*block['bbox']) + util.DR # a bit enlarge
         for rect in rects:
-            if block_rect.contains(rect['bbox']):
+            # any intersection?
+            if block_rect.intersects(rect['bbox']):
                 block['_rects'].append(rect)
+
+        # join chars
+        for line in block['lines']:
+            for span in line['spans']:
+                chars = [char['c'] for char in span['chars']]
+                span['text'] = ''.join(chars)
     
     # margin
     layout['margin'] = _page_margin(layout)
 
 
 @_debug_plot('Parse Text Format', True)
-def _parse_text_format(layout, words, **kwargs):
+def _parse_text_format(layout, **kwargs):
     '''parse text format with rectangle style'''
     for block in layout['blocks']:
         if block['type']==1: continue
@@ -424,9 +428,7 @@ def _parse_text_format(layout, words, **kwargs):
 
         # use each rectangle (a specific text format) to split line spans
         for rect in block['_rects']:
-
             the_rect = fitz.Rect(*rect['bbox'])
-
             for line in block['lines']:
                 # any intersection in this line?
                 line_rect = fitz.Rect(*line['bbox'])
@@ -437,14 +439,14 @@ def _parse_text_format(layout, words, **kwargs):
                 split_spans = []
                 for span in line['spans']: 
                     # split span with the intersection: span-intersection-span
-                    tmp_span = _split_span_with_rect(span, rect, words)
+                    tmp_span = _split_span_with_rect(span, rect)
                     split_spans.extend(tmp_span)
                                                    
                 # update line spans                
                 line['spans'] = split_spans
 
 
-def _split_span_with_rect(span, rect, words):
+def _split_span_with_rect(span, rect):
     '''split span with the intersection: span-intersection-span'''
 
     # split spans
@@ -479,10 +481,8 @@ def _split_span_with_rect(span, rect, words):
             # split_span['bbox'][2] -> intsec.x0
             split_span['bbox'] = (span_rect.x0, span_rect.y0, intsec.x0, span_rect.y1)
 
-            # update text: invalid span if text is empty
-            text = _text_in_rect(words, split_span['bbox'])
-            if text:
-                split_span['text'] = text + ' '
+            # update text
+            if _update_span_text(split_span, span):
                 split_spans.append(split_span)
 
         # middle part: intersection part
@@ -490,10 +490,8 @@ def _split_span_with_rect(span, rect, words):
             split_span = copy.deepcopy(span)            
             split_span['bbox'] = (intsec.x0, intsec.y0, intsec.x1, intsec.y1)
 
-            # update text: invalid span if text is empty
-            text = _text_in_rect(words, split_span['bbox'])
-            if text:
-                split_span['text'] = text + ' '
+            # update text
+            if _update_span_text(split_span, span):
                 # add new style
                 new_style = util.rect_to_style(rect, split_span['bbox'])
                 if new_style:
@@ -502,7 +500,7 @@ def _split_span_with_rect(span, rect, words):
                     else:
                         split_span['style'] = [new_style]
 
-                split_spans.append(split_span)
+                split_spans.append(split_span)                
 
         # right part if exists
         if intsec.x1 < span_rect.x1:
@@ -511,32 +509,32 @@ def _split_span_with_rect(span, rect, words):
             # split_span['bbox'][0] -> intsec.x1
             split_span['bbox'] = (intsec.x1, span_rect.y0, span_rect.x1, span_rect.y1)
 
-            # update text: invalid span if text is empty
-            text = _text_in_rect(words, split_span['bbox'])
-            if text:
-                split_span['text'] = text + ' '
+            # update text
+            if _update_span_text(split_span, span):
                 split_spans.append(split_span)
 
     return split_spans
  
 
 
-def _text_in_rect(words, rect):
-    '''get text within rect, refer to:
-       https://github.com/pymupdf/PyMuPDF-Utilities/blob/master/examples/textboxtract.py
+def _update_span_text(new_span, span):
+    '''get text within specified rect by checking bbox of char
     '''
-    if isinstance(rect, (tuple, list)):
-        rect = fitz.Rect(rect)
+    # bbox of new span
+    rect = fitz.Rect(new_span['bbox'])
 
-    # words in rect
-    f = lambda word: util.is_word_in_rect(word, rect)
-    mywords = list(filter(f, words))
+    # chars in new span rect
+    f = lambda char: fitz.Rect(char['bbox']) in rect
+    chars = list(filter(f, span['chars']))
+    
+    # skip if no chars found
+    if not chars: return False
 
-    # sort by y1, x0 of the word rect
-    mywords.sort(key=itemgetter(3, 0))
-    texts = [w[4] for w in mywords]
+    # else update new span
+    new_span['chars'] = chars
+    new_span['text'] = ''.join([char['c'] for char in chars])
 
-    return ' '.join(texts)
+    return True
 
 
 

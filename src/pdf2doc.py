@@ -77,8 +77,7 @@ class Reader:
         }
 
         # page source
-        layout = page.getText('dict')
-        words = page.getTextWords()
+        layout = page.getText('rawdict')
         rects = self.rects(page)
 
         # raw layout, rectangles
@@ -87,7 +86,7 @@ class Reader:
             PDFProcessor.plot_rectangles(doc, layout, rects, 'Recognized Rectangles')
 
         # parse page
-        PDFProcessor.layout(layout, words, rects, **kwargs)
+        PDFProcessor.layout(layout, rects, **kwargs)
 
         # save layout plotting as pdf file
         if debug:
