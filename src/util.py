@@ -63,6 +63,23 @@ def parse_font_name(font_name):
     return font_name
 
 
+def is_char_in_rect(char, rect):
+    ''' whether a char locates in a rect, or
+        they have a intersection larger than a half of the char bbox
+
+        char: a dict with keys bbox
+        rect: fitz.Rect instance
+    '''
+    # char in rect?
+    c_rect = fitz.Rect(char['bbox'])
+    if c_rect in rect:
+        return True
+
+    # intersection?
+    intsec = c_rect & rect
+    return intsec.width > 0.5*c_rect.width
+
+
 def rect_to_style(rect, span_bbox):
     ''' text style based on the position between rectangle and span
         rect: {'bbox': (,,,), 'color': int}

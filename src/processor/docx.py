@@ -85,7 +85,7 @@ def make_page(doc, layout):
             ref_table = None
             # suppose all lines in a block are in same writing direction
             if block['lines'][0]['wmode'] == 0:
-                make_paragraph(doc, block, layout['margin'])
+                make_paragraph(doc, block, width, layout['margin'])
             else:
                 make_vertical_paragraph(doc, block)
         # make table
@@ -93,9 +93,17 @@ def make_page(doc, layout):
             ref_table = make_table(doc, ref_table, block, width, layout['margin'])            
 
 
-def make_paragraph(doc, block, page_margin):
+def make_paragraph(doc, block, width, page_margin):
     '''create paragraph for a text block.
-       join line sets with TAB and set position according to bbox
+       join line sets with TAB and set position according to bbox.
+
+       Generally, a pdf block is a docx paragraph, with block|line as line in paragraph.
+       But without the context, it's not able to recognize a block line as word wrap, or a 
+       separate line instead. A rough rule used here:
+        - block line will be treated as separate line (append `\n`) by default, except
+        - (1) this line and next line are actually in the same line (y-position)
+        - (2) if the rest space of this line can't accommodate even one span of next line, 
+              it's supposed to be normal word wrap.
     '''
     # new paragraph
     lines = block['lines']
@@ -108,15 +116,36 @@ def make_paragraph(doc, block, page_margin):
     pf.space_before = Pt(block.get('before_space', 0.0))
     pf.space_after = Pt(block.get('after_space', 0.0))
 
-    # add text / image: multi-line sets are seperated with TAB
-    for line in lines:
+    # add text / image
+    num = len(lines)
+    for i, line in enumerate(lines):
+        # left indent implemented with tab
         pos = line['bbox'][0]-page_margin[0]
         if pos:
             pf.tab_stops.add_tab_stop(Pt(pos))
             p.add_run('\t')
 
+        # new line by default
+        line_break = True
+
+        # no more lines after last line
+        if i==num-1: 
+            line_break = False
+        
+        # same line in space
+        elif lines[i+1]['bbox'][1]<=line['bbox'][3]:
+            line_break = False
+        
+        else:
+            free_space = width-page_margin[1]-line['bbox'][2]
+            x0, _, x1, _ = lines[i+1]['spans'][0]['bbox']
+            # word wrap if rest space of this line can't accommodate
+            # even one span of next line
+            if x1-x0 >= free_space:
+                line_break = False
+
         # line sets
-        add_line(p, line)
+        add_line(p, line, line_break)
 
     return p
     
@@ -185,7 +214,7 @@ def reset_paragraph_format(p):
     pf.widow_control = True
     return pf
 
-def add_line(paragraph, line):
+def add_line(paragraph, line, break_line=True):
     '''add text/image to a paragraph.       
     '''
     if line['wmode']==2:
@@ -225,6 +254,10 @@ def add_line(paragraph, line):
                     docx_span.font.underline = True
                 elif t==2:
                     docx_span.font.strike = True
+
+        # break line or word wrap?
+        if break_line:
+            paragraph.add_run('\n')
 
 
 def indent_table(table, indent):

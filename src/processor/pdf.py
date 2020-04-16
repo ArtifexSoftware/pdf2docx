@@ -403,7 +403,7 @@ def _preprocessing(layout, rects, **kwargs):
 
         # assign rectangles
         block['_rects'] = []
-        block_rect = fitz.Rect(*block['bbox']) + util.DR # a bit enlarge
+        block_rect = fitz.Rect(block['bbox'])
         for rect in rects:
             # any intersection?
             if block_rect.intersects(rect['bbox']):
@@ -428,17 +428,17 @@ def _parse_text_format(layout, **kwargs):
 
         # use each rectangle (a specific text format) to split line spans
         for rect in block['_rects']:
-            the_rect = fitz.Rect(*rect['bbox'])
+            the_rect = fitz.Rect(rect['bbox'])
             for line in block['lines']:
                 # any intersection in this line?
-                line_rect = fitz.Rect(*line['bbox'])
+                line_rect = fitz.Rect(line['bbox'])
                 intsec = the_rect & ( line_rect + util.DR )
                 if not intsec: continue
 
                 # yes, then try to split the spans in this line
                 split_spans = []
                 for span in line['spans']: 
-                    # split span with the intersection: span-intersection-span
+                    # split span with the format rectangle: span-intersection-span
                     tmp_span = _split_span_with_rect(span, rect)
                     split_spans.extend(tmp_span)
                                                    
@@ -453,9 +453,8 @@ def _split_span_with_rect(span, rect):
     split_spans = []
 
     # any intersection in this span?
-    span_rect = fitz.Rect(*span['bbox'])
-    the_rect = fitz.Rect(*rect['bbox'])
-    # do not enlarge span_rect here to avoid introduce extra intersection
+    span_rect = fitz.Rect(span['bbox'])
+    the_rect = fitz.Rect(rect['bbox'])
     intsec = the_rect & span_rect
 
     # no, then add this span as it is
@@ -472,70 +471,62 @@ def _split_span_with_rect(span, rect):
         intsec.y0 = span_rect.y0
         intsec.y1 = span_rect.y1
 
+        # calculate chars in the format rectangle
+        pos, length = _index_chars_in_rect(span, intsec)
+        pos_end = max(pos+length, 0) # max() is used in case: pos=-1, length=0
+
         # split span with the intersection: span-intersection-span
         # 
         # left part if exists
-        if intsec.x0 > span_rect.x0:
+        if pos > 0:
             split_span = copy.deepcopy(span)
-            # update bbox -> move bottom right corner, i.e.
-            # split_span['bbox'][2] -> intsec.x0
             split_span['bbox'] = (span_rect.x0, span_rect.y0, intsec.x0, span_rect.y1)
+            split_span['chars'] = span['chars'][0:pos]
+            split_span['text'] = span['text'][0:pos]
+            split_spans.append(split_span)
 
-            # update text
-            if _update_span_text(split_span, span):
-                split_spans.append(split_span)
-
-        # middle part: intersection part
-        if intsec.x0 < intsec.x1:
+        # middle intersection part if exists
+        if length > 0:
             split_span = copy.deepcopy(span)            
             split_span['bbox'] = (intsec.x0, intsec.y0, intsec.x1, intsec.y1)
+            split_span['chars'] = span['chars'][pos:pos_end]
+            split_span['text'] = span['text'][pos:pos_end]
 
-            # update text
-            if _update_span_text(split_span, span):
-                # add new style
-                new_style = util.rect_to_style(rect, split_span['bbox'])
-                if new_style:
-                    if 'style' in split_span:
-                        split_span['style'].append(new_style)
-                    else:
-                        split_span['style'] = [new_style]
+            # update style
+            new_style = util.rect_to_style(rect, split_span['bbox'])
+            if new_style:
+                if 'style' in split_span:
+                    split_span['style'].append(new_style)
+                else:
+                    split_span['style'] = [new_style]
 
-                split_spans.append(split_span)                
+            split_spans.append(split_span)                
 
         # right part if exists
-        if intsec.x1 < span_rect.x1:
+        if pos_end < len(span['chars']):
             split_span = copy.deepcopy(span)
-            # update bbox -> move top left corner, i.e.
-            # split_span['bbox'][0] -> intsec.x1
             split_span['bbox'] = (intsec.x1, span_rect.y0, span_rect.x1, span_rect.y1)
-
-            # update text
-            if _update_span_text(split_span, span):
-                split_spans.append(split_span)
+            split_span['chars'] = span['chars'][pos_end:]
+            split_span['text'] = span['text'][pos_end:]
+            split_spans.append(split_span)
 
     return split_spans
  
 
+def _index_chars_in_rect(span, rect):
+    ''' get the index of span chars in a given rectangle region
 
-def _update_span_text(new_span, span):
-    '''get text within specified rect by checking bbox of char
+        return (start index, length) of span chars
     '''
-    # bbox of new span
-    rect = fitz.Rect(new_span['bbox'])
+    # combine an index with enumerate(), so the second element is the char
+    f = lambda items: util.is_char_in_rect(items[1], rect)
+    index_chars = list(filter(f, enumerate(span['chars'])))
 
-    # chars in new span rect
-    f = lambda char: fitz.Rect(char['bbox']) in rect
-    chars = list(filter(f, span['chars']))
-    
-    # skip if no chars found
-    if not chars: return False
+    # then we get target chars in a sequence
+    pos = index_chars[0][0] if index_chars else -1 # start index -1 if nothing found
+    length = len(index_chars)
 
-    # else update new span
-    new_span['chars'] = chars
-    new_span['text'] = ''.join([char['c'] for char in chars])
-
-    return True
-
+    return pos, length
 
 
 def _page_margin(layout):
