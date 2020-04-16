@@ -403,7 +403,7 @@ def _preprocessing(layout, rects, **kwargs):
 
         # assign rectangles
         block['_rects'] = []
-        block_rect = fitz.Rect(*block['bbox']) + util.DR # a bit enlarge
+        block_rect = fitz.Rect(block['bbox'])
         for rect in rects:
             # any intersection?
             if block_rect.intersects(rect['bbox']):
@@ -428,10 +428,10 @@ def _parse_text_format(layout, **kwargs):
 
         # use each rectangle (a specific text format) to split line spans
         for rect in block['_rects']:
-            the_rect = fitz.Rect(*rect['bbox'])
+            the_rect = fitz.Rect(rect['bbox'])
             for line in block['lines']:
                 # any intersection in this line?
-                line_rect = fitz.Rect(*line['bbox'])
+                line_rect = fitz.Rect(line['bbox'])
                 intsec = the_rect & ( line_rect + util.DR )
                 if not intsec: continue
 
@@ -453,8 +453,8 @@ def _split_span_with_rect(span, rect):
     split_spans = []
 
     # any intersection in this span?
-    span_rect = fitz.Rect(*span['bbox'])
-    the_rect = fitz.Rect(*rect['bbox'])
+    span_rect = fitz.Rect(span['bbox'])
+    the_rect = fitz.Rect(rect['bbox'])
     # do not enlarge span_rect here to avoid introduce extra intersection
     intsec = the_rect & span_rect
 
@@ -523,8 +523,8 @@ def _update_span_text(new_span, span):
     # bbox of new span
     rect = fitz.Rect(new_span['bbox'])
 
-    # chars in new span rect
-    f = lambda char: fitz.Rect(char['bbox']) in rect
+    # chars in new span rect, or with intersection larger than a half of the char bbox
+    f = lambda char: util.is_char_in_rect(char, rect)
     chars = list(filter(f, span['chars']))
     
     # skip if no chars found
