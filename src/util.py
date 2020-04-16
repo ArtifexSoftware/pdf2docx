@@ -80,8 +80,6 @@ def is_char_in_rect(char, rect):
     return intsec.width > 0.5*c_rect.width
 
 
-
-
 def rect_to_style(rect, span_bbox):
     ''' text style based on the position between rectangle and span
         rect: {'bbox': (,,,), 'color': int}
