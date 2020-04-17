@@ -35,7 +35,8 @@ if __name__ == '__main__':
                 block.pop('image')
             else:
                 for line in block['lines']:
-                    if 'image' in line: line.pop('image')
+                    for span in line['spans']:
+                        if 'image' in span: span.pop('image')
 
         with open(os.path.join(output, 'raw.json'), 'w', encoding='utf-8') as f:
             f.write(json.dumps(layout))

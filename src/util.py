@@ -149,7 +149,7 @@ def is_start_sentence(text):
     else:
         return not text[0].islower() # conservatively
 
-def is_vertical_aligned(bbox1, bbox2, horizontal=True, factor=0.5):
+def is_vertical_aligned(bbox1, bbox2, horizontal=True, factor=0.0):
     '''check whether two boxes have enough intersection in vertical direction.
        vertical direction is perpendicular to reading direction
 
@@ -168,6 +168,6 @@ def is_vertical_aligned(bbox1, bbox2, horizontal=True, factor=0.5):
     return L1+L2-L>factor*min(L1,L2)
 
 
-def is_horizontal_aligned(bbox1, bbox2, horizontal=True):
+def is_horizontal_aligned(bbox1, bbox2, horizontal=True, factor=0.0):
     '''it is opposite to vertical align situation'''
-    return is_vertical_aligned(bbox1, bbox2, not horizontal)
+    return is_vertical_aligned(bbox1, bbox2, not horizontal, factor)

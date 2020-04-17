@@ -51,8 +51,12 @@ and `table`:
 - image block
     Normal image block defined in PyMuPDF: 
         { "type": 1, "bbox": [], "ext": "png", "image": , ...}
+
     Inline image has a same structure, but will be merged into associated text 
-    block: an image line (not a real line in space). 
+    block: a span in block line.
+
+    So, an image structure may exist in block or line span. The key `image` is 
+    used to distinguish image type.
 
 - list block
 
@@ -98,28 +102,7 @@ def layout(layout, rects, **kwargs):
     # parse text format, e.g. highlight, underline
     _parse_text_format(layout, **kwargs)
 
-    # original layout
-    # ax = plt.subplot(111)
-    # plot_layout(ax, layout, 'raw')
     
-
-    # # split blocks
-    # layout = _split_blocks(layout)
-    # ax = plt.subplot(152)
-    # plot_layout(ax, layout, 'split blocks')
-
-    # detect table here
-    # TODO
-
-    # # merge blocks vertically
-    # layout = _merge_vertical_blocks(layout)
-    # ax = plt.subplot(153)
-    # plot_layout(ax, layout, 'merge blocks vertically')
-
-    # # merge blocks horizontally
-    # layout = _merge_horizontal_blocks(layout)
-    # ax = plt.subplot(154)
-    # plot_layout(ax, layout, 'merge blocks horizontally')
 
 def rects_from_source(xref_stream, height):
     ''' Get rectangle shape by parsing page cross reference stream.
@@ -421,7 +404,8 @@ def _preprocessing(layout, rects, **kwargs):
     
 @_debug_plot('Merged inline images', True)
 def _merge_inline_images(layout, **kwargs):
-    ''' merge inline image blocks into text block: an image line.
+    ''' merge inline image blocks into text block: 
+        a block line or a line span.
     '''
     # get all images blocks with index
     f = lambda item: item[1]['type']==1
@@ -440,17 +424,24 @@ def _merge_inline_images(layout, **kwargs):
         if len(index_inline)==num: break
 
         # check all images for current block
+        image_merged = False
         for i, image in index_images:
             # an inline image belongs to only one block
             if i in index_inline: continue
 
-            # any intersection (at least ) with current text block?
+            # horizontally aligned with current text block?
             # no, pass
-            if not fitz.Rect(block['bbox']).intersects(image['bbox']): continue
+            if not util.is_horizontal_aligned(block['bbox'], image['bbox']): continue
 
             # yes, inline image
+            image_merged = True
             index_inline.append(i)
             _insert_image_to_block(image, block)
+
+        # if current block get images merged as new line,
+        # go further step here: merge image into span if necessary
+        if image_merged:
+            _merge_lines_in_block(block)
 
     # remove inline images from top layout
     # the index of element in original list changes when any elements are removed
@@ -629,234 +620,53 @@ def _insert_image_to_block(image, block):
     else:
         i = 0
 
-    # insert image line
-    block['lines'].insert(i, image)
+    # insert image as a line in block, 
+    # and waiting for further step: merge image into span as necessary
+    image_line = {
+        "wmode": 0,
+        "dir"  : (1, 0),
+        "bbox" : image['bbox'],
+        "spans": [image]
+        }
+    block['lines'].insert(i, image_line)
+
+    # update bbox accordingly
+    x0 = min(block['bbox'][0], image['bbox'][0])
+    y0 = min(block['bbox'][1], image['bbox'][1])
+    x1 = max(block['bbox'][2], image['bbox'][2])
+    y1 = max(block['bbox'][3], image['bbox'][3])
+    block['bbox'] = (x0, y0, x1, y1)
 
 
-# -------------------deprecated----------------------
-
-def _split_blocks(layout):
-    '''split block with multi-lines into single line block, which will be used to 
-       merge block in next step. Besides, remove duplicated blocks.
-
-       args:
-            layout: raw layout data
-
-       notes:
-           for image block, it is converted from original data format to a
-           similar text block format:
-           raw image block: 
-                    {'type':1, 'bbox', 'width', 'height', 'ext', 'image'} 
-           converted text block: 
-                    {'type':0, 'bbox', 'lines': [
-                'wmode':2, 'dir', 'bbox', 'width', 'height', 'ext', 'image']}
+def _merge_lines_in_block(block):
+    ''' Merge lines aligned horizontally in a block.
+        Generally, it is performed when inline image is added into block line.
     '''
-    blocks, ref = [], None
-    for block in layout['blocks']:
-
-        # check duplication
-        if ref and ref['bbox']==block['bbox']:
+    new_lines = []
+    for line in block['lines']:        
+        # add line directly if not aligned horizontally with previous line
+        if not new_lines or not util.is_horizontal_aligned(line['bbox'], new_lines[-1]['bbox']):
+            new_lines.append(line)
             continue
 
-        # image block: convert to text block format
-        if block['type']==1:
-            block['type'] = 0 # treat as normal block
-            block['lines'] = [{
-                'wmode': 2, # 0 text, 1 bullet, 2 image
-                'dir': (1.0, 0.0),
-                'bbox': block['bbox'],
-                'width': block['width'],
-                'height': block['height'],
-                'ext': block['ext'],
-                'image': block['image']
-            }]
-            block.pop('image')
-
-        # split text blocks
-        else: 
-            lines = block['lines']
-
-            # convert each line to a block
-            for line in lines:
-                split_block = {
-                    'type': block['type'],
-                    'bbox': line['bbox'],
-                    'lines': [line]
-                }
-
-                blocks.append(split_block)
-
-        # update reference block
-        ref = block
-
-    layout['blocks'] = blocks
-    return layout
-
-def _merge_vertical_blocks(layout):
-    '''a sentence may be seperated in different blocks, so this step is to merge them back.
-
-       merging conditions:
-        - previous line is not the end and current line is not the begin
-        - two lines should be in same font and size
-        - skip if current line is a bullet item / image
-        - suppose paragraph margin is larger than line margin
-        - remove overlap/duplicated blocks
-    '''
-
-    blocks = layout['blocks']
-    merged_blocks = []
-    ref = None # previous merged block
-    ref_line_space = 0.0 # line space for the recently merged blocks
-
-    for block in blocks:
-        merged = False
-
-        if not ref:
-            merged_blocks.append(block)
-
-        # ignore image/bullet line
-        elif ref['lines'][0]['wmode']==2 or block['lines'][0]['wmode']!=0:
-            merged_blocks.append(block)
-
-        else:
-            dy = block['bbox'][1]-ref['bbox'][3] # line space
-            h = ref['bbox'][3]-ref['bbox'][1] # previous blcok height
-            span1 = ref['lines'][0]['spans']
-            span2 = block['lines'][0]['spans']
-
-            # ignore empty lines
-            if not ref['lines'][0]['spans']['text'].strip() or not block['lines'][0]['spans']['text'].strip():
-                merged_blocks.append(block)
-
-            # ignore blocks not aligned in vertical direction
-            elif not util.is_vertical_aligned(ref['bbox'], block['bbox']):
-                merged_blocks.append(block)        
-
-            # ignore abnormal line space:
-            # (a) line space is larger than height of previous block
-            elif dy>h:
-                merged_blocks.append(block)
-
-            # (b) current line space is different from line space of recently merged blocks
-            elif ref_line_space and abs(dy-ref_line_space)>=util.DM:
-                merged_blocks.append(block)
-            
-            # ignore abnormal font
-            elif span1['font']!=span2['font'] or span1['size']!=span2['size']: 
-                merged_blocks.append(block)
-
-            # ignore if sentence completeness is not satisfied
-            elif util.is_end_sentence(span1['text']) or util.is_start_sentence(span2['text']):
-                merged_blocks.append(block)
-
-            # finally, it could be merged
-            else:
-                merged = True
-                # combine block to ref
-                left = min(block['bbox'][0], ref['bbox'][0])
-                right = max(block['bbox'][2], ref['bbox'][2])
-                top = min(block['bbox'][1], ref['bbox'][1])
-                bottom = max(block['bbox'][3], ref['bbox'][3])
-                merged_blocks[-1]['bbox'] = (left, top, right, bottom)
-                merged_blocks[-1]['lines'][0]['bbox'] = (left, top, right, bottom)
-                merged_blocks[-1]['lines'][0]['spans']['text'] += block['lines'][0]['spans']['text']
-
-        # update reference line space if merged
-        ref_line_space = dy if merged else 0.0
-
-        # update reference block
-        ref = merged_blocks[-1]
-
-    layout['blocks'] = merged_blocks
-    return layout
-
-def _merge_horizontal_blocks(layout):
-    '''merge associated blocks in same line, which is preceding steps for creating docx.       
-    '''
-
-    # raw layout has been sorted, but after splitting block step, the split blocks may be
-    # in wrong order locally. so re-sort all blocks first in this step.
-    layout['blocks'].sort(key=lambda block: (block['bbox'][1], block['bbox'][0]))
-
-    # group blocks with condition: aligned horizontally
-    grouped_blocks, vertical_blocks = [[]], []
-    iblocks = iter(layout['blocks'])
-    while True:
-        block = next(iblocks, None)
-        if not block: break
-
-        # ignore empty lines after an image
-        line = block['lines'][0]
-        if line['wmode']==0 and not line['spans']['text'].strip(): # empty line
-            # check previous block
-            if grouped_blocks[-1] and grouped_blocks[-1][-1]['lines'][0]['wmode']==2:
-                continue
-
-        # collect vertical blocks directly
-        if block['lines'][0]['dir'] != (1.0,0.0):
-            vertical_blocks.append(block)
+        # if it exists x-distance obviously to previous line,
+        # take it as a separate line as it is
+        if abs(line['bbox'][0]-new_lines[-1]['bbox'][2]) > util.DM:
+            new_lines.append(line)
             continue
 
-        # collect horizontal blocks in a same line
-        for ref in grouped_blocks[-1]:
-            if util.is_horizontal_aligned(ref['bbox'], block['bbox']):
-                flag = True
-                break
-        else:
-            flag = False
+        # now, this line will be append to previous line as a span
+        new_lines[-1]['spans'].extend(line['spans'])
 
-        if flag:
-            grouped_blocks[-1].append(block)
-        else:
-            grouped_blocks.append([block])
-
-    # combine blocks
-    merged_blocks = vertical_blocks # do not have to merge vertical blocks
-    for blocks in grouped_blocks[1:]: # skip the first [] when initialize grouped_blocks 
         # update bbox
-        left = min(map(lambda x: x['bbox'][0], blocks))
-        top = min(map(lambda x: x['bbox'][1], blocks))
-        right = max(map(lambda x: x['bbox'][2], blocks))
-        bottom = max(map(lambda x: x['bbox'][3], blocks))
+        new_lines[-1]['bbox'] = (
+            new_lines[-1]['bbox'][0],
+            min(new_lines[-1]['bbox'][1], line['bbox'][1]),
+            line['bbox'][2],
+            max(new_lines[-1]['bbox'][3], line['bbox'][3])
+            )
 
-        # merged block if there is no overlap between two adjacent blocks
-        bbox_pre_block = merged_blocks[-1]['bbox'] if merged_blocks else [0.0]*4
-        if abs(left-bbox_pre_block[0])>util.DM or abs(top-bbox_pre_block[1])>util.DM:
-            merged_block = {
-                'type': 0,
-                'bbox': (left, top, right, bottom),
-                'lines': list(map(lambda block:block['lines'][0], blocks))
-            }
-            merged_block['type'] = __block_type(merged_block)
-            merged_blocks.append(merged_block)
-
-    layout['blocks'] = merged_blocks
-    return layout
-
-def __block_type(block, factor=0.5):
-    ''' type of the block:
-        - paragraph (0): one line block or multi-line sets in a single word line
-        - table(1): otherwise
-    '''
-
-    lines = block['lines']
-
-    if len(lines)==1:
-        return 0
-    else:
-        # multi-line sets aligned in one line:
-        # the factor of minimum line height to block height should lower than a threshold
-        line_height = min(map(lambda line: line['spans']['size'], lines))
-        block_height = block['bbox'][3] - block['bbox'][1]
-
-        return 0 if line_height/block_height > factor else 1
+    # update lines in block
+    block['lines'] = new_lines
 
 
-def __process_line(span):
-    '''combine text in lines to a complete sentence'''
-    text = span['text'].strip()
-    if text.endswith(('‐', '-')): # these two '-' are not same
-        text = text[0:-1]
-    else:
-        text += ' '
-    return text

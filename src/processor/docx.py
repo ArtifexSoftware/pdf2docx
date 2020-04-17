@@ -42,8 +42,8 @@ def make_page(doc, layout):
     # besides, set before-space also if previous block is table.
     blocks = layout['blocks']
     num = len(blocks)
-    for i,block in enumerate(blocks):
-        # find next block in normal reading direction, e.g.
+    for i, block in enumerate(blocks):
+        # find next block in normal reading direction, i.e.
         # skip text block in vertical direction
         for j in range(i+1, num):
             next_block = blocks[j]
@@ -145,33 +145,24 @@ def make_paragraph(doc, block, width, page_margin):
             if line==block['lines'][-1]: 
                 line_break = False
             
-            # same line in space
+            # different lines in space: y0 of next line should be larger than y1 of current line,
+            # otherwise, they are in same line, then don't break the line
             elif block['lines'][i+1]['bbox'][1]<=line['bbox'][3]:
                 line_break = False
             
+            # now, we have two lines, check whether word wrap or line break
             else:
-                free_space = width-page_margin[1]-line['bbox'][2]
-
-                # the next is a inline image
-                if 'image' in block['lines'][i+1]:
-                    x0, _, x1, _ = block['lines'][i+1]['bbox']
-                # the next is a text line
-                else:
-                    x0, _, x1, _ = block['lines'][i+1]['spans'][0]['bbox']
+                # bbox of first span in next line
+                x0, _, x1, _ = block['lines'][i+1]['spans'][0]['bbox']
                 # word wrap if rest space of this line can't accommodate
                 # even one span of next line
+                free_space = width-page_margin[1]-line['bbox'][2]
                 if x1-x0 >= free_space:
                     line_break = False
 
-            # add image line
-            if 'image' in line:
-                image_line = p.add_run()
-                image_line.add_picture(BytesIO(line['image']), width=Pt(line['bbox'][2]-line['bbox'][0]))
-
-            # add text line
-            else:
-                for span in line['spans']:
-                    add_text_span(span, p, line_break)
+            # add line
+            for span in line['spans']:
+                add_span(span, p, line_break)
     return p
     
 
@@ -228,6 +219,7 @@ def make_table(doc, table, block, page_width, page_margin):
 
     return table
 
+
 def reset_paragraph_format(p):
     '''paragraph format'''
     pf = p.paragraph_format
@@ -239,37 +231,45 @@ def reset_paragraph_format(p):
     pf.widow_control = True
     return pf
 
-def add_text_span(span, paragraph, break_line=True):
+
+def add_span(span, paragraph, break_line=True):
     '''add text span to a paragraph.       
     '''
-    text_span = paragraph.add_run(span['text'])
+    # inline image span
+    if 'image' in span:
+        image_span = paragraph.add_run()
+        image_span.add_picture(BytesIO(span['image']), width=Pt(span['bbox'][2]-span['bbox'][0]))
 
-    # style setting
-    # https://python-docx.readthedocs.io/en/latest/api/text.html#docx.text.run.Font
+    # text span
+    else:
+        text_span = paragraph.add_run(span['text'])
 
-    # basic font style
-    # line['flags'] is an integer, encoding bool of font properties:
-    # bit 0: superscripted (2^0)
-    # bit 1: italic (2^1)
-    # bit 2: serifed (2^2)
-    # bit 3: monospaced (2^3)
-    # bit 4: bold (2^4)            
-    text_span.italic = bool(span['flags'] & 2**1)
-    text_span.bold = bool(span['flags'] & 2**4)
-    text_span.font.name = util.parse_font_name(span['font'])
-    text_span.font.size = Pt(span['size'])
-    text_span.font.color.rgb = RGBColor(*util.RGB_component(span['color']))
+        # style setting
+        # https://python-docx.readthedocs.io/en/latest/api/text.html#docx.text.run.Font
 
-    # font style parsed from PDF rectangles: 
-    # e.g. highlight, underline, strike-through-line
-    for style in span.get('style', []):
-        t = style['type']
-        if t==0:
-            text_span.font.highlight_color = util.to_Highlight_color(style['color'])
-        elif t==1:
-            text_span.font.underline = True
-        elif t==2:
-            text_span.font.strike = True
+        # basic font style
+        # line['flags'] is an integer, encoding bool of font properties:
+        # bit 0: superscripted (2^0)
+        # bit 1: italic (2^1)
+        # bit 2: serifed (2^2)
+        # bit 3: monospaced (2^3)
+        # bit 4: bold (2^4)            
+        text_span.italic = bool(span['flags'] & 2**1)
+        text_span.bold = bool(span['flags'] & 2**4)
+        text_span.font.name = util.parse_font_name(span['font'])
+        text_span.font.size = Pt(span['size'])
+        text_span.font.color.rgb = RGBColor(*util.RGB_component(span['color']))
+
+        # font style parsed from PDF rectangles: 
+        # e.g. highlight, underline, strike-through-line
+        for style in span.get('style', []):
+            t = style['type']
+            if t==0:
+                text_span.font.highlight_color = util.to_Highlight_color(style['color'])
+            elif t==1:
+                text_span.font.underline = True
+            elif t==2:
+                text_span.font.strike = True
 
     # break line or word wrap?
     if break_line:
