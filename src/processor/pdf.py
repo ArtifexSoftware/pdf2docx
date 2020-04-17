@@ -34,6 +34,7 @@ and `table`:
     the `span`-s in `line` are re-grouped with styles, and more keys are 
     added to the original structure of `span`.
         {
+            "bbox": [,,,]
             "size": 15.770000457763672,
             "flags": 20,
             "font": "MyriadPro-SemiboldCond",
@@ -45,18 +46,13 @@ and `table`:
                 "type": 0, # 0-highlight, 1-underline, 2-strike-through-line
                 "color": 14277081
                 }, {...}]            
-          }
+        }
 
 - image block
-    {
-      "type": 1,
-      "bbox": [72.0,62.310791015625,175.2935028076172,81.2032470703125],
-      "ext": "png",
-      "width": ,
-      "height": '
-      "image": ,
-      ...
-    }
+    Normal image block defined in PyMuPDF: 
+        { "type": 1, "bbox": [], "ext": "png", "image": , ...}
+    Inline image has a same structure, but will be merged into associated text 
+    block: an image line (not a real line in space). 
 
 - list block
 
@@ -93,8 +89,11 @@ def layout(layout, rects, **kwargs):
     '''
 
     # preprocessing, e.g. change block order, clean negative block, 
-    # update rectangle reference point
+    # get span text by joining chars
     _preprocessing(layout, rects, **kwargs)
+
+    # check inline images
+    _merge_inline_images(layout, **kwargs)
 
     # parse text format, e.g. highlight, underline
     _parse_text_format(layout, **kwargs)
@@ -293,7 +292,6 @@ def rects_from_annots(annots):
 
     return res
 
-
 def plot_layout(doc, layout, title):
     '''plot layout with PyMuPDF
        doc: fitz document object
@@ -306,15 +304,19 @@ def plot_layout(doc, layout, title):
         # block border
         blue = util.getColor('blue')
         r = fitz.Rect(block['bbox'])
-        page.drawRect(r, color=blue, fill=None, overlay=False)
+        page.drawRect(r, color=blue, fill=None, width=0.5, overlay=False)
 
-        # spans in current block
-        for line in block.get('lines', []): # TODO: other types, e.g. image, list, table
+        # spans in same line show same color
+        for line in block.get('lines', []): # TODO: other types, e.g. image, list, table            
+            red = util.getColor('red')
+            r = fitz.Rect(line['bbox'])
+            page.drawRect(r, color=red, fill=None, overlay=False)
+
+            # spans in current block
             for span in line.get('spans', []):
-                c = util.getColor() # random color
+                c = util.getColor('')
                 r = fitz.Rect(span['bbox'])
                 page.drawRect(r, color=c, fill=c, overlay=False)
-
 
 def plot_rectangles(doc, layout, rects, title):
     ''' plot rectangles with PyMuPDF
@@ -334,7 +336,6 @@ def plot_rectangles(doc, layout, rects, title):
         c = util.RGB_component(rect['color'])
         c = [_/255.0 for _ in c]
         page.drawRect(rect['bbox'], color=c, fill=c, overlay=False)
-
 
 
 # ---------------------------------------------
@@ -381,7 +382,7 @@ def _debug_plot(title, plot=True):
     return wrapper
 
 
-@_debug_plot('Preprocessing', True)
+@_debug_plot('Preprocessed', True)
 def _preprocessing(layout, rects, **kwargs):
     '''preprocessing for the raw layout of PDF page'''
     # remove blocks exceeds page region: negative bbox
@@ -394,6 +395,9 @@ def _preprocessing(layout, rects, **kwargs):
     layout['blocks'].sort(
         key=lambda block: (block['bbox'][1], 
             block['bbox'][0]))
+
+    # calculate page margin
+    layout['margin'] = _page_margin(layout)
 
     # assign rectangle shapes to associated block;
     # get span text by joining chars
@@ -415,11 +419,46 @@ def _preprocessing(layout, rects, **kwargs):
                 chars = [char['c'] for char in span['chars']]
                 span['text'] = ''.join(chars)
     
-    # margin
-    layout['margin'] = _page_margin(layout)
+@_debug_plot('Merged inline images', True)
+def _merge_inline_images(layout, **kwargs):
+    ''' merge inline image blocks into text block: an image line.
+    '''
+    # get all images blocks with index
+    f = lambda item: item[1]['type']==1
+    index_images = list(filter(f, enumerate(layout['blocks'])))
 
+    # get index of inline images: intersected with text block
+    # assumption: an inline image intersects with only one text block
+    index_inline = []
+    num = len(index_images)
+    for block in layout['blocks']:
 
-@_debug_plot('Parse Text Format', True)
+        # suppose no overlap between two images
+        if block['type']==1: continue
+
+        # all images found their block, then quit
+        if len(index_inline)==num: break
+
+        # check all images for current block
+        for i, image in index_images:
+            # an inline image belongs to only one block
+            if i in index_inline: continue
+
+            # any intersection (at least ) with current text block?
+            # no, pass
+            if not fitz.Rect(block['bbox']).intersects(image['bbox']): continue
+
+            # yes, inline image
+            index_inline.append(i)
+            _insert_image_to_block(image, block)
+
+    # remove inline images from top layout
+    # the index of element in original list changes when any elements are removed
+    # so try to 
+    for i in index_inline[::-1]:
+        layout['blocks'].pop(i)
+
+@_debug_plot('Parsed Text Format', True)
 def _parse_text_format(layout, **kwargs):
     '''parse text format with rectangle style'''
     for block in layout['blocks']:
@@ -579,7 +618,22 @@ def _page_margin(layout):
     return left, right, top, min(util.ITP, bottom)
 
 
+def _insert_image_to_block(image, block):
+    '''insert inline image to associated block'''
+    image_rect = fitz.Rect(image['bbox'])
 
+    # get the insetting position
+    for i,line in enumerate(block['lines']):
+        if image_rect.x0 < line['bbox'][0]:
+            break
+    else:
+        i = 0
+
+    # insert image line
+    block['lines'].insert(i, image)
+
+
+# -------------------deprecated----------------------
 
 def _split_blocks(layout):
     '''split block with multi-lines into single line block, which will be used to 

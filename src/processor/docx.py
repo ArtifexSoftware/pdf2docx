@@ -38,15 +38,16 @@ def make_page(doc, layout):
        considered as 'paragraph' before making page.
     '''
 
-    # calculate after-space of paragraph block, set before-space also if previous block is table.
-    # besides, mark seperated table blocks as 'paragraph'
+    # calculate after-space of paragraph block, 
+    # besides, set before-space also if previous block is table.
     blocks = layout['blocks']
     num = len(blocks)
     for i,block in enumerate(blocks):
-        # find next block in normal reading direction
+        # find next block in normal reading direction, e.g.
+        # skip text block in vertical direction
         for j in range(i+1, num):
             next_block = blocks[j]
-            if next_block['lines'][0]['dir']==(1.0, 0.0):
+            if next_block['type']!=0 or next_block['lines'][0]['dir']==(1.0, 0.0):
                 break
         else:
             continue
@@ -81,13 +82,16 @@ def make_page(doc, layout):
     ref_table = None
     for block in blocks:
         # make paragraphs
-        if block['type']==0:
+        if block['type'] in (0, 1):
             ref_table = None
-            # suppose all lines in a block are in same writing direction
-            if block['lines'][0]['wmode'] == 0:
+            # horizontal paragraph
+            if block['type']==1 or block['lines'][0]['wmode'] == 0:
                 make_paragraph(doc, block, width, layout['margin'])
+            
+            # vertical paragraph
             else:
                 make_vertical_paragraph(doc, block)
+        
         # make table
         else:
             ref_table = make_table(doc, ref_table, block, width, layout['margin'])            
@@ -105,48 +109,69 @@ def make_paragraph(doc, block, width, page_margin):
         - (2) if the rest space of this line can't accommodate even one span of next line, 
               it's supposed to be normal word wrap.
     '''
-    # new paragraph
-    lines = block['lines']
+    # new paragraph    
     p = doc.add_paragraph()
-    if lines[0]['wmode']==1:
-        p.style = 'List Bullet'
 
     # indent and space setting
     pf = reset_paragraph_format(p)
     pf.space_before = Pt(block.get('before_space', 0.0))
     pf.space_after = Pt(block.get('after_space', 0.0))
 
-    # add text / image
-    num = len(lines)
-    for i, line in enumerate(lines):
+    # add image
+    if block['type']==1:
         # left indent implemented with tab
-        pos = line['bbox'][0]-page_margin[0]
-        if pos:
+        pos = block['bbox'][0]-page_margin[0]
+        if abs(pos) > util.DM:
             pf.tab_stops.add_tab_stop(Pt(pos))
-            p.add_run('\t')
+            p.add_run().add_tab()
+        # create image with bytes data stored in block.
+        span = p.add_run()
+        span.add_picture(BytesIO(block['image']), width=Pt(block['bbox'][2]-block['bbox'][0]))
 
-        # new line by default
-        line_break = True
+    # add text (inline image may exist)
+    else:
+        for i, line in enumerate(block['lines']):
 
-        # no more lines after last line
-        if i==num-1: 
-            line_break = False
-        
-        # same line in space
-        elif lines[i+1]['bbox'][1]<=line['bbox'][3]:
-            line_break = False
-        
-        else:
-            free_space = width-page_margin[1]-line['bbox'][2]
-            x0, _, x1, _ = lines[i+1]['spans'][0]['bbox']
-            # word wrap if rest space of this line can't accommodate
-            # even one span of next line
-            if x1-x0 >= free_space:
+            # left indent implemented with tab
+            pos = line['bbox'][0]-page_margin[0]
+            if abs(pos) > util.DM:
+                pf.tab_stops.add_tab_stop(Pt(pos))
+                p.add_run().add_tab()
+
+            # new line by default
+            line_break = True
+
+            # no more lines after last line
+            if line==block['lines'][-1]: 
                 line_break = False
+            
+            # same line in space
+            elif block['lines'][i+1]['bbox'][1]<=line['bbox'][3]:
+                line_break = False
+            
+            else:
+                free_space = width-page_margin[1]-line['bbox'][2]
 
-        # line sets
-        add_line(p, line, line_break)
+                # the next is a inline image
+                if 'image' in block['lines'][i+1]:
+                    x0, _, x1, _ = block['lines'][i+1]['bbox']
+                # the next is a text line
+                else:
+                    x0, _, x1, _ = block['lines'][i+1]['spans'][0]['bbox']
+                # word wrap if rest space of this line can't accommodate
+                # even one span of next line
+                if x1-x0 >= free_space:
+                    line_break = False
 
+            # add image line
+            if 'image' in line:
+                image_line = p.add_run()
+                image_line.add_picture(BytesIO(line['image']), width=Pt(line['bbox'][2]-line['bbox'][0]))
+
+            # add text line
+            else:
+                for span in line['spans']:
+                    add_text_span(span, p, line_break)
     return p
     
 
@@ -214,50 +239,41 @@ def reset_paragraph_format(p):
     pf.widow_control = True
     return pf
 
-def add_line(paragraph, line, break_line=True):
-    '''add text/image to a paragraph.       
+def add_text_span(span, paragraph, break_line=True):
+    '''add text span to a paragraph.       
     '''
-    if line['wmode']==2:
-        # create image with bytes data stored in block.
-        # we could create a temporary image file first and delete it after inserting to word,
-        # but a file-like stream is supported and it's more convenient
-        span = paragraph.add_run()
-        span.add_picture(BytesIO(line['image']), width=Pt(line['bbox'][2]-line['bbox'][0]))
-    else:
-        for span in line['spans']:
-            # add text
-            docx_span = paragraph.add_run(span['text'])
+    text_span = paragraph.add_run(span['text'])
 
-            # style setting
-            # https://python-docx.readthedocs.io/en/latest/api/text.html#docx.text.run.Font
+    # style setting
+    # https://python-docx.readthedocs.io/en/latest/api/text.html#docx.text.run.Font
 
-            # basic font style
-            # line['flags'] is an integer, encoding bool of font properties:
-            # bit 0: superscripted (2^0)
-            # bit 1: italic (2^1)
-            # bit 2: serifed (2^2)
-            # bit 3: monospaced (2^3)
-            # bit 4: bold (2^4)            
-            docx_span.italic = bool(span['flags'] & 2**1)
-            docx_span.bold = bool(span['flags'] & 2**4)
-            docx_span.font.name = util.parse_font_name(span['font'])
-            docx_span.font.size = Pt(span['size'])
-            docx_span.font.color.rgb = RGBColor(*util.RGB_component(span['color']))
+    # basic font style
+    # line['flags'] is an integer, encoding bool of font properties:
+    # bit 0: superscripted (2^0)
+    # bit 1: italic (2^1)
+    # bit 2: serifed (2^2)
+    # bit 3: monospaced (2^3)
+    # bit 4: bold (2^4)            
+    text_span.italic = bool(span['flags'] & 2**1)
+    text_span.bold = bool(span['flags'] & 2**4)
+    text_span.font.name = util.parse_font_name(span['font'])
+    text_span.font.size = Pt(span['size'])
+    text_span.font.color.rgb = RGBColor(*util.RGB_component(span['color']))
 
-            # font style parsed from PDF rectangles: 
-            # e.g. highlight, underline, strike-through-line
-            for style in span.get('style', []):
-                t = style['type']
-                if t==0:
-                    docx_span.font.highlight_color = util.to_Highlight_color(style['color'])
-                elif t==1:
-                    docx_span.font.underline = True
-                elif t==2:
-                    docx_span.font.strike = True
+    # font style parsed from PDF rectangles: 
+    # e.g. highlight, underline, strike-through-line
+    for style in span.get('style', []):
+        t = style['type']
+        if t==0:
+            text_span.font.highlight_color = util.to_Highlight_color(style['color'])
+        elif t==1:
+            text_span.font.underline = True
+        elif t==2:
+            text_span.font.strike = True
 
-        # break line or word wrap?
-        if break_line:
-            paragraph.add_run('\n')
+    # break line or word wrap?
+    if break_line:
+        paragraph.add_run('\n')
 
 
 def indent_table(table, indent):
