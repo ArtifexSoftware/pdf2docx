@@ -606,7 +606,7 @@ def _page_margin(layout):
     top = min(map(lambda x: x[1], list_bbox))
     bottom = h-max(map(lambda x: x[3], list_bbox))
 
-    return left, right, top, min(util.ITP, bottom)
+    return left, right, min(util.ITP, top), min(util.ITP, bottom)
 
 
 def _insert_image_to_block(image, block):

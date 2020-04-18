@@ -4,17 +4,6 @@ create .docx file based on PDF layout data with python package python-docx.
 @author: train8808@gmail.com
 ---
 
-typical blocks in layout data and associated docx maker method:
-    paragraph block: one or more 'line' sets with region defined with bbox. multi-line sets will be
-                     joined in a paragraph which is seperated with tab stop. the position of tab
-                     stops could be defined according to bbox.
-                     the space after paragraph is defined when processing the next block.
-                     an image line is processed by creating a docx paragraph with bbox defining the indent and space.
-
-    table block    : at least two 'line' sets with region defined with bbox. these lines are grouped
-                     with left border of bbox and inserted into associated cells of a table. in each
-                     cell, the line sets are processed similarly to the lines in paragraph block.
-
 '''
 
 
@@ -30,36 +19,18 @@ from .. import util
 
 
 def make_page(doc, layout):
-    '''create page based on layout data. To avoid incorrect page break from original document,
-       a new page section is created for each page.
+    ''' create page based on layout data. 
 
-       each block has already been marked with 'paragraph' (one line only) or 'table' (multi-
-       horizontally aligned lines) type. Avoid overusing table format, seperated table will be
-       considered as 'paragraph' before making page.
+        To avoid incorrect page break from original document, a new page section
+        is created for each page.
+
+        Support general document style only:
+          - writing mode: from left to right, top to bottom
+          - text direction: horizontal
+
+        The vertical postion of paragraph/table is defined by space_before or 
+        space_after property of a paragraph.
     '''
-
-    # calculate after-space of paragraph block, 
-    # besides, set before-space also if previous block is table.
-    blocks = layout['blocks']
-    num = len(blocks)
-    for i, block in enumerate(blocks):
-        # find next block in normal reading direction, i.e.
-        # skip text block in vertical direction
-        for j in range(i+1, num):
-            next_block = blocks[j]
-            if next_block['type']!=0 or next_block['lines'][0]['dir']==(1.0, 0.0):
-                break
-        else:
-            continue
-
-        # paragraph1 to paragraph2: set after space for paragraph1
-        # table to paragraph: set before space for paragraph
-        space = max(next_block['bbox'][1]-block['bbox'][3], 0.0)
-        if block['type']==0:
-            block['after_space'] = space
-        elif next_block['type']==0:
-            next_block['before_space'] = space
-
     # new page section
     # a default section is created when initialize the document,
     # so we do not have to add section for the first time.
@@ -67,6 +38,7 @@ def make_page(doc, layout):
         section = doc.sections[0]
     else:
         section = doc.add_section(WD_SECTION.NEW_PAGE)
+
     width, height = layout['width'], layout['height']
     section.page_width  = Pt(width)
     section.page_height = Pt(height)
@@ -78,9 +50,37 @@ def make_page(doc, layout):
     section.top_margin = Pt(top)
     section.bottom_margin = Pt(bottom)
 
+    # Calculate vertical space for paragraph block. It'll used when creating paragraph.
+    # The vertical position of each block is determined by the vertical distance
+    # to previous block. For the first block, the reference position is top margin.
+    # It's easy to set before-space or after-space for a paragraph with python-docx,
+    # so, if current block is a paragraph, set before-space to previous block;
+    # if current block is not a paragraph, e.g. a table, set after-space of previous
+    # block (generally, previous block should be a paragraph).
+    # 
+    ref_block = None 
+    for block in layout['blocks']:
+        ref_pos = ref_block['bbox'][3] if ref_block else top
+        space = max(block['bbox'][1]-ref_pos, 0.0)
+
+        # paragraph-1 (ref) to paragraph-2 (current): set before-space for paragraph-2
+        if block['type']==0:
+            block['before_space'] = int(space)
+
+        # paragraph (ref) to table (current): set after-space for paragraph
+        elif ref_block['type']==0:
+            ref_block['after_space'] = int(space)
+
+        # situation with very low probability, e.g. table to table
+        else:
+            pass
+
+        # update reference block
+        ref_block = block
+
     # ref_table indicates whether previous block is in table format
     ref_table = None
-    for block in blocks:
+    for block in layout['blocks']:
         # make paragraphs
         if block['type'] in (0, 1):
             ref_table = None
