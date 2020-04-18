@@ -284,22 +284,29 @@ def plot_layout(doc, layout, title):
 
     # plot blocks
     for block in layout['blocks']:
-        # block border
+        # block border in blue
         blue = util.getColor('blue')
         r = fitz.Rect(block['bbox'])
         page.drawRect(r, color=blue, fill=None, width=0.5, overlay=False)
 
-        # spans in same line show same color
+        # line border in red
         for line in block.get('lines', []): # TODO: other types, e.g. image, list, table            
             red = util.getColor('red')
             r = fitz.Rect(line['bbox'])
             page.drawRect(r, color=red, fill=None, overlay=False)
 
-            # spans in current block
+            # span regions
             for span in line.get('spans', []):
                 c = util.getColor('')
                 r = fitz.Rect(span['bbox'])
-                page.drawRect(r, color=c, fill=c, overlay=False)
+                # image span: diagonal lines
+                if 'image' in span:
+                    page.drawLine((r.x0, r.y0), (r.x1, r.y1), color=c, width=1)
+                    page.drawLine((r.x0, r.y1), (r.x1, r.y0), color=c, width=1)
+                    page.drawRect(r, color=c, fill=None, overlay=False)
+                 # text span: filled with random color
+                else:
+                    page.drawRect(r, color=c, fill=c, overlay=False)
 
 def plot_rectangles(doc, layout, rects, title):
     ''' plot rectangles with PyMuPDF
