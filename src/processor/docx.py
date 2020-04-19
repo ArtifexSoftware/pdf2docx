@@ -138,6 +138,11 @@ def make_paragraph(doc, block, width, page_margin):
                 pf.tab_stops.add_tab_stop(Pt(pos))
                 p.add_run().add_tab()
 
+            # add line
+            for span in line['spans']:
+                add_span(span, p)
+
+            # break line or word wrap?
             # new line by default
             line_break = True
 
@@ -159,10 +164,10 @@ def make_paragraph(doc, block, width, page_margin):
                 free_space = width-page_margin[1]-line['bbox'][2]
                 if x1-x0 >= free_space:
                     line_break = False
+            
+            if line_break:
+                p.add_run('\n')
 
-            # add line
-            for span in line['spans']:
-                add_span(span, p, line_break)
     return p
     
 
@@ -232,7 +237,7 @@ def reset_paragraph_format(p):
     return pf
 
 
-def add_span(span, paragraph, break_line=True):
+def add_span(span, paragraph):
     '''add text span to a paragraph.       
     '''
     # inline image span
@@ -271,9 +276,6 @@ def add_span(span, paragraph, break_line=True):
             elif t==2:
                 text_span.font.strike = True
 
-    # break line or word wrap?
-    if break_line:
-        paragraph.add_run('\n')
 
 
 def indent_table(table, indent):
