@@ -57,6 +57,22 @@ class Reader:
 
         return res
 
+    
+    def layout(self, page):
+        ''' raw dict of PDF page retrieved with PyMuPDF, and with rectangles included.
+        '''
+        # raw layout
+        layout = page.getText('rawdict')
+
+        # rectangles
+        rects = self.rects(page)
+
+        # append rectangles to raw dict
+        layout['rects'] = rects
+
+        return layout
+
+
     def parse(self, page, debug=False, filename=None):
         ''' parse page layout
 
@@ -77,16 +93,15 @@ class Reader:
         }
 
         # page source
-        layout = page.getText('rawdict')
-        rects = self.rects(page)
+        layout = self.layout(page)
 
         # raw layout, rectangles
         if debug:
             PDFProcessor.plot_layout(doc, layout, 'Original PDF')
-            PDFProcessor.plot_rectangles(doc, layout, rects, 'Recognized Rectangles')
+            PDFProcessor.plot_rectangles(doc, layout, 'Recognized Rectangles')
 
         # parse page
-        PDFProcessor.layout(layout, rects, **kwargs)
+        PDFProcessor.layout(layout, **kwargs)
 
         # save layout plotting as pdf file
         if debug:

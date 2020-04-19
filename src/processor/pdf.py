@@ -10,6 +10,7 @@ https://pymupdf.readthedocs.io/en/latest/textpage/
 
 The parsed results of this module is similar to the raw layout dict, 
 but with some new features added, e.g.
+ - add rectangle shapes (for text format, annotations)
  - add page margin
  - regroup lines in adjacent blocks considering context
  - recognize list format: block.type=2
@@ -17,16 +18,27 @@ but with some new features added, e.g.
 
 An example of processed layout result:
     {
-    "width": 504.0,
+    "width" : 504.0,
     "height": 661.5,
     "margin": [20.4000, 574.9200, 37.5600, 806.4000],
-    "blocks": [{...}, {...}, ...]
+    "blocks": [{...}, {...}, ...],
+    "rects" : [{...}, {...}, ...]
     }
 
 Note: The length unit for each boundary box is pt, which is 1/72 Inch.
 
-where the type of blocks is extended from `text` and `image` to `list` 
-and `table`:
+where:
+
+`rects` are a list of rectangle shapes extracted from PDF xref_stream and
+annotations:
+    {
+        'bbox' : [float,float,float,float], 
+        'color': int,
+        'type' : int or None
+    }
+
+`blocks` are a group of page contents. The type of blocks is extended from 
+`text` and `image` to `list` and `table`:
 
 - text block:
     In addition to the font style (size, color, weight), more text formats,
@@ -71,18 +83,15 @@ import copy
 from .. import util
 
 
-def layout(layout, rects, **kwargs):
+def layout(layout, **kwargs):
     ''' processed page layout:
             - split block with multi-lines into seperated blocks
             - merge blocks vertically to complete sentence
             - merge blocks horizontally for convenience of docx generation
 
         args:
-            layout: raw layout data extracted from PDF with
-                ```layout = page.getText('dict')```                   
-
-            rects: a list of rectangle shapes extracted from PDF xref_stream,
-                [{'bbox': [float,float,float,float], 'color': int }]
+            layout: raw layout data extracted from PDF with `getText('rawdict')`,
+                and with rectangles included.            
 
             kwargs: dict for layout plotting
                 kwargs = {
@@ -94,7 +103,7 @@ def layout(layout, rects, **kwargs):
 
     # preprocessing, e.g. change block order, clean negative block, 
     # get span text by joining chars
-    _preprocessing(layout, rects, **kwargs)
+    _preprocessing(layout, **kwargs)
 
     # check inline images
     _merge_inline_images(layout, **kwargs)
@@ -308,20 +317,16 @@ def plot_layout(doc, layout, title):
                 else:
                     page.drawRect(r, color=c, fill=c, overlay=False)
 
-def plot_rectangles(doc, layout, rects, title):
+def plot_rectangles(doc, layout, title):
     ''' plot rectangles with PyMuPDF
-
-        width, height: page width/height
-        rects: a list of rectangles recognized from xref stream
-        doc: fitz document object
     '''
-    if not rects: return
+    if not layout['rects']: return
 
     # insert a new page
     page = _new_page_with_margin(doc, layout, title)
 
     # draw rectangle one by one
-    for rect in rects:
+    for rect in layout['rects']:
         # fill color
         c = util.RGB_component(rect['color'])
         c = [_/255.0 for _ in c]
@@ -372,8 +377,8 @@ def _debug_plot(title, plot=True):
     return wrapper
 
 
-@_debug_plot('Preprocessed', True)
-def _preprocessing(layout, rects, **kwargs):
+@_debug_plot('Preprocessed', False)
+def _preprocessing(layout, **kwargs):
     '''preprocessing for the raw layout of PDF page'''
     # remove blocks exceeds page region: negative bbox
     layout['blocks'] = list(filter(
@@ -396,12 +401,12 @@ def _preprocessing(layout, rects, **kwargs):
         if block['type']==1: continue
 
         # assign rectangles
-        block['_rects'] = []
+        block['rects'] = []
         block_rect = fitz.Rect(block['bbox'])
-        for rect in rects:
+        for rect in layout['rects']:
             # any intersection?
             if block_rect.intersects(rect['bbox']):
-                block['_rects'].append(rect)
+                block['rects'].append(rect)
 
         # join chars
         for line in block['lines']:
@@ -461,10 +466,10 @@ def _parse_text_format(layout, **kwargs):
     '''parse text format with rectangle style'''
     for block in layout['blocks']:
         if block['type']==1: continue
-        if not block['_rects']: continue
+        if not block['rects']: continue
 
         # use each rectangle (a specific text format) to split line spans
-        for rect in block['_rects']:
+        for rect in block['rects']:
             the_rect = fitz.Rect(rect['bbox'])
             for line in block['lines']:
                 # any intersection in this line?
