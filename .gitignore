@@ -1,5 +1,10 @@
+outputs/
+
 *.docx
 *.pyc
 *.jp*g
 *.txt
+
+
 illustration.pdf
+raw.json
