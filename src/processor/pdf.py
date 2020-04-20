@@ -10,6 +10,7 @@ https://pymupdf.readthedocs.io/en/latest/textpage/
 
 The parsed results of this module is similar to the raw layout dict, 
 but with some new features added, e.g.
+ - add rectangle shapes (for text format, annotations)
  - add page margin
  - regroup lines in adjacent blocks considering context
  - recognize list format: block.type=2
@@ -17,16 +18,27 @@ but with some new features added, e.g.
 
 An example of processed layout result:
     {
-    "width": 504.0,
+    "width" : 504.0,
     "height": 661.5,
     "margin": [20.4000, 574.9200, 37.5600, 806.4000],
-    "blocks": [{...}, {...}, ...]
+    "blocks": [{...}, {...}, ...],
+    "rects" : [{...}, {...}, ...]
     }
 
 Note: The length unit for each boundary box is pt, which is 1/72 Inch.
 
-where the type of blocks is extended from `text` and `image` to `list` 
-and `table`:
+where:
+
+`rects` are a list of rectangle shapes extracted from PDF xref_stream and
+annotations:
+    {
+        'bbox' : [float,float,float,float], 
+        'color': int,
+        'type' : int or None
+    }
+
+`blocks` are a group of page contents. The type of blocks is extended from 
+`text` and `image` to `list` and `table`:
 
 - text block:
     In addition to the font style (size, color, weight), more text formats,
@@ -34,6 +46,7 @@ and `table`:
     the `span`-s in `line` are re-grouped with styles, and more keys are 
     added to the original structure of `span`.
         {
+            "bbox": [,,,]
             "size": 15.770000457763672,
             "flags": 20,
             "font": "MyriadPro-SemiboldCond",
@@ -45,18 +58,17 @@ and `table`:
                 "type": 0, # 0-highlight, 1-underline, 2-strike-through-line
                 "color": 14277081
                 }, {...}]            
-          }
+        }
 
 - image block
-    {
-      "type": 1,
-      "bbox": [72.0,62.310791015625,175.2935028076172,81.2032470703125],
-      "ext": "png",
-      "width": ,
-      "height": '
-      "image": ,
-      ...
-    }
+    Normal image block defined in PyMuPDF: 
+        { "type": 1, "bbox": [], "ext": "png", "image": , ...}
+
+    Inline image has a same structure, but will be merged into associated text 
+    block: a span in block line.
+
+    So, an image structure may exist in block or line span. The key `image` is 
+    used to distinguish image type.
 
 - list block
 
@@ -71,18 +83,15 @@ import copy
 from .. import util
 
 
-def layout(layout, rects, **kwargs):
+def layout(layout, **kwargs):
     ''' processed page layout:
             - split block with multi-lines into seperated blocks
             - merge blocks vertically to complete sentence
             - merge blocks horizontally for convenience of docx generation
 
         args:
-            layout: raw layout data extracted from PDF with
-                ```layout = page.getText('dict')```                   
-
-            rects: a list of rectangle shapes extracted from PDF xref_stream,
-                [{'bbox': [float,float,float,float], 'color': int }]
+            layout: raw layout data extracted from PDF with `getText('rawdict')`,
+                and with rectangles included.            
 
             kwargs: dict for layout plotting
                 kwargs = {
@@ -93,34 +102,16 @@ def layout(layout, rects, **kwargs):
     '''
 
     # preprocessing, e.g. change block order, clean negative block, 
-    # update rectangle reference point
-    _preprocessing(layout, rects, **kwargs)
+    # get span text by joining chars
+    _preprocessing(layout, **kwargs)
+
+    # check inline images
+    _merge_inline_images(layout, **kwargs)
 
     # parse text format, e.g. highlight, underline
     _parse_text_format(layout, **kwargs)
 
-    # original layout
-    # ax = plt.subplot(111)
-    # plot_layout(ax, layout, 'raw')
     
-
-    # # split blocks
-    # layout = _split_blocks(layout)
-    # ax = plt.subplot(152)
-    # plot_layout(ax, layout, 'split blocks')
-
-    # detect table here
-    # TODO
-
-    # # merge blocks vertically
-    # layout = _merge_vertical_blocks(layout)
-    # ax = plt.subplot(153)
-    # plot_layout(ax, layout, 'merge blocks vertically')
-
-    # # merge blocks horizontally
-    # layout = _merge_horizontal_blocks(layout)
-    # ax = plt.subplot(154)
-    # plot_layout(ax, layout, 'merge blocks horizontally')
 
 def rects_from_source(xref_stream, height):
     ''' Get rectangle shape by parsing page cross reference stream.
@@ -293,7 +284,6 @@ def rects_from_annots(annots):
 
     return res
 
-
 def plot_layout(doc, layout, title):
     '''plot layout with PyMuPDF
        doc: fitz document object
@@ -303,38 +293,44 @@ def plot_layout(doc, layout, title):
 
     # plot blocks
     for block in layout['blocks']:
-        # block border
+        # block border in blue
         blue = util.getColor('blue')
         r = fitz.Rect(block['bbox'])
-        page.drawRect(r, color=blue, fill=None, overlay=False)
+        page.drawRect(r, color=blue, fill=None, width=0.5, overlay=False)
 
-        # spans in current block
-        for line in block.get('lines', []): # TODO: other types, e.g. image, list, table
+        # line border in red
+        for line in block.get('lines', []): # TODO: other types, e.g. image, list, table            
+            red = util.getColor('red')
+            r = fitz.Rect(line['bbox'])
+            page.drawRect(r, color=red, fill=None, overlay=False)
+
+            # span regions
             for span in line.get('spans', []):
-                c = util.getColor() # random color
+                c = util.getColor('')
                 r = fitz.Rect(span['bbox'])
-                page.drawRect(r, color=c, fill=c, overlay=False)
+                # image span: diagonal lines
+                if 'image' in span:
+                    page.drawLine((r.x0, r.y0), (r.x1, r.y1), color=c, width=1)
+                    page.drawLine((r.x0, r.y1), (r.x1, r.y0), color=c, width=1)
+                    page.drawRect(r, color=c, fill=None, overlay=False)
+                 # text span: filled with random color
+                else:
+                    page.drawRect(r, color=c, fill=c, overlay=False)
 
-
-def plot_rectangles(doc, layout, rects, title):
+def plot_rectangles(doc, layout, title):
     ''' plot rectangles with PyMuPDF
-
-        width, height: page width/height
-        rects: a list of rectangles recognized from xref stream
-        doc: fitz document object
     '''
-    if not rects: return
+    if not layout['rects']: return
 
     # insert a new page
     page = _new_page_with_margin(doc, layout, title)
 
     # draw rectangle one by one
-    for rect in rects:
+    for rect in layout['rects']:
         # fill color
         c = util.RGB_component(rect['color'])
         c = [_/255.0 for _ in c]
         page.drawRect(rect['bbox'], color=c, fill=c, overlay=False)
-
 
 
 # ---------------------------------------------
@@ -381,8 +377,8 @@ def _debug_plot(title, plot=True):
     return wrapper
 
 
-@_debug_plot('Preprocessing', True)
-def _preprocessing(layout, rects, **kwargs):
+@_debug_plot('Preprocessed', False)
+def _preprocessing(layout, **kwargs):
     '''preprocessing for the raw layout of PDF page'''
     # remove blocks exceeds page region: negative bbox
     layout['blocks'] = list(filter(
@@ -395,6 +391,9 @@ def _preprocessing(layout, rects, **kwargs):
         key=lambda block: (block['bbox'][1], 
             block['bbox'][0]))
 
+    # calculate page margin
+    layout['margin'] = _page_margin(layout)
+
     # assign rectangle shapes to associated block;
     # get span text by joining chars
     for block in layout['blocks']:
@@ -402,12 +401,12 @@ def _preprocessing(layout, rects, **kwargs):
         if block['type']==1: continue
 
         # assign rectangles
-        block['_rects'] = []
+        block['rects'] = []
         block_rect = fitz.Rect(block['bbox'])
-        for rect in rects:
+        for rect in layout['rects']:
             # any intersection?
             if block_rect.intersects(rect['bbox']):
-                block['_rects'].append(rect)
+                block['rects'].append(rect)
 
         # join chars
         for line in block['lines']:
@@ -415,19 +414,62 @@ def _preprocessing(layout, rects, **kwargs):
                 chars = [char['c'] for char in span['chars']]
                 span['text'] = ''.join(chars)
     
-    # margin
-    layout['margin'] = _page_margin(layout)
+@_debug_plot('Merged inline images', True)
+def _merge_inline_images(layout, **kwargs):
+    ''' merge inline image blocks into text block: 
+        a block line or a line span.
+    '''
+    # get all images blocks with index
+    f = lambda item: item[1]['type']==1
+    index_images = list(filter(f, enumerate(layout['blocks'])))
 
+    # get index of inline images: intersected with text block
+    # assumption: an inline image intersects with only one text block
+    index_inline = []
+    num = len(index_images)
+    for block in layout['blocks']:
 
-@_debug_plot('Parse Text Format', True)
+        # suppose no overlap between two images
+        if block['type']==1: continue
+
+        # all images found their block, then quit
+        if len(index_inline)==num: break
+
+        # check all images for current block
+        image_merged = False
+        for i, image in index_images:
+            # an inline image belongs to only one block
+            if i in index_inline: continue
+
+            # horizontally aligned with current text block?
+            # no, pass
+            if not util.is_horizontal_aligned(block['bbox'], image['bbox']): continue
+
+            # yes, inline image
+            image_merged = True
+            index_inline.append(i)
+            _insert_image_to_block(image, block)
+
+        # if current block get images merged as new line,
+        # go further step here: merge image into span if necessary
+        if image_merged:
+            _merge_lines_in_block(block)
+
+    # remove inline images from top layout
+    # the index of element in original list changes when any elements are removed
+    # so try to 
+    for i in index_inline[::-1]:
+        layout['blocks'].pop(i)
+
+@_debug_plot('Parsed Text Format', True)
 def _parse_text_format(layout, **kwargs):
     '''parse text format with rectangle style'''
     for block in layout['blocks']:
         if block['type']==1: continue
-        if not block['_rects']: continue
+        if not block['rects']: continue
 
         # use each rectangle (a specific text format) to split line spans
-        for rect in block['_rects']:
+        for rect in block['rects']:
             the_rect = fitz.Rect(rect['bbox'])
             for line in block['lines']:
                 # any intersection in this line?
@@ -576,233 +618,67 @@ def _page_margin(layout):
     top = min(map(lambda x: x[1], list_bbox))
     bottom = h-max(map(lambda x: x[3], list_bbox))
 
-    return left, right, top, min(util.ITP, bottom)
+    return left, right, min(util.ITP, top), min(util.ITP, bottom)
 
 
+def _insert_image_to_block(image, block):
+    '''insert inline image to associated block'''
+    image_rect = fitz.Rect(image['bbox'])
+
+    # get the insetting position
+    for i,line in enumerate(block['lines']):
+        if image_rect.x0 < line['bbox'][0]:
+            break
+    else:
+        i = 0
+
+    # insert image as a line in block, 
+    # and waiting for further step: merge image into span as necessary
+    image_line = {
+        "wmode": 0,
+        "dir"  : (1, 0),
+        "bbox" : image['bbox'],
+        "spans": [image]
+        }
+    block['lines'].insert(i, image_line)
+
+    # update bbox accordingly
+    x0 = min(block['bbox'][0], image['bbox'][0])
+    y0 = min(block['bbox'][1], image['bbox'][1])
+    x1 = max(block['bbox'][2], image['bbox'][2])
+    y1 = max(block['bbox'][3], image['bbox'][3])
+    block['bbox'] = (x0, y0, x1, y1)
 
 
-def _split_blocks(layout):
-    '''split block with multi-lines into single line block, which will be used to 
-       merge block in next step. Besides, remove duplicated blocks.
-
-       args:
-            layout: raw layout data
-
-       notes:
-           for image block, it is converted from original data format to a
-           similar text block format:
-           raw image block: 
-                    {'type':1, 'bbox', 'width', 'height', 'ext', 'image'} 
-           converted text block: 
-                    {'type':0, 'bbox', 'lines': [
-                'wmode':2, 'dir', 'bbox', 'width', 'height', 'ext', 'image']}
+def _merge_lines_in_block(block):
+    ''' Merge lines aligned horizontally in a block.
+        Generally, it is performed when inline image is added into block line.
     '''
-    blocks, ref = [], None
-    for block in layout['blocks']:
-
-        # check duplication
-        if ref and ref['bbox']==block['bbox']:
+    new_lines = []
+    for line in block['lines']:        
+        # add line directly if not aligned horizontally with previous line
+        if not new_lines or not util.is_horizontal_aligned(line['bbox'], new_lines[-1]['bbox']):
+            new_lines.append(line)
             continue
 
-        # image block: convert to text block format
-        if block['type']==1:
-            block['type'] = 0 # treat as normal block
-            block['lines'] = [{
-                'wmode': 2, # 0 text, 1 bullet, 2 image
-                'dir': (1.0, 0.0),
-                'bbox': block['bbox'],
-                'width': block['width'],
-                'height': block['height'],
-                'ext': block['ext'],
-                'image': block['image']
-            }]
-            block.pop('image')
-
-        # split text blocks
-        else: 
-            lines = block['lines']
-
-            # convert each line to a block
-            for line in lines:
-                split_block = {
-                    'type': block['type'],
-                    'bbox': line['bbox'],
-                    'lines': [line]
-                }
-
-                blocks.append(split_block)
-
-        # update reference block
-        ref = block
-
-    layout['blocks'] = blocks
-    return layout
-
-def _merge_vertical_blocks(layout):
-    '''a sentence may be seperated in different blocks, so this step is to merge them back.
-
-       merging conditions:
-        - previous line is not the end and current line is not the begin
-        - two lines should be in same font and size
-        - skip if current line is a bullet item / image
-        - suppose paragraph margin is larger than line margin
-        - remove overlap/duplicated blocks
-    '''
-
-    blocks = layout['blocks']
-    merged_blocks = []
-    ref = None # previous merged block
-    ref_line_space = 0.0 # line space for the recently merged blocks
-
-    for block in blocks:
-        merged = False
-
-        if not ref:
-            merged_blocks.append(block)
-
-        # ignore image/bullet line
-        elif ref['lines'][0]['wmode']==2 or block['lines'][0]['wmode']!=0:
-            merged_blocks.append(block)
-
-        else:
-            dy = block['bbox'][1]-ref['bbox'][3] # line space
-            h = ref['bbox'][3]-ref['bbox'][1] # previous blcok height
-            span1 = ref['lines'][0]['spans']
-            span2 = block['lines'][0]['spans']
-
-            # ignore empty lines
-            if not ref['lines'][0]['spans']['text'].strip() or not block['lines'][0]['spans']['text'].strip():
-                merged_blocks.append(block)
-
-            # ignore blocks not aligned in vertical direction
-            elif not util.is_vertical_aligned(ref['bbox'], block['bbox']):
-                merged_blocks.append(block)        
-
-            # ignore abnormal line space:
-            # (a) line space is larger than height of previous block
-            elif dy>h:
-                merged_blocks.append(block)
-
-            # (b) current line space is different from line space of recently merged blocks
-            elif ref_line_space and abs(dy-ref_line_space)>=util.DM:
-                merged_blocks.append(block)
-            
-            # ignore abnormal font
-            elif span1['font']!=span2['font'] or span1['size']!=span2['size']: 
-                merged_blocks.append(block)
-
-            # ignore if sentence completeness is not satisfied
-            elif util.is_end_sentence(span1['text']) or util.is_start_sentence(span2['text']):
-                merged_blocks.append(block)
-
-            # finally, it could be merged
-            else:
-                merged = True
-                # combine block to ref
-                left = min(block['bbox'][0], ref['bbox'][0])
-                right = max(block['bbox'][2], ref['bbox'][2])
-                top = min(block['bbox'][1], ref['bbox'][1])
-                bottom = max(block['bbox'][3], ref['bbox'][3])
-                merged_blocks[-1]['bbox'] = (left, top, right, bottom)
-                merged_blocks[-1]['lines'][0]['bbox'] = (left, top, right, bottom)
-                merged_blocks[-1]['lines'][0]['spans']['text'] += block['lines'][0]['spans']['text']
-
-        # update reference line space if merged
-        ref_line_space = dy if merged else 0.0
-
-        # update reference block
-        ref = merged_blocks[-1]
-
-    layout['blocks'] = merged_blocks
-    return layout
-
-def _merge_horizontal_blocks(layout):
-    '''merge associated blocks in same line, which is preceding steps for creating docx.       
-    '''
-
-    # raw layout has been sorted, but after splitting block step, the split blocks may be
-    # in wrong order locally. so re-sort all blocks first in this step.
-    layout['blocks'].sort(key=lambda block: (block['bbox'][1], block['bbox'][0]))
-
-    # group blocks with condition: aligned horizontally
-    grouped_blocks, vertical_blocks = [[]], []
-    iblocks = iter(layout['blocks'])
-    while True:
-        block = next(iblocks, None)
-        if not block: break
-
-        # ignore empty lines after an image
-        line = block['lines'][0]
-        if line['wmode']==0 and not line['spans']['text'].strip(): # empty line
-            # check previous block
-            if grouped_blocks[-1] and grouped_blocks[-1][-1]['lines'][0]['wmode']==2:
-                continue
-
-        # collect vertical blocks directly
-        if block['lines'][0]['dir'] != (1.0,0.0):
-            vertical_blocks.append(block)
+        # if it exists x-distance obviously to previous line,
+        # take it as a separate line as it is
+        if abs(line['bbox'][0]-new_lines[-1]['bbox'][2]) > util.DM:
+            new_lines.append(line)
             continue
 
-        # collect horizontal blocks in a same line
-        for ref in grouped_blocks[-1]:
-            if util.is_horizontal_aligned(ref['bbox'], block['bbox']):
-                flag = True
-                break
-        else:
-            flag = False
+        # now, this line will be append to previous line as a span
+        new_lines[-1]['spans'].extend(line['spans'])
 
-        if flag:
-            grouped_blocks[-1].append(block)
-        else:
-            grouped_blocks.append([block])
-
-    # combine blocks
-    merged_blocks = vertical_blocks # do not have to merge vertical blocks
-    for blocks in grouped_blocks[1:]: # skip the first [] when initialize grouped_blocks 
         # update bbox
-        left = min(map(lambda x: x['bbox'][0], blocks))
-        top = min(map(lambda x: x['bbox'][1], blocks))
-        right = max(map(lambda x: x['bbox'][2], blocks))
-        bottom = max(map(lambda x: x['bbox'][3], blocks))
+        new_lines[-1]['bbox'] = (
+            new_lines[-1]['bbox'][0],
+            min(new_lines[-1]['bbox'][1], line['bbox'][1]),
+            line['bbox'][2],
+            max(new_lines[-1]['bbox'][3], line['bbox'][3])
+            )
 
-        # merged block if there is no overlap between two adjacent blocks
-        bbox_pre_block = merged_blocks[-1]['bbox'] if merged_blocks else [0.0]*4
-        if abs(left-bbox_pre_block[0])>util.DM or abs(top-bbox_pre_block[1])>util.DM:
-            merged_block = {
-                'type': 0,
-                'bbox': (left, top, right, bottom),
-                'lines': list(map(lambda block:block['lines'][0], blocks))
-            }
-            merged_block['type'] = __block_type(merged_block)
-            merged_blocks.append(merged_block)
-
-    layout['blocks'] = merged_blocks
-    return layout
-
-def __block_type(block, factor=0.5):
-    ''' type of the block:
-        - paragraph (0): one line block or multi-line sets in a single word line
-        - table(1): otherwise
-    '''
-
-    lines = block['lines']
-
-    if len(lines)==1:
-        return 0
-    else:
-        # multi-line sets aligned in one line:
-        # the factor of minimum line height to block height should lower than a threshold
-        line_height = min(map(lambda line: line['spans']['size'], lines))
-        block_height = block['bbox'][3] - block['bbox'][1]
-
-        return 0 if line_height/block_height > factor else 1
+    # update lines in block
+    block['lines'] = new_lines
 
 
-def __process_line(span):
-    '''combine text in lines to a complete sentence'''
-    text = span['text'].strip()
-    if text.endswith(('‐', '-')): # these two '-' are not same
-        text = text[0:-1]
-    else:
-        text += ' '
-    return text
