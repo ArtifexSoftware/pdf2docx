@@ -24,4 +24,4 @@ jobs:
 
     # Runs a single command using the runners shell
     - name: install unoconv
-      run: apt-get install unoconv
+      run: sudo apt-get install unoconv
