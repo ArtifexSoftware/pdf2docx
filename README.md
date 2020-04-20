@@ -44,15 +44,6 @@ docx.save(docx_file)
 
 It's able to re-build common text format, e.g. font color, bold, italic, highlight, and their combinations. However, there're still deviations existed in detail, e.g. color of underline (see words `HTML Output`).
 
-- PDF
-
-![demo-text-pdf.png](demo/pics/demo-text-pdf.png)
-
-- docx
-
-![demo-text-pdf.png](demo/pics/demo-text-docx.png)
-
-
 ### List
 
 *TODO*

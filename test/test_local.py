@@ -13,7 +13,7 @@ import json
 if __name__ == '__main__':
 
     output = os.path.join(os.path.dirname(script_path), 'samples')
-    filename = 'demo-image'
+    filename = 'demo-text'
     pdf_file = os.path.join(output, f'{filename}.pdf')
     docx_file = os.path.join(output, f'{filename}.docx')
 
