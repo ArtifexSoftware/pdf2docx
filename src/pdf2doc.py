@@ -14,6 +14,7 @@ class Reader:
     '''
 
     def __init__(self, file_path):
+        self.filename = file_path
         self._doc = fitz.open(file_path)
 
     def __getitem__(self, index):
@@ -23,6 +24,13 @@ class Reader:
             return res[index]
         else:
             return self._doc[index]
+
+    def __len__(self):
+        return len(self._doc)
+
+    @property
+    def core(self):
+        return self._doc
 
     def rects(self, page):
         ''' Get rectangle shapes from page source and comment annotations.            
@@ -45,7 +53,7 @@ class Reader:
         # these shapes are generally converted from docx, e.g. highlight, underline,
         # which are different from PDF comments like highlight, rectangle.
         for xref in page._getContents():
-            page_content = self._doc._getXrefStream(xref).decode()
+            page_content = self._doc._getXrefStream(xref).decode(encoding="ISO-8859-1")
             rects = PDFProcessor.rects_from_source(page_content, height)
             res.extend(rects)
         
