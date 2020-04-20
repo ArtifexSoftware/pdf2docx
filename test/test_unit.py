@@ -116,6 +116,10 @@ class TestPDF2Docx(unittest.TestCase, Utility):
         sample pdf and docx (saved as pdf file).
     '''
 
+    def setUp(self):
+        if not os.path.exists(self.output_dir):
+            os.mkdir(self.output_dir)
+
     def verify_layout(self, sample_pdf, test_pdf, threshold=0.9):
         ''' compare layout of two pdf files:
             It's difficult to have an exactly same layout of blocks, but ensure they

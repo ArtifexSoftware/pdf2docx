@@ -40,3 +40,9 @@ jobs:
       run: |
         cd test
         python -m unittest test_unit.py
+
+    - name: Archive converted files
+      uses: actions/upload-artifact@v1
+      with:
+        name: docx
+        path: ./test/outputs/*.docx
