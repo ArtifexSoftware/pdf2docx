@@ -22,6 +22,12 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
-    # Runs a single command using the runners shell
-    - name: install unoconv
+    # Install requirements
+    - name: apt-get install unoconv
       run: sudo apt-get install unoconv
+
+    - name: python packages
+      run: pip install -r requirements.txt
+
+    - name: unit test
+      run: python -m unittest ./test/test_unit.py
