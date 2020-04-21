@@ -54,10 +54,10 @@ class TestUtility(Utility):
             for line in block['lines']:
                 for span in line['spans']:
                     if not 'text' in span: continue
-                    if not 'type' in span: continue
+                    if not 'style' in span: continue
                     res.append({
                         'text': span['text'],
-                        'type': [ t['type'] for t in span['type']]
+                        'style': [ t['type'] for t in span['style']]
                     })
         return res
 
@@ -134,12 +134,12 @@ class TestPDF2Docx(unittest.TestCase, TestUtility):
         # check text style page by page
         for layout, page in zip(layouts, test_pdf):
             sample_style = self.extract_text_style(layout)
-            target_style = self.extract_text_style(test_pdf.parse(page))            
+            target_style = self.extract_text_style(test_pdf.parse(page))
             for s, t in zip(sample_style, target_style):
                 self.assertEqual(s['text'], t['text'], 
-                msg=f"Applied text {t['text']} is inconsistent with sample {s['text']}")
-                self.assertEqual(s['type'], t['type'], 
-                msg=f"Applied text format {t['type']} is inconsistent with sample {s['type']}")
+                    msg=f"Applied text {t['text']} is inconsistent with sample {s['text']}")
+                self.assertEqual(s['style'], t['style'], 
+                    msg=f"Applied text format {t['style']} is inconsistent with sample {s['style']}")
 
 
     @unittest.skip("a bit update on the layout is planed, skipping temporarily.")
