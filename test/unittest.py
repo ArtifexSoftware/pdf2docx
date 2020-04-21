@@ -3,6 +3,8 @@ import sys
 import unittest
 import fitz
 
+from utils import Utility
+
 script_path = os.path.abspath(__file__) # current script path
 project_path = os.path.dirname(os.path.dirname(script_path))
 sys.path.append(project_path)
@@ -10,26 +12,8 @@ sys.path.append(project_path)
 from src.pdf2doc import Reader, Writer
 
 
-class Utility:
-    '''utilities'''
-
-    @property
-    def test_dir(self):
-        return os.path.dirname(script_path)
-
-    @property
-    def sample_dir(self):
-        return os.path.join(self.test_dir, 'samples')
-
-    @property
-    def output_dir(self):
-        return os.path.join(self.test_dir, 'outputs')
-
-    def get_docx_path(self, pdf_file):
-        '''get docx filename based on current pdf file'''
-        pdf_filename = os.path.basename(pdf_file)
-        docx_filename = pdf_filename[0:-3] + 'docx' # .pdf -> .docx
-        return os.path.join(self.output_dir, docx_filename)
+class TestUtility(Utility):
+    '''utilities related directly to the test case'''
 
     def pdf2docx(self, pdf):
         ''' test target: converting pdf to docx'''        
@@ -50,26 +34,7 @@ class Utility:
         if self.docx2pdf(docx_file):
             return layouts
         else:
-            return None
-
-    @staticmethod
-    def docx2pdf(docx_file):
-        '''convert docx to pdf with unoconv'''
-        
-        # Windows: add OfficeToPDF to Path env. variable
-        if sys.platform.upper().startswith('WIN'):
-            cmd = f'OfficeToPDF "{docx_file}"'
-        # Linux: sudo apt-get unoconv
-        else:
-            cmd = f'unoconv -f pdf "{docx_file}"'
-        
-        # convert pdf with command line
-        try:
-            os.system(cmd)
-        except:
-            return False
-        else:
-            return True
+            return None   
 
     @staticmethod
     def check_bbox(b1, b2, threshold=0.9):
@@ -111,7 +76,7 @@ class Utility:
         return res
 
 
-class TestPDF2Docx(unittest.TestCase, Utility):
+class TestPDF2Docx(unittest.TestCase, TestUtility):
     ''' convert sample pdf files to docx, then verify the layout between 
         sample pdf and docx (saved as pdf file).
     '''

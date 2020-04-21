@@ -32,14 +32,14 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt-get install unoconv
         python -m pip install --upgrade pip
+        pip install requests
         pip install -r requirements.txt
 
     - name: Run unit test
       run: |
         cd test
-        python -m unittest test_unit.py
+        python -m unittest unittest.py
 
     - name: Archive converted files
       uses: actions/upload-artifact@v1
