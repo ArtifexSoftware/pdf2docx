@@ -35,9 +35,9 @@ class Utility:
     def docx2pdf(docx_path):
         '''convert docx file to pdf with'''
 
-        # used for local test only
-        if sys.platform.upper().startswith('WIN'):
-            return docx2pdf_win(docx_path)
+        # local test only with OfficeToPDF installed
+        if docx2pdf_win(docx_path):
+            return True
         # on-line conversion is used considering no app from Linux side with a 
         # good converting quality
         else:
