@@ -1,6 +1,9 @@
 import os
+import sys
 from urllib3 import encode_multipart_formdata
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util import Retry
 import time
 import zipfile
 
@@ -30,40 +33,72 @@ class Utility:
 
     @staticmethod
     def docx2pdf(docx_path):
-        '''convert docx file to pdf with on-line service'''
+        '''convert docx file to pdf with'''
 
-        # service host
-        url = 'http://47.100.11.147:8080'
+        # used for local test only
+        if sys.platform.upper().startswith('WIN'):
+            return docx2pdf_win(docx_path)
+        # on-line conversion is used considering no app from Linux side with a 
+        # good converting quality
+        else:
+            return docx2pdf_online(docx_path)
 
-        # headers
-        headers = {
-            'Referer': 'http://www.pdfdi.com/word2pdf',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0'
-            } 
 
-        # upload docx to perform conversion
-        response = upload_docx(docx_path, url, headers)
-        if not response.get('success', False): return False
-
-        # wait for generating pdf
-        time.sleep(2)
-
-        # download zip
-        zip_path = docx_path[0:-4] + 'zip'
-        key = response.get('file_key', '')
-        download_zip(zip_path, url, key, headers)
-        if not os.path.exists(zip_path): return False
-
-        # extract pdf
-        pdf_path = docx_path[0:-4] + 'pdf'
-        if os.path.exists(pdf_path): os.remove(pdf_path)
-        unzip_pdf(zip_path, pdf_path)
-        os.remove(zip_path)
-
+def docx2pdf_win(docx_path):
+    '''convert docx to pdf with OfficeToPDF:
+       https://github.com/cognidox/OfficeToPDF/releases
+    '''
+    cmd = f'OfficeToPDF "{docx_path}"'
+    
+    # convert pdf with command line
+    try:
+        os.system(cmd)
+    except:
+        return False
+    else:
         return True
 
+def docx2pdf_online(docx_path):
+    '''convert docx file to pdf with on-line service'''
 
-def upload_docx(file_path, url, headers):
+    # service host
+    url = 'http://47.100.11.147:8080'
+
+    # headers
+    headers = {
+        'Referer': 'http://www.pdfdi.com/word2pdf',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0'
+        } 
+
+    # requests session
+    session = requests.Session()
+    session.mount('http://', HTTPAdapter(
+        max_retries=Retry(total=3, method_whitelist=frozenset(['GET', 'POST']))
+        ))
+
+    # upload docx to perform conversion
+    response = upload_docx(session, docx_path, url, headers)
+    if not response.get('success', False): return False
+
+    # wait for generating pdf
+    time.sleep(2)
+
+    # download zip
+    zip_path = docx_path[0:-4] + 'zip'
+    key = response.get('file_key', '')
+    download_zip(session, zip_path, url, key, headers)
+    if not os.path.exists(zip_path): return False
+
+    # extract pdf
+    pdf_path = docx_path[0:-4] + 'pdf'
+    if os.path.exists(pdf_path): os.remove(pdf_path)
+    unzip_pdf(zip_path, pdf_path)
+    os.remove(zip_path)
+
+    return True
+
+
+def upload_docx(session, file_path, url, headers):
     ''' on-line docx conversion: http://www.pdfdi.com/word2pdf
         return response json:
         {
@@ -91,20 +126,20 @@ def upload_docx(file_path, url, headers):
         }
     updated_headers.update(headers)
     
-    # submit
+    # submit    
     try:
-        response = requests.post(
+        response = session.post(
             url=f'{url}/doc/word2pdf', 
             headers=updated_headers, 
             data=data,
-            timeout=5)
-    except requests.exceptions.RequestException:
+            timeout=20)
+    except:
         return {}
     else:
         return response.json()
 
 
-def download_zip(zip_path, url, file_key, headers):
+def download_zip(session, zip_path, url, file_key, headers):
     ''' download converted pdf file from given url:
         http://47.100.11.147:8080/download?file_key=xxx&handle_type=word2pdf
     '''
@@ -112,7 +147,8 @@ def download_zip(zip_path, url, file_key, headers):
         'file_key': file_key,
         'handle_type': 'word2pdf'
     }
-    response = requests.get(f'{url}/download',
+
+    response = session.get(f'{url}/download',
         headers=headers,
         params=params,
         timeout=5)
@@ -131,4 +167,3 @@ def unzip_pdf(zip_file_path, pdf_file_path):
     for name in zip_file.namelist():
         zip_file.extract(name, path)
         os.rename(os.path.join(path, name), pdf_file_path)   
-

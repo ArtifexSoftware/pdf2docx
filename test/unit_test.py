@@ -12,7 +12,7 @@ sys.path.append(project_path)
 from src.pdf2doc import Reader, Writer
 
 
-class TestUtility(Utility):
+class TestUtility(Utility, unittest.TestCase):
     '''utilities related directly to the test case'''
 
     def pdf2docx(self, pdf):
@@ -75,16 +75,6 @@ class TestUtility(Utility):
                         res.append(span['bbox'])
         return res
 
-
-class TestPDF2Docx(unittest.TestCase, TestUtility):
-    ''' convert sample pdf files to docx, then verify the layout between 
-        sample pdf and docx (saved as pdf file).
-    '''
-
-    def setUp(self):
-        if not os.path.exists(self.output_dir):
-            os.mkdir(self.output_dir)
-
     def verify_layout(self, sample_pdf, test_pdf, threshold=0.9):
         ''' compare layout of two pdf files:
             It's difficult to have an exactly same layout of blocks, but ensure they
@@ -106,7 +96,17 @@ class TestPDF2Docx(unittest.TestCase, TestUtility):
                 sample_word, test_word = sample[4], test[4]
                 self.assertEqual(sample_word, test_word)
                 self.assertTrue(self.check_bbox(sample_bbox, test_bbox, threshold),
-                    msg=f'bbox for {sample_word}: {test_bbox} is inconsistent with sample {sample_bbox}.')
+                    msg=f'bbox for word "{sample_word}": {test_bbox} is inconsistent with sample {sample_bbox}.')
+
+
+class MainTest(TestUtility):
+    ''' convert sample pdf files to docx, then verify the layout between 
+        sample pdf and docx (saved as pdf file).
+    '''
+
+    def setUp(self):
+        if not os.path.exists(self.output_dir):
+            os.mkdir(self.output_dir)    
 
     def test_text_format(self):
         '''sample file focusing on text format'''
@@ -134,8 +134,12 @@ class TestPDF2Docx(unittest.TestCase, TestUtility):
         # check text style page by page
         for layout, page in zip(layouts, test_pdf):
             sample_style = self.extract_text_style(layout)
-            target_style = self.extract_text_style(test_pdf.parse(page))
-            for s, t in zip(sample_style, target_style):
+            test_style = self.extract_text_style(test_pdf.parse(page))
+
+            self.assertEqual(len(sample_style), len(test_style), 
+                msg=f'The extracted style format {len(test_style)} is inconsistent with sample file {len(sample_style)}.')
+
+            for s, t in zip(sample_style, test_style):
                 self.assertEqual(s['text'], t['text'], 
                     msg=f"Applied text {t['text']} is inconsistent with sample {s['text']}")
                 self.assertEqual(s['style'], t['style'], 
