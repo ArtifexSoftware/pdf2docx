@@ -92,13 +92,16 @@ def upload_docx(file_path, url, headers):
     updated_headers.update(headers)
     
     # submit
-    response = requests.post(
-        url=f'{url}/doc/word2pdf', 
-        headers=updated_headers, 
-        data=data,
-        timeout=5).json()
-
-    return response
+    try:
+        response = requests.post(
+            url=f'{url}/doc/word2pdf', 
+            headers=updated_headers, 
+            data=data,
+            timeout=5)
+    except requests.exceptions.RequestException:
+        return {}
+    else:
+        return response.json()
 
 
 def download_zip(zip_path, url, file_key, headers):
