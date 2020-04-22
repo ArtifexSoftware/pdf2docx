@@ -40,7 +40,6 @@ jobs:
       run: |
         cd test
         python -m unittest unit_test.py
-        rm -f outputs/*.pdf
 
     - name: Archive converted files
       uses: actions/upload-artifact@v1

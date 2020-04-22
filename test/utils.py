@@ -35,30 +35,31 @@ class Utility:
     def docx2pdf(docx_path):
         '''convert docx file to pdf with'''
 
+        pdf_path = docx_path[0:-4] + 'pdf'
+        if os.path.exists(pdf_path): os.remove(pdf_path)
+
         # local test only with OfficeToPDF installed
-        if docx2pdf_win(docx_path):
+        if docx2pdf_win(docx_path, pdf_path):
             return True
         # on-line conversion is used considering no app from Linux side with a 
         # good converting quality
         else:
-            return docx2pdf_online(docx_path)
+            return docx2pdf_online(docx_path, pdf_path)
 
 
-def docx2pdf_win(docx_path):
+def docx2pdf_win(docx_path, pdf_path):
     '''convert docx to pdf with OfficeToPDF:
        https://github.com/cognidox/OfficeToPDF/releases
     '''
-    cmd = f'OfficeToPDF "{docx_path}"'
-    
     # convert pdf with command line
-    try:
-        os.system(cmd)
-    except:
-        return False
-    else:
-        return True
+    cmd = f'OfficeToPDF "{docx_path}"'
+    os.system(cmd)
 
-def docx2pdf_online(docx_path):
+    # check results    
+    return os.path.exists(pdf_path)
+
+
+def docx2pdf_online(docx_path, pdf_path):
     '''convert docx file to pdf with on-line service'''
 
     # service host
@@ -89,9 +90,7 @@ def docx2pdf_online(docx_path):
     download_zip(session, zip_path, url, key, headers)
     if not os.path.exists(zip_path): return False
 
-    # extract pdf
-    pdf_path = docx_path[0:-4] + 'pdf'
-    if os.path.exists(pdf_path): os.remove(pdf_path)
+    # extract pdf    
     unzip_pdf(zip_path, pdf_path)
     os.remove(zip_path)
 

@@ -145,6 +145,10 @@ class MainTest(TestUtility):
                 self.assertEqual(s['style'], t['style'], 
                     msg=f"Applied text format {t['style']} is inconsistent with sample {s['style']}")
 
+        # finish and remove pdf
+        test_pdf.core.close()
+        os.remove(test_pdf_file)
+
 
     @unittest.skip("a bit update on the layout is planed, skipping temporarily.")
     def test_image(self):
