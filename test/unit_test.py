@@ -3,6 +3,8 @@ import sys
 import unittest
 import fitz
 
+from utils import Utility
+
 script_path = os.path.abspath(__file__) # current script path
 project_path = os.path.dirname(os.path.dirname(script_path))
 sys.path.append(project_path)
@@ -10,26 +12,8 @@ sys.path.append(project_path)
 from src.pdf2doc import Reader, Writer
 
 
-class Utility:
-    '''utilities'''
-
-    @property
-    def test_dir(self):
-        return os.path.dirname(script_path)
-
-    @property
-    def sample_dir(self):
-        return os.path.join(self.test_dir, 'samples')
-
-    @property
-    def output_dir(self):
-        return os.path.join(self.test_dir, 'outputs')
-
-    def get_docx_path(self, pdf_file):
-        '''get docx filename based on current pdf file'''
-        pdf_filename = os.path.basename(pdf_file)
-        docx_filename = pdf_filename[0:-3] + 'docx' # .pdf -> .docx
-        return os.path.join(self.output_dir, docx_filename)
+class TestUtility(Utility, unittest.TestCase):
+    '''utilities related directly to the test case'''
 
     def pdf2docx(self, pdf):
         ''' test target: converting pdf to docx'''        
@@ -50,26 +34,7 @@ class Utility:
         if self.docx2pdf(docx_file):
             return layouts
         else:
-            return None
-
-    @staticmethod
-    def docx2pdf(docx_file):
-        '''convert docx to pdf with unoconv'''
-        
-        # Windows: add OfficeToPDF to Path env. variable
-        if sys.platform.upper().startswith('WIN'):
-            cmd = f'OfficeToPDF "{docx_file}"'
-        # Linux: sudo apt-get unoconv
-        else:
-            cmd = f'unoconv -f pdf "{docx_file}"'
-        
-        # convert pdf with command line
-        try:
-            os.system(cmd)
-        except:
-            return False
-        else:
-            return True
+            return None   
 
     @staticmethod
     def check_bbox(b1, b2, threshold=0.9):
@@ -89,10 +54,10 @@ class Utility:
             for line in block['lines']:
                 for span in line['spans']:
                     if not 'text' in span: continue
-                    if not 'type' in span: continue
+                    if not 'style' in span: continue
                     res.append({
                         'text': span['text'],
-                        'type': [ t['type'] for t in span['type']]
+                        'style': [ t['type'] for t in span['style']]
                     })
         return res
 
@@ -109,16 +74,6 @@ class Utility:
                         if not 'image' in span: continue
                         res.append(span['bbox'])
         return res
-
-
-class TestPDF2Docx(unittest.TestCase, Utility):
-    ''' convert sample pdf files to docx, then verify the layout between 
-        sample pdf and docx (saved as pdf file).
-    '''
-
-    def setUp(self):
-        if not os.path.exists(self.output_dir):
-            os.mkdir(self.output_dir)
 
     def verify_layout(self, sample_pdf, test_pdf, threshold=0.9):
         ''' compare layout of two pdf files:
@@ -141,7 +96,17 @@ class TestPDF2Docx(unittest.TestCase, Utility):
                 sample_word, test_word = sample[4], test[4]
                 self.assertEqual(sample_word, test_word)
                 self.assertTrue(self.check_bbox(sample_bbox, test_bbox, threshold),
-                    msg=f'bbox for {sample_word}: {test_bbox} is inconsistent with sample {sample_bbox}.')
+                    msg=f'bbox for word "{sample_word}": {test_bbox} is inconsistent with sample {sample_bbox}.')
+
+
+class MainTest(TestUtility):
+    ''' convert sample pdf files to docx, then verify the layout between 
+        sample pdf and docx (saved as pdf file).
+    '''
+
+    def setUp(self):
+        if not os.path.exists(self.output_dir):
+            os.mkdir(self.output_dir)    
 
     def test_text_format(self):
         '''sample file focusing on text format'''
@@ -169,12 +134,20 @@ class TestPDF2Docx(unittest.TestCase, Utility):
         # check text style page by page
         for layout, page in zip(layouts, test_pdf):
             sample_style = self.extract_text_style(layout)
-            target_style = self.extract_text_style(test_pdf.parse(page))            
-            for s, t in zip(sample_style, target_style):
+            test_style = self.extract_text_style(test_pdf.parse(page))
+
+            self.assertEqual(len(sample_style), len(test_style), 
+                msg=f'The extracted style format {len(test_style)} is inconsistent with sample file {len(sample_style)}.')
+
+            for s, t in zip(sample_style, test_style):
                 self.assertEqual(s['text'], t['text'], 
-                msg=f"Applied text {t['text']} is inconsistent with sample {s['text']}")
-                self.assertEqual(s['type'], t['type'], 
-                msg=f"Applied text format {t['type']} is inconsistent with sample {s['type']}")
+                    msg=f"Applied text {t['text']} is inconsistent with sample {s['text']}")
+                self.assertEqual(s['style'], t['style'], 
+                    msg=f"Applied text format {t['style']} is inconsistent with sample {s['style']}")
+
+        # finish and remove pdf
+        test_pdf.core.close()
+        os.remove(test_pdf_file)
 
 
     @unittest.skip("a bit update on the layout is planed, skipping temporarily.")

@@ -146,6 +146,9 @@ def rects_from_source(xref_stream, height):
             ...
             285.17 500.11 193.97 13.44 re f*
             ...
+            214 320 m
+            249 322 l
+            ...
             EMC
 
         where,
@@ -160,6 +163,7 @@ def rects_from_source(xref_stream, height):
                 - lower left corner: (285.17 500.11)
                 - width: 193.97
                 - height: 13.44
+            - `m`, `l`: draw line from `m` (move to) to `l` (line to)
 
         Note: coordinates system transformation should be considered if text format
               is set from PDF file with edit mode. 
@@ -175,8 +179,9 @@ def rects_from_source(xref_stream, height):
     res = []
 
     # current working CS is coincident with the absolute origin (0, 0)
-    Ax, Ay = 0, 0
-    Wx, Wy = 0, 0
+    # consider scale and translation only
+    ACS = [1.0, 1.0, 0.0, 0.0] # scale_x, scale_y, translate_x, tranlate_y
+    WCS = [1.0, 1.0, 0.0, 0.0]
 
     # current graphics color is black
     Ac = util.RGB_value((0, 0, 0))
@@ -197,11 +202,16 @@ def rects_from_source(xref_stream, height):
         if begin_text_setting:
             continue        
 
-        # CS transformation
+        # CS transformation: a b c d e f cm, e.g.
+        # 0.05 0 0 -0.05 0 792 cm
+        # refer to PDF Reference 4.2.2 Common Transformations for detail
         if line=='cm':
             # update working CS
-            Wx += float(lines[i-2])
-            Wy += float(lines[i-1])        
+            sx = float(lines[i-6])
+            sy = float(lines[i-3])
+            tx = float(lines[i-2])
+            ty = float(lines[i-1])
+            WCS = [WCS[0]*sx, WCS[1]*sy, WCS[2]+tx, WCS[3]+ty]
 
         # painting color
         # gray mode
@@ -210,37 +220,97 @@ def rects_from_source(xref_stream, height):
             Wc = util.RGB_value((g, g, g))
 
         # RGB mode
-        elif line=='rg': # 1 1 0 rg
+        elif line.upper()=='RG': # 1 1 0 rg
             r, g, b = map(float, lines[i-3:i])
             Wc = util.RGB_value((r, g, b))
 
         # save or restore graphics state:
         # only consider transformation and color here
         elif line=='q': # save
-            Ax, Ay = Wx, Wy
+            ACS = copy.copy(WCS)
             Ac = Wc
             
         elif line=='Q': # restore
-            Wx, Wy = Ax, Ay
+            WCS = copy.copy(ACS)
             Wc = Ac
 
         # finally, come to the rectangle block
         elif line=='re' and lines[i+1] in ('f', 'f*'):
             # (x, y, w, h) before this line
-            x, y, w, h = map(float, lines[i-4:i])
+            x0, y0, w, h = map(float, lines[i-4:i])            
 
-            # change bottom left point to top left,
-            # consider also the working CS
-            x0 = Wx + x
-            y0 = Wy + y + h
+            # ATTENTION: 
+            # top/bottom, left/right is relative to the positive direction of CS, 
+            # while a reverse direction may be performed, so be careful when calculating
+            # the corner points. 
+            # Coordinates in the transformed PDF CS:
+            #   y1 +----------+
+            #      |          | h
+            #   y0 +----w-----+
+            #      x0        x1
+            # 
             x1 = x0 + w
-            y1 = Wy + y
+            y1 = y0 + h
+
+            # With the transformations, a bottom-left point may be transformed from a top-left
+            # point in the original CS, e.g. a reverse scale with scale_y = -1
+            # Coordinates in the original PDF CS:
+            #   _y1 +----------+             _y0 +----------+
+            #       |          |      or         |          |
+            #   _y0 +----------+             _y1 +----------+
+            #      _x0        _x1               _x0        _x1
+            #
+            # So, we have to calculate all the four coordinate components first,
+            # then determin the required corner points
+            # 
+            sx, sy, tx, ty = WCS
+            _x0 = sx*x0 + tx
+            _y0 = sy*y0 + ty
+            _x1 = sx*x1 + tx
+            _y1 = sy*y1 + ty
+
+            # For PyMuPDF context, we need top-left and bottom-right point
+            # top means the larger one in (_y0, _y1), and it's true for left/right
+            X0 = min(_x0, _x1)
+            Y0 = max(_y0, _y1)
+            X1 = max(_x0, _x1)
+            Y1 = min(_y0, _y1)
 
             # add rectangle, meanwhile convert bbox to PyMuPDF coordinates system
+            res.append({
+                'bbox': (X0, height-Y0, X1, height-Y1), 
+                'color': Wc
+            })
+        # line is also considered as rectangle by adding a height
+        elif line=='m' and lines[i+3]=='l':
+            # start point
+            x_s, y_s = map(float, lines[i-2:i])
+            # end point
+            x_e, y_e = map(float, lines[i+1:i+3])
+
+            # consider horizontal line only
+            if y_s != y_e: continue
+
+            # transformate to original PDF CS
+            sx, sy, tx, ty = WCS            
+            x0 = sx*x_s + tx
+            y0 = sy*y_s + ty
+            x1 = sx*x_e + tx
+            y1 = sy*y_e + ty
+
+            # convert line to rectangle with a default height 0.5pt:
+            # move start point to top-left corner of a rectangle
+            # move end point to bottom-right corner of rectangle
+            h = 0.5
+            y0 += h/2.0
+            y1 -= h/2.0
+
+            # bbox in PyMuPDF coordinates system
             res.append({
                 'bbox': (x0, height-y0, x1, height-y1), 
                 'color': Wc
             })
+
         
     return res
 

@@ -32,17 +32,17 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt-get install unoconv
         python -m pip install --upgrade pip
+        pip install requests
         pip install -r requirements.txt
 
     - name: Run unit test
       run: |
         cd test
-        python -m unittest test_unit.py
+        python -m unittest unit_test.py
 
     - name: Archive converted files
       uses: actions/upload-artifact@v1
       with:
         name: docx
-        path: ./test/outputs/*.docx
+        path: ./test/outputs
