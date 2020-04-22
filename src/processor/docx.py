@@ -150,9 +150,10 @@ def make_paragraph(doc, block, width, page_margin):
             if line==block['lines'][-1]: 
                 line_break = False
             
-            # different lines in space: y0 of next line should be larger than y1 of current line,
-            # otherwise, they are in same line, then don't break the line
-            elif block['lines'][i+1]['bbox'][1]<=line['bbox'][3]:
+            # different lines in space, i.e. break line if they are not horizontally aligned
+            # Line i+1 y0 > Line i y1 is a simple criterion, but not so general since overlap may exist
+            # so a overlap with at least 0.5 times of line width is applied here
+            elif util.is_horizontal_aligned(block['lines'][i+1]['bbox'], line['bbox'], True, 0.5):
                 line_break = False
             
             # now, we have two lines, check whether word wrap or line break
