@@ -16,7 +16,8 @@ from src.pdf2doc import Reader, Writer
 class TestUtility(Utility, unittest.TestCase):
     '''utilities related directly to the test case'''
 
-    PREFIX = 'comparing'
+    PREFIX_SAMPLE = 'sample'
+    PREFIX_COMPARING = 'comparing'
 
     def init_pdf(self, filename):
         ''' - create sample pdf Reader object
@@ -24,12 +25,12 @@ class TestUtility(Utility, unittest.TestCase):
             - create comparing pdf from docx
         '''
         # sample pdf
-        sample_pdf_file = os.path.join(self.output_dir, filename)
+        sample_pdf_file = os.path.join(self.output_dir, f'{self.PREFIX_SAMPLE}-{filename}')
         sample_pdf = Reader(sample_pdf_file)
 
         # convert pdf to docx, besides, 
         # convert docx back to pdf for comparison next
-        comparing_pdf_file = os.path.join(self.output_dir, f'{self.PREFIX}-{filename}')
+        comparing_pdf_file = os.path.join(self.output_dir, f'{self.PREFIX_COMPARING}-{filename}')
         layouts = self.pdf2docx(sample_pdf, comparing_pdf_file)
         self.assertIsNotNone(layouts, msg='Converting PDF to Docx failed.')
 
@@ -51,7 +52,8 @@ class TestUtility(Utility, unittest.TestCase):
             docx.make_page(layout)
         
         # save docx
-        docx_file = self.get_docx_path(pdf.filename)
+        docx_file = pdf.filename[0:-3] + 'docx'
+        docx_file = docx_file.replace(f'{self.PREFIX_SAMPLE}-', '')
         docx.save(docx_file)
 
         # convert to pdf for comparison
@@ -99,6 +101,18 @@ class TestUtility(Utility, unittest.TestCase):
                         res.append(span['bbox'])
         return res
 
+    def mark_fail_bbox(self, sample_bbox, test_bbox, page, pdf):
+        '''mark in pdf where mismatch occurs'''
+        # right position with red box
+        page.drawRect(sample_bbox, color=(1,0,0), overlay=False)
+        # mismatched postion in test case
+        page.drawRect(test_bbox, color=(1,1,0), overlay=False)
+
+        # save file
+        result_file = pdf.filename.replace(f'{self.PREFIX_SAMPLE}-', '')
+        print(result_file)
+        pdf.core.save(result_file)
+
     def verify_layout(self, sample_pdf, test_pdf, threshold=0.9):
         ''' compare layout of two pdf files:
             It's difficult to have an exactly same layout of blocks, but ensure they
@@ -125,9 +139,7 @@ class TestUtility(Utility, unittest.TestCase):
                 # mark pdf if failed
                 matched = self.check_bbox(sample_bbox, test_bbox, threshold)
                 if not matched:
-                    sample_page.drawRect(sample_bbox, color=(1,0,0), overlay=False)
-                    sample_page.drawRect(test_bbox, color=(1,1,0), overlay=False)
-                    sample_pdf.core.save()
+                    self.mark_fail_bbox(sample_bbox, test_bbox, sample_page, sample_pdf)
 
                 self.assertTrue(matched,
                     msg=f'bbox for word "{sample_word}": {test_bbox} is inconsistent with sample {sample_bbox}.')
@@ -146,12 +158,13 @@ class MainTest(TestUtility):
         # copy sample pdf
         for filename in os.listdir(self.sample_dir):
             if filename.endswith('pdf'):
-                shutil.copy(os.path.join(self.sample_dir, filename), self.output_dir)
+                shutil.copy(os.path.join(self.sample_dir, filename), 
+                    os.path.join(self.output_dir, f'{self.PREFIX_SAMPLE}-{filename}'))
             
     def tearDown(self):
         # delete pdf files generated for comparison purpose
         for filename in os.listdir(self.output_dir):
-            if filename.startswith(self.PREFIX):
+            if filename.startswith(self.PREFIX_SAMPLE) or filename.startswith(self.PREFIX_COMPARING):
                 os.remove(os.path.join(self.output_dir, filename))
 
     def test_text_format(self):

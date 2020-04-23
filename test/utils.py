@@ -24,13 +24,6 @@ class Utility:
     def output_dir(self):
         return os.path.join(self.test_dir, 'outputs')
 
-    def get_docx_path(self, pdf_file):
-        '''get docx filename based on current pdf file'''
-        pdf_filename = os.path.basename(pdf_file)
-        docx_filename = pdf_filename[0:-3] + 'docx' # .pdf -> .docx
-        return os.path.join(self.output_dir, docx_filename)
-
-
     @staticmethod
     def docx2pdf(docx_path, pdf_path):
         '''convert docx file to pdf with'''
@@ -51,7 +44,7 @@ def docx2pdf_win(docx_path, pdf_path):
        https://github.com/cognidox/OfficeToPDF/releases
     '''
     # convert pdf with command line
-    cmd = f'OfficeToPDF "{docx_path}"'
+    cmd = f'OfficeToPDF "{docx_path}" "{pdf_path}"'
     os.system(cmd)
 
     # check results    
