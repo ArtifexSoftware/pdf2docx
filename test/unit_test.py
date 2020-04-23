@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 import unittest
 import fitz
 
@@ -15,7 +16,30 @@ from src.pdf2doc import Reader, Writer
 class TestUtility(Utility, unittest.TestCase):
     '''utilities related directly to the test case'''
 
-    def pdf2docx(self, pdf):
+    PREFIX = 'comparing'
+
+    def init_pdf(self, filename):
+        ''' - create sample pdf Reader object
+            - convert to docx
+            - create comparing pdf from docx
+        '''
+        # sample pdf
+        sample_pdf_file = os.path.join(self.output_dir, filename)
+        sample_pdf = Reader(sample_pdf_file)
+
+        # convert pdf to docx, besides, 
+        # convert docx back to pdf for comparison next
+        comparing_pdf_file = os.path.join(self.output_dir, f'{self.PREFIX}-{filename}')
+        layouts = self.pdf2docx(sample_pdf, comparing_pdf_file)
+        self.assertIsNotNone(layouts, msg='Converting PDF to Docx failed.')
+
+        # testing pdf
+        test_pdf_file = os.path.join(self.output_dir, comparing_pdf_file)
+        test_pdf = Reader(test_pdf_file)
+
+        return sample_pdf, test_pdf, layouts
+
+    def pdf2docx(self, pdf, comparing_pdf_file):
         ''' test target: converting pdf to docx'''        
         docx = Writer()
         layouts = []
@@ -31,7 +55,7 @@ class TestUtility(Utility, unittest.TestCase):
         docx.save(docx_file)
 
         # convert to pdf for comparison
-        if self.docx2pdf(docx_file):
+        if self.docx2pdf(docx_file, comparing_pdf_file):
             return layouts
         else:
             return None   
@@ -86,16 +110,26 @@ class TestUtility(Utility, unittest.TestCase):
             sample_words = sample_page.getText('words')
             test_words = test_page.getText('words')
 
+            # except
+
             # sort by word
-            sample_words.sort(key=lambda item: (item[4], item[0], item[1]))
-            test_words.sort(key=lambda item: (item[4], item[0], item[1]))
+            sample_words.sort(key=lambda item: (item[4], item[-3], item[-2], item[-1]))
+            test_words.sort(key=lambda item: (item[4], item[-3], item[-2], item[-1]))
 
             # check each word and bbox
             for sample, test in zip(sample_words, test_words):
                 sample_bbox, test_bbox = sample[0:4], test[0:4]
                 sample_word, test_word = sample[4], test[4]
                 self.assertEqual(sample_word, test_word)
-                self.assertTrue(self.check_bbox(sample_bbox, test_bbox, threshold),
+
+                # mark pdf if failed
+                matched = self.check_bbox(sample_bbox, test_bbox, threshold)
+                if not matched:
+                    sample_page.drawRect(sample_bbox, color=(1,0,0), overlay=False)
+                    sample_page.drawRect(test_bbox, color=(1,1,0), overlay=False)
+                    sample_pdf.core.save()
+
+                self.assertTrue(matched,
                     msg=f'bbox for word "{sample_word}": {test_bbox} is inconsistent with sample {sample_bbox}.')
 
 
@@ -105,24 +139,26 @@ class MainTest(TestUtility):
     '''
 
     def setUp(self):
+        # create output path if not exist
         if not os.path.exists(self.output_dir):
-            os.mkdir(self.output_dir)    
+            os.mkdir(self.output_dir)
+        
+        # copy sample pdf
+        for filename in os.listdir(self.sample_dir):
+            if filename.endswith('pdf'):
+                shutil.copy(os.path.join(self.sample_dir, filename), self.output_dir)
+            
+    def tearDown(self):
+        # delete pdf files generated for comparison purpose
+        for filename in os.listdir(self.output_dir):
+            if filename.startswith(self.PREFIX):
+                os.remove(os.path.join(self.output_dir, filename))
 
     def test_text_format(self):
         '''sample file focusing on text format'''
-        # sample pdf
+        # init pdf
         filename = 'demo-text.pdf'
-        sample_pdf_file = os.path.join(self.sample_dir, filename)
-        sample_pdf = Reader(sample_pdf_file)
-
-        # convert pdf to docx, besides, 
-        # convert docx agagin to pdf for comparison next
-        layouts = self.pdf2docx(sample_pdf)
-        self.assertIsNotNone(layouts, msg='Converting PDF to Docx failed.')
-
-        # converted pdf
-        test_pdf_file = os.path.join(self.output_dir, filename)
-        test_pdf = Reader(test_pdf_file)
+        sample_pdf, test_pdf, layouts = self.init_pdf(filename)
 
         # check count of pages
         self.assertEqual(len(layouts), len(test_pdf), 
@@ -144,28 +180,15 @@ class MainTest(TestUtility):
                     msg=f"Applied text {t['text']} is inconsistent with sample {s['text']}")
                 self.assertEqual(s['style'], t['style'], 
                     msg=f"Applied text format {t['style']} is inconsistent with sample {s['style']}")
-
-        # finish and remove pdf
-        test_pdf.core.close()
-        os.remove(test_pdf_file)
+        
 
 
-    @unittest.skip("a bit update on the layout is planed, skipping temporarily.")
+    # @unittest.skip("a bit update on the layout is planed, skipping temporarily.")
     def test_image(self):
         '''sample file focusing on image, inline-image considered'''
-        # sample pdf
+        # init pdf
         filename = 'demo-image.pdf'
-        sample_pdf_file = os.path.join(self.sample_dir, filename)
-        sample_pdf = Reader(sample_pdf_file)
-
-        # convert pdf to docx, besides, 
-        # convert docx agagin to pdf for comparison next
-        layouts = self.pdf2docx(sample_pdf)
-        self.assertIsNotNone(layouts, msg='Converting PDF to Docx failed.')
-
-        # converted pdf
-        test_pdf_file = os.path.join(self.output_dir, filename)
-        test_pdf = Reader(test_pdf_file)
+        sample_pdf, test_pdf, layouts = self.init_pdf(filename)
 
         # check count of pages
         self.assertEqual(len(layouts), len(test_pdf), 
@@ -179,5 +202,5 @@ class MainTest(TestUtility):
             sample_images = self.extract_image(layout)
             target_images = self.extract_image(test_pdf.parse(page))            
             for s, t in zip(sample_images, target_images):
-                self.assertTrue(self.check_bbox(s, t, 0.8),
+                self.assertTrue(self.check_bbox(s, t, 0.5),
                 msg=f"Applied image bbox {t} is inconsistent with sample {s}")

@@ -32,10 +32,9 @@ class Utility:
 
 
     @staticmethod
-    def docx2pdf(docx_path):
+    def docx2pdf(docx_path, pdf_path):
         '''convert docx file to pdf with'''
 
-        pdf_path = docx_path[0:-4] + 'pdf'
         if os.path.exists(pdf_path): os.remove(pdf_path)
 
         # local test only with OfficeToPDF installed
