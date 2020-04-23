@@ -14,7 +14,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import RGBColor
 
-from .. import util
+from .. import utils
 
 
 
@@ -93,7 +93,7 @@ def make_paragraph(doc, block, width, page_margin):
     if block['type']==1:
         # left indent implemented with tab
         pos = block['bbox'][0]-page_margin[0]
-        if abs(pos) > util.DM:
+        if abs(pos) > utils.DM:
             pf.tab_stops.add_tab_stop(Pt(pos))
             p.add_run().add_tab()
         # create image with bytes data stored in block.
@@ -109,7 +109,7 @@ def make_paragraph(doc, block, width, page_margin):
 
             # left indent implemented with tab
             pos = line['bbox'][0]-page_margin[0]
-            if abs(pos) > util.DM:
+            if abs(pos) > utils.DM:
                 pf.tab_stops.add_tab_stop(Pt(pos))
                 p.add_run().add_tab()
 
@@ -133,7 +133,7 @@ def make_paragraph(doc, block, width, page_margin):
             # different lines in space, i.e. break line if they are not horizontally aligned
             # Line i+1 y0 > Line i y1 is a simple criterion, but not so general since overlap may exist
             # so a overlap with at least 0.5 times of line width is applied here
-            elif util.is_horizontal_aligned(block['lines'][i+1]['bbox'], line['bbox'], True, 0.5):
+            elif utils.is_horizontal_aligned(block['lines'][i+1]['bbox'], line['bbox'], True, 0.5):
                 line_break = False
             
             # now, we have two lines, check whether word wrap or line break
@@ -187,7 +187,7 @@ def make_table(doc, table, block, page_width, page_margin):
     
     # insert into cells
     for cell, x in zip(cells, boundaries):
-        cell_lines = list(filter(lambda line: abs(line['bbox'][0]-x)<util.DM, lines))
+        cell_lines = list(filter(lambda line: abs(line['bbox'][0]-x)<utils.DM, lines))
         first = True
         for line in cell_lines:
             # create paragraph
@@ -242,16 +242,16 @@ def add_span(span, paragraph):
         # bit 4: bold (2^4)            
         text_span.italic = bool(span['flags'] & 2**1)
         text_span.bold = bool(span['flags'] & 2**4)
-        text_span.font.name = util.parse_font_name(span['font'])
+        text_span.font.name = utils.parse_font_name(span['font'])
         text_span.font.size = Pt(span['size'])
-        text_span.font.color.rgb = RGBColor(*util.RGB_component(span['color']))
+        text_span.font.color.rgb = RGBColor(*utils.RGB_component(span['color']))
 
         # font style parsed from PDF rectangles: 
         # e.g. highlight, underline, strike-through-line
         for style in span.get('style', []):
             t = style['type']
             if t==0:
-                text_span.font.highlight_color = util.to_Highlight_color(style['color'])
+                text_span.font.highlight_color = utils.to_Highlight_color(style['color'])
             elif t==1:
                 text_span.font.underline = True
             elif t==2:

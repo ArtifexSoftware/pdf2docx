@@ -80,7 +80,7 @@ import fitz
 from operator import itemgetter
 import copy
 
-from .. import util
+from .. import utils
 
 
 def layout(layout, **kwargs):
@@ -187,7 +187,7 @@ def rects_from_source(xref_stream, height):
     WCS = [1.0, 1.0, 0.0, 0.0]
 
     # current graphics color is black
-    Ac = util.RGB_value((0, 0, 0))
+    Ac = utils.RGB_value((0, 0, 0))
     Wc = Ac
 
     # check xref stream word by word (line always changes)    
@@ -220,12 +220,12 @@ def rects_from_source(xref_stream, height):
         # gray mode
         elif line=='g': # 0 g
             g = float(lines[i-1])
-            Wc = util.RGB_value((g, g, g))
+            Wc = utils.RGB_value((g, g, g))
 
         # RGB mode
         elif line.upper()=='RG': # 1 1 0 rg
             r, g, b = map(float, lines[i-3:i])
-            Wc = util.RGB_value((r, g, b))
+            Wc = utils.RGB_value((r, g, b))
 
         # save or restore graphics state:
         # only consider transformation and color here
@@ -352,7 +352,7 @@ def rects_from_annots(annots):
         res.append({
             'type': type_map[annot.type[0]],
             'bbox': (rect.x0, rect.y0, rect.x1, rect.y1),
-            'color': util.RGB_value(c)
+            'color': utils.RGB_value(c)
         })
 
     return res
@@ -367,19 +367,19 @@ def plot_layout(doc, layout, title):
     # plot blocks
     for block in layout['blocks']:
         # block border in blue
-        blue = util.getColor('blue')
+        blue = utils.getColor('blue')
         r = fitz.Rect(block['bbox'])
         page.drawRect(r, color=blue, fill=None, width=0.5, overlay=False)
 
         # line border in red
         for line in block.get('lines', []): # TODO: other types, e.g. image, list, table            
-            red = util.getColor('red')
+            red = utils.getColor('red')
             r = fitz.Rect(line['bbox'])
             page.drawRect(r, color=red, fill=None, overlay=False)
 
             # span regions
             for span in line.get('spans', []):
-                c = util.getColor('')
+                c = utils.getColor('')
                 r = fitz.Rect(span['bbox'])
                 # image span: diagonal lines
                 if 'image' in span:
@@ -401,7 +401,7 @@ def plot_rectangles(doc, layout, title):
     # draw rectangle one by one
     for rect in layout['rects']:
         # fill color
-        c = util.RGB_component(rect['color'])
+        c = utils.RGB_component(rect['color'])
         c = [_/255.0 for _ in c]
         page.drawRect(rect['bbox'], color=c, fill=c, overlay=False)
 
@@ -415,7 +415,7 @@ def _new_page_with_margin(doc, layout, title):
     page = doc.newPage(width=w, height=h)
     
     # plot page margin
-    red = util.getColor('red')
+    red = utils.getColor('red')
     args = {
         'color': red,
         'width': 0.5
@@ -516,7 +516,7 @@ def _merge_inline_images(layout, **kwargs):
 
             # horizontally aligned with current text block?
             # no, pass
-            if not util.is_horizontal_aligned(block['bbox'], image['bbox']): continue
+            if not utils.is_horizontal_aligned(block['bbox'], image['bbox']): continue
 
             # yes, inline image
             image_merged = True
@@ -547,7 +547,7 @@ def _parse_text_format(layout, **kwargs):
             for line in block['lines']:
                 # any intersection in this line?
                 line_rect = fitz.Rect(line['bbox'])
-                intsec = the_rect & ( line_rect + util.DR )
+                intsec = the_rect & ( line_rect + utils.DR )
                 if not intsec: continue
 
                 # yes, then try to split the spans in this line
@@ -608,7 +608,7 @@ def _split_span_with_rect(span, rect):
             split_span['text'] = span['text'][pos:pos_end]
 
             # update style
-            new_style = util.rect_to_style(rect, split_span['bbox'])
+            new_style = utils.rect_to_style(rect, split_span['bbox'])
             if new_style:
                 if 'style' in split_span:
                     split_span['style'].append(new_style)
@@ -634,7 +634,7 @@ def _index_chars_in_rect(span, rect):
         return (start index, length) of span chars
     '''
     # combine an index with enumerate(), so the second element is the char
-    f = lambda items: util.is_char_in_rect(items[1], rect)
+    f = lambda items: utils.is_char_in_rect(items[1], rect)
     index_chars = list(filter(f, enumerate(span['chars'])))
 
     # then we get target chars in a sequence
@@ -659,7 +659,7 @@ def _page_margin(layout):
     candidates = []
     for bbox in list_bbox:
         # count of blocks with save left border
-        if abs(bbox[0]-lm_bbox[0])<util.DM:
+        if abs(bbox[0]-lm_bbox[0])<utils.DM:
             num += 1
         else:
             # stop counting if current block border is not equal to previous,
@@ -676,7 +676,7 @@ def _page_margin(layout):
 
     # if nothing found, e.g. whole page is an image, return standard margin
     if not candidates:
-        return (util.ITP, ) * 4 # 1 Inch = 72 pt
+        return (utils.ITP, ) * 4 # 1 Inch = 72 pt
 
     # get left margin which is supported by bboxes as more as possible
     candidates.sort(key=lambda x: x[1], reverse=True)
@@ -691,7 +691,7 @@ def _page_margin(layout):
     top = min(map(lambda x: x[1], list_bbox))
     bottom = h-max(map(lambda x: x[3], list_bbox))
 
-    return left, right, min(util.ITP, top), min(util.ITP, bottom)
+    return left, right, min(utils.ITP, top), min(utils.ITP, bottom)
 
 
 def _insert_image_to_block(image, block):
@@ -730,13 +730,13 @@ def _merge_lines_in_block(block):
     new_lines = []
     for line in block['lines']:        
         # add line directly if not aligned horizontally with previous line
-        if not new_lines or not util.is_horizontal_aligned(line['bbox'], new_lines[-1]['bbox']):
+        if not new_lines or not utils.is_horizontal_aligned(line['bbox'], new_lines[-1]['bbox']):
             new_lines.append(line)
             continue
 
         # if it exists x-distance obviously to previous line,
         # take it as a separate line as it is
-        if abs(line['bbox'][0]-new_lines[-1]['bbox'][2]) > util.DM:
+        if abs(line['bbox'][0]-new_lines[-1]['bbox'][2]) > utils.DM:
             new_lines.append(line)
             continue
 
@@ -769,7 +769,7 @@ def _parse_paragraph_and_line_spacing(layout):
         
         - line spacing is defined as the average line height in current block.
     '''
-    top,bottom = layout['margin'][-2:]     
+    top, bottom = layout['margin'][-2:]     
     ref_block = None
     ref_pos = top
 
@@ -791,7 +791,7 @@ def _parse_paragraph_and_line_spacing(layout):
             count = 0
             for line in block['lines']:
                 # count of lines
-                if not util.is_horizontal_aligned(line['bbox'], ref_bbox, True, 0.5):
+                if not utils.is_horizontal_aligned(line['bbox'], ref_bbox, True, 0.5):
                     count += 1
                 # update reference line
                 ref_bbox = line['bbox']
@@ -810,15 +810,14 @@ def _parse_paragraph_and_line_spacing(layout):
             if count > 1:
                 # since the line height setting in docx may affect the original bbox in pdf, 
                 # it's necessary to update the before spacing:
-                # taking bottom left corner of first line as the reference point
-                
+                # taking bottom left corner of first line as the reference point                
                 para_space = para_space + first_line_height - line_space
                 block['before_space'] = para_space
 
             # adjust last block to avoid exceeding current page
             free_space = layout['height']-(ref_pos+para_space+block_height+bottom) 
             if free_space<=0:
-                block['before_space'] = para_space+free_space-util.DM
+                block['before_space'] = para_space+free_space-utils.DM
 
         # paragraph (ref) to table (current): set after-space for paragraph
         elif ref_block['type']==0:
