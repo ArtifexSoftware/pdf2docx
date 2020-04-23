@@ -50,26 +50,73 @@ def make_page(doc, layout):
     section.top_margin = Pt(top)
     section.bottom_margin = Pt(bottom)
 
-    # Calculate vertical space for paragraph block. It'll used when creating paragraph.
-    # The vertical position of each block is determined by the vertical distance
-    # to previous block. For the first block, the reference position is top margin.
-    # It's easy to set before-space or after-space for a paragraph with python-docx,
-    # so, if current block is a paragraph, set before-space to previous block;
-    # if current block is not a paragraph, e.g. a table, set after-space of previous
-    # block (generally, previous block should be a paragraph).
+    # Calculate external and internal vertical space for paragraph block. It'll used 
+    # as paragraph spacing and line spacing when creating paragraph. 
     # 
-    ref_block = None 
+    # - paragraph spacing is determined by the vertical distance to previous block. 
+    #   For the first block, the reference position is top margin.
+    # 
+    #  It's easy to set before-space or after-space for a paragraph with python-docx,
+    #  so, if current block is a paragraph, set before-space for it; if current block 
+    #  is not a paragraph, e.g. a table, set after-space for previous block (generally, 
+    #  previous block should be a paragraph).
+    # 
+    # - line spacing is defined as the average line height in current block.
+    # 
+    ref_block = None
+    ref_pos = top
     for block in layout['blocks']:
-        ref_pos = ref_block['bbox'][3] if ref_block else top
-        space = max(block['bbox'][1]-ref_pos, 0.0)
+        para_space = block['bbox'][1] - ref_pos       
 
         # paragraph-1 (ref) to paragraph-2 (current): set before-space for paragraph-2
         if block['type']==0:
-            block['before_space'] = int(space)
+
+            # spacing before this paragraph
+            block['before_space'] = para_space
+
+            # calculate average line spacing in paragraph
+            # e.g. line-space-line-space-line, excepting first line -> space-line-space-line,
+            # so an average line height = space+line
+            # then, the height of first line can be adjusted by updating paragraph before-spacing.
+            # 
+            ref_bbox = None
+            count = 0
+            for line in block['lines']:
+                # count of lines
+                if not util.is_horizontal_aligned(line['bbox'], ref_bbox, True, 0.5):
+                    count += 1
+                # update reference line
+                ref_bbox = line['bbox']
+
+            
+            _, y0, _, y1 = block['lines'][0]['bbox']   # first line
+            first_line_height = y1 - y0
+            block_height = block['bbox'][3]-block['bbox'][1]
+            if count > 1:
+                line_space = (block_height-first_line_height)/(count-1)
+            else:
+                line_space = block_height
+            block['line_space'] = line_space
+
+            # if only one line exists, don't have to set line spacing, use default setting,
+            # i.e. single line instead
+            if count > 1:
+                # since the line height setting in docx may affect the original bbox in pdf, 
+                # it's necessary to update the before spacing:
+                # taking bottom left corner of first line as the reference point
+                
+                para_space = para_space + first_line_height - line_space
+                block['before_space'] = para_space
+
+            # adjust last block to avoid exceeding current page
+            free_space = height-(ref_pos+para_space+block_height+bottom) 
+            if free_space<=0:
+                block['before_space'] = para_space+free_space-util.DM
 
         # paragraph (ref) to table (current): set after-space for paragraph
         elif ref_block['type']==0:
-            ref_block['after_space'] = int(space)
+
+            ref_block['after_space'] = para_space
 
         # situation with very low probability, e.g. table to table
         else:
@@ -77,6 +124,7 @@ def make_page(doc, layout):
 
         # update reference block
         ref_block = block
+        ref_pos = ref_block['bbox'][3]
 
     # ref_table indicates whether previous block is in table format
     ref_table = None
@@ -114,8 +162,8 @@ def make_paragraph(doc, block, width, page_margin):
 
     # indent and space setting
     pf = reset_paragraph_format(p)
-    pf.space_before = Pt(block.get('before_space', 0.0))
-    pf.space_after = Pt(block.get('after_space', 0.0))
+    pf.space_before = Pt(round(block.get('before_space', 0.0), 1))
+    pf.space_after = Pt(round(block.get('after_space', 0.0), 1))    
 
     # add image
     if block['type']==1:
@@ -130,6 +178,9 @@ def make_paragraph(doc, block, width, page_margin):
 
     # add text (inline image may exist)
     else:
+        # set line spacing for text paragraph
+        pf.line_spacing = Pt(round(block['line_space'],1))
+
         for i, line in enumerate(block['lines']):
 
             # left indent implemented with tab
@@ -140,7 +191,12 @@ def make_paragraph(doc, block, width, page_margin):
 
             # add line
             for span in line['spans']:
+                # add content
                 add_span(span, p)
+
+                # exactly line spacing will destroy image display, so set single line spacing instead
+                if 'image' in span:
+                    pf.line_spacing = 1.05
 
             # break line or word wrap?
             # new line by default
