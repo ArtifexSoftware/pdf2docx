@@ -5,7 +5,8 @@ script_path = os.path.abspath(__file__) # current script path
 project_path = os.path.dirname(os.path.dirname(script_path))
 sys.path.append(project_path)
 
-from src.pdf2doc import Reader, Writer
+from pdf2docx.reader import Reader
+from pdf2docx.writer import Writer
 
 import json
 
@@ -42,3 +43,4 @@ if __name__ == '__main__':
             f.write(json.dumps(layout))
 
     docx.save(docx_file)
+    pdf.close()

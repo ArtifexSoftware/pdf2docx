@@ -2,8 +2,9 @@ import os
 from docx import Document
 import fitz
 
-from .processor import pdf as PDFProcessor
-from .processor import docx as DOCXProcessor
+from . import pdf
+from . import pdf_shape
+from . import pdf_debug
 
 
 class Reader:
@@ -54,13 +55,13 @@ class Reader:
         # which are different from PDF comments like highlight, rectangle.
         for xref in page._getContents():
             page_content = self._doc._getXrefStream(xref).decode(encoding="ISO-8859-1")
-            rects = PDFProcessor.rects_from_source(page_content, height)
+            rects = pdf_shape.rects_from_source(page_content, height)
             res.extend(rects)
         
         # get annotations(comment shapes) from PDF page: consider highlight, underline, 
         # strike-through-line only.
         annots = page.annots()
-        rects = PDFProcessor.rects_from_annots(annots)
+        rects = pdf_shape.rects_from_annots(annots)
         res.extend(rects)
 
         return res
@@ -105,11 +106,11 @@ class Reader:
 
         # raw layout, rectangles
         if debug:
-            PDFProcessor.plot_layout(doc, layout, 'Original PDF')
-            PDFProcessor.plot_rectangles(doc, layout, 'Recognized Rectangles')
+            pdf_debug.plot_layout(doc, layout, 'Original PDF')
+            pdf_debug.plot_rectangles(doc, layout, 'Recognized Rectangles')
 
         # parse page
-        PDFProcessor.layout(layout, **kwargs)
+        pdf.layout(layout, **kwargs)
 
         # save layout plotting as pdf file
         if debug:
@@ -120,21 +121,3 @@ class Reader:
 
     def close(self):
         self._doc.close()
-
-class Writer:
-    '''
-        generate .docx file with python-docx based on page layout data.
-    '''
-
-    def __init__(self):
-        self._doc = Document()
-
-    def make_page(self, layout):
-        '''generate page'''
-        DOCXProcessor.make_page(self._doc, layout)
-
-    def save(self, filename='res.docx'):
-        '''save docx file'''
-        if os.path.exists(filename):
-            os.remove(filename)
-        self._doc.save(filename)

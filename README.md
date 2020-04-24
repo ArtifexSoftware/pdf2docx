@@ -17,15 +17,17 @@
 
 ## Limitations
 
-- Support only normal reading direction - from left to right, from top to bottom.
-- No word transformation, e.g. rotation is considered.
-- Floating images is not supported.
+- Normal reading direction only
+    - horizontal paragraph/line/word
+    - no word transformation, e.g. rotation
+- No floating images
 
 ## Usage
 
 ```python
 import os
-from pdf2docx import Reader, Writer
+from pdf2docx.reader import Reader
+from pdf2docx.writer import Writer
 
 dir_output = '/path/to/output/dir/'
 filename = 'demo-text'
@@ -45,4 +47,5 @@ for page in pdf[0:1]:
     docx.make_page(layout)
 
 docx.save(docx_file)
+pdf.close()
 ```
