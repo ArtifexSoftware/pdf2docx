@@ -1,9 +1,7 @@
 '''
-create .docx file based on PDF layout data with python package python-docx.
+create *.docx file based on PDF layout data with python package python-docx.
 @created: 2019-06-28
 @author: train8808@gmail.com
----
-
 '''
 
 
@@ -14,7 +12,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import RGBColor
 
-from .. import utils
+from . import utils
 
 
 

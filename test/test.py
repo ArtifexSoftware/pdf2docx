@@ -10,7 +10,8 @@ script_path = os.path.abspath(__file__) # current script path
 project_path = os.path.dirname(os.path.dirname(script_path))
 sys.path.append(project_path)
 
-from src.pdf2doc import Reader, Writer
+from pdf2docx.reader import Reader
+from pdf2docx.writer import Writer
 
 
 class TestUtility(Utility, unittest.TestCase):
@@ -147,13 +148,11 @@ class TestUtility(Utility, unittest.TestCase):
             # check each word and bbox
             for sample, test in zip(sample_words, test_words):
                 sample_bbox, test_bbox = sample[0:4], test[0:4]
-                sample_word, test_word = sample[4], test[4]
-                self.assertEqual(sample_word, test_word)
 
                 # check bbox word by word
                 matched = self.check_bbox(sample_bbox, test_bbox, sample_page, threshold)
                 self.assertTrue(matched,
-                    msg=f'bbox for word "{sample_word}": {test_bbox} is inconsistent with sample {sample_bbox}.')
+                    msg=f'bbox for word "{sample[4]}": {test_bbox} is inconsistent with sample {sample_bbox}.')
 
 
 class MainTest(TestUtility):

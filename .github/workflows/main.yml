@@ -39,7 +39,7 @@ jobs:
     - name: Run unit test
       run: |
         cd test
-        python -m unittest unit_test.py
+        python -m unittest test.py
 
     - name: Archive converted files
       uses: actions/upload-artifact@v1
