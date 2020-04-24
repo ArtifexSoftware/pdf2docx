@@ -209,7 +209,7 @@ def make_table(doc, table, block, page_width, page_margin):
 def reset_paragraph_format(p):
     '''paragraph format'''
     pf = p.paragraph_format
-    pf.line_spacing = 1 # single
+    pf.line_spacing = 1.05 # single
     pf.space_before = Pt(0)
     pf.space_after = Pt(0)
     pf.left_indent = Pt(0)
@@ -243,7 +243,7 @@ def add_span(span, paragraph):
         text_span.italic = bool(span['flags'] & 2**1)
         text_span.bold = bool(span['flags'] & 2**4)
         text_span.font.name = utils.parse_font_name(span['font'])
-        text_span.font.size = Pt(span['size'])
+        text_span.font.size = Pt(round(span['size']*2)/2.0) # only x.0 and x.5 is accepted in docx
         text_span.font.color.rgb = RGBColor(*utils.RGB_component(span['color']))
 
         # font style parsed from PDF rectangles: 
