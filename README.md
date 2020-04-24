@@ -34,15 +34,12 @@ filename = 'demo-text'
 pdf_file = os.path.join(dir_output, f'{filename}.pdf')
 docx_file = os.path.join(dir_output, f'{filename}.docx')
 
-pdf = Reader(pdf_file)
+pdf = Reader(pdf_file, debug=True)  # debug mode to plot layout in new PDF file
 docx = Writer()
 
 for page in pdf[0:1]:
-    # debug mode: plot layout in new PDF file with PyMuPDF
-    layout = pdf.parse(page, 
-        debug=True, 
-        filename=os.path.join(dir_output, 'illustration.pdf'))
-
+    # parse raw layout
+    layout = pdf.parse(page)
     # re-create docx page
     docx.make_page(layout)
 

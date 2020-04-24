@@ -203,8 +203,7 @@ def rects_from_source(xref_stream, height):
                 'bbox': (x0, height-y0, x1, height-y1), 
                 'color': Wc
             })
-
-        
+ 
     return res
 
 def rects_from_annots(annots):

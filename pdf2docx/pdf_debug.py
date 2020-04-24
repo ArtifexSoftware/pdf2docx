@@ -7,16 +7,21 @@ from . import utils
 
 
 def debug_plot(title, plot=True):
-    '''plot layout for debug'''
+    ''' plot layout for debug mode when the following conditions are all satisfied:
+          - plot=True
+          - layout has been changed: the return value of `func` is True
+          - debug mode: kwargs['debug']=True
+          - the pdf file to plot layout exists: kwargs['doc'] is not None
+    '''
     def wrapper(func):
         def inner(*args, **kwargs):
             # execute function
-            func(*args, **kwargs)
+            res = func(*args, **kwargs)
 
             # check if plot layout
             debug = kwargs.get('debug', False)
             doc = kwargs.get('doc', None)
-            if plot and debug and doc is not None:
+            if plot and res and debug and doc is not None:
                 layout = args[0]
                 plot_layout(doc, layout, title)
         
@@ -80,11 +85,12 @@ def _new_page_with_margin(doc, layout, title):
     w, h = layout['width'], layout['height']
     page = doc.newPage(width=w, height=h)
     
-    # plot page margin
+    # If layout has been processed, e.g. calculated page margin,
+    # plot page margin and title.
+    blue = utils.getColor('blue')
     if 'margin' in layout:
-        red = utils.getColor('red')
         args = {
-            'color': red,
+            'color': blue,
             'width': 0.5
         }
         dL, dR, dT, dB = layout['margin']
@@ -94,6 +100,12 @@ def _new_page_with_margin(doc, layout, title):
         page.drawLine((0, h-dB), (w, h-dB), **args) # bottom
 
         # plot title within the top margin
-        page.insertText((dL, dT*0.75), title, color=red, fontsize=dT/2.0)
+        page.insertText((dL, dT*0.75), title, color=blue, fontsize=dT/2.0)
+    
+    # otherwise, raw layout, plot title only
+    else:
+        dL, dT, *_ = layout['blocks'][0]['bbox']
+        page.insertText((dL, dT*0.75), title, color=blue, fontsize=dT/2.0)
+
 
     return page

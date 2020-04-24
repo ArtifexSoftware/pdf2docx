@@ -56,10 +56,16 @@ def merge_inline_images(layout, **kwargs):
     for i in index_inline[::-1]:
         layout['blocks'].pop(i)
 
+    # anything changed in this step?
+    return True if index_inline else False
+
 
 @debug_plot('Parsed Text Format', True)
 def parse_text_format(layout, **kwargs):
     '''parse text format with rectangle style'''
+
+    is_layout_updated = False
+
     for block in layout['blocks']:
         if block['type']==1: continue
         if not block['rects']: continue
@@ -82,6 +88,10 @@ def parse_text_format(layout, **kwargs):
                                                    
                 # update line spans                
                 line['spans'] = split_spans
+                is_layout_updated = True
+
+    # anything changed in this step?
+    return is_layout_updated
 
 
 def _split_span_with_rect(span, rect):

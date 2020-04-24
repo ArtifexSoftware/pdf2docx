@@ -14,17 +14,17 @@ import json
 if __name__ == '__main__':
 
     output = os.path.join(os.path.dirname(script_path), 'samples')
-    filename = 'demo-text'
+    filename = 'demo-image'
     pdf_file = os.path.join(output, f'{filename}.pdf')
     docx_file = os.path.join(output, f'{filename}.docx')
 
-    pdf = Reader(pdf_file)
+    pdf = Reader(pdf_file, debug=True) # debug mode to plot layout
     docx = Writer()
 
     for page in pdf[0:1]:
 
         # parse layout
-        layout = pdf.parse(page, True, os.path.join(output, 'illustration.pdf'))       
+        layout = pdf.parse(page)       
         
         # create docx
         docx.make_page(layout)

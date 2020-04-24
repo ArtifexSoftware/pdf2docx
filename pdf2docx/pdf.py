@@ -150,6 +150,9 @@ def preprocessing(layout, **kwargs):
             for span in line['spans']:
                 chars = [char['c'] for char in span['chars']]
                 span['text'] = ''.join(chars)
+
+    # anything changed in this step?
+    return True
     
 
 def parse_paragraph_and_line_spacing(layout):
