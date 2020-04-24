@@ -150,12 +150,21 @@ def is_start_sentence(text):
         return not text[0].islower() # conservatively
 
 def is_vertical_aligned(bbox1, bbox2, horizontal=True, factor=0.0):
-    '''check whether two boxes have enough intersection in vertical direction.
-       vertical direction is perpendicular to reading direction
+    ''' check whether two boxes have enough intersection in vertical direction.
+        vertical direction is perpendicular to reading direction
 
-       an enough intersection is defined based on the minimum width of two boxes:
-       L1+L2-L>factor*min(L1,L2)
+        - bbox1, bbox2: bbox region defined by top-left, bottom-right corners,
+                       e.g. (x0, y0, x1, y1).
+        - horizontal  : is reading direction from left to right? True by default.
+        - factor      : threshold of overlap ratio, the larger it is, the higher
+                       probability the two bbox-es are aligned.
+
+        An enough intersection is defined based on the minimum width of two boxes:
+        L1+L2-L>factor*min(L1,L2)
     '''
+    if not bbox1 or not bbox2:
+        return False
+
     if horizontal: # reading direction: x
         L1 = bbox1[2]-bbox1[0]
         L2 = bbox2[2]-bbox2[0]
@@ -169,5 +178,11 @@ def is_vertical_aligned(bbox1, bbox2, horizontal=True, factor=0.0):
 
 
 def is_horizontal_aligned(bbox1, bbox2, horizontal=True, factor=0.0):
-    '''it is opposite to vertical align situation'''
+    ''' it is opposite to vertical align situation
+        - bbox1, bbox2: bbox region defined by top-left, bottom-right corners,
+                       e.g. (x0, y0, x1, y1).
+        - horizontal  : is reading direction from left to right? True by default.
+        - factor      : threshold of overlap ratio, the larger it is, the higher
+                        probability the two bbox-es are aligned.
+    '''
     return is_vertical_aligned(bbox1, bbox2, not horizontal, factor)

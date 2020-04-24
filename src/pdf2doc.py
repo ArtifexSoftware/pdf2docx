@@ -118,6 +118,8 @@ class Reader:
 
         return layout
 
+    def close(self):
+        self._doc.close()
 
 class Writer:
     '''

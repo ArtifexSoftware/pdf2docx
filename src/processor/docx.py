@@ -14,7 +14,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import RGBColor
 
-from .. import util
+from .. import utils
 
 
 
@@ -49,34 +49,6 @@ def make_page(doc, layout):
     section.right_margin = Pt(right)
     section.top_margin = Pt(top)
     section.bottom_margin = Pt(bottom)
-
-    # Calculate vertical space for paragraph block. It'll used when creating paragraph.
-    # The vertical position of each block is determined by the vertical distance
-    # to previous block. For the first block, the reference position is top margin.
-    # It's easy to set before-space or after-space for a paragraph with python-docx,
-    # so, if current block is a paragraph, set before-space to previous block;
-    # if current block is not a paragraph, e.g. a table, set after-space of previous
-    # block (generally, previous block should be a paragraph).
-    # 
-    ref_block = None 
-    for block in layout['blocks']:
-        ref_pos = ref_block['bbox'][3] if ref_block else top
-        space = max(block['bbox'][1]-ref_pos, 0.0)
-
-        # paragraph-1 (ref) to paragraph-2 (current): set before-space for paragraph-2
-        if block['type']==0:
-            block['before_space'] = int(space)
-
-        # paragraph (ref) to table (current): set after-space for paragraph
-        elif ref_block['type']==0:
-            ref_block['after_space'] = int(space)
-
-        # situation with very low probability, e.g. table to table
-        else:
-            pass
-
-        # update reference block
-        ref_block = block
 
     # ref_table indicates whether previous block is in table format
     ref_table = None
@@ -114,14 +86,14 @@ def make_paragraph(doc, block, width, page_margin):
 
     # indent and space setting
     pf = reset_paragraph_format(p)
-    pf.space_before = Pt(block.get('before_space', 0.0))
-    pf.space_after = Pt(block.get('after_space', 0.0))
+    pf.space_before = Pt(round(block.get('before_space', 0.0), 1))
+    pf.space_after = Pt(round(block.get('after_space', 0.0), 1))    
 
     # add image
     if block['type']==1:
         # left indent implemented with tab
         pos = block['bbox'][0]-page_margin[0]
-        if abs(pos) > util.DM:
+        if abs(pos) > utils.DM:
             pf.tab_stops.add_tab_stop(Pt(pos))
             p.add_run().add_tab()
         # create image with bytes data stored in block.
@@ -130,17 +102,25 @@ def make_paragraph(doc, block, width, page_margin):
 
     # add text (inline image may exist)
     else:
+        # set line spacing for text paragraph
+        pf.line_spacing = Pt(round(block['line_space'],1))
+
         for i, line in enumerate(block['lines']):
 
             # left indent implemented with tab
             pos = line['bbox'][0]-page_margin[0]
-            if abs(pos) > util.DM:
+            if abs(pos) > utils.DM:
                 pf.tab_stops.add_tab_stop(Pt(pos))
                 p.add_run().add_tab()
 
             # add line
             for span in line['spans']:
+                # add content
                 add_span(span, p)
+
+                # exactly line spacing will destroy image display, so set single line spacing instead
+                if 'image' in span:
+                    pf.line_spacing = 1.05
 
             # break line or word wrap?
             # new line by default
@@ -150,9 +130,10 @@ def make_paragraph(doc, block, width, page_margin):
             if line==block['lines'][-1]: 
                 line_break = False
             
-            # different lines in space: y0 of next line should be larger than y1 of current line,
-            # otherwise, they are in same line, then don't break the line
-            elif block['lines'][i+1]['bbox'][1]<=line['bbox'][3]:
+            # different lines in space, i.e. break line if they are not horizontally aligned
+            # Line i+1 y0 > Line i y1 is a simple criterion, but not so general since overlap may exist
+            # so a overlap with at least 0.5 times of line width is applied here
+            elif utils.is_horizontal_aligned(block['lines'][i+1]['bbox'], line['bbox'], True, 0.5):
                 line_break = False
             
             # now, we have two lines, check whether word wrap or line break
@@ -206,7 +187,7 @@ def make_table(doc, table, block, page_width, page_margin):
     
     # insert into cells
     for cell, x in zip(cells, boundaries):
-        cell_lines = list(filter(lambda line: abs(line['bbox'][0]-x)<util.DM, lines))
+        cell_lines = list(filter(lambda line: abs(line['bbox'][0]-x)<utils.DM, lines))
         first = True
         for line in cell_lines:
             # create paragraph
@@ -228,7 +209,7 @@ def make_table(doc, table, block, page_width, page_margin):
 def reset_paragraph_format(p):
     '''paragraph format'''
     pf = p.paragraph_format
-    pf.line_spacing = 1 # single
+    pf.line_spacing = 1.05 # single
     pf.space_before = Pt(0)
     pf.space_after = Pt(0)
     pf.left_indent = Pt(0)
@@ -261,16 +242,16 @@ def add_span(span, paragraph):
         # bit 4: bold (2^4)            
         text_span.italic = bool(span['flags'] & 2**1)
         text_span.bold = bool(span['flags'] & 2**4)
-        text_span.font.name = util.parse_font_name(span['font'])
-        text_span.font.size = Pt(span['size'])
-        text_span.font.color.rgb = RGBColor(*util.RGB_component(span['color']))
+        text_span.font.name = utils.parse_font_name(span['font'])
+        text_span.font.size = Pt(round(span['size']*2)/2.0) # only x.0 and x.5 is accepted in docx
+        text_span.font.color.rgb = RGBColor(*utils.RGB_component(span['color']))
 
         # font style parsed from PDF rectangles: 
         # e.g. highlight, underline, strike-through-line
         for style in span.get('style', []):
             t = style['type']
             if t==0:
-                text_span.font.highlight_color = util.to_Highlight_color(style['color'])
+                text_span.font.highlight_color = utils.to_Highlight_color(style['color'])
             elif t==1:
                 text_span.font.underline = True
             elif t==2:
