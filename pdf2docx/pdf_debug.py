@@ -6,12 +6,20 @@ import fitz
 from . import utils
 
 
-def debug_plot(title, plot=True):
-    ''' plot layout for debug mode when the following conditions are all satisfied:
+def debug_plot(title, plot=True, category='layout'):
+    ''' plot layout / shapes for debug mode when the following conditions are all satisfied:
           - plot=True
           - layout has been changed: the return value of `func` is True
           - debug mode: kwargs['debug']=True
           - the pdf file to plot layout exists: kwargs['doc'] is not None
+        
+        args:
+            - title: page title
+            - plot: plot layout/shape if true
+            - category: 
+                - 'layout': plot layout
+                - 'shape': plot shape, especially, rectangles
+                - 'both': plot both layout and shape
     '''
     def wrapper(func):
         def inner(*args, **kwargs):
@@ -23,7 +31,12 @@ def debug_plot(title, plot=True):
             doc = kwargs.get('doc', None)
             if plot and res and debug and doc is not None:
                 layout = args[0]
-                plot_layout(doc, layout, title)
+                # plot layout or shapes
+                if category in ('layout', 'both'):
+                    plot_layout(doc, layout, title)
+
+                if category in ('shape', 'both'):
+                    plot_rectangles(doc, layout, title)
         
         return inner
     return wrapper
@@ -85,27 +98,19 @@ def _new_page_with_margin(doc, layout, title):
     w, h = layout['width'], layout['height']
     page = doc.newPage(width=w, height=h)
     
-    # If layout has been processed, e.g. calculated page margin,
-    # plot page margin and title.
+    # page margin must be calculated already
     blue = utils.getColor('blue')
-    if 'margin' in layout:
-        args = {
-            'color': blue,
-            'width': 0.5
-        }
-        dL, dR, dT, dB = layout['margin']
-        page.drawLine((dL, 0), (dL, h), **args) # left border
-        page.drawLine((w-dR, 0), (w-dR, h), **args) # right border
-        page.drawLine((0, dT), (w, dT), **args) # top
-        page.drawLine((0, h-dB), (w, h-dB), **args) # bottom
+    args = {
+        'color': blue,
+        'width': 0.5
+    }
+    dL, dR, dT, dB = layout['margin']
+    page.drawLine((dL, 0), (dL, h), **args) # left border
+    page.drawLine((w-dR, 0), (w-dR, h), **args) # right border
+    page.drawLine((0, dT), (w, dT), **args) # top
+    page.drawLine((0, h-dB), (w, h-dB), **args) # bottom
 
-        # plot title within the top margin
-        page.insertText((dL, dT*0.75), title, color=blue, fontsize=dT/2.0)
+    # plot title within the top margin
+    page.insertText((dL, dT*0.75), title, color=blue, fontsize=dT/2.0)    
     
-    # otherwise, raw layout, plot title only
-    else:
-        dL, dT, *_ = layout['blocks'][0]['bbox']
-        page.insertText((dL, dT*0.75), title, color=blue, fontsize=dT/2.0)
-
-
     return page

@@ -97,6 +97,9 @@ class Reader:
         # raw layout
         layout = page.getText('rawdict')
 
+        # calculate page margin
+        layout['margin'] = pdf.page_margin(layout)
+
         # rectangles: appended to raw layout
         layout['rects'] = self.rects(page)
 
