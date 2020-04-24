@@ -128,22 +128,10 @@ def preprocessing(layout, **kwargs):
         key=lambda block: (block['bbox'][1], 
             block['bbox'][0]))
 
-    # calculate page margin
-    layout['margin'] = page_margin(layout)
-
-    # assign rectangle shapes to associated block;
-    # get span text by joining chars
+    # joining chars in span
     for block in layout['blocks']:
         # skip image
         if block['type']==1: continue
-
-        # assign rectangles
-        block['rects'] = []
-        block_rect = fitz.Rect(block['bbox'])
-        for rect in layout['rects']:
-            # any intersection?
-            if block_rect.intersects(rect['bbox']):
-                block['rects'].append(rect)
 
         # join chars
         for line in block['lines']:

@@ -6,6 +6,7 @@ import fitz
 import copy
 
 from .pdf_debug import debug_plot
+from .pdf_shape import rect_to_style
 from . import utils
 
 
@@ -68,11 +69,17 @@ def parse_text_format(layout, **kwargs):
 
     for block in layout['blocks']:
         if block['type']==1: continue
-        if not block['rects']: continue
+
+        block_rect = fitz.Rect(block['bbox'])
 
         # use each rectangle (a specific text format) to split line spans
-        for rect in block['rects']:
+        for rect in layout['rects']:
+
+            # any intersection with current block?
             the_rect = fitz.Rect(rect['bbox'])
+            if not block_rect.intersects(the_rect): continue
+
+            # yes, then go further to lines in block            
             for line in block['lines']:
                 # any intersection in this line?
                 line_rect = fitz.Rect(line['bbox'])
@@ -141,7 +148,7 @@ def _split_span_with_rect(span, rect):
             split_span['text'] = span['text'][pos:pos_end]
 
             # update style
-            new_style = utils.rect_to_style(rect, split_span['bbox'])
+            new_style = rect_to_style(rect, split_span['bbox'])
             if new_style:
                 if 'style' in split_span:
                     split_span['style'].append(new_style)

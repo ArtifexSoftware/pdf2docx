@@ -80,52 +80,6 @@ def is_char_in_rect(char, rect):
     return intsec.width > 0.5*c_rect.width
 
 
-def rect_to_style(rect, span_bbox):
-    ''' text style based on the position between rectangle and span
-        rect: {'bbox': (,,,), 'color': int}
-    '''
-    # if type exists, e.g. rect converted from annotation, 
-    # return it directly
-    if 'type' in rect:
-        return {
-            'type': rect['type'],
-            'color': rect['color']
-        }
-    
-    # otherwise, recognize type based on rect and the span it applying to
-    # region height
-    h_rect = rect['bbox'][3] - rect['bbox'][1]
-    h_span = span_bbox[3] - span_bbox[1]
-
-    # distance to span bootom border
-    d = span_bbox[3] - rect['bbox'][1]
-
-    # the height of rect is large enough?
-    # yes, it's highlight
-    if h_rect > 0.75*h_span:
-        style = {
-            'type': 0,
-            'color': rect['color']
-        }
-    # near to bottom of span? yes, underline
-    elif d < 0.25*h_span:
-        style = {
-            'type': 1,
-            'color': rect['color']
-        }
-    # near to center of span? yes, strike-through-line
-    elif 0.35*h_span < d < 0.75*h_span:
-        style = {
-            'type': 2,
-            'color': rect['color']
-        }
-    # unknown style
-    else:
-        style = None
-
-    return style
-
-
 def is_end_sentence(text):
     '''simple rule to check the completence of text
        - sentence delimiter at the end of a sentence
