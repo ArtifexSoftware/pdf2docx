@@ -43,3 +43,4 @@ if __name__ == '__main__':
             f.write(json.dumps(layout))
 
     docx.save(docx_file)
+    pdf.close()
