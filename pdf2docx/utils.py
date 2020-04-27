@@ -54,6 +54,23 @@ def to_Highlight_color(sRGB):
     return color_map.get(sRGB, WD_COLOR_INDEX.YELLOW)
 
 
+def get_main_bbox(bbox_1, bbox_2, threshold=0.95):
+    ''' If the intersection of bbox_1 and bbox_2 exceeds the threshold, return the larger
+        bbox; else return None.
+    '''
+    # rects
+    b1 = fitz.Rect(bbox_1)
+    b2 = fitz.Rect(bbox_2)
+    b = b1 & b2
+
+    # areas
+    a1, a2, a = b1.getArea(), b2.getArea(), b.getArea()
+
+    if a/min(a1,a2)>=threshold:
+        return bbox_1 if a1 > a2 else bbox_2
+    else:
+        return None
+
 def parse_font_name(font_name):
     '''parse raw font name extracted with pymupdf, e.g.
         BCDGEE+Calibri-Bold, BCDGEE+Calibri
@@ -79,29 +96,6 @@ def is_char_in_rect(char, rect):
     intsec = c_rect & rect
     return intsec.width > 0.5*c_rect.width
 
-
-def is_end_sentence(text):
-    '''simple rule to check the completence of text
-       - sentence delimiter at the end of a sentence
-    '''
-    text = text.strip()
-    if not text:
-        return True # keep empy line
-
-    return text[-1].endswith(('.', '?', '!', ':'))
-
-def is_start_sentence(text):
-    text = text.strip()
-    if not text:
-        return True
-
-    # generally not starts with a digit 
-    elif text[0].isdigit():
-        return False		
-
-    # not starts with a low case alphabet
-    else:
-        return not text[0].islower() # conservatively
 
 def is_vertical_aligned(bbox1, bbox2, horizontal=True, factor=0.0):
     ''' check whether two boxes have enough intersection in vertical direction.

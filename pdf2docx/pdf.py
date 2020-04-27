@@ -78,6 +78,7 @@ annotations:
 
 import fitz
 from .pdf_debug import debug_plot
+from .pdf_table import clean_rects
 from .pdf_text import (merge_inline_images, parse_text_format)
 from . import utils
 
@@ -106,6 +107,9 @@ def layout(layout, **kwargs):
 
     # check inline images
     merge_inline_images(layout, **kwargs)
+
+    # check rectangles
+    clean_rects(layout, **kwargs)
 
     # parse text format, e.g. highlight, underline
     parse_text_format(layout, **kwargs)
@@ -141,7 +145,8 @@ def preprocessing(layout, **kwargs):
 
     # anything changed in this step?
     return True
-    
+
+
 
 def parse_paragraph_and_line_spacing(layout):
     ''' Calculate external and internal vertical space for paragraph block. It'll used 

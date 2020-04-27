@@ -14,7 +14,7 @@ import json
 if __name__ == '__main__':
 
     output = os.path.join(os.path.dirname(script_path), 'samples')
-    filename = 'demo-image'
+    filename = 'demo-table'
     pdf_file = os.path.join(output, f'{filename}.pdf')
     docx_file = os.path.join(output, f'{filename}.docx')
 
@@ -26,7 +26,7 @@ if __name__ == '__main__':
         # parse layout
         layout = pdf.parse(page)       
         
-        # create docx
+        # # create docx
         docx.make_page(layout)
 
         # print raw dict in json format
