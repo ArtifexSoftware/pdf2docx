@@ -54,7 +54,7 @@ def plot_layout(doc, layout, title):
         # block border in blue
         blue = utils.getColor('blue')
         r = fitz.Rect(block['bbox'])
-        page.drawRect(r, color=blue, fill=None, width=0.5, overlay=False)
+        page.drawRect(r, color=blue, fill=None, overlay=False)
 
         # line border in red
         for line in block.get('lines', []): # TODO: other types, e.g. image, list, table            
@@ -73,7 +73,7 @@ def plot_layout(doc, layout, title):
                     page.drawRect(r, color=c, fill=None, overlay=False)
                  # text span: filled with random color
                 else:
-                    page.drawRect(r, color=c, fill=c, overlay=False)
+                    page.drawRect(r, color=c, fill=c, width=0, overlay=False)
 
 
 def plot_rectangles(doc, layout, title):
@@ -89,7 +89,7 @@ def plot_rectangles(doc, layout, title):
         # fill color
         c = utils.RGB_component(rect['color'])
         c = [_/255.0 for _ in c]
-        page.drawRect(rect['bbox'], color=c, fill=c, overlay=False)
+        page.drawRect(rect['bbox'], color=c, fill=c, width=0, overlay=False)
 
 
 def _new_page_with_margin(doc, layout, title):
