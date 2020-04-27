@@ -83,9 +83,11 @@ def make_paragraph(doc, block, width, page_margin):
     p = doc.add_paragraph()
 
     # indent and space setting
+    before_spacing = max(round(block.get('before_space', 0.0), 1), 0.0)
+    after_spacing = max(round(block.get('after_space', 0.0), 1), 0.0)
     pf = reset_paragraph_format(p)
-    pf.space_before = Pt(round(block.get('before_space', 0.0), 1))
-    pf.space_after = Pt(round(block.get('after_space', 0.0), 1))    
+    pf.space_before = Pt(before_spacing)
+    pf.space_after = Pt(after_spacing)    
 
     # add image
     if block['type']==1:
