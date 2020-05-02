@@ -17,28 +17,10 @@ def clean_rects(layout, **kwargs):
     '''
     # ignore rect with white bg-color
     f = lambda rect: rect['color']!=utils.RGB_value((1,1,1))
-    rects = list(filter(f, layout['rects']))
+    rects = list(filter(f, layout['rects']))    
 
-    
     # start main clean steps    
     rect_changed = False
-
-    # skip rectangles with following conditions:
-    #  - fully contained in another rectangle
-    #  - same filling color with the containing rectangle
-    # rects_unique = []
-    # for rect in rects:
-    #     # It is sorted with the top-left corner, so current rect can only be contained
-    #     # by rect before it. Further, it has already been filtered into `rects_unique`.
-    #     this_rect = fitz.Rect(rect['bbox'])
-    #     for ref_rect in rects_unique:
-    #         # find a rect containing current rect
-    #         if ref_rect['color']==rect['color'] and fitz.Rect(ref_rect['bbox']).contains(this_rect):
-    #             rect_changed = True
-    #             break
-    #     else:
-    #         # no rect containing current rect
-    #         rects_unique.append(rect)
 
     # skip rectangles with following conditions:
     #  - fully or almost contained in another rectangle
@@ -123,7 +105,5 @@ def clean_rects(layout, **kwargs):
     # update layout
     if rect_changed:
         layout['rects'] = rects_v_join
-
-    # print(rects_h_join)
 
     return rect_changed
