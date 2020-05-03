@@ -19,8 +19,15 @@ def debug_plot(title, plot=True, category='layout'):
             - category: 
                 - 'layout': plot layout
                 - 'shape': plot shape, especially, rectangles
-                - 'both': plot both layout and shape
+                - or a combinaton list, e.g. ['layout', 'shape'] plots both layout and shape
     '''
+    # function map
+    plot_map = {
+        'layout': plot_layout,
+        'shape': plot_rectangles
+    }
+    if isinstance(category, str): category = [category]
+
     def wrapper(func):
         def inner(*args, **kwargs):
             # execute function
@@ -30,14 +37,11 @@ def debug_plot(title, plot=True, category='layout'):
             debug = kwargs.get('debug', False)
             doc = kwargs.get('doc', None)
             if plot and res and debug and doc is not None:
-                layout = args[0]
-                # plot layout or shapes
-                if category in ('layout', 'both'):
-                    plot_layout(doc, layout, title)
-
-                if category in ('shape', 'both'):
-                    plot_rectangles(doc, layout, title)
-        
+                layout = args[0]                
+                # plot layout or shapes                           
+                for c in category:
+                    if c in plot_map:
+                        plot_map[c](doc, layout, title)        
         return inner
     return wrapper
 
