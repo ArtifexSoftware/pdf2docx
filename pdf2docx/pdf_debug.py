@@ -4,6 +4,7 @@ Plot PDF layout for debug
 
 import fitz
 from . import utils
+from .pdf_shape import (is_cell_border, is_cell_shading)
 
 
 def debug_plot(title, plot=True, category='layout'):
@@ -19,12 +20,14 @@ def debug_plot(title, plot=True, category='layout'):
             - category: 
                 - 'layout': plot layout
                 - 'shape': plot shape, especially, rectangles
+                - 'table': plot table border/shading, i.e. rectangles marked as table type
                 - or a combinaton list, e.g. ['layout', 'shape'] plots both layout and shape
     '''
     # function map
     plot_map = {
         'layout': plot_layout,
-        'shape': plot_rectangles
+        'shape': plot_rectangles,
+        'table': plot_tables
     }
     if isinstance(category, str): category = [category]
 
@@ -89,20 +92,31 @@ def plot_rectangles(doc, layout, title):
     page = _new_page_with_margin(doc, layout, title)
 
     # draw rectangle one by one
+    for rect in layout['rects']:       
+        c = utils.RGB_component(rect['color'])
+        c = [_/255.0 for _ in c]
+        page.drawRect(rect['bbox'], color=c, fill=c, width=0, overlay=False)
+
+
+def plot_tables(doc, layout, title):
+    ''' plot rectangles with PyMuPDF
+    '''
+    if not layout['rects']: return
+
+    # insert a new page
+    page = _new_page_with_margin(doc, layout, title)
+
+    # draw rectangle one by one
     for rect in layout['rects']:
         # table border
-        if rect['type']==10:
+        if is_cell_border(rect):
             r = utils.getColor('red')
             page.drawRect(rect['bbox'], color=r, fill=r, width=0, overlay=False)
         # cell background
-        elif rect['type']==11:
+        elif is_cell_shading(rect):
             r = utils.getColor('red')
             x0, y0, x1, y1 = rect['bbox']
             page.insertText(((x0+x1)/2.0, (y0+y1)/2.0), 'BG', color=r, fontsize=10)
-        else:
-            c = utils.RGB_component(rect['color'])
-            c = [_/255.0 for _ in c]
-            page.drawRect(rect['bbox'], color=c, fill=c, width=0, overlay=False)
 
 
 def _new_page_with_margin(doc, layout, title):

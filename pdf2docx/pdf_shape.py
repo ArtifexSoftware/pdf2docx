@@ -12,7 +12,7 @@ where, categories of type:
     - underline     : 1
     - strike-through: 2
     - table border  : 10
-    - cell filling  : 11
+    - cell shading  : 11
 '''
 
 import copy
@@ -304,3 +304,16 @@ def rect_to_style(rect, span_bbox):
             'color': rect['color']
         }
     return style
+
+
+def set_cell_border(rect):
+    rect['type'] = 10
+
+def set_cell_shading(rect):
+    rect['type'] = 11
+
+def is_cell_border(rect):
+    return rect.get('type', -1) == 10
+
+def is_cell_shading(rect):
+    return rect.get('type', -1) == 11

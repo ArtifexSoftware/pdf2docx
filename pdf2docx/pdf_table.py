@@ -42,6 +42,7 @@ Data structure for table layout recognized from rectangle shapes:
 import fitz
 from . import utils
 from .pdf_debug import debug_plot
+from .pdf_shape import (set_cell_border, set_cell_shading)
 
 
 @debug_plot('Cleaned Rectangles', True, 'shape')
@@ -146,8 +147,8 @@ def clean_rects(layout, **kwargs):
     return rect_changed
 
 
-@debug_plot('Parsed Table Structure', True, 'shape')
-def parse_table(layout, **kwargs):
+@debug_plot('Parsed Table Structure', True, 'table')
+def parse_table_structure_from_rects(layout, **kwargs):
     '''parse table with rectangle shapes and text block'''
     # clean rects
     clean_rects(layout, **kwargs)
@@ -161,9 +162,9 @@ def parse_table(layout, **kwargs):
         if len(group['rects'])<4:
             continue
         else:
-            tables_from_rects(group['rects'])
+            check_table_borders_and_shading(group['rects'])
 
-    # check text block
+    #
     return True
 
 
@@ -195,7 +196,7 @@ def group_rects(rects):
     return groups
 
 
-def tables_from_rects(rects):
+def check_table_borders_and_shading(rects):
     ''' Detect table structure from rects.
         These rects may be categorized as three types:
             - cell border
@@ -231,12 +232,12 @@ def tables_from_rects(rects):
             min_edge_2 = round(min(fitz_other_rect.width, fitz_other_rect.height), 2)
             print(max_edge,min_edge_1,min_edge_2)
             if max_edge==min_edge_1 or max_edge==min_edge_2:
-                rect['type'] = 10 # cell border
+                set_cell_border(rect)
                 break
         else:
             # all intersections are edge-like
             if intersected:
-                rect['type'] = 11 # cell bg
+                set_cell_shading(rect)
             # no any intersections: text format -> to detect the specific type later
             else:
                 pass
