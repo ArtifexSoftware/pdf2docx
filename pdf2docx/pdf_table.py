@@ -1,5 +1,42 @@
 '''
-extract table
+extract table based on raw layout information.
+
+Recognize table from two aspects:
+- text blocks layout:
+  If text blocks are aligned horizontally in a same line, it is regarded as a row in table.
+- rectangles/lines layout:
+  Horizontal lines and vertical lines are grouped as table borders.
+
+However, it's difficult to dertermin a table block just by either aspect, because:
+- Text blocks may not represent the right table layout, e.g. cells in a row are mergered as 
+  a single text block.
+- Table borders may be hidden, e.g. three-lines table.
+
+So, a combined process:
+- If table borders are detected from rectangle shapes, fill cells with text blocks.
+- Otherwise, if table are detected from text blocks layout, check border/rectangle around the blocks.
+
+---
+
+Data structure for table layout recognized from rectangle shapes:
+
+{
+    'bbox': (x0, y0, x1, y1),
+    'cells': [[
+        {
+            'bbox': (x0, y0, x1, y1),
+            'border-color': utils.RGB_value(c),
+            'bg-color': utils.RGB_value(c),
+            'border-width': int,
+            'merged-cells': (x,y) # this is the top-left cell of merged region: x rows, y cols
+        }, # end of cell
+        None,  # merged cell
+        ...,   # more cells
+    ], # end of row
+    ...] # more rows    
+}
+
+
 '''
 
 import fitz
@@ -137,6 +174,7 @@ def group_rects(rects):
                     rect['bbox'][0],
                     rect['bbox'][2]))
 
+    # group intersected rects: a list of {'Rect': fitz.Rect(), 'rects': []}
     groups = []
     for rect in rects:
         fitz_rect = fitz.Rect(rect['bbox'])
@@ -202,8 +240,3 @@ def tables_from_rects(rects):
             # no any intersections: text format -> to detect the specific type later
             else:
                 pass
-
-
-
-
-
