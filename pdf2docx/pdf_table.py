@@ -68,7 +68,7 @@ def clean_rects(layout, **kwargs):
         # new item if not in same line or no intersection
         # round to avoid float error:
         # y0!=v0 or y1!=v1 or x0>u1
-        if abs(y0-v0)>0.1 or abs(y1-v1)>0.1 or x0-u1>0.1:
+        if abs(y0-v0)>utils.DM/10.0 or abs(y1-v1)>utils.DM/10.0 or x0-u1>utils.DM/10.0:
             rects_h_join.append(rect)
             continue
 
@@ -94,7 +94,7 @@ def clean_rects(layout, **kwargs):
         # new item if not in same vertical line or no intersection
         # note float error: 
         # x0 != u0 or x1 != u1 or y0 > v1
-        if abs(x0-u0)>0.1 or abs(x1-u1)>0.1 or y0-v1>0.1:
+        if abs(x0-u0)>utils.DM/10.0 or abs(x1-u1)>utils.DM/10.0 or y0-v1>utils.DM/10.0:
             rects_v_join.append(rect)
             continue
 
@@ -107,3 +107,103 @@ def clean_rects(layout, **kwargs):
         layout['rects'] = rects_v_join
 
     return rect_changed
+
+
+@debug_plot('Parsed Table Structure', True, 'shape')
+def parse_table(layout, **kwargs):
+    '''parse table with rectangle shapes and text block'''
+    # clean rects
+    clean_rects(layout, **kwargs)
+    
+    # group rects: each group may be a potential table
+    groups = group_rects(layout['rects'])
+
+    # check each group
+    for group in groups:
+        # at least 4 borders exist for a 'normal' table
+        if len(group['rects'])<4:
+            continue
+        else:
+            tables_from_rects(group['rects'])
+
+    # check text block
+    return True
+
+
+def group_rects(rects):
+    '''split rects into groups'''
+    # sort in reading order
+    rects.sort(key=lambda rect: (rect['bbox'][1],  
+                    rect['bbox'][0],
+                    rect['bbox'][2]))
+
+    groups = []
+    for rect in rects:
+        fitz_rect = fitz.Rect(rect['bbox'])
+        for group in groups:
+            # add to the group containing current rect
+            if fitz_rect & group['Rect']: 
+                group['Rect'] = fitz_rect | group['Rect']
+                group['rects'].append(rect)
+                break
+
+        # no any intersections: new group
+        else:
+            groups.append({
+                'Rect': fitz_rect,
+                'rects': [rect]
+            })
+
+    return groups
+
+
+def tables_from_rects(rects):
+    ''' Detect table structure from rects.
+        These rects may be categorized as three types:
+            - cell border
+            - cell background
+            - text format, e.g. highlight, underline
+        
+        Suppose all rects are cell borders, then check intersections:
+            - no intersection -> text format
+            - at least one point-like intersection -> cell border
+            - all edge-like intersections -> cell background
+
+        Give r = r1 & r2, then:        
+            - point-like intersection: max(r.w, r.h) in (min(r1.w,r1.h), min(r2.w,r2.h))
+            - edge-like intersection: max(r.w, r.h) in (max(r1.w,r1.h), max(r2.w,r2.h))
+    '''
+    for rect in rects:
+        fitz_rect = fitz.Rect(rect['bbox'])
+        # check intersection with other rects
+        intersected = False
+        for other_rect in rects:
+            if rect==other_rect: continue
+
+            fitz_other_rect = fitz.Rect(other_rect['bbox'])
+            sect = fitz_rect & fitz_other_rect
+            if not sect:
+                continue
+            else:
+                intersected = True                
+
+            # at least one point-like intersection -> cell border
+            max_edge = round(max(sect.width, sect.height), 2)
+            min_edge_1 = round(min(fitz_rect.width, fitz_rect.height), 2)
+            min_edge_2 = round(min(fitz_other_rect.width, fitz_other_rect.height), 2)
+            print(max_edge,min_edge_1,min_edge_2)
+            if max_edge==min_edge_1 or max_edge==min_edge_2:
+                rect['type'] = 10 # cell border
+                break
+        else:
+            # all intersections are edge-like
+            if intersected:
+                rect['type'] = 11 # cell bg
+            # no any intersections: text format -> to detect the specific type later
+            else:
+                pass
+
+
+
+
+

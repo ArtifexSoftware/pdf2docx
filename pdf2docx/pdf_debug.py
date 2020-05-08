@@ -86,10 +86,19 @@ def plot_rectangles(doc, layout, title):
 
     # draw rectangle one by one
     for rect in layout['rects']:
-        # fill color
-        c = utils.RGB_component(rect['color'])
-        c = [_/255.0 for _ in c]
-        page.drawRect(rect['bbox'], color=c, fill=c, width=0, overlay=False)
+        # table border
+        if rect['type']==10:
+            r = utils.getColor('red')
+            page.drawRect(rect['bbox'], color=r, fill=r, width=0, overlay=False)
+        # cell background
+        elif rect['type']==11:
+            r = utils.getColor('red')
+            x0, y0, x1, y1 = rect['bbox']
+            page.insertText(((x0+x1)/2.0, (y0+y1)/2.0), 'BG', color=r, fontsize=10)
+        else:
+            c = utils.RGB_component(rect['color'])
+            c = [_/255.0 for _ in c]
+            page.drawRect(rect['bbox'], color=c, fill=c, width=0, overlay=False)
 
 
 def _new_page_with_margin(doc, layout, title):
