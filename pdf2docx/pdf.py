@@ -78,7 +78,7 @@ annotations:
 
 import fitz
 from .pdf_debug import debug_plot
-from .pdf_table import clean_rects
+from .pdf_table import (clean_rects, table_from_rects)
 from .pdf_text import (merge_inline_images, parse_text_format)
 from . import utils
 
@@ -110,9 +110,12 @@ def layout(layout, **kwargs):
 
     # check rectangles
     clean_rects(layout, **kwargs)
+    table_from_rects(layout, **kwargs)
 
     # parse text format, e.g. highlight, underline
     parse_text_format(layout, **kwargs)
+
+    # recognize table layout
 
     # paragraph / line spacing
     parse_paragraph_and_line_spacing(layout)
