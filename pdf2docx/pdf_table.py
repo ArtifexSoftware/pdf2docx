@@ -148,8 +148,8 @@ def clean_rects(layout, **kwargs):
 
 
 @debug_plot('Parsed Table Structure', True, 'table')
-def parse_table_structure_from_rects(layout, **kwargs):
-    '''parse table with rectangle shapes and text block'''
+def parse_table_structure(layout, **kwargs):
+    '''parse table structure from rectangle shapes'''
     # clean rects
     clean_rects(layout, **kwargs)
     
@@ -162,7 +162,11 @@ def parse_table_structure_from_rects(layout, **kwargs):
         if len(group['rects'])<4:
             continue
         else:
+            # identify rect type: table border or cell shading
             check_table_borders_and_shading(group['rects'])
+
+            # parse table structure based on rects in border type
+            parse_table_structure_from_rects(group['rects'])
 
     #
     return True
@@ -200,44 +204,59 @@ def check_table_borders_and_shading(rects):
     ''' Detect table structure from rects.
         These rects may be categorized as three types:
             - cell border
-            - cell background
+            - cell shading
             - text format, e.g. highlight, underline
-        
-        Suppose all rects are cell borders, then check intersections:
-            - no intersection -> text format
-            - at least one point-like intersection -> cell border
-            - all edge-like intersections -> cell background
 
-        Give r = r1 & r2, then:        
-            - point-like intersection: max(r.w, r.h) in (min(r1.w,r1.h), min(r2.w,r2.h))
-            - edge-like intersection: max(r.w, r.h) in (max(r1.w,r1.h), max(r2.w,r2.h))
+        The rect type is decided based on the experience that:            
+            - cell shading has a larger size than border, the following method
+            - cell shading is surrounded by borders
+        
+        For a certain rect r, get all intersected rects with it, say R:
+            - R is empty -> r is text format
+            - r is surrounded by R -> cell shading
+            - otherwise  -> cell border
+
+        How to decide that r is surrounded by R?
+        The major dimensions of intersections between r and each rect in R are right the
+        width/height of r.
     '''
     for rect in rects:
         fitz_rect = fitz.Rect(rect['bbox'])
-        # check intersection with other rects
-        intersected = False
-        for other_rect in rects:
+        w0 = round(fitz_rect.width, 2)
+        h0 = round(fitz_rect.height, 2)
+
+        # get all intersected rects
+        intersection_found = False
+        for other_rect in rects:            
             if rect==other_rect: continue
 
             fitz_other_rect = fitz.Rect(other_rect['bbox'])
-            sect = fitz_rect & fitz_other_rect
-            if not sect:
-                continue
-            else:
-                intersected = True                
+            intersection = fitz_rect & fitz_other_rect
+            if not intersection: continue
 
-            # at least one point-like intersection -> cell border
-            max_edge = round(max(sect.width, sect.height), 2)
-            min_edge_1 = round(min(fitz_rect.width, fitz_rect.height), 2)
-            min_edge_2 = round(min(fitz_other_rect.width, fitz_other_rect.height), 2)
-            print(max_edge,min_edge_1,min_edge_2)
-            if max_edge==min_edge_1 or max_edge==min_edge_2:
+            intersection_found = True
+
+            # this is a border if larger rect exists
+            w1 = round(fitz_other_rect.width, 2)
+            h1 = round(fitz_other_rect.height, 2)
+            if min(w0, h0) < min(w1, h1):
                 set_cell_border(rect)
                 break
-        else:
-            # all intersections are edge-like
-            if intersected:
+
+            # this is a cell shading if the major dimension is surrounded
+            w = round(intersection.width, 2)
+            h = round(intersection.height, 2)
+            if max(w0, h0)==max(w, h):
                 set_cell_shading(rect)
+                break
+        
+        else:
+            if intersection_found:
+                set_cell_border(rect)
             # no any intersections: text format -> to detect the specific type later
             else:
                 pass
+
+
+def parse_table_structure_from_rects(rects):
+    pass

@@ -78,7 +78,7 @@ annotations:
 
 import fitz
 from .pdf_debug import debug_plot
-from .pdf_table import parse_table_structure_from_rects
+from .pdf_table import parse_table_structure
 from .pdf_text import (merge_inline_images, parse_text_format)
 from . import utils
 
@@ -107,7 +107,7 @@ def layout(layout, **kwargs):
     
     # table structure recognized from rectangles
     # after this step, use rects not in table group to parse text format
-    parse_table_structure_from_rects(layout, **kwargs)
+    parse_table_structure(layout, **kwargs)
 
     # check inline images
     merge_inline_images(layout, **kwargs)    
