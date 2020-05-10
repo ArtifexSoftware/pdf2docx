@@ -28,7 +28,7 @@ Data structure for table layout recognized from rectangle shapes:
             'border-color': utils.RGB_value(c),
             'bg-color': utils.RGB_value(c),
             'border-width': int,
-            'merged-cells': (x,y) # this is the top-left cell of merged region: x rows, y cols
+            'merged-cells': (x,y) # this is the bottom-right cell of merged region: x rows, y cols
         }, # end of cell
         None,  # merged cell
         ...,   # more cells
@@ -42,7 +42,7 @@ Data structure for table layout recognized from rectangle shapes:
 import fitz
 from . import utils
 from .pdf_debug import debug_plot
-from .pdf_shape import (set_cell_border, set_cell_shading)
+from .pdf_shape import (set_cell_border, set_cell_shading, is_cell_border, is_cell_shading)
 
 
 @debug_plot('Cleaned Rectangles', True, 'shape')
@@ -157,20 +157,25 @@ def parse_table_structure(layout, **kwargs):
     groups = group_rects(layout['rects'])
 
     # check each group
+    tables = []
     for group in groups:
         # at least 4 borders exist for a 'normal' table
         if len(group['rects'])<4:
             continue
         else:
             # identify rect type: table border or cell shading
-            check_table_borders_and_shading(group['rects'])
+            set_table_borders_and_shading(group['rects'])
 
             # parse table structure based on rects in border type
-            parse_table_structure_from_rects(group['rects'])
+            table = parse_table_structure_from_rects(group['rects'])
+            if table:
+                tables.append(table)
 
-    #
-    return True
-
+    if tables:
+        layout['tables'] = tables
+        return True
+    else:
+        return False
 
 def group_rects(rects):
     '''split rects into groups'''
@@ -200,7 +205,7 @@ def group_rects(rects):
     return groups
 
 
-def check_table_borders_and_shading(rects):
+def set_table_borders_and_shading(rects):
     ''' Detect table structure from rects.
         These rects may be categorized as three types:
             - cell border
@@ -259,4 +264,224 @@ def check_table_borders_and_shading(rects):
 
 
 def parse_table_structure_from_rects(rects):
-    pass
+    ''' Parse table structure from rects in table border/shading type.
+    '''
+    # --------------------------------------------------
+    # group horizontal/vertical borders
+    # --------------------------------------------------
+    borders = list(filter(lambda rect: is_cell_border(rect), rects))
+    h_borders, v_borders = {}, {}
+    for rect in borders:
+        the_rect = fitz.Rect(rect['bbox'])
+        # group horizontal borders in each row
+        if the_rect.width > the_rect.height:
+            y = round((the_rect.y0 + the_rect.y1) / 2.0, 2)
+            if y in h_borders:
+                h_borders[y].append(rect)
+            else:
+                h_borders[y] = [rect]
+        # group vertical borders in each column
+        else:
+            x = round((the_rect.x0 + the_rect.x1) / 2.0, 2)
+            if x in v_borders:
+                v_borders[x].append(rect)
+            else:
+                v_borders[x] = [rect]
+
+    # sort
+    rows = sorted(h_borders)
+    cols = sorted(v_borders)
+
+    # check the outer borders: 
+    if not check_outer_borders(h_borders[rows[0]], v_borders[cols[-1]], h_borders[rows[-1]], v_borders[cols[0]]):
+        return None
+        
+    # --------------------------------------------------
+    # parse table structure, especially the merged cells
+    # -------------------------------------------------- 
+    # check merged cells in each row
+    merged_cells_rows = []
+    for i, row in enumerate(rows[0:-1]):
+        ref_y = (row+rows[i+1])/2.0
+        ordered_v_borders = [v_borders[k] for k in cols]
+        row_structure = check_merged_cells(ref_y, ordered_v_borders, 'row')
+        merged_cells_rows.append(row_structure)
+
+    # check merged cells in each column
+    merged_cells_cols = []
+    for i, col in enumerate(cols[0:-1]):
+        ref_x = (col+cols[i+1])/2.0
+        ordered_h_borders = [h_borders[k] for k in rows]
+        col_structure = check_merged_cells(ref_x, ordered_h_borders, 'column')        
+        merged_cells_cols.append(col_structure)
+
+    # --------------------------------------------------
+    # parse table properties
+    # --------------------------------------------------
+    cells = []
+    shading_rects = list(filter(lambda rect: is_cell_shading(rect), rects))
+    # for i, (row, row_structure) in enumerate(zip(rows, table_structure)):
+    n_rows = len(merged_cells_rows)
+    n_cols = len(merged_cells_cols)
+    for i in range(n_rows):
+        cells_in_row = []
+        # for j, (col, cell_structure) in enumerate(zip(cols, row_structure)):
+        for j in range(n_cols):
+            # if current cell is merged horizontally or vertically, set None.
+            # actually, it will be counted in the top-left cell of the merged range.
+            if merged_cells_rows[i][j]==0 or merged_cells_cols[j][i]==0:
+                cells_in_row.append(None)
+                continue
+
+            # Now, this is the top-left cell of merged range.
+            # A separate cell without merging can also be treated as a merged range 
+            # with 1 row and 1 colum, i.e. itself.
+            #             
+            # check merged columns in horizontal direction
+            n_col = 1
+            for val in merged_cells_rows[i][j+1:]:
+                if val==0:
+                    n_col += 1
+                else:
+                    break
+            # check merged rows in vertical direction
+            n_row = 1
+            for val in merged_cells_cols[j][i+1:]:
+                if val==0:
+                    n_row += 1
+                else:
+                    break
+
+            # cell border rects
+            top = h_borders[rows[i]][0]
+            bottom = h_borders[rows[i+1]][0]
+            left = v_borders[cols[j]][0]
+            right = v_borders[cols[j+1]][0]
+
+            # cell bbox
+            bbox = (cols[j], rows[i], cols[j+n_col], rows[i+n_row])
+
+            # shading rect in this cell
+            shading_rect = get_rect_with_bbox(bbox, shading_rects)
+
+            cells_in_row.append({
+                'bbox': bbox,
+                'bg-color': shading_rect['color'] if shading_rect else None,
+                'border-color': (top['color'], right['color'], bottom['color'], left['color']),
+                'border-width': (
+                    top['bbox'][3]-top['bbox'][1],
+                    right['bbox'][2]-right['bbox'][0],
+                    bottom['bbox'][3]-bottom['bbox'][1],
+                    left['bbox'][2]-left['bbox'][0]
+                ),
+                'merged-cells': (n_row, n_col)
+            })
+                
+        # one row finished
+        cells.append(cells_in_row)
+
+    return {
+        'bbox': (cols[0], rows[0], cols[-1], rows[-1]),
+        'cells': cells
+    }
+
+
+def get_rect_with_bbox(bbox, rects, threshold=0.95):
+    '''get rect within given bbox'''
+    target_rect = fitz.Rect(bbox)
+    for rect in rects:
+        this_rect = fitz.Rect(rect['bbox'])
+        intersection = target_rect & this_rect
+        if intersection.getArea() / this_rect.getArea() >= threshold:
+            res = rect
+            break
+    else:
+        res = None
+    return res
+
+
+
+def check_outer_borders(top_rects, right_rects, bottom_rects, left_rects):
+    ''' Check whether outer borders: end points are concurrent.
+        top: top lines in rectangle shape
+    '''
+    # outer border should be continuos since they've already been merged in previous step.
+    if len(top_rects)*len(right_rects)*len(bottom_rects)*len(left_rects) != 1:
+        return False
+
+    top = top_rects[0]['bbox']
+    right = right_rects[0]['bbox']
+    bottom = bottom_rects[0]['bbox']
+    left = left_rects[0]['bbox']
+
+    # width of each line
+    w_top, w_bottom = top[3]-top[1], bottom[3]-bottom[1]
+    w_left, w_right = left[2]-left[0], right[2]-right[0]
+
+    # check corner points:
+    # top_left
+    if not utils.check_concurrent_points(top[0:2], left[0:2], max(w_top, w_left)):
+        return False
+
+    # top_right
+    if not utils.check_concurrent_points(top[2:], right[0:2], max(w_top, w_right)):
+        return False
+    
+    # bottom_left
+    if not utils.check_concurrent_points(bottom[0:2], left[2:], max(w_bottom, w_left)):
+        return False
+
+    # bottom_right
+    if not utils.check_concurrent_points(bottom[2:], right[2:], max(w_bottom, w_right)):
+        return False
+    
+    return True
+
+
+def check_merged_cells(ref, borders, direction='row'):
+    ''' Check merged cells in a row/column. 
+        Taking cells in a row (direction=0) for example, give a horizontal line (y=ref) passing through this row, 
+        check the intersection with vertical borders. The n-th cell is merged if no intersection with
+        the n-th border.
+
+        ---
+        ref: y (or x) coordinate of horizontal (or vertical) passing-through line
+        borders: a list of vertical (or horizontal) rects list in a column (or row)
+        direction: 
+            'row' - check merged cells in row; 
+            'column' - check merged cells in a column
+    '''
+
+    res = []
+    for rects in borders[0:-1]:
+        # multi-lines exist in a row/column
+        for rect in rects:
+
+            # reference coordinates depending on checking direction
+            if direction=='row':
+                _, ref0, _, ref1 = rect['bbox']
+            else:
+                ref0, _, ref1, _ = rect['bbox']
+
+            # 1) intersection found
+            if ref0 < ref < ref1:
+                res.append(1)
+                break
+            
+            # 2) reference line locates below current rect:
+            # still have a chance to find intersection with next rect, but,
+            # no chance if this is the last rect, see the else-clause
+            elif ref > ref1:
+                continue
+
+            # 3) current rect locates below the reference line:
+            # no intersection is possible any more
+            elif ref < ref0:
+                res.append(0)
+                break
+        
+        # see notes 2), no change any more
+        else:
+            res.append(0)
+
+    return res
