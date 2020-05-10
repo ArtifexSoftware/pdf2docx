@@ -25,9 +25,9 @@ Data structure for table layout recognized from rectangle shapes:
     'cells': [[
         {
             'bbox': (x0, y0, x1, y1),
-            'border-color': utils.RGB_value(c),
+            'border-color': (utils.RGB_value(c),,,), # top, right, bottom, left
             'bg-color': utils.RGB_value(c),
-            'border-width': int,
+            'border-width': (,,,),
             'merged-cells': (x,y) # this is the bottom-right cell of merged region: x rows, y cols
         }, # end of cell
         None,  # merged cell

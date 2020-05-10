@@ -101,22 +101,30 @@ def plot_rectangles(doc, layout, title):
 def plot_tables(doc, layout, title):
     ''' plot rectangles with PyMuPDF
     '''
-    if not layout['rects']: return
+    if not layout['tables']: return
 
     # insert a new page
     page = _new_page_with_margin(doc, layout, title)
 
-    # draw rectangle one by one
-    for rect in layout['rects']:
-        # table border
-        if is_cell_border(rect):
-            r = utils.getColor('red')
-            page.drawRect(rect['bbox'], color=r, fill=r, width=0, overlay=False)
-        # cell background
-        elif is_cell_shading(rect):
-            r = utils.getColor('red')
-            x0, y0, x1, y1 = rect['bbox']
-            page.insertText(((x0+x1)/2.0, (y0+y1)/2.0), 'BG', color=r, fontsize=10)
+    # draw cell one by one
+    for table in layout['tables']:
+        for rows in table['cells']:
+            for cell in rows:
+                # ignore merged cells
+                if not cell: continue
+
+                # border color and width
+                bc = [x/255.0 for x in utils.RGB_component(cell['border-color'][0])]
+                w = cell['border-width'][0]
+
+                # shading color
+                if cell['bg-color'] != None:
+                    sc = [x/255.0 for x in utils.RGB_component(cell['bg-color'])] 
+                else:
+                    sc = None
+                
+                # plot cell
+                page.drawRect(cell['bbox'], color=bc, fill=sc, width=w, overlay=False)
 
 
 def _new_page_with_margin(doc, layout, title):
