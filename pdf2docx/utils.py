@@ -74,7 +74,7 @@ def get_main_bbox(bbox_1, bbox_2, threshold=0.95):
     factor = a/min(a1,a2) if a else 1e-6
     if factor >= threshold:
         u = b1 | b2
-        return tuple([round(x,2) for x in (u.x0, u.y0, u.x1, u.y1)])
+        return tuple([round(x,1) for x in (u.x0, u.y0, u.x1, u.y1)])
     else:
         return None
 

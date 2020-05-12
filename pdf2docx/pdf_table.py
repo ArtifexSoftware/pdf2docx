@@ -119,8 +119,7 @@ def parse_table_structure(layout, **kwargs):
 
             # parse table structure based on rects in border type
             table = _parse_table_structure_from_rects(group['rects'])
-            if table:
-                tables.append(table)
+            if table: tables.append(table)
 
     if tables:
         layout['tables'] = tables
@@ -148,7 +147,7 @@ def _group_rects(rects):
         fitz_rect = fitz.Rect(rect['bbox'])
         for group in groups:
             # add to the group containing current rect
-            if fitz_rect & (group['Rect'] + utils.DR): 
+            if fitz_rect & group['Rect']: 
                 group['Rect'] = fitz_rect | group['Rect']
                 group['rects'].append(rect)
                 break
@@ -185,8 +184,8 @@ def _set_table_borders_and_shading(rects):
     '''
     for rect in rects:
         fitz_rect = fitz.Rect(rect['bbox'])
-        w0 = round(fitz_rect.width, 2)
-        h0 = round(fitz_rect.height, 2)
+        w0 = round(fitz_rect.width, 1)
+        h0 = round(fitz_rect.height, 1)
 
         # get all intersected rects
         intersection_found = False
@@ -200,16 +199,16 @@ def _set_table_borders_and_shading(rects):
             intersection_found = True            
 
             # this is a border if larger rect exists
-            w1 = round(fitz_other_rect.width, 2)
-            h1 = round(fitz_other_rect.height, 2)
+            w1 = round(fitz_other_rect.width, 1)
+            h1 = round(fitz_other_rect.height, 1)
             if min(w0, h0) < min(w1, h1):
                 set_cell_border(rect)
                 break
 
             # this is a cell shading if the major dimension is surrounded, 
             # which means the intersection dimension is larger enough, say 90% of current rect
-            w = round(intersection.width, 2)
-            h = round(intersection.height, 2)
+            w = round(intersection.width, 1)
+            h = round(intersection.height, 1)
             if max(w, h) >= 0.9*max(w0, h0):
                 set_cell_shading(rect)
                 break
@@ -234,14 +233,14 @@ def _parse_table_structure_from_rects(rects):
         the_rect = fitz.Rect(rect['bbox'])
         # group horizontal borders in each row
         if the_rect.width > the_rect.height:
-            y = round((the_rect.y0 + the_rect.y1) / 2.0, 2)
+            y = round((the_rect.y0 + the_rect.y1) / 2.0, 1)
             if y in h_borders:
                 h_borders[y].append(rect)
             else:
                 h_borders[y] = [rect]
         # group vertical borders in each column
         else:
-            x = round((the_rect.x0 + the_rect.x1) / 2.0, 2)
+            x = round((the_rect.x0 + the_rect.x1) / 2.0, 1)
             if x in v_borders:
                 v_borders[x].append(rect)
             else:

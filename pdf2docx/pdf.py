@@ -146,9 +146,10 @@ def preprocessing(layout, **kwargs):
                 chars = [char['c'] for char in span['chars']]
                 span['text'] = ''.join(chars)
 
-    # round bbox of rectangles
+    # round bbox of rectangles: one decimal place is enough, 
+    # otherwise, would encounter float error, especially get intersection of two bbox-es
     for rect in layout['rects']:
-        rect['bbox'] = tuple([round(x,2) for x in rect['bbox']])
+        rect['bbox'] = tuple([round(x,1) for x in rect['bbox']])
 
     # anything changed in this step?
     return True
