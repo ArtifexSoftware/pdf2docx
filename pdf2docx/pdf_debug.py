@@ -146,6 +146,7 @@ def _new_page_with_margin(doc, layout, title):
     page.drawLine((0, h-dB), (w, h-dB), **args) # bottom
 
     # plot title within the top margin
-    page.insertText((dL, dT*0.75), title, color=blue, fontsize=dT/2.0)    
+    gray = utils.getColor('gray')
+    page.insertText((dL, dT*0.66), title, color=gray, fontsize=dT/3.0)    
     
     return page

@@ -372,25 +372,25 @@ def _check_outer_borders(top_rects, right_rects, bottom_rects, left_rects):
     w_top, w_bottom = top_start[3]-top_start[1], bottom_start[3]-bottom_start[1]
     w_left, w_right = left_start[2]-left_start[0], right_start[2]-right_start[0]
 
+    # the max allowable distance for the corner points
+    # sqrt(w_1^2+w_2^2) <= sqrt(2)*w_max
+    square_tolerance = 2 * max(w_top, w_bottom, w_left, w_right)**2
+
     # check corner points:
     # top_left
-    if not utils.check_concurrent_points(top_start[0:2], left_start[0:2], 
-                                    (w_top**2+w_left**2)**0.5):
+    if not utils.check_concurrent_points(top_start[0:2], left_start[0:2], square_tolerance):
         return False
 
     # top_right
-    if not utils.check_concurrent_points(top_end[2:], right_start[0:2], 
-                                    (w_top**2+w_right**2)**0.5):
+    if not utils.check_concurrent_points(top_end[2:], right_start[0:2], square_tolerance):
         return False
     
     # bottom_left
-    if not utils.check_concurrent_points(bottom_start[0:2], left_end[2:], 
-                                    (w_bottom**2+w_left**2)**0.5):
+    if not utils.check_concurrent_points(bottom_start[0:2], left_end[2:], square_tolerance):
         return False
 
     # bottom_right
-    if not utils.check_concurrent_points(bottom_end[2:], right_end[2:], 
-                                    (w_bottom**2+w_right**2)**0.5):
+    if not utils.check_concurrent_points(bottom_end[2:], right_end[2:], square_tolerance):
         return False
     
     return True

@@ -10,7 +10,7 @@ from .pdf_shape import rect_to_style
 from . import utils
 
 
-@debug_plot('Merged inline images', True)
+@debug_plot('Merged Inline Images', True)
 def merge_inline_images(layout, **kwargs):
     ''' merge inline image blocks into text block: 
         a block line or a line span.

@@ -143,9 +143,9 @@ def is_horizontal_aligned(bbox1, bbox2, horizontal=True, factor=0.0):
     return is_vertical_aligned(bbox1, bbox2, not horizontal, factor)
 
 
-def check_concurrent_points(p1, p2, tolerance=0.0):
+def check_concurrent_points(p1, p2, square_tolerance=0.0):
     ''' check if p1(x1,y1) and p2(x2,y2) are concurrent points with given tolerance
     '''
     x1, y1 = p1
     x2, y2 = p2
-    return ((x1-x2)**2+(y1-y2)**2)**0.5 <= tolerance
+    return (x1-x2)**2+(y1-y2)**2 <= square_tolerance
