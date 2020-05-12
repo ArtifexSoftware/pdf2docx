@@ -74,15 +74,15 @@ def clean_rects(layout, **kwargs):
 
             # combine two rects in a same row if any intersection exists
             if utils.is_horizontal_aligned(rect['bbox'], ref_rect['bbox'], True, 1.0):
-                main_bbox = utils.get_main_bbox(rect['bbox'], ref_rect['bbox'], 1e-10)
+                main_bbox = utils.get_main_bbox(rect['bbox'], ref_rect['bbox'], 0.0)
 
             # combine two rects in a same column if any intersection exists
             elif utils.is_vertical_aligned(rect['bbox'], ref_rect['bbox'], True, 1.0):
-                main_bbox = utils.get_main_bbox(rect['bbox'], ref_rect['bbox'], 1e-10)
+                main_bbox = utils.get_main_bbox(rect['bbox'], ref_rect['bbox'], 0.0)
 
             # combine two rects if they have a large intersection, e.g. 85%
             else:
-                main_bbox = utils.get_main_bbox(rect['bbox'], ref_rect['bbox'], 0.85)
+                main_bbox = utils.get_main_bbox(rect['bbox'], ref_rect['bbox'], 0.5)
 
             if main_bbox:
                 rect_changed = True
@@ -148,7 +148,7 @@ def _group_rects(rects):
         fitz_rect = fitz.Rect(rect['bbox'])
         for group in groups:
             # add to the group containing current rect
-            if fitz_rect & group['Rect']: 
+            if fitz_rect & (group['Rect'] + utils.DR): 
                 group['Rect'] = fitz_rect | group['Rect']
                 group['rects'].append(rect)
                 break
@@ -197,7 +197,7 @@ def _set_table_borders_and_shading(rects):
             intersection = fitz_rect & fitz_other_rect
             if not intersection: continue
 
-            intersection_found = True
+            intersection_found = True            
 
             # this is a border if larger rect exists
             w1 = round(fitz_other_rect.width, 2)
@@ -206,10 +206,11 @@ def _set_table_borders_and_shading(rects):
                 set_cell_border(rect)
                 break
 
-            # this is a cell shading if the major dimension is surrounded.
+            # this is a cell shading if the major dimension is surrounded, 
+            # which means the intersection dimension is larger enough, say 90% of current rect
             w = round(intersection.width, 2)
             h = round(intersection.height, 2)
-            if max(w0, h0)==max(w, h):
+            if max(w, h) >= 0.9*max(w0, h0):
                 set_cell_shading(rect)
                 break
         
@@ -251,8 +252,8 @@ def _parse_table_structure_from_rects(rects):
     cols = sorted(v_borders)
 
     # check the outer borders: 
-    # if not _check_outer_borders(h_borders[rows[0]], v_borders[cols[-1]], h_borders[rows[-1]], v_borders[cols[0]]):
-    #     return None
+    if not _check_outer_borders(h_borders[rows[0]], v_borders[cols[-1]], h_borders[rows[-1]], v_borders[cols[0]]):
+        return None
         
     # --------------------------------------------------
     # parse table structure, especially the merged cells
@@ -359,37 +360,38 @@ def _get_rect_with_bbox(bbox, rects, threshold=0.95):
 
 
 def _check_outer_borders(top_rects, right_rects, bottom_rects, left_rects):
-    ''' Check whether outer borders: end points are concurrent.
+    ''' Check outer borders: whether end points are concurrent.
         top: top lines in rectangle shape
     '''
-    # outer border should be continuos since they've already been merged in previous step.
-    if len(top_rects)*len(right_rects)*len(bottom_rects)*len(left_rects) != 1:
-        return False
-
-    top = top_rects[0]['bbox']
-    right = right_rects[0]['bbox']
-    bottom = bottom_rects[0]['bbox']
-    left = left_rects[0]['bbox']
+    # start/end line segments of borders
+    top_start, top_end = top_rects[0]['bbox'], top_rects[-1]['bbox']
+    right_start, right_end = right_rects[0]['bbox'], right_rects[-1]['bbox']
+    bottom_start, bottom_end = bottom_rects[0]['bbox'], bottom_rects[-1]['bbox']
+    left_start, left_end = left_rects[0]['bbox'], left_rects[-1]['bbox']
 
     # width of each line
-    w_top, w_bottom = top[3]-top[1], bottom[3]-bottom[1]
-    w_left, w_right = left[2]-left[0], right[2]-right[0]
+    w_top, w_bottom = top_start[3]-top_start[1], bottom_start[3]-bottom_start[1]
+    w_left, w_right = left_start[2]-left_start[0], right_start[2]-right_start[0]
 
     # check corner points:
     # top_left
-    if not utils.check_concurrent_points(top[0:2], left[0:2], max(w_top, w_left)):
+    if not utils.check_concurrent_points(top_start[0:2], left_start[0:2], 
+                                    (w_top**2+w_left**2)**0.5):
         return False
 
     # top_right
-    if not utils.check_concurrent_points(top[2:], right[0:2], max(w_top, w_right)):
+    if not utils.check_concurrent_points(top_end[2:], right_start[0:2], 
+                                    (w_top**2+w_right**2)**0.5):
         return False
     
     # bottom_left
-    if not utils.check_concurrent_points(bottom[0:2], left[2:], max(w_bottom, w_left)):
+    if not utils.check_concurrent_points(bottom_start[0:2], left_end[2:], 
+                                    (w_bottom**2+w_left**2)**0.5):
         return False
 
     # bottom_right
-    if not utils.check_concurrent_points(bottom[2:], right[2:], max(w_bottom, w_right)):
+    if not utils.check_concurrent_points(bottom_end[2:], right_end[2:], 
+                                    (w_bottom**2+w_right**2)**0.5):
         return False
     
     return True

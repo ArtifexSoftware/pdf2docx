@@ -61,13 +61,18 @@ def get_main_bbox(bbox_1, bbox_2, threshold=0.95):
     # rects
     b1 = fitz.Rect(bbox_1)
     b2 = fitz.Rect(bbox_2)
+    b = b1 & b2
 
-    # a bit enlarge to consider that bbox_1 and bbox_2 are almost intersecting
-    b = b1 & (b2 + DR/10.0) 
-
-    # areas
+    # areas    
     a1, a2, a = b1.getArea(), b2.getArea(), b.getArea()
-    if a/min(a1,a2)>=threshold:
+
+    # no intersection
+    if not b: return None
+
+    # Note: if b1 and b1 intersects with only an edge, b is not empty but b.getArea()=0
+    # so give a small value when they're intersected by the area is zero
+    factor = a/min(a1,a2) if a else 1e-6
+    if factor >= threshold:
         u = b1 | b2
         return tuple([round(x,2) for x in (u.x0, u.y0, u.x1, u.y1)])
     else:
@@ -143,4 +148,4 @@ def check_concurrent_points(p1, p2, tolerance=0.0):
     '''
     x1, y1 = p1
     x2, y2 = p2
-    return (x1-x2)**2+(y1-y2)**2 <= tolerance**2
+    return ((x1-x2)**2+(y1-y2)**2)**0.5 <= tolerance
