@@ -18,9 +18,9 @@ So, a combined process:
 
 ---
 
-Data structure for table layout recognized from rectangle shapes:
-
+Data structure for table block recognized from rectangle shapes and text blocks:
 {
+    'type': 3,
     'bbox': (x0, y0, x1, y1),
     'cells': [[
         {
@@ -28,14 +28,19 @@ Data structure for table layout recognized from rectangle shapes:
             'border-color': (utils.RGB_value(c),,,), # top, right, bottom, left
             'bg-color': utils.RGB_value(c),
             'border-width': (,,,),
-            'merged-cells': (x,y) # this is the bottom-right cell of merged region: x rows, y cols
+            'merged-cells': (x,y), # this is the bottom-right cell of merged region: x rows, y cols
+            'lines': [
+                # same structure with lines in text block
+            ]
         }, # end of cell
+
         None,  # merged cell
+
         ...,   # more cells
     ], # end of row
+
     ...] # more rows    
 }
-
 
 '''
 
@@ -339,6 +344,7 @@ def _parse_table_structure_from_rects(rects):
         cells.append(cells_in_row)
 
     return {
+        'type': 3,
         'bbox': (cols[0], rows[0], cols[-1], rows[-1]),
         'cells': cells
     }

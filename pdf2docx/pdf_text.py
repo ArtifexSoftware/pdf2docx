@@ -1,5 +1,31 @@
 '''
-Recognize text and image format
+Recognize text and image format.
+
+In addition to the font style (size, color, weight), more text formats, including 
+highlight, underline, strike through line, are considered. So, the span-s in line 
+are re-grouped with styles, and more keys are added to the original structure of span.
+    {
+        "bbox": [,,,]
+        "size": 15.770000457763672,
+        "flags": 20,
+        "font": "MyriadPro-SemiboldCond",
+        "color": 14277081,
+        "text": "Adjust Your Headers", # joined from chars
+        "chars": [{...}]
+        # ----- new items -----
+        "style": [{
+            "type": 0, # 0-highlight, 1-underline, 2-strike-through-line
+            "color": 14277081
+            }, {...}]            
+    }
+
+Normal image block defined in PyMuPDF: 
+    { "type": 1, "bbox": [], "ext": "png", "image": , ...}
+
+Inline image has a same structure, but will be merged into associated text block: 
+a span in block line. So, an image structure may exist in block or line span. 
+The key `image` is used to distinguish image type.
+
 '''
 
 import fitz

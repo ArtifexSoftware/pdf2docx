@@ -25,8 +25,6 @@ An example of processed layout result:
     "rects" : [{...}, {...}, ...]
     }
 
-Note: The length unit for each boundary box is pt, which is 1/72 Inch.
-
 where:
 
 `rects` are a list of rectangle shapes extracted from PDF xref_stream and
@@ -38,41 +36,14 @@ annotations:
     }
 
 `blocks` are a group of page contents. The type of blocks is extended from 
-`text` and `image` to `list` and `table`:
+the default `text` and `image` to `list` and `table`:
 
-- text block:
-    In addition to the font style (size, color, weight), more text formats,
-    including highlight, underline, strike through line, are considered. So
-    the `span`-s in `line` are re-grouped with styles, and more keys are 
-    added to the original structure of `span`.
-        {
-            "bbox": [,,,]
-            "size": 15.770000457763672,
-            "flags": 20,
-            "font": "MyriadPro-SemiboldCond",
-            "color": 14277081,
-            "text": "Adjust Your Headers", # joined from chars
-            "chars": [{...}]
-            # ----- new items -----
-            "style": [{
-                "type": 0, # 0-highlight, 1-underline, 2-strike-through-line
-                "color": 14277081
-                }, {...}]            
-        }
+- text block: type=0
+- image block: type=1
+- list block: type=2
+- table block: type=3
 
-- image block
-    Normal image block defined in PyMuPDF: 
-        { "type": 1, "bbox": [], "ext": "png", "image": , ...}
-
-    Inline image has a same structure, but will be merged into associated text 
-    block: a span in block line.
-
-    So, an image structure may exist in block or line span. The key `image` is 
-    used to distinguish image type.
-
-- list block
-
-- table block
+Note: The length unit for each boundary box is pt, which is 1/72 Inch.
 
 '''
 
