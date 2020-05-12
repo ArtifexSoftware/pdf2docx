@@ -55,19 +55,21 @@ def to_Highlight_color(sRGB):
 
 
 def get_main_bbox(bbox_1, bbox_2, threshold=0.95):
-    ''' If the intersection of bbox_1 and bbox_2 exceeds the threshold, return the larger
-        bbox; else return None.
+    ''' If the intersection of bbox_1 and bbox_2 exceeds the threshold, return the union of
+        these two bbox-es; else return None.
     '''
     # rects
     b1 = fitz.Rect(bbox_1)
     b2 = fitz.Rect(bbox_2)
-    b = b1 & b2
+
+    # a bit enlarge to consider that bbox_1 and bbox_2 are almost intersecting
+    b = b1 & (b2 + DR/10.0) 
 
     # areas
     a1, a2, a = b1.getArea(), b2.getArea(), b.getArea()
-
     if a/min(a1,a2)>=threshold:
-        return bbox_1 if a1 > a2 else bbox_2
+        u = b1 | b2
+        return tuple([round(x,2) for x in (u.x0, u.y0, u.x1, u.y1)])
     else:
         return None
 
@@ -122,7 +124,7 @@ def is_vertical_aligned(bbox1, bbox2, horizontal=True, factor=0.0):
         L2 = bbox2[3]-bbox2[1]
         L = max(bbox1[3], bbox2[3]) - min(bbox1[1], bbox2[1])
 
-    return L1+L2-L>factor*min(L1,L2)
+    return L1+L2-L>=factor*max(L1,L2)
 
 
 def is_horizontal_aligned(bbox1, bbox2, horizontal=True, factor=0.0):
