@@ -147,26 +147,8 @@ def _plot_text_block(page, block):
     r = fitz.Rect(block['bbox'])
     page.drawRect(r, color=blue, fill=None, overlay=False)
 
-    # line border in red
-    for line in block.get('lines', []):
-        red = utils.getColor('red')
-        r = fitz.Rect(line['bbox'])
-        page.drawRect(r, color=red, fill=None, overlay=False)
-
-        # span regions
-        for span in line.get('spans', []):
-            c = utils.getColor('')
-            r = fitz.Rect(span['bbox'])
-
-            # image span: diagonal lines
-            if 'image' in span:
-                page.drawLine((r.x0, r.y0), (r.x1, r.y1), color=c, width=1)
-                page.drawLine((r.x0, r.y1), (r.x1, r.y0), color=c, width=1)
-                page.drawRect(r, color=c, fill=None, overlay=False)
-            
-            # text span: filled with random color
-            else:
-                page.drawRect(r, color=c, fill=c, width=0, overlay=False)
+    # lines and spans
+    _plot_lines_and_spans(page, block.get('lines', []))
 
 
 def _plot_table_block(page, block):
@@ -189,4 +171,29 @@ def _plot_table_block(page, block):
             # plot cell
             page.drawRect(cell['bbox'], color=bc, fill=sc, width=w, overlay=False)
 
-            # plot text lines
+            # plot lines/spans in cell
+            _plot_lines_and_spans(page, cell['lines'])
+
+
+def _plot_lines_and_spans(page, lines):
+    '''Plot lines and spans bbox'''    
+    for line in lines:
+        # line border in red
+        red = utils.getColor('red')
+        r = fitz.Rect(line['bbox'])
+        page.drawRect(r, color=red, fill=None, overlay=False)
+
+        # span regions
+        for span in line.get('spans', []):
+            c = utils.getColor('')
+            r = fitz.Rect(span['bbox'])
+
+            # image span: diagonal lines
+            if 'image' in span:
+                page.drawLine((r.x0, r.y0), (r.x1, r.y1), color=c, width=1)
+                page.drawLine((r.x0, r.y1), (r.x1, r.y0), color=c, width=1)
+                page.drawRect(r, color=c, fill=None, overlay=False)
+            
+            # text span: filled with random color
+            else:
+                page.drawRect(r, color=c, fill=c, width=0, overlay=False)

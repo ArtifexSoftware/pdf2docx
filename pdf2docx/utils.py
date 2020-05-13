@@ -78,6 +78,7 @@ def get_main_bbox(bbox_1, bbox_2, threshold=0.95):
     else:
         return None
 
+
 def parse_font_name(font_name):
     '''parse raw font name extracted with pymupdf, e.g.
         BCDGEE+Calibri-Bold, BCDGEE+Calibri

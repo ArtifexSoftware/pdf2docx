@@ -134,11 +134,64 @@ def parse_table_structure(layout, **kwargs):
         return False
 
 
-@debug_plot('Parsed Table', True, 'table')
+@debug_plot('Parsed Table', True, 'layout')
 def parse_table_content(layout, **kwargs):
     '''Add block lines to associated cells.'''
-    for table in layout.get('tables', []):
-        pass
+
+    # table blocks
+    tables = list(filter(lambda block: block['type']==3, layout['blocks']))
+    if not tables: return False
+
+    # collect blocks in table region
+    blocks = []
+    lines_in_tables = [[] for _ in tables]
+    for block in layout['blocks']:
+        # ignore table block
+        if block['type']==3: continue
+
+        # collect blocks contained in table region
+        for table, lines in zip(tables, lines_in_tables):
+            fitz_table = fitz.Rect(table['bbox'])
+            if fitz_table.contains(block['bbox']):
+                # text block
+                if block['type']==0:
+                    lines.extend(block['lines'])
+                
+                # image block: convert to a image span in line
+                elif block['type']==1:
+                    lines.append({
+                        'wmode': 0,
+                        'dir': [1,0],
+                        'bbox': block['bbox'],
+                        'spans': [
+                            block
+                        ]
+                    })
+                
+                # done for this block
+                break
+        # normal blocks
+        else:
+            blocks.append(block)
+
+    # assign collected lines to associated cells
+    for table, lines in zip(tables, lines_in_tables):
+        for rows in table['cells']:
+            for cell in rows:
+                if not cell: continue
+                fitz_cell = fitz.Rect(cell['bbox'])
+                cell_lines = list(filter(
+                    lambda line: fitz_cell.contains(line['bbox']), lines
+                ))
+                cell['lines'].extend(cell_lines)
+
+    # sort in natural reading order and update layout blocks
+    blocks.extend(tables)
+    blocks.sort(key=lambda block: (block['bbox'][1], block['bbox'][0]))
+    layout['blocks'] = blocks
+
+    return True
+
 
 def _group_rects(rects):
     '''split rects into groups'''

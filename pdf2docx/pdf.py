@@ -49,7 +49,7 @@ Note: The length unit for each boundary box is pt, which is 1/72 Inch.
 
 import fitz
 from .pdf_debug import debug_plot
-from .pdf_table import parse_table_structure
+from .pdf_table import (parse_table_structure, parse_table_content)
 from .pdf_text import (merge_inline_images, parse_text_format)
 from . import utils
 
@@ -87,6 +87,7 @@ def layout(layout, **kwargs):
     parse_text_format(layout, **kwargs)
 
     # parse table blocks: fill text block to table structure
+    parse_table_content(layout, **kwargs)
 
     # paragraph / line spacing
     parse_paragraph_and_line_spacing(layout)
