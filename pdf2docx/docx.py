@@ -174,28 +174,28 @@ def make_table(doc, block, page_width, page_margin):
         for j, (cell, block_cell) in enumerate(zip(row.cells, block_row)):
 
             # ignore merged cells
-            if not block_cell: continue
-
-            # merge cells
-            n_row, n_col = block_cell['merged-cells']
-            if n_row*n_col!=1:
-                _cell = table.cell(i+n_row-1, j+n_col-1)
-                cell.merge(_cell)
+            if not block_cell: continue            
 
             # set borders
-            keys = ('top', 'end', 'bottom', 'left')
+            keys = ('top', 'end', 'bottom', 'start')
             kwargs = {}
             for k, w, c in zip(keys, block_cell['border-width'], block_cell['border-color']):
                 hex_c = f'#{hex(c)[2:].zfill(6)}'
                 kwargs[k] = {
-                    'sz': w, 'val': 'single', 'color': hex_c.upper()
+                    'sz': 20*w, 'val': 'single', 'color': hex_c.upper()
                 }
-            # merged cells should also be considered
+            # merged cells are assumed to have same borders with the main cell
+            n_row, n_col = block_cell['merged-cells']
             for m in range(i, i+n_row):
                 for n in range(j, j+n_col):
                     set_cell_border(table.cell(m, n), **kwargs)
 
-            # set width/height
+            # merge cells            
+            if n_row*n_col!=1:
+                _cell = table.cell(i+n_row-1, j+n_col-1)
+                cell.merge(_cell)
+
+            # set cell width/height
 
             # set bg-color
             if block_cell['bg-color']!=None:
