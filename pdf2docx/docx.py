@@ -64,7 +64,8 @@ def make_page(doc, layout):
         
         # make table
         else:
-            ref_table = make_table(doc, ref_table, block, width, layout['margin'])            
+            pass
+            # ref_table = make_table(doc, ref_table, block, width, layout['margin'])            
 
 
 def make_paragraph(doc, block, width, page_margin):

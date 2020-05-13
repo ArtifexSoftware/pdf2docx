@@ -74,7 +74,7 @@ def layout(layout, **kwargs):
 
     # preprocessing, e.g. change block order, clean negative block, 
     # get span text by joining chars
-    preprocessing(layout, **kwargs)
+    preprocessing(layout)
     
     # table structure recognized from rectangles
     # after this step, use rects not in table group to parse text format
@@ -92,8 +92,7 @@ def layout(layout, **kwargs):
     parse_paragraph_and_line_spacing(layout)
 
 
-@debug_plot('Preprocessed', False)
-def preprocessing(layout, **kwargs):
+def preprocessing(layout):
     '''preprocessing for the raw layout of PDF page'''
     # remove blocks exceeds page region: negative bbox
     layout['blocks'] = list(filter(

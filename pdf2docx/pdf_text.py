@@ -36,7 +36,7 @@ from .pdf_shape import rect_to_style
 from . import utils
 
 
-@debug_plot('Merged Inline Images', True)
+@debug_plot('Merged Inline Images', True, 'text')
 def merge_inline_images(layout, **kwargs):
     ''' merge inline image blocks into text block: 
         a block line or a line span.
@@ -53,6 +53,9 @@ def merge_inline_images(layout, **kwargs):
 
         # suppose no overlap between two images
         if block['type']==1: continue
+
+        # innore table block
+        if block['type']==3: continue
 
         # all images found their block, then quit
         if len(index_inline)==num: break
@@ -87,14 +90,17 @@ def merge_inline_images(layout, **kwargs):
     return True if index_inline else False
 
 
-@debug_plot('Parsed Text Format', True)
+@debug_plot('Parsed Text Blocks', True, 'text')
 def parse_text_format(layout, **kwargs):
     '''parse text format with rectangle style'''
 
     is_layout_updated = False
 
     for block in layout['blocks']:
-        if block['type']==1: continue
+
+        # ignore image and table blocks
+        # actually there're no text contents in table yet at this point of time
+        if block['type'] in (1, 3): continue
 
         block_rect = fitz.Rect(block['bbox'])
 

@@ -32,12 +32,22 @@ if __name__ == '__main__':
         # print raw dict in json format
         # remove image content for json searializing
         for block in layout['blocks']:
-            if 'image' in block: 
-                block.pop('image')
+            # image block
+            if block['type']==1: 
+                block['image'] = '<image>'
+            # table block
+            elif block['type']==3:
+                for rows in block['cells']:
+                    for cell in rows:
+                        if not cell: continue
+                        for line in cell['lines']:
+                            for span in line['spans']:
+                                if 'image' in span: span['image'] = '<image>'
+            # text block
             else:
                 for line in block['lines']:
                     for span in line['spans']:
-                        if 'image' in span: span.pop('image')
+                        if 'image' in span: span['image'] = '<image>'
 
         with open(os.path.join(output, 'raw.json'), 'w', encoding='utf-8') as f:
             f.write(json.dumps(layout))

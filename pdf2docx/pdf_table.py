@@ -50,7 +50,7 @@ from .pdf_debug import debug_plot
 from .pdf_shape import (set_cell_border, set_cell_shading, is_cell_border, is_cell_shading)
 
 
-@debug_plot('Cleaned Rectangles', True, 'shape')
+@debug_plot('Cleaned Rectangle Shapes', True, 'shape')
 def clean_rects(layout, **kwargs):
     '''clean rectangles:
         - delete rectangles with white background-color
@@ -126,8 +126,9 @@ def parse_table_structure(layout, **kwargs):
             table = _parse_table_structure_from_rects(group['rects'])
             if table: tables.append(table)
 
+    # add parsed table structure to blocks list
     if tables:
-        layout['tables'] = tables
+        layout['blocks'].extend(tables)
         return True
     else:
         return False
@@ -337,7 +338,8 @@ def _parse_table_structure_from_rects(rects):
                     bottom['bbox'][3]-bottom['bbox'][1],
                     left['bbox'][2]-left['bbox'][0]
                 ),
-                'merged-cells': (n_row, n_col)
+                'merged-cells': (n_row, n_col),
+                'lines': [] # text contents in this cell will be determined later
             })
                 
         # one row finished
