@@ -59,9 +59,9 @@ def make_page(doc, layout):
             if block['type']==1 or block['lines'][0]['wmode'] == 0:
                 make_paragraph(doc, block, width, layout['margin'])
             
-            # vertical paragraph
+            # vertical paragraph: TODO
             else:
-                make_vertical_paragraph(doc, block)
+                pass
         
         # make table
         elif block['type']==3:
@@ -86,7 +86,7 @@ def make_paragraph(doc, block, width, page_margin):
     # indent and space setting
     before_spacing = max(round(block.get('before_space', 0.0), 1), 0.0)
     after_spacing = max(round(block.get('after_space', 0.0), 1), 0.0)
-    pf = reset_paragraph_format(p)
+    pf = _reset_paragraph_format(p)
     pf.space_before = Pt(before_spacing)
     pf.space_after = Pt(after_spacing)    
 
@@ -117,7 +117,7 @@ def make_paragraph(doc, block, width, page_margin):
             # add line
             for span in line['spans']:
                 # add content
-                add_span(span, p)
+                _add_span(span, p)
 
                 # exactly line spacing will destroy image display, so set single line spacing instead
                 if 'image' in span:
@@ -153,10 +153,6 @@ def make_paragraph(doc, block, width, page_margin):
     return p
     
 
-def make_vertical_paragraph(doc, block):
-    pass
-
-
 def make_table(doc, block, page_width, page_margin):
     '''create table for a text block
        count of columns are checked, combine rows if next block is also in table format
@@ -164,53 +160,34 @@ def make_table(doc, block, page_width, page_margin):
     # new table
     block_cells = block['cells']
     table = doc.add_table(rows=len(block_cells), cols=len(block_cells[0]))
+    table.autofit = False
 
     # set indent
     pos = block['bbox'][0]-page_margin[0]
-    indent_table(table, pos)
+    _indent_table(table, pos)
 
     # cell format and contents
-    for i, (row, block_row) in enumerate(zip(table.rows, block_cells)):
-        for j, (cell, block_cell) in enumerate(zip(row.cells, block_row)):
+    for i in range(len(block_cells)):
+        for j in range(len(block_cells[0])):           
 
             # ignore merged cells
-            if not block_cell: continue            
-
-            # set borders
-            keys = ('top', 'end', 'bottom', 'start')
-            kwargs = {}
-            for k, w, c in zip(keys, block_cell['border-width'], block_cell['border-color']):
-                hex_c = f'#{hex(c)[2:].zfill(6)}'
-                kwargs[k] = {
-                    'sz': 20*w, 'val': 'single', 'color': hex_c.upper()
-                }
-            # merged cells are assumed to have same borders with the main cell
-            n_row, n_col = block_cell['merged-cells']
-            for m in range(i, i+n_row):
-                for n in range(j, j+n_col):
-                    set_cell_border(table.cell(m, n), **kwargs)
-
-            # merge cells            
-            if n_row*n_col!=1:
-                _cell = table.cell(i+n_row-1, j+n_col-1)
-                cell.merge(_cell)
-
-            # set cell width/height
-
-            # set bg-color
-            if block_cell['bg-color']!=None:
-                set_cell_shading(cell, block_cell['bg-color'])
+            block_cell = block_cells[i][j]
+            if not block_cell: continue
+            
+            # set cell style            
+            _set_cell_style(table, (i,j), block_cell)           
 
             # insert text
+            cell = table.cell(i, j)
             p = cell.paragraphs[0]
             for line in block_cell['lines']:
                 # add line
                 for span in line['spans']:
                     # add content
-                    add_span(span, p)
+                    _add_span(span, p)
 
 
-def reset_paragraph_format(p):
+def _reset_paragraph_format(p):
     '''paragraph format'''
     pf = p.paragraph_format
     pf.line_spacing = 1.05 # single
@@ -222,7 +199,7 @@ def reset_paragraph_format(p):
     return pf
 
 
-def add_span(span, paragraph):
+def _add_span(span, paragraph):
     '''add text span to a paragraph.       
     '''
     # inline image span
@@ -262,8 +239,7 @@ def add_span(span, paragraph):
                 text_span.font.strike = True
 
 
-
-def indent_table(table, indent):
+def _indent_table(table, indent):
     '''indent table
 
        args:
@@ -277,20 +253,69 @@ def indent_table(table, indent):
         tbl_pr[0].append(e)
 
 
-def set_cell_shading(cell, RGB_value):
+def _set_cell_style(table, indexes, block_cell):
+    ''' Set python-docx cell style, e.g. border, shading, width, row height, 
+        based on cell block parsed from PDF.
+
+        Args:
+            table: python-docx table object
+            indexes: (i, j) index of current cell in table
+            block_cell: a list of list, cells information parsed from PDF
+    '''
+    i, j = indexes
+    cell = table.cell(i, j)
+
+    # set borders:
+    # Note border width is specified in eighths of a point, with a minimum value of 
+    # two (1/4 of a point) and a maximum value of 96 (twelve points)
+    keys = ('top', 'end', 'bottom', 'start')
+    kwargs = {}
+    for k, w, c in zip(keys, block_cell['border-width'], block_cell['border-color']):
+        hex_c = f'#{hex(c)[2:].zfill(6)}'
+        kwargs[k] = {
+            'sz': 8*w, 'val': 'single', 'color': hex_c.upper()
+        }
+    # merged cells are assumed to have same borders with the main cell
+    n_row, n_col = block_cell['merged-cells']    
+    for m in range(i, i+n_row):
+        for n in range(j, j+n_col):
+            _set_cell_border(table.cell(m, n), **kwargs)
+
+    # merge cells            
+    if n_row*n_col!=1:
+        _cell = table.cell(i+n_row-1, j+n_col-1)
+        cell.merge(_cell)
+
+    # set cell width/height
+    # only for separate cells without cell merging
+    x0, y0, x1, y1 = block_cell['bbox']
+    if n_row==1:
+        table.rows[i].height = Pt(y1-y0) # Note cell does not have height property.
+    if n_col==1:
+        cell.width = Pt(x1-x0)
+
+    # set bg-color
+    if block_cell['bg-color']!=None:
+        _set_cell_shading(cell, block_cell['bg-color'])
+
+
+def _set_cell_shading(cell, RGB_value):
     '''set cell background-color'''
     c = hex(RGB_value)[2:].zfill(6)
     cell._tc.get_or_add_tcPr().append(parse_xml(r'<w:shd {} w:fill="{}"/>'.format(nsdecls('w'), c)))
 
 
-def set_cell_border(cell, **kwargs):
+def _set_cell_border(cell, **kwargs):
     """
-    Set cell`s border, refer to:
-    https://stackoverflow.com/questions/33069697/how-to-setup-cell-borders-with-python-docx
+    Set cell`s border.
+    
+    Reference:
+     - https://stackoverflow.com/questions/33069697/how-to-setup-cell-borders-with-python-docx
+     - https://blog.csdn.net/weixin_44312186/article/details/104944110
 
     Usage:
 
-    set_cell_border(
+    _set_cell_border(
         cell,
         top={"sz": 12, "val": "single", "color": "#FF0000", "space": "0"},
         bottom={"sz": 12, "color": "#00FF00", "val": "single"},
@@ -323,3 +348,4 @@ def set_cell_border(cell, **kwargs):
             for key in ["sz", "val", "color", "space", "shadow"]:
                 if key in edge_data:
                     element.set(qn('w:{}'.format(key)), str(edge_data[key]))
+
