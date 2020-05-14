@@ -141,7 +141,8 @@ def parse_vertical_spacing(layout):
             for cell in row:
                 if not cell: continue
                 _, y0, _, y1 = cell['bbox']
-                _parse_paragraph_and_line_spacing(cell['blocks'], y0, y1)
+                w_top, _, w_bottom, _ = cell['border-width']
+                _parse_paragraph_and_line_spacing(cell['blocks'], y0+w_top/2.0, y1-w_bottom/2.0)
 
 
 def page_margin(layout):
@@ -215,7 +216,16 @@ def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
     ref_block = None
     ref_pos = Y0
     for block in blocks:
-        para_space = block['bbox'][1] - ref_pos
+
+        # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
+        # size should be excluded from the calculated vertical spacing
+        if block['type']==3:
+            dw = block['cells'][0][0]['border-width'][0] / 2.0 # use top border of the first cell
+        else:
+            dw = 0.0
+
+        start_pos = block['bbox'][1] - dw
+        para_space = start_pos - ref_pos
 
         # paragraph-1 (ref) to paragraph-2 (current): set before-space for paragraph-2
         if block['type']==0:
@@ -260,15 +270,14 @@ def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
             if free_space<=0:
                 block['before_space'] = para_space+free_space-utils.DM
 
-        # paragraph (ref) to table (current): set after-space for paragraph
+        # paragraph (ref) to table (current): set after-space for paragraph        
         elif ref_block['type']==0:
-
             ref_block['after_space'] = para_space
 
         # situation with very low probability, e.g. table to table
         else:
             pass
 
-        # update reference block
+        # update reference block        
         ref_block = block
-        ref_pos = ref_block['bbox'][3]
+        ref_pos = block['bbox'][3] + dw

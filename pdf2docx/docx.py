@@ -296,8 +296,13 @@ def _set_cell_style(table, indexes, block_cell):
     # set cell width/height
     # only for separate cells without cell merging
     x0, y0, x1, y1 = block_cell['bbox']
+    w_t, _, w_b, _ = block_cell['border-width']
     if n_row==1:
-        table.rows[i].height = Pt(y1-y0) # Note cell does not have height property.
+        # NOTE:
+        # cell bbox is counted from the center-line of top border to center line of bottom border,
+        # so border size should be excluded from the whole cell height
+        dw = (w_t+w_b)/2.0
+        table.rows[i].height = Pt(y1-y0-dw) # Note cell does not have height property.
     if n_col==1:
         cell.width = Pt(x1-x0)
 

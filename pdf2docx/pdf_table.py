@@ -379,7 +379,7 @@ def _parse_table_structure_from_rects(rects):
             })
                 
         # one row finished
-        cells.append(cells_in_row)
+        cells.append(cells_in_row)    
 
     return {
         'type': 3,
