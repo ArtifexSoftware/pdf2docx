@@ -57,7 +57,10 @@ def make_page(doc, layout):
         if block['type'] in (0, 1):
             # horizontal paragraph
             if block['type']==1 or block['lines'][0]['wmode'] == 0:
-                make_paragraph(doc, block, width, layout['margin'])
+                # new paragraph
+                p = doc.add_paragraph()
+                left, right, *_ = layout['margin']
+                make_paragraph(p, block, left, width-right)
             
             # vertical paragraph: TODO
             else:
@@ -68,7 +71,7 @@ def make_page(doc, layout):
             make_table(doc, block, width, layout['margin'])            
 
 
-def make_paragraph(doc, block, width, page_margin):
+def make_paragraph(p, block, X0, X1):
     '''create paragraph for a text block.
        join line sets with TAB and set position according to bbox.
 
@@ -79,10 +82,11 @@ def make_paragraph(doc, block, width, page_margin):
         - (1) this line and next line are actually in the same line (y-position)
         - (2) if the rest space of this line can't accommodate even one span of next line, 
               it's supposed to be normal word wrap.
-    '''
-    # new paragraph    
-    p = doc.add_paragraph()
 
+        ---
+        Args:
+            X0, X1: the paragraph is restricted in a horizontal range within (X0, X1)
+    '''
     # indent and space setting
     before_spacing = max(round(block.get('before_space', 0.0), 1), 0.0)
     after_spacing = max(round(block.get('after_space', 0.0), 1), 0.0)
@@ -93,7 +97,7 @@ def make_paragraph(doc, block, width, page_margin):
     # add image
     if block['type']==1:
         # left indent implemented with tab
-        pos = block['bbox'][0]-page_margin[0]
+        pos = block['bbox'][0]-X0
         if abs(pos) > utils.DM:
             pf.tab_stops.add_tab_stop(Pt(pos))
             p.add_run().add_tab()
@@ -109,7 +113,7 @@ def make_paragraph(doc, block, width, page_margin):
         for i, line in enumerate(block['lines']):
 
             # left indent implemented with tab
-            pos = line['bbox'][0]-page_margin[0]
+            pos = line['bbox'][0]-X0
             if abs(pos) > utils.DM:
                 pf.tab_stops.add_tab_stop(Pt(pos))
                 p.add_run().add_tab()
@@ -143,7 +147,7 @@ def make_paragraph(doc, block, width, page_margin):
                 x0, _, x1, _ = block['lines'][i+1]['spans'][0]['bbox']
                 # word wrap if rest space of this line can't accommodate
                 # even one span of next line
-                free_space = width-page_margin[1]-line['bbox'][2]
+                free_space = X1-line['bbox'][2]
                 if x1-x0 >= free_space:
                     line_break = False
             
@@ -179,12 +183,15 @@ def make_table(doc, block, page_width, page_margin):
 
             # insert text
             cell = table.cell(i, j)
-            p = cell.paragraphs[0]
-            for line in block_cell['lines']:
-                # add line
-                for span in line['spans']:
-                    # add content
-                    _add_span(span, p)
+            first = True
+            x0, _, x1, _ = block_cell['bbox']
+            for block in block_cell['blocks']:
+                if first:
+                    p = cell.paragraphs[0]
+                    first = False
+                else:
+                    p = cell.add_paragraph()
+                make_paragraph(p, block, x0, x1)
 
 
 def _reset_paragraph_format(p):
