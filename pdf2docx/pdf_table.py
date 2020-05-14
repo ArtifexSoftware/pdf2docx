@@ -29,7 +29,7 @@ Data structure for table block recognized from rectangle shapes and text blocks:
             'bg-color': utils.RGB_value(c),
             'border-width': (,,,),
             'merged-cells': (x,y), # this is the bottom-right cell of merged region: x rows, y cols
-            'lines': [
+            'blocks': [
                 # same structure with lines in text block
             ]
         }, # end of cell
@@ -144,46 +144,29 @@ def parse_table_content(layout, **kwargs):
 
     # collect blocks in table region
     blocks = []
-    lines_in_tables = [[] for _ in tables]
+    blocks_in_tables = [[] for _ in tables]
     for block in layout['blocks']:
         # ignore table block
         if block['type']==3: continue
 
         # collect blocks contained in table region
-        for table, lines in zip(tables, lines_in_tables):
+        for table, blocks_in_table in zip(tables, blocks_in_tables):
             fitz_table = fitz.Rect(table['bbox'])
             if fitz_table.contains(block['bbox']):
-                # text block
-                if block['type']==0:
-                    lines.extend(block['lines'])
-                
-                # image block: convert to a image span in line
-                elif block['type']==1:
-                    lines.append({
-                        'wmode': 0,
-                        'dir': [1,0],
-                        'bbox': block['bbox'],
-                        'spans': [
-                            block
-                        ]
-                    })
-                
-                # done for this block
+                blocks_in_table.append(block)
                 break
         # normal blocks
         else:
             blocks.append(block)
 
-    # assign collected lines to associated cells
-    for table, lines in zip(tables, lines_in_tables):
-        for rows in table['cells']:
-            for cell in rows:
+    # assign blocks to associated cells
+    # ATTENTION: no nested table is considered
+    for table, blocks_in_table in zip(tables, blocks_in_tables):
+        for row in table['cells']:
+            for cell in row:
                 if not cell: continue
-                fitz_cell = fitz.Rect(cell['bbox'])
-                cell_lines = list(filter(
-                    lambda line: fitz_cell.contains(line['bbox']), lines
-                ))
-                cell['lines'].extend(cell_lines)
+                blocks_in_cell = _assign_blocks_to_cell(cell, blocks_in_table)
+                cell['blocks'].extend(blocks_in_cell)
 
     # sort in natural reading order and update layout blocks
     blocks.extend(tables)
@@ -392,7 +375,7 @@ def _parse_table_structure_from_rects(rects):
                     left['bbox'][2]-left['bbox'][0]
                 ),
                 'merged-cells': (n_row, n_col),
-                'lines': [] # text contents in this cell will be determined later
+                'blocks': [] # text contents in this cell will be determined later
             })
                 
         # one row finished
@@ -505,3 +488,35 @@ def _check_merged_cells(ref, borders, direction='row'):
 
     return res
 
+
+def _assign_blocks_to_cell(cell, blocks):
+    ''' Get blocks contained in cell bbox.
+        Note: If a block is partly contained in a cell, the contained lines should be extracted
+              as a new block and assign to the cell.
+    '''
+    res = []
+    fitz_cell = fitz.Rect(cell['bbox'])
+    for block in blocks:
+        # add it directly if fully contained in a cell
+        if fitz_cell.contains(block['bbox']):
+            res.append(block)
+        
+        # add the contained lines if any intersection
+        elif fitz_cell.intersects(block['bbox']):
+            lines = []
+            bbox = fitz.Rect()
+            # check each line
+            for line in block['lines']:
+                if fitz_cell.contains(line['bbox']):
+                    lines.append(line)
+                    bbox = bbox | fitz.Rect(line['bbox'])
+
+            
+            # join contained lines back to block
+            res.append({
+                'type': 0,
+                'bbox': (bbox.x0, bbox.y0, bbox.x1, bbox.y1),
+                'lines': lines
+            })
+
+    return res

@@ -171,8 +171,9 @@ def _plot_table_block(page, block):
             # plot cell
             page.drawRect(cell['bbox'], color=bc, fill=sc, width=w, overlay=False)
 
-            # plot lines/spans in cell
-            _plot_lines_and_spans(page, cell['lines'])
+            # plot blocks in cell
+            for cell_block in cell['blocks']:
+                _plot_text_block(page, cell_block)
 
 
 def _plot_lines_and_spans(page, lines):

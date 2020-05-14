@@ -37,12 +37,13 @@ if __name__ == '__main__':
                 block['image'] = '<image>'
             # table block
             elif block['type']==3:
-                for rows in block['cells']:
-                    for cell in rows:
+                for row in block['cells']:
+                    for cell in row:
                         if not cell: continue
-                        for line in cell['lines']:
-                            for span in line['spans']:
-                                if 'image' in span: span['image'] = '<image>'
+                        for _block in cell['blocks']:
+                            for line in _block['lines']:
+                                for span in line['spans']:
+                                    if 'image' in span: span['image'] = '<image>'
             # text block
             else:
                 for line in block['lines']:
