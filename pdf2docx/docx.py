@@ -166,7 +166,7 @@ def make_table(doc, block, page_width, page_margin):
     table = doc.add_table(rows=len(block_cells), cols=len(block_cells[0]))
     table.autofit = False
 
-    # set indent
+    # set indent    
     pos = block['bbox'][0]-page_margin[0]
     _indent_table(table, pos)
 
@@ -179,10 +179,15 @@ def make_table(doc, block, page_width, page_margin):
             if not block_cell: continue
             
             # set cell style            
-            _set_cell_style(table, (i,j), block_cell)           
+            _set_cell_style(table, (i,j), block_cell)
 
-            # insert text
+            # clear cell margin
+            # NOTE: the start position of a table is based on text in cell, rather than left border of table. 
+            # They're almost aligned if left-margin of cell is zero.
             cell = table.cell(i, j)
+            _set_cell_margins(cell, start=0)
+
+            # insert text            
             first = True
             x0, _, x1, _ = block_cell['bbox']
             for block in block_cell['blocks']:
@@ -246,20 +251,6 @@ def _add_span(span, paragraph):
                 text_span.font.strike = True
 
 
-def _indent_table(table, indent):
-    '''indent table
-
-       args:
-         - indent: indent value, the basic unit is 1/20 pt
-    '''
-    tbl_pr = table._element.xpath('w:tblPr')
-    if tbl_pr:
-        e = OxmlElement('w:tblInd')
-        e.set(qn('w:w'), str(20*indent)) # basic unit 1/20 pt for openxml 
-        e.set(qn('w:type'), 'dxa')
-        tbl_pr[0].append(e)
-
-
 def _set_cell_style(table, indexes, block_cell):
     ''' Set python-docx cell style, e.g. border, shading, width, row height, 
         based on cell block parsed from PDF.
@@ -309,6 +300,47 @@ def _set_cell_style(table, indexes, block_cell):
     # set bg-color
     if block_cell['bg-color']!=None:
         _set_cell_shading(cell, block_cell['bg-color'])
+
+
+def _indent_table(table, indent):
+    '''indent table
+
+       args:
+         - indent: indent value, the basic unit is 1/20 pt
+    '''
+    tbl_pr = table._element.xpath('w:tblPr')
+    if tbl_pr:
+        e = OxmlElement('w:tblInd')
+        e.set(qn('w:w'), str(20*indent)) # basic unit 1/20 pt for openxml 
+        e.set(qn('w:type'), 'dxa')
+        tbl_pr[0].append(e)
+
+
+def _set_cell_margins(cell, **kwargs):
+    ''' Set cell margins. Provided values are in twentieths of a point (1/1440 of an inch).
+
+        ---
+        Args:
+            - cell:  actual cell instance you want to modify
+            - kwargs: a dict with keys: top, bottom, start, end
+        usage:
+            _set_cell_margins(cell, top=50, start=50, bottom=50, end=50)
+        read more here: 
+            - https://blog.csdn.net/weixin_44312186/article/details/104944773
+            - http://officeopenxml.com/WPtableCellMargins.php
+    '''
+    tc = cell._tc
+    tcPr = tc.get_or_add_tcPr()
+    tcMar = OxmlElement('w:tcMar')
+ 
+    for m in ['top', 'start', 'bottom', 'end']:
+        if m in kwargs:
+            node = OxmlElement("w:{}".format(m))
+            node.set(qn('w:w'), str(kwargs.get(m)))
+            node.set(qn('w:type'), 'dxa')
+            tcMar.append(node)
+ 
+    tcPr.append(tcMar)
 
 
 def _set_cell_shading(cell, RGB_value):
