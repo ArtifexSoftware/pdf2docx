@@ -510,13 +510,13 @@ def _assign_blocks_to_cell(cell, blocks):
                 if fitz_cell.contains(line['bbox']):
                     lines.append(line)
                     bbox = bbox | fitz.Rect(line['bbox'])
-
             
             # join contained lines back to block
-            res.append({
-                'type': 0,
-                'bbox': (bbox.x0, bbox.y0, bbox.x1, bbox.y1),
-                'lines': lines
-            })
-
+            if lines:
+                res.append({
+                    'type': 0,
+                    'bbox': (bbox.x0, bbox.y0, bbox.x1, bbox.y1),
+                    'lines': lines
+                })
+            
     return res
