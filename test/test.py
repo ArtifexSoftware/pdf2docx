@@ -170,7 +170,8 @@ class MainTest(TestUtility):
             if filename.endswith('pdf'):
                 shutil.copy(os.path.join(self.sample_dir, filename), 
                     os.path.join(self.output_dir, f'{self.PREFIX_SAMPLE}-{filename}'))
-            
+
+
     def tearDown(self):
         # close pdf object
         if self.SAMPLE_PDF: self.SAMPLE_PDF.close()
@@ -179,7 +180,9 @@ class MainTest(TestUtility):
         # delete pdf files generated for comparison purpose
         for filename in os.listdir(self.output_dir):
             if filename.startswith(self.PREFIX_SAMPLE) or filename.startswith(self.PREFIX_COMPARING):
-                os.remove(os.path.join(self.output_dir, filename))
+                # os.remove(os.path.join(self.output_dir, filename))
+                pass
+
 
     def test_text_format(self):
         '''sample file focusing on text format'''
@@ -204,7 +207,6 @@ class MainTest(TestUtility):
                     msg=f"Applied text format {t['style']} is inconsistent with sample {s['style']}")
         
 
-    # @unittest.skip("a bit update on the layout is planed, skipping temporarily.")
     def test_image(self):
         '''sample file focusing on image, inline-image considered'''
         # init pdf
@@ -225,3 +227,13 @@ class MainTest(TestUtility):
                 matched = self.check_bbox(s, t, self.SAMPLE_PDF[i], 0.7)
                 self.assertTrue(matched,
                     msg=f"Applied image bbox {t} is inconsistent with sample {s}.")
+
+
+    def test_table_format(self):
+        '''sample file focusing on table format'''
+        # init pdf
+        self.init_test('demo-table.pdf')
+
+        # check text layout
+        # if table is parsed successfully, all re-created text blocks should be same with sample file.
+        self.verify_layout()
