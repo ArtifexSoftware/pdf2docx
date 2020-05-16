@@ -50,6 +50,21 @@ from .pdf_debug import debug_plot
 from .pdf_shape import (set_cell_border, set_cell_shading, is_cell_border, is_cell_shading)
 
 
+def parse_table(layout, **kwargs):
+    ''' parse table blocks: 
+        - table structure recognized from rectangles
+        - cell contents extracted from text blocks
+    '''
+    # clean rects
+    clean_rects(layout, **kwargs)
+
+    # table structure
+    parse_table_structure(layout, **kwargs)
+
+    # cell contents
+    parse_table_content(layout, **kwargs)
+
+
 @debug_plot('Cleaned Rectangle Shapes', True, 'shape')
 def clean_rects(layout, **kwargs):
     '''clean rectangles:
@@ -105,10 +120,7 @@ def clean_rects(layout, **kwargs):
 
 @debug_plot('Parsed Table Structure', True, 'table')
 def parse_table_structure(layout, **kwargs):
-    '''parse table structure from rectangle shapes'''
-    # clean rects
-    clean_rects(layout, **kwargs)
-    
+    '''parse table structure from rectangle shapes'''    
     # group rects: each group may be a potential table
     groups = _group_rects(layout['rects'])
 

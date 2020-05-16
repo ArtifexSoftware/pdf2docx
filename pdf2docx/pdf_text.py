@@ -36,20 +36,69 @@ from .pdf_shape import rect_to_style
 from . import utils
 
 
-@debug_plot('Merged Inline Images', True, 'text')
+def parse_text_and_image(layout, **kwargs):
+    ''' Parse text and image in both page and table context:
+        - merge inline images into text block
+        - parse text format, e.g. highlight, underline
+    '''
+    # inline images
+    merge_inline_images(layout, **kwargs)
+
+    # text format
+    parse_text_format(layout, **kwargs)
+
+
+@debug_plot('Merged Inline Images', True)
 def merge_inline_images(layout, **kwargs):
-    ''' merge inline image blocks into text block: 
-        a block line or a line span.
+    '''Merge inline image blocks in both page and table context.
+    '''
+    # blocks in page level
+    anything_changed = _merge_inline_images(layout['blocks'])
+
+    # blocks in table cell level
+    tables = list(filter(lambda block: block['type']==3, layout['blocks']))
+    for table in tables:
+        for row in table['cells']:
+            for cell in row:
+                if not cell: continue
+                if _merge_inline_images(cell['blocks']):
+                    anything_changed = True
+
+    return anything_changed
+
+
+@debug_plot('Parsed Text Blocks', True)
+def parse_text_format(layout, **kwargs):
+    '''Parse text format in both page and table context.
+    '''
+    # blocks in page level
+    anything_changed = _parse_text_format(layout['blocks'], layout['rects'])
+
+    # blocks in table cell level
+    tables = list(filter(lambda block: block['type']==3, layout['blocks']))
+    for table in tables:
+        for row in table['cells']:
+            for cell in row:
+                if not cell: continue
+                if _parse_text_format(cell['blocks'], layout['rects']):
+                    anything_changed = True
+
+    return anything_changed
+
+
+def _merge_inline_images(blocks):
+    '''merge inline image blocks into text block: a block line or a line span.
     '''
     # get all images blocks with index
     f = lambda item: item[1]['type']==1
-    index_images = list(filter(f, enumerate(layout['blocks'])))
+    index_images = list(filter(f, enumerate(blocks)))
+    if not index_images: return False
 
     # get index of inline images: intersected with text block
     # assumption: an inline image intersects with only one text block
     index_inline = []
     num = len(index_images)
-    for block in layout['blocks']:
+    for block in blocks:
 
         # suppose no overlap between two images
         if block['type']==1: continue
@@ -84,19 +133,18 @@ def merge_inline_images(layout, **kwargs):
     # the index of element in original list changes when any elements are removed
     # so try to 
     for i in index_inline[::-1]:
-        layout['blocks'].pop(i)
+        blocks.pop(i)
 
     # anything changed in this step?
     return True if index_inline else False
 
 
-@debug_plot('Parsed Text Blocks', True, 'text')
-def parse_text_format(layout, **kwargs):
+def _parse_text_format(blocks, rects):
     '''parse text format with rectangle style'''
 
     is_layout_updated = False
 
-    for block in layout['blocks']:
+    for block in blocks:
 
         # ignore image and table blocks
         # actually there're no text contents in table yet at this point of time
@@ -105,7 +153,7 @@ def parse_text_format(layout, **kwargs):
         block_rect = fitz.Rect(block['bbox'])
 
         # use each rectangle (a specific text format) to split line spans
-        for rect in layout['rects']:
+        for rect in rects:
 
             # any intersection with current block?
             the_rect = fitz.Rect(rect['bbox'])

@@ -7,7 +7,7 @@ from . import utils
 from .pdf_shape import (is_cell_border, is_cell_shading)
 
 
-def debug_plot(title, plot=True, category='text'):
+def debug_plot(title, plot=True, category='layout'):
     ''' plot layout / shapes for debug mode when the following conditions are all satisfied:
           - plot=True
           - layout has been changed: the return value of `func` is True
@@ -19,15 +19,13 @@ def debug_plot(title, plot=True, category='text'):
             - plot: plot layout/shape if true
             - category: 
                 - 'layout': plot all blocks
-                - 'text'  : plot text and image blocks
-                - 'table' : plot table blocks
+                - 'table' : plot table blocks only
                 - 'shape' : plot rectangle shapes                
                 - or a combinaton list, e.g. ['layout', 'shape'] plots both layout and shape
     '''
     # function map
     plot_map = {
         'layout': plot_layout,
-        'text'  : plot_text_and_image_blocks,
         'table' : plot_table_blocks,
         'shape' : plot_rectangles        
     }
@@ -49,23 +47,6 @@ def debug_plot(title, plot=True, category='text'):
                         plot_map[c](doc, layout, title)        
         return inner
     return wrapper
-
-
-def plot_text_and_image_blocks(doc, layout, title):
-    '''plot text and image blocks layout with PyMuPDF
-       doc: fitz document object
-    '''
-    # insert a new page with borders
-    page = _new_page_with_margin(doc, layout, title)    
-
-    # plot blocks
-    for block in layout['blocks']:
-        
-        # ignore table block
-        if block['type']==3: continue
-
-        # plot block
-        _plot_text_block(page, block)
 
 
 def plot_table_blocks(doc, layout, title):

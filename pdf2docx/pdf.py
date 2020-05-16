@@ -49,8 +49,8 @@ Note: The length unit for each boundary box is pt, which is 1/72 Inch.
 
 import fitz
 from .pdf_debug import debug_plot
-from .pdf_table import (parse_table_structure, parse_table_content)
-from .pdf_text import (merge_inline_images, parse_text_format)
+from .pdf_table import parse_table
+from .pdf_text import parse_text_and_image
 from . import utils
 
 
@@ -76,19 +76,16 @@ def layout(layout, **kwargs):
     # get span text by joining chars
     preprocessing(layout)
     
-    # table structure recognized from rectangles
-    # after this step, use rects not in table group to parse text format
-    parse_table_structure(layout, **kwargs)
+    # parse table blocks: 
+    #  - table structure/format recognized from rectangles
+    #  - cell contents extracted from text blocks
+    parse_table(layout, **kwargs)
 
-    # check inline images
-    merge_inline_images(layout, **kwargs)    
-
-    # parse text format, e.g. highlight, underline
-    parse_text_format(layout, **kwargs)
-
-    # parse table blocks: fill text block to table structure
-    parse_table_content(layout, **kwargs)
-
+    # parse text and image blocks:
+    #  - check inline images
+    #  - parse text format, e.g. highlight, underline
+    parse_text_and_image(layout, **kwargs)
+    
     # paragraph / line spacing
     parse_vertical_spacing(layout)
 
