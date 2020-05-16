@@ -13,7 +13,7 @@
     - [x] highlight, underline, strike-through converted from docx
     - [x] highlight, underline, strike-through applied from PDF annotations
 - [ ] Parse and re-create list style
-- [ ] Parse and re-create table
+- [x] Parse and re-create table
 
 ## Limitations
 
@@ -21,6 +21,7 @@
     - horizontal paragraph/line/word
     - no word transformation, e.g. rotation
 - No floating images
+- Full borders table only
 
 ## Usage
 
@@ -46,3 +47,7 @@ for page in pdf[0:1]:
 docx.save(docx_file)
 pdf.close()
 ```
+
+## Sample
+
+![sample_compare.png](https://s1.ax1x.com/2020/05/17/Yg8XLt.png)
