@@ -180,8 +180,7 @@ class MainTest(TestUtility):
         # delete pdf files generated for comparison purpose
         for filename in os.listdir(self.output_dir):
             if filename.startswith(self.PREFIX_SAMPLE) or filename.startswith(self.PREFIX_COMPARING):
-                # os.remove(os.path.join(self.output_dir, filename))
-                pass
+                os.remove(os.path.join(self.output_dir, filename))
 
 
     def test_text_format(self):
