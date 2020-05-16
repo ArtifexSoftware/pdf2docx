@@ -1,5 +1,18 @@
 '''
-Parse rectangles and lines
+Parse rectangles and lines, return a list of rect with structure:
+{
+    'type': int,
+    'bbox': (x0, y0, x1, y1),
+    'color': utils.RGB_value(c)
+}
+
+where, categories of type:
+    - not defined   : -1
+    - highlight     : 0
+    - underline     : 1
+    - strike-through: 2
+    - table border  : 10
+    - cell shading  : 11
 '''
 
 import copy
@@ -171,6 +184,7 @@ def rects_from_source(xref_stream, height):
 
             # add rectangle, meanwhile convert bbox to PyMuPDF coordinates system
             res.append({
+                'type': -1,
                 'bbox': (X0, height-Y0, X1, height-Y1), 
                 'color': Wc
             })
@@ -200,12 +214,13 @@ def rects_from_source(xref_stream, height):
 
             # bbox in PyMuPDF coordinates system
             res.append({
+                'type': -1,
                 'bbox': (x0, height-y0, x1, height-y1), 
                 'color': Wc
             })
-
-        
+ 
     return res
+
 
 def rects_from_annots(annots):
     ''' get annotations(comment shapes) from PDF page
@@ -246,3 +261,59 @@ def rects_from_annots(annots):
         })
 
     return res
+
+
+def rect_to_style(rect, span_bbox):
+    ''' text style based on the position between rectangle and span
+        rect: {'type': int, 'bbox': (,,,), 'color': int}
+    '''
+
+    # if the type of rect is unknown (-1), recognize type first 
+    # based on rect and the span it applying to
+    if rect['type']==-1:
+        # region height
+        h_rect = rect['bbox'][3] - rect['bbox'][1]
+        h_span = span_bbox[3] - span_bbox[1]
+
+        # distance to span bootom border
+        d = span_bbox[3] - rect['bbox'][1]
+
+        # the height of rect is large enough?
+        # yes, it's highlight
+        if h_rect > 0.75*h_span:
+            rect['type'] = 0
+
+        # near to bottom of span? yes, underline
+        elif d < 0.25*h_span:
+            rect['type'] = 1
+
+        # near to center of span? yes, strike-through-line
+        elif 0.35*h_span < d < 0.75*h_span:
+            rect['type'] = 2
+
+        # unknown style
+        else:
+            pass
+
+    # check rect type again
+    if rect['type']==-1:
+        style = {}
+    else:
+        style =  {
+            'type': rect['type'],
+            'color': rect['color']
+        }
+    return style
+
+
+def set_cell_border(rect):
+    rect['type'] = 10
+
+def set_cell_shading(rect):
+    rect['type'] = 11
+
+def is_cell_border(rect):
+    return rect.get('type', -1) == 10
+
+def is_cell_shading(rect):
+    return rect.get('type', -1) == 11

@@ -1,31 +1,110 @@
 '''
-Recognize text and image format
+Recognize text and image format.
+
+In addition to the font style (size, color, weight), more text formats, including 
+highlight, underline, strike through line, are considered. So, the span-s in line 
+are re-grouped with styles, and more keys are added to the original structure of span.
+    {
+        "bbox": [,,,]
+        "size": 15.770000457763672,
+        "flags": 20,
+        "font": "MyriadPro-SemiboldCond",
+        "color": 14277081,
+        "text": "Adjust Your Headers", # joined from chars
+        "chars": [{...}]
+        # ----- new items -----
+        "style": [{
+            "type": 0, # 0-highlight, 1-underline, 2-strike-through-line
+            "color": 14277081
+            }, {...}]            
+    }
+
+Normal image block defined in PyMuPDF: 
+    { "type": 1, "bbox": [], "ext": "png", "image": , ...}
+
+Inline image has a same structure, but will be merged into associated text block: 
+a span in block line. So, an image structure may exist in block or line span. 
+The key `image` is used to distinguish image type.
+
 '''
 
 import fitz
 import copy
 
 from .pdf_debug import debug_plot
+from .pdf_shape import rect_to_style
 from . import utils
 
 
-@debug_plot('Merged inline images', True)
+def parse_text_and_image(layout, **kwargs):
+    ''' Parse text and image in both page and table context:
+        - merge inline images into text block
+        - parse text format, e.g. highlight, underline
+    '''
+    # inline images
+    merge_inline_images(layout, **kwargs)
+
+    # text format
+    parse_text_format(layout, **kwargs)
+
+
+@debug_plot('Merged Inline Images', True)
 def merge_inline_images(layout, **kwargs):
-    ''' merge inline image blocks into text block: 
-        a block line or a line span.
+    '''Merge inline image blocks in both page and table context.
+    '''
+    # blocks in page level
+    anything_changed = _merge_inline_images(layout['blocks'])
+
+    # blocks in table cell level
+    tables = list(filter(lambda block: block['type']==3, layout['blocks']))
+    for table in tables:
+        for row in table['cells']:
+            for cell in row:
+                if not cell: continue
+                if _merge_inline_images(cell['blocks']):
+                    anything_changed = True
+
+    return anything_changed
+
+
+@debug_plot('Parsed Text Blocks', True)
+def parse_text_format(layout, **kwargs):
+    '''Parse text format in both page and table context.
+    '''
+    # blocks in page level
+    anything_changed = _parse_text_format(layout['blocks'], layout['rects'])
+
+    # blocks in table cell level
+    tables = list(filter(lambda block: block['type']==3, layout['blocks']))
+    for table in tables:
+        for row in table['cells']:
+            for cell in row:
+                if not cell: continue
+                if _parse_text_format(cell['blocks'], layout['rects']):
+                    anything_changed = True
+
+    return anything_changed
+
+
+def _merge_inline_images(blocks):
+    '''merge inline image blocks into text block: a block line or a line span.
     '''
     # get all images blocks with index
     f = lambda item: item[1]['type']==1
-    index_images = list(filter(f, enumerate(layout['blocks'])))
+    index_images = list(filter(f, enumerate(blocks)))
+    if not index_images: return False
 
     # get index of inline images: intersected with text block
     # assumption: an inline image intersects with only one text block
     index_inline = []
     num = len(index_images)
-    for block in layout['blocks']:
+    for block in blocks:
 
         # suppose no overlap between two images
         if block['type']==1: continue
+
+        # innore table block
+        if block['type']==3: continue
 
         # all images found their block, then quit
         if len(index_inline)==num: break
@@ -54,19 +133,33 @@ def merge_inline_images(layout, **kwargs):
     # the index of element in original list changes when any elements are removed
     # so try to 
     for i in index_inline[::-1]:
-        layout['blocks'].pop(i)
+        blocks.pop(i)
+
+    # anything changed in this step?
+    return True if index_inline else False
 
 
-@debug_plot('Parsed Text Format', True)
-def parse_text_format(layout, **kwargs):
+def _parse_text_format(blocks, rects):
     '''parse text format with rectangle style'''
-    for block in layout['blocks']:
-        if block['type']==1: continue
-        if not block['rects']: continue
+
+    is_layout_updated = False
+
+    for block in blocks:
+
+        # ignore image and table blocks
+        # actually there're no text contents in table yet at this point of time
+        if block['type'] in (1, 3): continue
+
+        block_rect = fitz.Rect(block['bbox'])
 
         # use each rectangle (a specific text format) to split line spans
-        for rect in block['rects']:
+        for rect in rects:
+
+            # any intersection with current block?
             the_rect = fitz.Rect(rect['bbox'])
+            if not block_rect.intersects(the_rect): continue
+
+            # yes, then go further to lines in block            
             for line in block['lines']:
                 # any intersection in this line?
                 line_rect = fitz.Rect(line['bbox'])
@@ -82,6 +175,10 @@ def parse_text_format(layout, **kwargs):
                                                    
                 # update line spans                
                 line['spans'] = split_spans
+                is_layout_updated = True
+
+    # anything changed in this step?
+    return is_layout_updated
 
 
 def _split_span_with_rect(span, rect):
@@ -131,7 +228,7 @@ def _split_span_with_rect(span, rect):
             split_span['text'] = span['text'][pos:pos_end]
 
             # update style
-            new_style = utils.rect_to_style(rect, split_span['bbox'])
+            new_style = rect_to_style(rect, split_span['bbox'])
             if new_style:
                 if 'style' in split_span:
                     split_span['style'].append(new_style)

@@ -20,12 +20,10 @@ An example of processed layout result:
     {
     "width" : 504.0,
     "height": 661.5,
-    "margin": [20.4000, 574.9200, 37.5600, 806.4000],
+    "margin": [20.4000, 574.9200, 37.5600, 806.4000], # left, right, top, bottom
     "blocks": [{...}, {...}, ...],
     "rects" : [{...}, {...}, ...]
     }
-
-Note: The length unit for each boundary box is pt, which is 1/72 Inch.
 
 where:
 
@@ -38,47 +36,21 @@ annotations:
     }
 
 `blocks` are a group of page contents. The type of blocks is extended from 
-`text` and `image` to `list` and `table`:
+the default `text` and `image` to `list` and `table`:
 
-- text block:
-    In addition to the font style (size, color, weight), more text formats,
-    including highlight, underline, strike through line, are considered. So
-    the `span`-s in `line` are re-grouped with styles, and more keys are 
-    added to the original structure of `span`.
-        {
-            "bbox": [,,,]
-            "size": 15.770000457763672,
-            "flags": 20,
-            "font": "MyriadPro-SemiboldCond",
-            "color": 14277081,
-            "text": "Adjust Your Headers", # joined from chars
-            "chars": [{...}]
-            # ----- new items -----
-            "style": [{
-                "type": 0, # 0-highlight, 1-underline, 2-strike-through-line
-                "color": 14277081
-                }, {...}]            
-        }
+- text block: type=0
+- image block: type=1
+- list block: type=2
+- table block: type=3
 
-- image block
-    Normal image block defined in PyMuPDF: 
-        { "type": 1, "bbox": [], "ext": "png", "image": , ...}
-
-    Inline image has a same structure, but will be merged into associated text 
-    block: a span in block line.
-
-    So, an image structure may exist in block or line span. The key `image` is 
-    used to distinguish image type.
-
-- list block
-
-- table block
+Note: The length unit for each boundary box is pt, which is 1/72 Inch.
 
 '''
 
 import fitz
 from .pdf_debug import debug_plot
-from .pdf_text import (merge_inline_images, parse_text_format)
+from .pdf_table import parse_table
+from .pdf_text import parse_text_and_image
 from . import utils
 
 
@@ -102,20 +74,23 @@ def layout(layout, **kwargs):
 
     # preprocessing, e.g. change block order, clean negative block, 
     # get span text by joining chars
-    preprocessing(layout, **kwargs)
+    preprocessing(layout)
+    
+    # parse table blocks: 
+    #  - table structure/format recognized from rectangles
+    #  - cell contents extracted from text blocks
+    parse_table(layout, **kwargs)
 
-    # check inline images
-    merge_inline_images(layout, **kwargs)
-
-    # parse text format, e.g. highlight, underline
-    parse_text_format(layout, **kwargs)
-
+    # parse text and image blocks:
+    #  - check inline images
+    #  - parse text format, e.g. highlight, underline
+    parse_text_and_image(layout, **kwargs)
+    
     # paragraph / line spacing
-    parse_paragraph_and_line_spacing(layout)
+    parse_vertical_spacing(layout)
 
 
-@debug_plot('Preprocessed', False)
-def preprocessing(layout, **kwargs):
+def preprocessing(layout):
     '''preprocessing for the raw layout of PDF page'''
     # remove blocks exceeds page region: negative bbox
     layout['blocks'] = list(filter(
@@ -128,106 +103,43 @@ def preprocessing(layout, **kwargs):
         key=lambda block: (block['bbox'][1], 
             block['bbox'][0]))
 
-    # calculate page margin
-    layout['margin'] = page_margin(layout)
-
-    # assign rectangle shapes to associated block;
-    # get span text by joining chars
+    # joining chars in span
     for block in layout['blocks']:
         # skip image
         if block['type']==1: continue
-
-        # assign rectangles
-        block['rects'] = []
-        block_rect = fitz.Rect(block['bbox'])
-        for rect in layout['rects']:
-            # any intersection?
-            if block_rect.intersects(rect['bbox']):
-                block['rects'].append(rect)
 
         # join chars
         for line in block['lines']:
             for span in line['spans']:
                 chars = [char['c'] for char in span['chars']]
                 span['text'] = ''.join(chars)
-    
 
-def parse_paragraph_and_line_spacing(layout):
-    ''' Calculate external and internal vertical space for paragraph block. It'll used 
-        as paragraph spacing and line spacing when creating paragraph. 
-     
-        - paragraph spacing is determined by the vertical distance to previous block. 
-          For the first block, the reference position is top margin.
-        
-            It's easy to set before-space or after-space for a paragraph with python-docx,
-            so, if current block is a paragraph, set before-space for it; if current block 
-            is not a paragraph, e.g. a table, set after-space for previous block (generally, 
-            previous block should be a paragraph).
-        
-        - line spacing is defined as the average line height in current block.
+    # round bbox of rectangles: one decimal place is enough, 
+    # otherwise, would encounter float error, especially get intersection of two bbox-es
+    for rect in layout['rects']:
+        rect['bbox'] = tuple([round(x,1) for x in rect['bbox']])
+
+    # anything changed in this step?
+    return True
+
+
+def parse_vertical_spacing(layout):
+    ''' Calculate external and internal vertical space for paragraph blocks under page context 
+        or table context. It'll used as paragraph spacing and line spacing when creating paragraph.
     '''
-    top, bottom = layout['margin'][-2:]     
-    ref_block = None
-    ref_pos = top
+    # blocks in page level
+    top, bottom = layout['margin'][-2:]
+    _parse_paragraph_and_line_spacing(layout['blocks'], top, layout['height']-bottom)
 
-    for block in layout['blocks']:
-        para_space = block['bbox'][1] - ref_pos
-
-        # paragraph-1 (ref) to paragraph-2 (current): set before-space for paragraph-2
-        if block['type']==0:
-
-            # spacing before this paragraph
-            block['before_space'] = para_space
-
-            # calculate average line spacing in paragraph
-            # e.g. line-space-line-space-line, excepting first line -> space-line-space-line,
-            # so an average line height = space+line
-            # then, the height of first line can be adjusted by updating paragraph before-spacing.
-            # 
-            ref_bbox = None
-            count = 0
-            for line in block['lines']:
-                # count of lines
-                if not utils.is_horizontal_aligned(line['bbox'], ref_bbox, True, 0.5):
-                    count += 1
-                # update reference line
-                ref_bbox = line['bbox']
-            
-            _, y0, _, y1 = block['lines'][0]['bbox']   # first line
-            first_line_height = y1 - y0
-            block_height = block['bbox'][3]-block['bbox'][1]
-            if count > 1:
-                line_space = (block_height-first_line_height)/(count-1)
-            else:
-                line_space = block_height
-            block['line_space'] = line_space
-
-            # if only one line exists, don't have to set line spacing, use default setting,
-            # i.e. single line instead
-            if count > 1:
-                # since the line height setting in docx may affect the original bbox in pdf, 
-                # it's necessary to update the before spacing:
-                # taking bottom left corner of first line as the reference point                
-                para_space = para_space + first_line_height - line_space
-                block['before_space'] = para_space
-
-            # adjust last block to avoid exceeding current page
-            free_space = layout['height']-(ref_pos+para_space+block_height+bottom) 
-            if free_space<=0:
-                block['before_space'] = para_space+free_space-utils.DM
-
-        # paragraph (ref) to table (current): set after-space for paragraph
-        elif ref_block['type']==0:
-
-            ref_block['after_space'] = para_space
-
-        # situation with very low probability, e.g. table to table
-        else:
-            pass
-
-        # update reference block
-        ref_block = block
-        ref_pos = ref_block['bbox'][3]
+    # blocks in table cell level
+    tables = list(filter(lambda block: block['type']==3, layout['blocks']))
+    for table in tables:
+        for row in table['cells']:
+            for cell in row:
+                if not cell: continue
+                _, y0, _, y1 = cell['bbox']
+                w_top, _, w_bottom, _ = cell['border-width']
+                _parse_paragraph_and_line_spacing(cell['blocks'], y0+w_top/2.0, y1-w_bottom/2.0)
 
 
 def page_margin(layout):
@@ -278,3 +190,91 @@ def page_margin(layout):
     bottom = h-max(map(lambda x: x[3], list_bbox))
 
     return left, right, min(utils.ITP, top), min(utils.ITP, bottom)
+
+
+def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
+    ''' Calculate external and internal vertical space for text blocks.
+     
+        - paragraph spacing is determined by the vertical distance to previous block. 
+          For the first block, the reference position is top margin.
+        
+            It's easy to set before-space or after-space for a paragraph with python-docx,
+            so, if current block is a paragraph, set before-space for it; if current block 
+            is not a paragraph, e.g. a table, set after-space for previous block (generally, 
+            previous block should be a paragraph).
+        
+        - line spacing is defined as the average line height in current block.
+
+        ---
+        Args:
+            - blocks: a list of block within a page/table cell
+            - X0, X1: the blocks are restricted in a vertical range within (Y0, Y1)
+    '''
+    ref_block = None
+    ref_pos = Y0
+    for block in blocks:
+
+        # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
+        # size should be excluded from the calculated vertical spacing
+        if block['type']==3:
+            dw = block['cells'][0][0]['border-width'][0] / 2.0 # use top border of the first cell
+        else:
+            dw = 0.0
+
+        start_pos = block['bbox'][1] - dw
+        para_space = start_pos - ref_pos
+
+        # paragraph-1 (ref) to paragraph-2 (current): set before-space for paragraph-2
+        if block['type']==0:
+
+            # spacing before this paragraph
+            block['before_space'] = para_space
+
+            # calculate average line spacing in paragraph
+            # e.g. line-space-line-space-line, excepting first line -> space-line-space-line,
+            # so an average line height = space+line
+            # then, the height of first line can be adjusted by updating paragraph before-spacing.
+            # 
+            ref_bbox = None
+            count = 0
+            for line in block['lines']:
+                # count of lines
+                if not utils.is_horizontal_aligned(line['bbox'], ref_bbox, True, 0.5):
+                    count += 1
+                # update reference line
+                ref_bbox = line['bbox']
+            
+            _, y0, _, y1 = block['lines'][0]['bbox']   # first line
+            first_line_height = y1 - y0
+            block_height = block['bbox'][3]-block['bbox'][1]
+            if count > 1:
+                line_space = (block_height-first_line_height)/(count-1)
+            else:
+                line_space = block_height
+            block['line_space'] = line_space
+
+            # if only one line exists, don't have to set line spacing, use default setting,
+            # i.e. single line instead
+            if count > 1:
+                # since the line height setting in docx may affect the original bbox in pdf, 
+                # it's necessary to update the before spacing:
+                # taking bottom left corner of first line as the reference point                
+                para_space = para_space + first_line_height - line_space
+                block['before_space'] = para_space
+
+            # adjust last block to avoid exceeding current page
+            free_space = Y1-(ref_pos+para_space+block_height) 
+            if free_space<=0:
+                block['before_space'] = para_space+free_space-utils.DM
+
+        # paragraph (ref) to table (current): set after-space for paragraph        
+        elif ref_block['type']==0:
+            ref_block['after_space'] = para_space
+
+        # situation with very low probability, e.g. table to table
+        else:
+            pass
+
+        # update reference block        
+        ref_block = block
+        ref_pos = block['bbox'][3] + dw

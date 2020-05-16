@@ -54,6 +54,31 @@ def to_Highlight_color(sRGB):
     return color_map.get(sRGB, WD_COLOR_INDEX.YELLOW)
 
 
+def get_main_bbox(bbox_1, bbox_2, threshold=0.95):
+    ''' If the intersection of bbox_1 and bbox_2 exceeds the threshold, return the union of
+        these two bbox-es; else return None.
+    '''
+    # rects
+    b1 = fitz.Rect(bbox_1)
+    b2 = fitz.Rect(bbox_2)
+    b = b1 & b2
+
+    # areas    
+    a1, a2, a = b1.getArea(), b2.getArea(), b.getArea()
+
+    # no intersection
+    if not b: return None
+
+    # Note: if b1 and b1 intersects with only an edge, b is not empty but b.getArea()=0
+    # so give a small value when they're intersected by the area is zero
+    factor = a/min(a1,a2) if a else 1e-6
+    if factor >= threshold:
+        u = b1 | b2
+        return tuple([round(x,1) for x in (u.x0, u.y0, u.x1, u.y1)])
+    else:
+        return None
+
+
 def parse_font_name(font_name):
     '''parse raw font name extracted with pymupdf, e.g.
         BCDGEE+Calibri-Bold, BCDGEE+Calibri
@@ -80,75 +105,6 @@ def is_char_in_rect(char, rect):
     return intsec.width > 0.5*c_rect.width
 
 
-def rect_to_style(rect, span_bbox):
-    ''' text style based on the position between rectangle and span
-        rect: {'bbox': (,,,), 'color': int}
-    '''
-    # if type exists, e.g. rect converted from annotation, 
-    # return it directly
-    if 'type' in rect:
-        return {
-            'type': rect['type'],
-            'color': rect['color']
-        }
-    
-    # otherwise, recognize type based on rect and the span it applying to
-    # region height
-    h_rect = rect['bbox'][3] - rect['bbox'][1]
-    h_span = span_bbox[3] - span_bbox[1]
-
-    # distance to span bootom border
-    d = span_bbox[3] - rect['bbox'][1]
-
-    # the height of rect is large enough?
-    # yes, it's highlight
-    if h_rect > 0.75*h_span:
-        style = {
-            'type': 0,
-            'color': rect['color']
-        }
-    # near to bottom of span? yes, underline
-    elif d < 0.25*h_span:
-        style = {
-            'type': 1,
-            'color': rect['color']
-        }
-    # near to center of span? yes, strike-through-line
-    elif 0.35*h_span < d < 0.75*h_span:
-        style = {
-            'type': 2,
-            'color': rect['color']
-        }
-    # unknown style
-    else:
-        style = None
-
-    return style
-
-
-def is_end_sentence(text):
-    '''simple rule to check the completence of text
-       - sentence delimiter at the end of a sentence
-    '''
-    text = text.strip()
-    if not text:
-        return True # keep empy line
-
-    return text[-1].endswith(('.', '?', '!', ':'))
-
-def is_start_sentence(text):
-    text = text.strip()
-    if not text:
-        return True
-
-    # generally not starts with a digit 
-    elif text[0].isdigit():
-        return False		
-
-    # not starts with a low case alphabet
-    else:
-        return not text[0].islower() # conservatively
-
 def is_vertical_aligned(bbox1, bbox2, horizontal=True, factor=0.0):
     ''' check whether two boxes have enough intersection in vertical direction.
         vertical direction is perpendicular to reading direction
@@ -174,7 +130,7 @@ def is_vertical_aligned(bbox1, bbox2, horizontal=True, factor=0.0):
         L2 = bbox2[3]-bbox2[1]
         L = max(bbox1[3], bbox2[3]) - min(bbox1[1], bbox2[1])
 
-    return L1+L2-L>factor*min(L1,L2)
+    return L1+L2-L>=factor*max(L1,L2)
 
 
 def is_horizontal_aligned(bbox1, bbox2, horizontal=True, factor=0.0):
@@ -186,3 +142,11 @@ def is_horizontal_aligned(bbox1, bbox2, horizontal=True, factor=0.0):
                         probability the two bbox-es are aligned.
     '''
     return is_vertical_aligned(bbox1, bbox2, not horizontal, factor)
+
+
+def check_concurrent_points(p1, p2, square_tolerance=0.0):
+    ''' check if p1(x1,y1) and p2(x2,y2) are concurrent points with given tolerance
+    '''
+    x1, y1 = p1
+    x2, y2 = p2
+    return (x1-x2)**2+(y1-y2)**2 <= square_tolerance

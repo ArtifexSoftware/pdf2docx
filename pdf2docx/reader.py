@@ -8,15 +8,27 @@ from . import pdf_debug
 
 
 class Reader:
-    '''
-        read PDF file `file_path` with PyMuPDF to get the layout data, including text, image and 
+    ''' Read PDF file `file_path` with PyMuPDF to get the raw layout data, including text, image and 
         the associated properties, e.g. boundary box, font, size, image width, height, then parse
-        it with consideration for sentence completeness, DOCX generation structure.
+        it with consideration for docx re-generation structure.
     '''
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, debug=False):
+        ''' Initialize fitz object with given pdf file path.
+            If debug=True, illustration pdf will be created during parsing the raw pdf layout.
+        '''
+        self.debug_mode = debug
         self.filename = file_path
+
+        # main fitz object to read pdf
         self._doc = fitz.open(file_path)
+
+        # fitz object in debug mode: plot page layout
+        # file path for this debug pdf: demo.pdf -> debug_demo.pdf
+        path, filename = os.path.split(file_path)
+        self._debug_doc_path = os.path.join(path, f'debug_{filename}')
+        self._debug_doc = fitz.open() if debug else None
+
 
     def __getitem__(self, index):
         if isinstance(index, slice):
@@ -26,12 +38,24 @@ class Reader:
         else:
             return self._doc[index]
 
+
     def __len__(self):
         return len(self._doc)
+
 
     @property
     def core(self):
         return self._doc
+
+
+    @property
+    def debug_kwargs(self):        
+        return {
+                'debug': self.debug_mode,
+                'doc': self._debug_doc,
+                'filename': self._debug_doc_path
+            }
+
 
     def rects(self, page):
         ''' Get rectangle shapes from page source and comment annotations.            
@@ -73,16 +97,21 @@ class Reader:
         # raw layout
         layout = page.getText('rawdict')
 
-        # rectangles
-        rects = self.rects(page)
+        # calculate page margin
+        layout['margin'] = pdf.page_margin(layout)
 
-        # append rectangles to raw dict
-        layout['rects'] = rects
+        # rectangles: appended to raw layout
+        layout['rects'] = self.rects(page)
+
+        # plot raw layout
+        if self.debug_mode:
+            pdf_debug.plot_layout(self._debug_doc, layout, 'Original Text Blocks')
+            pdf_debug.plot_rectangles(self._debug_doc, layout, 'Original Rectangle Shapes')
 
         return layout
 
 
-    def parse(self, page, debug=False, filename=None):
+    def parse(self, page):
         ''' parse page layout
 
             args:
@@ -90,34 +119,23 @@ class Reader:
                 debug: plot layout for illustration if True            
                 filename: pdf filename for the plotted layout
         '''
-        if debug and not filename:
-            raise Exception('Please specify `filename` for layout plotting when debug=True.')
-
-        # layout plotting args
-        doc = fitz.open() if debug else None
-        kwargs = {
-            'debug': debug,
-            'doc': doc,
-            'filename': filename
-        }
-
         # page source
-        layout = self.layout(page)
-
-        # raw layout, rectangles
-        if debug:
-            pdf_debug.plot_layout(doc, layout, 'Original PDF')
-            pdf_debug.plot_rectangles(doc, layout, 'Recognized Rectangles')
+        layout = self.layout(page)        
 
         # parse page
-        pdf.layout(layout, **kwargs)
+        pdf.layout(layout, **self.debug_kwargs)
 
         # save layout plotting as pdf file
-        if debug:
-            doc.save(filename)
-            doc.close()
+        self.save_debug_doc()
 
         return layout
 
+    
+    def save_debug_doc(self):
+        if self.debug_mode:
+            self._debug_doc.save(self._debug_doc_path)
+    
     def close(self):
         self._doc.close()
+        if self.debug_mode:
+            self._debug_doc.close()
