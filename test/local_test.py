@@ -14,7 +14,7 @@ import json
 if __name__ == '__main__':
 
     output = os.path.join(os.path.dirname(script_path), 'samples')
-    filename = 'demo-table'
+    filename = 'demo-table-style'
     pdf_file = os.path.join(output, f'{filename}.pdf')
     docx_file = os.path.join(output, f'{filename}.docx')
 
@@ -41,9 +41,12 @@ if __name__ == '__main__':
                     for cell in row:
                         if not cell: continue
                         for _block in cell['blocks']:
-                            for line in _block['lines']:
-                                for span in line['spans']:
-                                    if 'image' in span: span['image'] = '<image>'
+                            if _block['type']==1:
+                                _block['image'] = '<image>'
+                            else:
+                                for line in _block['lines']:
+                                    for span in line['spans']:
+                                        if 'image' in span: span['image'] = '<image>'
             # text block
             else:
                 for line in block['lines']:

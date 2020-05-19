@@ -132,7 +132,7 @@ def parse_table_structure(layout, **kwargs):
             continue
         else:
             # identify rect type: table border or cell shading
-            _set_table_borders_and_shading(group['rects'])
+            _set_table_borders(group['rects'])
 
             # parse table structure based on rects in border type
             table = _parse_table_structure_from_rects(group['rects'])
@@ -216,63 +216,39 @@ def _group_rects(rects):
     return groups
 
 
-def _set_table_borders_and_shading(rects):
-    ''' Detect table structure from rects.
+def _set_table_borders(rects, border_threshold=6):
+    ''' Detect table borders from rects.
         These rects may be categorized as three types:
             - cell border
             - cell shading
             - text format, e.g. highlight, underline
 
-        The rect type is decided based on the experience that:            
-            - cell shading has a larger size than border
-            - cell shading is surrounded by borders
-        
-        For a certain rect r, get all intersected rects with it, say R:
-            - R is empty -> r is text format
-            - r is surrounded by R -> cell shading
-            - otherwise  -> cell border
+        Cell borders are detected based on the experiences that:
+            - compared to cell shading, the size of cell border never exceeds 6 pt
+            - compared to text format, cell border always has intersection with other rects
 
-        How to decide that r is surrounded by R?
-        The major dimensions of intersections between r and each rect in R are right the
-        width/height of r.
+        Note:
+            cell shading is determined after the table structure is parsed from these cell borders.
     '''
+    # Get all rects with on condition: size < 6 Pt
+    thin_rects = []
     for rect in rects:
+        x0, y0, x1, y1 = rect['bbox']
+        if min(x1-x0, y1-y0) <= border_threshold:
+            thin_rects.append(rect)
+
+    # These thin rects may be cell borders, or text format, e.g. underline with cell.
+    # Compared to text format, cell border always has intersection with other rects
+    for rect in thin_rects:
         fitz_rect = fitz.Rect(rect['bbox'])
-        w0 = round(fitz_rect.width, 1)
-        h0 = round(fitz_rect.height, 1)
-
-        # get all intersected rects
-        intersection_found = False
-        for other_rect in rects:            
+        # check intersections with other rect
+        for other_rect in thin_rects:            
             if rect==other_rect: continue
-
-            fitz_other_rect = fitz.Rect(other_rect['bbox'])
-            intersection = fitz_rect & fitz_other_rect
-            if not intersection: continue
-
-            intersection_found = True            
-
-            # this is a border if larger rect exists
-            w1 = round(fitz_other_rect.width, 1)
-            h1 = round(fitz_other_rect.height, 1)
-            if min(w0, h0) < min(w1, h1):
+            # intersection found, so it's a cell border
+            if fitz_rect.intersects(other_rect['bbox']):                
                 set_cell_border(rect)
+                print(len(thin_rects), 1)
                 break
-
-            # this is a cell shading if the major dimension is surrounded, 
-            # which means the intersection dimension is larger enough, say 90% of current rect
-            w = round(intersection.width, 1)
-            h = round(intersection.height, 1)
-            if max(w, h) >= 0.9*max(w0, h0):
-                set_cell_shading(rect)
-                break
-        
-        else:
-            if intersection_found:
-                set_cell_border(rect)
-            # no any intersections: text format -> to detect the specific type later
-            else:
-                pass
 
 
 def _parse_table_structure_from_rects(rects):
@@ -303,6 +279,7 @@ def _parse_table_structure_from_rects(rects):
     # sort
     rows = sorted(h_borders)
     cols = sorted(v_borders)
+    print(rows)
 
     # check the outer borders: 
     if not _check_outer_borders(h_borders[rows[0]], v_borders[cols[-1]], h_borders[rows[-1]], v_borders[cols[0]]):
@@ -313,10 +290,13 @@ def _parse_table_structure_from_rects(rects):
     # -------------------------------------------------- 
     # check merged cells in each row
     merged_cells_rows = []
+    print(rows)
     for i, row in enumerate(rows[0:-1]):
         ref_y = (row+rows[i+1])/2.0
         ordered_v_borders = [v_borders[k] for k in cols]
         row_structure = _check_merged_cells(ref_y, ordered_v_borders, 'row')
+        if i==0:
+            print(ref_y, ordered_v_borders)
         merged_cells_rows.append(row_structure)
 
     # check merged cells in each column
@@ -331,13 +311,10 @@ def _parse_table_structure_from_rects(rects):
     # parse table properties
     # --------------------------------------------------
     cells = []
-    shading_rects = list(filter(lambda rect: is_cell_shading(rect), rects))
-    # for i, (row, row_structure) in enumerate(zip(rows, table_structure)):
     n_rows = len(merged_cells_rows)
     n_cols = len(merged_cells_cols)
     for i in range(n_rows):
         cells_in_row = []
-        # for j, (col, cell_structure) in enumerate(zip(cols, row_structure)):
         for j in range(n_cols):
             # if current cell is merged horizontally or vertically, set None.
             # actually, it will be counted in the top-left cell of the merged range.
@@ -370,22 +347,29 @@ def _parse_table_structure_from_rects(rects):
             left = v_borders[cols[j]][0]
             right = v_borders[cols[j+1]][0]
 
+            w_top = top['bbox'][3]-top['bbox'][1]
+            w_right = right['bbox'][2]-right['bbox'][0]
+            w_bottom = bottom['bbox'][3]-bottom['bbox'][1]
+            w_left = left['bbox'][2]-left['bbox'][0]
+
             # cell bbox
             bbox = (cols[j], rows[i], cols[j+n_col], rows[i+n_row])
 
             # shading rect in this cell
-            shading_rect = _get_rect_with_bbox(bbox, shading_rects)
+            # modify the cell bbox from border center to inner region
+            inner_bbox = (bbox[0]+w_left/2.0, bbox[1]+w_top/2.0, bbox[2]-w_right/2.0, bbox[3]-w_bottom/2.0)
+            shading_rect = _get_rect_with_bbox(inner_bbox, rects, threshold=0.9)
+            if shading_rect:
+                set_cell_shading(shading_rect)
+                bg_color = shading_rect['color']
+            else:
+                bg_color = None
 
             cells_in_row.append({
                 'bbox': bbox,
-                'bg-color': shading_rect['color'] if shading_rect else None,
+                'bg-color':  bg_color,
                 'border-color': (top['color'], right['color'], bottom['color'], left['color']),
-                'border-width': (
-                    top['bbox'][3]-top['bbox'][1],
-                    right['bbox'][2]-right['bbox'][0],
-                    bottom['bbox'][3]-bottom['bbox'][1],
-                    left['bbox'][2]-left['bbox'][0]
-                ),
+                'border-width': (w_top, w_right, w_bottom, w_left),
                 'merged-cells': (n_row, n_col),
                 'blocks': [] # text contents in this cell will be determined later
             })
@@ -400,13 +384,13 @@ def _parse_table_structure_from_rects(rects):
     }
 
 
-def _get_rect_with_bbox(bbox, rects, threshold=0.95):
+def _get_rect_with_bbox(bbox, rects, threshold):
     '''get rect within given bbox'''
     target_rect = fitz.Rect(bbox)
     for rect in rects:
         this_rect = fitz.Rect(rect['bbox'])
         intersection = target_rect & this_rect
-        if intersection.getArea() / this_rect.getArea() >= threshold:
+        if intersection.getArea() / target_rect.getArea() >= threshold:
             res = rect
             break
     else:
