@@ -210,7 +210,9 @@ def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
             - blocks: a list of block within a page/table cell
             - X0, X1: the blocks are restricted in a vertical range within (Y0, Y1)
     '''
-    ref_block = None
+    if not blocks: return
+
+    ref_block = blocks[0]
     ref_pos = Y0
     for block in blocks:
 
