@@ -82,7 +82,7 @@ def clean_rects(layout, **kwargs):
                     rect['bbox'][0],
                     rect['bbox'][2]))
 
-    # skip rectangles with the following two conditions:
+    # skip rectangles with both of the following two conditions satisfied:
     #  - fully or almost contained in another rectangle
     #  - same filling color with the containing rectangle
     rects_unique = []
@@ -93,11 +93,12 @@ def clean_rects(layout, **kwargs):
             if ref_rect['color']!=rect['color']: continue     
 
             # combine two rects in a same row if any intersection exists
-            if utils.is_horizontal_aligned(rect['bbox'], ref_rect['bbox'], True, 1.0):
+            # ideally the aligning threshold should be 1.0, but use 0.98 here to consider tolerance
+            if utils.is_horizontal_aligned(rect['bbox'], ref_rect['bbox'], True, 0.98): 
                 main_bbox = utils.get_main_bbox(rect['bbox'], ref_rect['bbox'], 0.0)
 
             # combine two rects in a same column if any intersection exists
-            elif utils.is_vertical_aligned(rect['bbox'], ref_rect['bbox'], True, 1.0):
+            elif utils.is_vertical_aligned(rect['bbox'], ref_rect['bbox'], True, 0.98):
                 main_bbox = utils.get_main_bbox(rect['bbox'], ref_rect['bbox'], 0.0)
 
             # combine two rects if they have a large intersection, e.g. 85%
@@ -242,12 +243,13 @@ def _set_table_borders(rects, border_threshold=6):
     for rect in thin_rects:
         fitz_rect = fitz.Rect(rect['bbox'])
         # check intersections with other rect
-        for other_rect in thin_rects:            
+        for other_rect in thin_rects:
             if rect==other_rect: continue
-            # intersection found, so it's a cell border
-            if fitz_rect.intersects(other_rect['bbox']):                
+            # it's a cell border if intersection found
+            # Note: if the intersection is an edge, method `intersects` returns False, while
+            # the operator `&` return True. So, `&` is used here.
+            if fitz_rect & fitz.Rect(other_rect['bbox']):                
                 set_cell_border(rect)
-                print(len(thin_rects), 1)
                 break
 
 
@@ -279,7 +281,6 @@ def _parse_table_structure_from_rects(rects):
     # sort
     rows = sorted(h_borders)
     cols = sorted(v_borders)
-    print(rows)
 
     # check the outer borders: 
     if not _check_outer_borders(h_borders[rows[0]], v_borders[cols[-1]], h_borders[rows[-1]], v_borders[cols[0]]):
@@ -290,13 +291,10 @@ def _parse_table_structure_from_rects(rects):
     # -------------------------------------------------- 
     # check merged cells in each row
     merged_cells_rows = []
-    print(rows)
     for i, row in enumerate(rows[0:-1]):
         ref_y = (row+rows[i+1])/2.0
         ordered_v_borders = [v_borders[k] for k in cols]
         row_structure = _check_merged_cells(ref_y, ordered_v_borders, 'row')
-        if i==0:
-            print(ref_y, ordered_v_borders)
         merged_cells_rows.append(row_structure)
 
     # check merged cells in each column

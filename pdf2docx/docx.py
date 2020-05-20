@@ -142,13 +142,21 @@ def make_paragraph(p, block, X0, X1):
                 line_break = False
             
             # now, we have two lines, check whether word wrap or line break
-            else:
+            else:                
+                # word wrap if rest space of this line can't accommodate even one word of next line span
                 # bbox of first span in next line
-                x0, _, x1, _ = block['lines'][i+1]['spans'][0]['bbox']
-                # word wrap if rest space of this line can't accommodate
-                # even one span of next line
+                next_span = block['lines'][i+1]['spans'][0]
+                required_space = next_span['bbox'][2] - next_span['bbox'][0] # width of whole span
+
+                # calculate first word length approximately for text span
+                if 'image' not in next_span:                    
+                    words = next_span['text'].strip()
+                    if words:
+                        word = words.split(' ')[0]
+                        required_space *= len(word) / len(words)
+
                 free_space = X1-line['bbox'][2]
-                if x1-x0 >= free_space:
+                if required_space >= free_space:
                     line_break = False
             
             if line_break:
