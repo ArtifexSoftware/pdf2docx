@@ -124,9 +124,11 @@ def _new_page_with_margin(doc, layout, title):
 def _plot_text_block(page, block):
     '''Plot text/image block, i.e. block/line/span area, in PDF page'''
     # block border in blue
-    blue = utils.getColor('blue')
-    r = fitz.Rect(block['bbox'])
-    page.drawRect(r, color=blue, fill=None, overlay=False)
+    blue = utils.getColor('blue')    
+    if block['type']==1:
+        _plot_image(page, block['bbox'], blue)
+    else:
+        page.drawRect(block['bbox'], color=blue, fill=None, overlay=False)
 
     # lines and spans
     _plot_lines_and_spans(page, block.get('lines', []))
@@ -171,14 +173,21 @@ def _plot_lines_and_spans(page, lines):
         # span regions
         for span in line.get('spans', []):
             c = utils.getColor('')
-            r = fitz.Rect(span['bbox'])
+            bbox = span['bbox']
 
             # image span: diagonal lines
             if 'image' in span:
-                page.drawLine((r.x0, r.y0), (r.x1, r.y1), color=c, width=1)
-                page.drawLine((r.x0, r.y1), (r.x1, r.y0), color=c, width=1)
-                page.drawRect(r, color=c, fill=None, overlay=False)
+                _plot_image(page, bbox, c)
             
             # text span: filled with random color
             else:
-                page.drawRect(r, color=c, fill=c, width=0, overlay=False)
+                page.drawRect(bbox, color=c, fill=c, width=0, overlay=False)
+
+
+def _plot_image(page, bbox, color):
+    '''Plot image bbox with diagonal lines'''
+    x0, y0, x1, y1 = bbox
+    c = utils.getColor('')
+    page.drawLine((x0, y0), (x1, y1), color=color, width=1)
+    page.drawLine((x0, y1), (x1, y0), color=color, width=1)
+    page.drawRect(bbox, color=color, fill=None, overlay=False)
