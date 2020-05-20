@@ -55,14 +55,17 @@ def parse_table(layout, **kwargs):
         - table structure recognized from rectangles
         - cell contents extracted from text blocks
     '''
-    # clean rects
-    clean_rects(layout, **kwargs)
+    # -----------------------------------------------------
+    # table structure from rects
+   # -----------------------------------------------------
+    clean_rects(layout, **kwargs) # clean rects
+    parse_table_structure_from_rects(layout, **kwargs)    
+    parse_table_content(layout, **kwargs) # cell contents
 
-    # table structure
-    parse_table_structure(layout, **kwargs)
+    # -----------------------------------------------------
+    # table structure from layout of text lines
+    # -----------------------------------------------------
 
-    # cell contents
-    parse_table_content(layout, **kwargs)
 
 
 @debug_plot('Cleaned Rectangle Shapes', True, 'shape')
@@ -120,7 +123,7 @@ def clean_rects(layout, **kwargs):
 
 
 @debug_plot('Parsed Table Structure', True, 'table')
-def parse_table_structure(layout, **kwargs):
+def parse_table_structure_from_rects(layout, **kwargs):
     '''parse table structure from rectangle shapes'''    
     # group rects: each group may be a potential table
     groups = _group_rects(layout['rects'])
@@ -202,13 +205,13 @@ def _group_rects(rects):
         fitz_rect = fitz.Rect(rect['bbox'])
         for group in groups:
             # add to the group containing current rect
-            if fitz_rect & group['Rect']: 
+            if fitz_rect & (group['Rect']+utils.DR): 
                 group['Rect'] = fitz_rect | group['Rect']
                 group['rects'].append(rect)
                 break
 
         # no any intersections: new group
-        else:
+        else:            
             groups.append({
                 'Rect': fitz_rect,
                 'rects': [rect]
@@ -380,6 +383,45 @@ def _parse_table_structure_from_rects(rects):
         'bbox': (cols[0], rows[0], cols[-1], rows[-1]),
         'cells': cells
     }
+
+
+def _parse_table_structure_from_blocks(blocks):
+    ''' Parse table structure based on the layout of text/image blocks.
+
+        Since no cell borders exist in this case, there may be various probabilities of table structures. 
+        Among which, we use the simplest one, i.e. 1-row and n-column, to make the docx look like pdf.
+
+        Ensure no horizontally aligned blocks in each column, so that these blocks can be converted to
+        paragraphs consequently in docx.
+        
+        Table may exist if:
+            - lines in blocks are not connected sequently
+            - multi-blocks are in a same row (horizontally aligned)
+    '''
+    table_found = False
+    for i, block in enumerate(blocks[:-1]):
+
+        if not table_found:
+
+            # add image block directly
+            if block['type']==1:
+                pass
+            cols = [line['bbox'][0] for line in block['lines']]
+
+
+def _split_block(block, distance=3):
+    '''split text block into separate lines with a given distance'''
+    split_lines = [block['lines'][0]]
+    for line in lines[1:]:
+        if line['bbox'][0] - split_lines[-1]['bbox'][2] >= distance:
+            split_lines.append(line)
+
+    return [line['bbox'][0] for line in split_lines]
+        
+
+
+
+
 
 
 def _get_rect_with_bbox(bbox, rects, threshold):

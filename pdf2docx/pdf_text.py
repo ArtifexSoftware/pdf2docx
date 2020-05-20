@@ -169,12 +169,14 @@ def _parse_text_format(blocks, rects):
                 # yes, then try to split the spans in this line
                 split_spans = []
                 for span in line['spans']: 
-                    # ignore image span
-                    if 'image' in span: continue
+                    # include image span directly
+                    if 'image' in span: 
+                        split_spans.append(span)                   
 
                     # split text span with the format rectangle: span-intersection-span
-                    tmp_span = _split_span_with_rect(span, rect)
-                    split_spans.extend(tmp_span)
+                    else:
+                        tmp_span = _split_span_with_rect(span, rect)
+                        split_spans.extend(tmp_span)
                                                    
                 # update line spans                
                 line['spans'] = split_spans
