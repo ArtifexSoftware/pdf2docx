@@ -61,7 +61,7 @@ def plot_table_blocks(doc, layout, title):
         if block['type'] != 3: continue
 
         # plot each cells: format and text
-        _plot_table_block(page, block)
+        _plot_table_block(page, block, style=True)
 
 
 def plot_layout(doc, layout, title):
@@ -78,7 +78,7 @@ def plot_layout(doc, layout, title):
             _plot_text_block(page, block)
         # table block
         else:
-            _plot_table_block(page, block)
+            _plot_table_block(page, block, style=False)
 
 
 def plot_rectangles(doc, layout, title):
@@ -132,7 +132,7 @@ def _plot_text_block(page, block):
     _plot_lines_and_spans(page, block.get('lines', []))
 
 
-def _plot_table_block(page, block):
+def _plot_table_block(page, block, style=True):
     '''Plot table block, i.e. cell/line/span, in PDF page.'''
     for rows in block['cells']:
         for cell in rows:
@@ -149,8 +149,11 @@ def _plot_table_block(page, block):
             else:
                 sc = None
             
-            # plot cell
-            page.drawRect(cell['bbox'], color=bc, fill=sc, width=w, overlay=False)
+            # plot cell style or just an illustration
+            if style:
+                page.drawRect(cell['bbox'], color=bc, fill=sc, width=w, overlay=False)
+            else:
+                page.drawRect(cell['bbox'], color=(1,0,0), fill=None, width=1, overlay=False)
 
             # plot blocks in cell
             for cell_block in cell['blocks']:
