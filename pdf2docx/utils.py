@@ -69,8 +69,8 @@ def get_main_bbox(bbox_1, bbox_2, threshold=0.95):
     # no intersection
     if not b: return None
 
-    # Note: if b1 and b1 intersects with only an edge, b is not empty but b.getArea()=0
-    # so give a small value when they're intersected by the area is zero
+    # Note: if b1 and b2 intersects with only an edge, b is not empty but b.getArea()=0
+    # so give a small value when they're intersected but the area is zero
     factor = a/min(a1,a2) if a else 1e-6
     if factor >= threshold:
         u = b1 | b2

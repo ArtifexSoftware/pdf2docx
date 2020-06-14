@@ -119,7 +119,7 @@ def _merge_inline_images(blocks):
             # no, pass
             if not utils.is_horizontal_aligned(block['bbox'], image['bbox']): continue
 
-            # yes, inline image
+            # yes, inline image: set as a line in block
             image_merged = True
             index_inline.append(i)
             _insert_image_to_block(image, block)
@@ -169,9 +169,14 @@ def _parse_text_format(blocks, rects):
                 # yes, then try to split the spans in this line
                 split_spans = []
                 for span in line['spans']: 
-                    # split span with the format rectangle: span-intersection-span
-                    tmp_span = _split_span_with_rect(span, rect)
-                    split_spans.extend(tmp_span)
+                    # include image span directly
+                    if 'image' in span: 
+                        split_spans.append(span)                   
+
+                    # split text span with the format rectangle: span-intersection-span
+                    else:
+                        tmp_span = _split_span_with_rect(span, rect)
+                        split_spans.extend(tmp_span)
                                                    
                 # update line spans                
                 line['spans'] = split_spans
@@ -182,7 +187,7 @@ def _parse_text_format(blocks, rects):
 
 
 def _split_span_with_rect(span, rect):
-    '''split span with the intersection: span-intersection-span'''
+    '''split span with the intersection: span-intersection-span'''   
 
     # split spans
     split_spans = []
@@ -249,7 +254,7 @@ def _split_span_with_rect(span, rect):
  
 
 def _index_chars_in_rect(span, rect):
-    ''' get the index of span chars in a given rectangle region
+    ''' Get the index of span chars in a given rectangle region.
 
         return (start index, length) of span chars
     '''
