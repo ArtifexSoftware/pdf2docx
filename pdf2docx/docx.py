@@ -68,7 +68,11 @@ def make_page(doc, layout):
         
         # make table
         elif block['type']==3:
-            make_table(doc, block, width, layout['margin'])            
+            # new table            
+            table = doc.add_table(rows=len(block['cells']), cols=len(block['cells'][0]))
+            table.autofit = False
+            table.allow_autofit  = False
+            make_table(table, block, width, layout['margin'])            
 
 
 def make_paragraph(p, block, X0, X1):
@@ -165,35 +169,31 @@ def make_paragraph(p, block, X0, X1):
     return p
     
 
-def make_table(doc, block, page_width, page_margin):
+def make_table(table, block, page_width, page_margin):
     '''create table for a text block
        count of columns are checked, combine rows if next block is also in table format
     '''
-    # new table
-    block_cells = block['cells']
-    table = doc.add_table(rows=len(block_cells), cols=len(block_cells[0]))
-    table.autofit = False
-
     # set indent    
     pos = block['bbox'][0]-page_margin[0]
     _indent_table(table, pos)
 
     # cell format and contents
-    for i in range(len(block_cells)):
-        for j in range(len(block_cells[0])):           
+    block_cells = block['cells']
+    for i in range(len(table.rows)):
+        for j in range(len(table.columns)):           
 
             # ignore merged cells
             block_cell = block_cells[i][j]
             if not block_cell: continue
             
-            # set cell style            
+            # set cell style
             _set_cell_style(table, (i,j), block_cell)
 
             # clear cell margin
             # NOTE: the start position of a table is based on text in cell, rather than left border of table. 
             # They're almost aligned if left-margin of cell is zero.
             cell = table.cell(i, j)
-            _set_cell_margins(cell, start=0)
+            _set_cell_margins(cell, start=0, end=0)
 
             # insert text            
             first = True

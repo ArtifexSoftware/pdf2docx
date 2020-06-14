@@ -263,6 +263,8 @@ def _parse_table_structure_from_rects(rects):
     # group horizontal/vertical borders
     # --------------------------------------------------
     borders = list(filter(lambda rect: is_cell_border(rect), rects))
+    if not borders: return None
+
     h_borders, v_borders = {}, {}
     for rect in borders:
         the_rect = fitz.Rect(rect['bbox'])
@@ -543,7 +545,8 @@ def _assign_blocks_to_cell(cell, blocks):
             bbox = fitz.Rect()
             # check each line
             for line in block['lines']:
-                if fitz_cell.contains(line['bbox']):
+                # contains and intersects does not work since tolerance may exists
+                if utils.get_main_bbox(cell['bbox'], line['bbox'], 0.5):
                     lines.append(line)
                     bbox = bbox | fitz.Rect(line['bbox'])
             
