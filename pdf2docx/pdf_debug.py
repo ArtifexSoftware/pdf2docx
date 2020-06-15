@@ -96,6 +96,17 @@ def plot_rectangles(doc, layout, title):
         page.drawRect(rect['bbox'], color=c, fill=c, width=0, overlay=False)
 
 
+def new_page_section(doc, layout, title):
+    '''New page with title shown in page center.'''
+    # insert a new page
+    w, h = layout['width'], layout['height']
+    page = doc.newPage(width=w, height=h)
+
+    # plot title in page center
+    gray = utils.getColor('gray')
+    f = 10.0
+    page.insertText((w/4.0, (h+h/f)/2.0), title, color=gray, fontsize=h/f)
+
 def _new_page_with_margin(doc, layout, title):
     ''' insert a new page and plot margin borders'''
     # insert a new page
