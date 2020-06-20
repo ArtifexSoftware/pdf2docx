@@ -75,11 +75,8 @@ def layout(layout, **kwargs):
 
     # preprocessing, e.g. change block order, clean negative block, 
     # get span text by joining chars
-    preprocessing(layout)
-
-    # merge inline images
-    merge_inline_images(layout, **kwargs)
-    
+    preprocessing(layout, **kwargs)
+   
     # parse table blocks: 
     #  - table structure/format recognized from rectangles
     #  - cell contents extracted from text blocks
@@ -92,7 +89,8 @@ def layout(layout, **kwargs):
     parse_vertical_spacing(layout)
 
 
-def preprocessing(layout):
+@debug_plot('Preprocessing', plot=False)
+def preprocessing(layout, **kwargs):
     '''preprocessing for the raw layout of PDF page'''
     # remove blocks exceeds page region: negative bbox
     layout['blocks'] = list(filter(
@@ -121,7 +119,9 @@ def preprocessing(layout):
     for rect in layout['rects']:
         rect['bbox'] = tuple([round(x,1) for x in rect['bbox']])
 
-    # anything changed in this step?
+    # merge inline images into text block
+    merge_inline_images(layout['blocks'])
+
     return True
 
 
