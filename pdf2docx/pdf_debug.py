@@ -5,6 +5,7 @@ Plot PDF layout for debug
 import fitz
 from . import utils
 from .pdf_shape import (is_cell_border, is_cell_shading)
+from .pdf_block import (is_text_block, is_image_block, is_table_block, is_implicit_table_block, is_explicit_table_block)
 
 
 def debug_plot(title, plot=True, category='layout'):
@@ -19,14 +20,16 @@ def debug_plot(title, plot=True, category='layout'):
             - plot: plot layout/shape if true
             - category: 
                 - 'layout': plot all blocks
-                - 'table' : plot table blocks only
+                - 'table' : plot explicit table blocks only
+                - 'implicit_table' : plot implicit table blocks only
                 - 'shape' : plot rectangle shapes                
                 - or a combinaton list, e.g. ['layout', 'shape'] plots both layout and shape
     '''
     # function map
     plot_map = {
         'layout': plot_layout,
-        'table' : plot_table_blocks,
+        'table' : plot_explicit_table_blocks,
+        'implicit_table': plot_implicit_table_blocks,
         'shape' : plot_rectangles        
     }
     if isinstance(category, str): category = [category]
@@ -49,7 +52,7 @@ def debug_plot(title, plot=True, category='layout'):
     return wrapper
 
 
-def plot_table_blocks(doc, layout, title):
+def plot_explicit_table_blocks(doc, layout, title):
     ''' plot table blocks layout with PyMuPDF.'''
     # insert a new page
     page = _new_page_with_margin(doc, layout, title)
@@ -57,11 +60,26 @@ def plot_table_blocks(doc, layout, title):
     # plot table block one by one
     for block in layout['blocks']:
 
-        # consider table blocks only
-        if block['type'] != 3: continue
+        # consider explicit table blocks only
+        if not is_explicit_table_block(block): continue
 
         # plot each cells: format and text
-        _plot_table_block(page, block, style=True)
+        _plot_table_block(page, block, style=True, content=False)
+
+
+def plot_implicit_table_blocks(doc, layout, title):
+    ''' plot table blocks layout with PyMuPDF.'''
+    # insert a new page
+    page = _new_page_with_margin(doc, layout, title)
+
+    # plot table block one by one
+    for block in layout['blocks']:
+
+        # consider implicit table blocks only
+        if not is_implicit_table_block(block): continue
+
+        # plot each cells: format and text
+        _plot_table_block(page, block, style=False, content=False)
 
 
 def plot_layout(doc, layout, title):
@@ -74,11 +92,12 @@ def plot_layout(doc, layout, title):
     for block in layout['blocks']:
 
         # text and image block
-        if block['type'] != 3:
+        if is_text_block(block) or is_image_block(block):
             _plot_text_block(page, block)
+        
         # table block
-        else:
-            _plot_table_block(page, block, style=False)
+        elif is_table_block(block):
+            _plot_table_block(page, block, style=False, content=True)
 
 
 def plot_rectangles(doc, layout, title):
@@ -106,6 +125,7 @@ def new_page_section(doc, layout, title):
     gray = utils.getColor('gray')
     f = 10.0
     page.insertText((w/4.0, (h+h/f)/2.0), title, color=gray, fontsize=h/f)
+
 
 def _new_page_with_margin(doc, layout, title):
     ''' insert a new page and plot margin borders'''
@@ -136,7 +156,7 @@ def _plot_text_block(page, block):
     '''Plot text/image block, i.e. block/line/span area, in PDF page'''
     # block border in blue
     blue = utils.getColor('blue')    
-    if block['type']==1:
+    if is_image_block(block):
         _plot_image(page, block['bbox'], blue)
     else:
         page.drawRect(block['bbox'], color=blue, fill=None, overlay=False)
@@ -145,7 +165,7 @@ def _plot_text_block(page, block):
     _plot_lines_and_spans(page, block.get('lines', []))
 
 
-def _plot_table_block(page, block, style=True):
+def _plot_table_block(page, block, style=True, content=True):
     '''Plot table block, i.e. cell/line/span, in PDF page.'''
     for rows in block['cells']:
         for cell in rows:
@@ -169,8 +189,9 @@ def _plot_table_block(page, block, style=True):
                 page.drawRect(cell['bbox'], color=(1,0,0), fill=None, width=1, overlay=False)
 
             # plot blocks in cell
-            for cell_block in cell['blocks']:
-                _plot_text_block(page, cell_block)
+            if content:
+                for cell_block in cell['blocks']:
+                    _plot_text_block(page, cell_block)
 
 
 def _plot_lines_and_spans(page, lines):
@@ -198,7 +219,6 @@ def _plot_lines_and_spans(page, lines):
 def _plot_image(page, bbox, color):
     '''Plot image bbox with diagonal lines'''
     x0, y0, x1, y1 = bbox
-    c = utils.getColor('')
     page.drawLine((x0, y0), (x1, y1), color=color, width=1)
     page.drawLine((x0, y1), (x1, y0), color=color, width=1)
     page.drawRect(bbox, color=color, fill=None, overlay=False)

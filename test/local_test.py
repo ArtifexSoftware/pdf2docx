@@ -36,7 +36,7 @@ if __name__ == '__main__':
             if block['type']==1: 
                 block['image'] = '<image>'
             # table block
-            elif block['type']==3:
+            elif block['type'] in (3, 4):
                 for row in block['cells']:
                     for cell in row:
                         if not cell: continue

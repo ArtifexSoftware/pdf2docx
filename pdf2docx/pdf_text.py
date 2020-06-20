@@ -33,6 +33,7 @@ import copy
 
 from .pdf_debug import debug_plot
 from .pdf_shape import rect_to_style
+from .pdf_block import (is_text_block, is_image_block, is_table_block)
 from . import utils
 
 
@@ -45,7 +46,7 @@ def merge_inline_images(layout, **kwargs):
     anything_changed = _merge_inline_images(layout['blocks'])
 
     # blocks in table cell level
-    tables = list(filter(lambda block: block['type']==3, layout['blocks']))
+    tables = list(filter(lambda block: is_table_block(block), layout['blocks']))
     for table in tables:
         for row in table['cells']:
             for cell in row:
@@ -64,7 +65,7 @@ def parse_text_format(layout, **kwargs):
     anything_changed = _parse_text_format(layout['blocks'], layout['rects'])
 
     # blocks in table cell level
-    tables = list(filter(lambda block: block['type']==3, layout['blocks']))
+    tables = list(filter(lambda block: is_table_block(block), layout['blocks']))
     for table in tables:
         for row in table['cells']:
             for cell in row:
@@ -79,7 +80,7 @@ def _merge_inline_images(blocks):
     '''merge inline image blocks into text block: a block line or a line span.
     '''
     # get all images blocks with index
-    f = lambda item: item[1]['type']==1
+    f = lambda item: is_image_block(item[1])
     index_images = list(filter(f, enumerate(blocks)))
     if not index_images: return False
 
@@ -90,10 +91,10 @@ def _merge_inline_images(blocks):
     for block in blocks:
 
         # suppose no overlap between two images
-        if block['type']==1: continue
+        if is_image_block(block): continue
 
         # innore table block
-        if block['type']==3: continue
+        if is_table_block(block): continue
 
         # all images found their block, then quit
         if len(index_inline)==num: break
@@ -137,7 +138,7 @@ def _parse_text_format(blocks, rects):
 
         # ignore image and table blocks
         # actually there're no text contents in table yet at this point of time
-        if block['type'] in (1, 3): continue
+        if is_image_block(block) or is_table_block(block): continue
 
         block_rect = fitz.Rect(block['bbox'])
 

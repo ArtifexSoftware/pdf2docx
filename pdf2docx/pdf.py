@@ -41,7 +41,7 @@ the default `text` and `image` to `list` and `table`:
 - text block: type=0
 - image block: type=1
 - list block: type=2
-- table block: type=3
+- table block: type=3 (explicit) or 4 (implicit table)
 
 Note: The length unit for each boundary box is pt, which is 1/72 Inch.
 
@@ -51,6 +51,7 @@ import fitz
 from .pdf_debug import debug_plot
 from .pdf_table import parse_table
 from .pdf_text import merge_inline_images, parse_text_format
+from .pdf_block import (is_text_block, is_image_block, is_table_block)
 from . import utils
 
 
@@ -107,7 +108,7 @@ def preprocessing(layout):
     # joining chars in span
     for block in layout['blocks']:
         # skip image
-        if block['type']==1: continue
+        if is_image_block(block): continue
 
         # join chars
         for line in block['lines']:
@@ -133,7 +134,7 @@ def parse_vertical_spacing(layout):
     _parse_paragraph_and_line_spacing(layout['blocks'], top, layout['height']-bottom)
 
     # blocks in table cell level
-    tables = list(filter(lambda block: block['type']==3, layout['blocks']))
+    tables = list(filter(lambda block: is_table_block(block), layout['blocks']))
     for table in tables:
         for row in table['cells']:
             for cell in row:
@@ -219,7 +220,7 @@ def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
 
         # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
         # size should be excluded from the calculated vertical spacing
-        if block['type']==3:
+        if is_table_block(block):
             dw = block['cells'][0][0]['border-width'][0] / 2.0 # use top border of the first cell
         else:
             dw = 0.0
@@ -228,7 +229,7 @@ def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
         para_space = start_pos - ref_pos
 
         # paragraph-1 (ref) to paragraph-2 (current): set before-space for paragraph-2
-        if block['type']==0:
+        if is_text_block(block):
 
             # spacing before this paragraph
             block['before_space'] = para_space
@@ -271,7 +272,7 @@ def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
                 block['before_space'] = para_space+free_space-utils.DM
 
         # paragraph (ref) to table (current): set after-space for paragraph        
-        elif ref_block['type']==0:
+        elif is_text_block(ref_block):
             ref_block['after_space'] = para_space
 
         # situation with very low probability, e.g. table to table

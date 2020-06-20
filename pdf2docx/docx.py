@@ -16,6 +16,7 @@ from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 
 from . import utils
+from .pdf_block import (is_text_block, is_image_block, is_table_block)
 
 
 
@@ -54,9 +55,9 @@ def make_page(doc, layout):
     # add paragraph or table according to parsed block
     for block in layout['blocks']:
         # make paragraphs
-        if block['type'] in (0, 1):
+        if is_text_block(block) or is_image_block(block):
             # horizontal paragraph
-            if block['type']==1 or block['lines'][0]['wmode'] == 0:
+            if is_image_block(block) or block['lines'][0]['wmode'] == 0:
                 # new paragraph
                 p = doc.add_paragraph()
                 left, right, *_ = layout['margin']
@@ -67,7 +68,7 @@ def make_page(doc, layout):
                 pass
         
         # make table
-        elif block['type']==3:
+        elif is_table_block(block):
             # new table            
             table = doc.add_table(rows=len(block['cells']), cols=len(block['cells'][0]))
             table.autofit = False
@@ -99,7 +100,7 @@ def make_paragraph(p, block, X0, X1):
     pf.space_after = Pt(after_spacing)    
 
     # add image
-    if block['type']==1:
+    if is_image_block(block):
         # left indent implemented with tab
         pos = block['bbox'][0]-X0
         if abs(pos) > utils.DM:

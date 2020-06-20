@@ -48,6 +48,7 @@ import fitz
 from . import utils
 from .pdf_debug import debug_plot
 from .pdf_shape import (set_cell_border, set_cell_shading, is_cell_border, is_cell_shading)
+from .pdf_block import (is_text_block, is_image_block, is_table_block, set_implicit_table_block, set_explicit_table_block )
 
 
 def parse_table(layout, **kwargs):
@@ -71,7 +72,7 @@ def parse_table(layout, **kwargs):
 
 
 
-@debug_plot('Cleaned Rectangle Shapes', True, 'shape')
+@debug_plot('Cleaned Rectangle Shapes', False, 'shape')
 def clean_rects(layout, **kwargs):
     '''clean rectangles:
         - delete rectangles with white background-color
@@ -143,7 +144,9 @@ def parse_table_structure_from_rects(layout, **kwargs):
 
             # parse table structure based on rects in border type
             table = _parse_table_structure_from_rects(group['rects'])
-            if table: tables.append(table)
+            if table: 
+                set_explicit_table_block(table)
+                tables.append(table)
 
     # add parsed table structure to blocks list
     if tables:
@@ -152,7 +155,8 @@ def parse_table_structure_from_rects(layout, **kwargs):
     else:
         return False
 
-@debug_plot('Implicit Table Structure', True, 'table')
+
+@debug_plot('Implicit Table Structure', True, 'implicit_table')
 def parse_table_structure_from_blocks(layout, **kwargs):
     ''' Parse table structure based on the layout of text/image blocks.
 
@@ -191,7 +195,7 @@ def parse_table_structure_from_blocks(layout, **kwargs):
             # table end 
             # - if it's a text line, i.e. no more than one block in a same line
             # - or the next block is also a table
-            if new_line or block['type']==3:
+            if new_line or is_table_block(block):
                 table_end = True
 
             # update line status            
@@ -204,7 +208,9 @@ def parse_table_structure_from_blocks(layout, **kwargs):
 
             # parse table
             table = _parse_table_structure_from_rects(rects)
-            if table: tables.append(table)
+            if table: 
+                set_implicit_table_block(table)
+                tables.append(table)
 
             # reset table_blocks
             table_lines = []
@@ -217,13 +223,13 @@ def parse_table_structure_from_blocks(layout, **kwargs):
         return False
 
 
-@debug_plot('Parsed Table', True, 'layout')
+@debug_plot('Parsed Table', False, 'layout')
 def parse_table_content(layout, **kwargs):
     '''Add block lines to associated cells.'''
 
     # table blocks
     table_found = False
-    tables = list(filter(lambda block: block['type']==3, layout['blocks']))
+    tables = list(filter(lambda block: is_table_block(block), layout['blocks']))
     if not tables: return table_found
 
     # collect blocks in table region
@@ -231,7 +237,7 @@ def parse_table_content(layout, **kwargs):
     blocks_in_tables = [[] for _ in tables]
     for block in layout['blocks']:
         # ignore table block
-        if block['type']==3: continue
+        if is_table_block(block): continue
 
         # collect blocks contained in table region
         for table, blocks_in_table in zip(tables, blocks_in_tables):
@@ -455,7 +461,7 @@ def _parse_table_structure_from_rects(rects):
         cells.append(cells_in_row)    
 
     return {
-        'type': 3,
+        'type': -1, # to determin table type later
         'bbox': (cols[0], rows[0], cols[-1], rows[-1]),
         'cells': cells
     }
@@ -466,10 +472,10 @@ def _collect_table_lines(block):
     res = []
 
     # lines in text block
-    if block['type']==0:
+    if is_text_block(block):
         res.extend([line['bbox'] for line in block['lines']])
     # image block
-    elif block['type']==1:
+    elif is_image_block(block):
         res.append(block['bbox'])
 
     return res
@@ -621,7 +627,7 @@ def _centerline_to_rect(borders, width=2.0):
             rect = {
                 'type': -1,
                 'bbox': (x0-h, y0-h, x1+h, y1+h),
-                'color': utils.RGB_value((1,0,0))
+                'color': utils.RGB_value((1,1,1))
             }
             set_cell_border(rect)
             rects.append(rect)
