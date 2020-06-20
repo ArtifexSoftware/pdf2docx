@@ -36,17 +36,6 @@ from .pdf_shape import rect_to_style
 from . import utils
 
 
-def parse_text_and_image(layout, **kwargs):
-    ''' Parse text and image in both page and table context:
-        - merge inline images into text block
-        - parse text format, e.g. highlight, underline
-    '''
-    # inline images
-    merge_inline_images(layout, **kwargs)
-
-    # text format
-    parse_text_format(layout, **kwargs)
-
 
 @debug_plot('Merged Inline Images', True)
 def merge_inline_images(layout, **kwargs):
