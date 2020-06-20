@@ -243,7 +243,7 @@ def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
             count = 0
             for line in block['lines']:
                 # count of lines
-                if not utils.is_horizontal_aligned(line['bbox'], ref_bbox, True, 0.5):
+                if not utils.is_horizontal_aligned(line['bbox'], ref_bbox):
                     count += 1
                 # update reference line
                 ref_bbox = line['bbox']
