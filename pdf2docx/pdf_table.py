@@ -48,7 +48,7 @@ import fitz
 from . import utils
 from .pdf_debug import debug_plot
 from .pdf_shape import (set_cell_border, set_cell_shading, is_cell_border, is_cell_shading)
-from .pdf_block import (is_text_block, is_image_block, is_table_block, 
+from .pdf_block import (is_text_block, is_image_block, is_table_block, is_discrete_lines_in_block,
         set_implicit_table_block, set_explicit_table_block, merge_blocks)
 
 
@@ -182,7 +182,7 @@ def parse_table_structure_from_blocks(layout, **kwargs):
         next_block = layout['blocks'][i+1] if i<num-1 else {}
         
         # lines in current block are not connected sequently?
-        if _is_discrete_lines_in_block(block):
+        if is_discrete_lines_in_block(block):
             table_lines.extend( _collect_table_lines(block) )
             
             # update table / line status
@@ -480,11 +480,6 @@ def _parse_table_structure_from_rects(rects):
     }
 
 
-def _is_discrete_lines_in_block(block):
-    '''check whether lines in block are discrete.'''
-    return False
-
-
 def _collect_table_lines(block):
     '''Collect block lines bbox, considered as table content.'''
     res = []
@@ -504,7 +499,7 @@ def _border_rects_from_table_lines(bbox_lines):
     rects = []
 
     # boundary box (considering margin) of all line box
-    margin = 1
+    margin = 2.0
     x0 = min([bbox[0] for bbox in bbox_lines]) - margin
     y0 = min([bbox[1] for bbox in bbox_lines]) - margin
     x1 = max([bbox[2] for bbox in bbox_lines]) + margin

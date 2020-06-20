@@ -43,6 +43,27 @@ def set_implicit_table_block(block):
     block['type'] = 4
 
 
+def is_discrete_lines_in_block(block, distance=2):
+    '''check whether lines in block are discrete.'''
+    if not is_text_block(block): return False
+
+    num = len(block['lines'])
+    if num==1: return False
+
+    for i in range(num-1):
+        bbox = block['lines'][i]['bbox']
+        next_bbox = block['lines'][i+1]['bbox']
+        if utils.is_horizontal_aligned(bbox, next_bbox) and abs(bbox[2]-next_bbox[0]) > distance:
+            res = True
+            break
+    else:
+        res = False
+
+    return res
+
+
+
+
 def merge_blocks(blocks):
     '''merge blocks aligned horizontally.'''
     res = []
