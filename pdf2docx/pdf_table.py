@@ -48,7 +48,8 @@ import fitz
 from . import utils
 from .pdf_debug import debug_plot
 from .pdf_shape import (set_cell_border, set_cell_shading, is_cell_border, is_cell_shading)
-from .pdf_block import (is_text_block, is_image_block, is_table_block, set_implicit_table_block, set_explicit_table_block )
+from .pdf_block import (is_text_block, is_image_block, is_table_block, 
+        set_implicit_table_block, set_explicit_table_block, merge_blocks)
 
 
 def parse_table(layout, **kwargs):
@@ -175,17 +176,27 @@ def parse_table_structure_from_blocks(layout, **kwargs):
     table_lines = []
     new_line = False
     tables = []
-    for i in range(len(layout['blocks'])-1):
-        pblock, block = layout['blocks'][i], layout['blocks'][i+1]        
+    num = len(layout['blocks'])
+    for i in range(num):
+        block = layout['blocks'][i]
+        next_block = layout['blocks'][i+1] if i<num-1 else {}
+        
+        # lines in current block are not connected sequently?
+        if _is_discrete_lines_in_block(block):
+            table_lines.extend( _collect_table_lines(block) )
+            
+            # update table / line status
+            new_line = False
+            table_end = False
 
-        # two blocks in a same line?        
-        if utils.is_horizontal_aligned(pblock['bbox'], block['bbox']):
+        # then, check the layout with next block: in a same row?
+        elif utils.is_horizontal_aligned(block['bbox'], next_block.get('bbox', None)):
             # if it's start of new table row: add the first block
             if new_line: 
-                table_lines.extend( _collect_table_lines(pblock) )
+                table_lines.extend( _collect_table_lines(block) )
             
-            # add current block
-            table_lines.extend( _collect_table_lines(block) )
+            # add next block
+            table_lines.extend( _collect_table_lines(next_block) )
 
             # update table / line status
             new_line = False
@@ -203,7 +214,7 @@ def parse_table_structure_from_blocks(layout, **kwargs):
 
         # end of current table
         if table_lines and table_end: 
-            # process table_blocks
+            # parse borders based on contents in cell
             rects = _border_rects_from_table_lines(table_lines)
 
             # parse table
@@ -256,8 +267,10 @@ def parse_table_content(layout, **kwargs):
             for cell in row:
                 if not cell: continue
                 blocks_in_cell = _assign_blocks_to_cell(cell, blocks_in_table)
-                cell['blocks'].extend(blocks_in_cell)                
-                if blocks_in_cell: table_found = True
+                if blocks_in_cell: 
+                    cell_blocks = merge_blocks(blocks_in_cell)
+                    cell['blocks'].extend(cell_blocks)
+                    table_found = True
 
     # sort in natural reading order and update layout blocks
     blocks.extend(tables)
@@ -465,6 +478,11 @@ def _parse_table_structure_from_rects(rects):
         'bbox': (cols[0], rows[0], cols[-1], rows[-1]),
         'cells': cells
     }
+
+
+def _is_discrete_lines_in_block(block):
+    '''check whether lines in block are discrete.'''
+    return False
 
 
 def _collect_table_lines(block):
@@ -753,7 +771,7 @@ def _assign_blocks_to_cell(cell, blocks):
             lines = []
             bbox = fitz.Rect()
             # check each line
-            for line in block['lines']:
+            for line in block.get('lines', []): # no lines if image block
                 # contains and intersects does not work since tolerance may exists
                 if utils.get_main_bbox(cell['bbox'], line['bbox'], 0.5):
                     lines.append(line)

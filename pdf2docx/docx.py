@@ -143,7 +143,7 @@ def make_paragraph(p, block, X0, X1):
             # different lines in space, i.e. break line if they are not horizontally aligned
             # Line i+1 y0 > Line i y1 is a simple criterion, but not so general since overlap may exist
             # so a overlap with at least 0.5 times of line width is applied here
-            elif utils.is_horizontal_aligned(block['lines'][i+1]['bbox'], line['bbox'], True, 0.5):
+            elif utils.is_horizontal_aligned(block['lines'][i+1]['bbox'], line['bbox']):
                 line_break = False
             
             # now, we have two lines, check whether word wrap or line break
