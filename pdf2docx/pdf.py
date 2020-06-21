@@ -146,41 +146,20 @@ def parse_vertical_spacing(layout):
 
 def page_margin(layout):
     '''get page margin:
-       - left: as small as possible in x direction and should not intersect with any other bbox
-       - right: MIN(left, width-max(bbox[3]))
+       - left: MIN(bbox[0])
+       - right: MIN(left, width-max(bbox[2]))
        - top: MIN(bbox[1])
        - bottom: height-MAX(bbox[3])
     '''
+    # return normal page margin if no blocks exist
+    if not layout['blocks']:
+        return (utils.ITP, ) * 4 # 1 Inch = 72 pt
 
     # check candidates for left margin:
     list_bbox = list(map(lambda x: x['bbox'], layout['blocks']))
-    list_bbox.sort(key=lambda x: (x[0], x[2]))
-    lm_bbox, num = list_bbox[0], 0
-    candidates = []
-    for bbox in list_bbox:
-        # count of blocks with save left border
-        if abs(bbox[0]-lm_bbox[0])<utils.DM:
-            num += 1
-        else:
-            # stop counting if current block border is not equal to previous,
-            # then get the maximum count of aligned blocks
-            candidates.append((lm_bbox, num))
 
-            # start to count current block border. this border is invalid if intersection with 
-            # previous block occurs, so count it as -1
-            num = 1 if bbox[0]>lm_bbox[2] else -1
-
-        lm_bbox = bbox
-    else:
-        candidates.append((lm_bbox, num)) # add last group
-
-    # if nothing found, e.g. whole page is an image, return standard margin
-    if not candidates:
-        return (utils.ITP, ) * 4 # 1 Inch = 72 pt
-
-    # get left margin which is supported by bbox-es as more as possible
-    candidates.sort(key=lambda x: x[1], reverse=True)
-    left = candidates[0][0][0]
+    # left margin 
+    left = min(map(lambda x: x[0], list_bbox))
 
     # right margin
     x_max = max(map(lambda x: x[2], list_bbox))
@@ -191,7 +170,19 @@ def page_margin(layout):
     top = min(map(lambda x: x[1], list_bbox))
     bottom = h-max(map(lambda x: x[3], list_bbox))
 
-    return left, right, min(utils.ITP, top), min(utils.ITP, bottom)
+    # reduce calculated bottom margin -> more free space left,
+    # to avoid page content exceeding current page
+    bottom *= 0.5
+
+    # use normal margin if calculated margin is large enough
+    margin = (
+        min(utils.ITP, left), 
+        min(utils.ITP, right), 
+        min(utils.ITP, top), 
+        min(utils.ITP, bottom)
+        )
+
+    return margin
 
 
 def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
@@ -210,7 +201,7 @@ def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
         ---
         Args:
             - blocks: a list of block within a page/table cell
-            - X0, X1: the blocks are restricted in a vertical range within (Y0, Y1)
+            - Y0, Y1: the blocks are restricted in a vertical range within (Y0, Y1)
     '''
     if not blocks: return
 
@@ -243,10 +234,10 @@ def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
             count = 0
             for line in block['lines']:
                 # count of lines
-                if not utils.is_horizontal_aligned(line['bbox'], ref_bbox):
+                if not utils.in_same_row(line['bbox'], ref_bbox):
                     count += 1
                 # update reference line
-                ref_bbox = line['bbox']
+                ref_bbox = line['bbox']            
             
             _, y0, _, y1 = block['lines'][0]['bbox']   # first line
             first_line_height = y1 - y0
@@ -269,7 +260,7 @@ def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
             # adjust last block to avoid exceeding current page
             free_space = Y1-(ref_pos+para_space+block_height) 
             if free_space<=0:
-                block['before_space'] = para_space+free_space-utils.DM
+                block['before_space'] = para_space+free_space-utils.DM*2.0
 
         # paragraph (ref) to table (current): set after-space for paragraph        
         elif is_text_block(ref_block):

@@ -96,10 +96,29 @@ class TestUtility(Utility, unittest.TestCase):
         return matched
 
     @staticmethod
-    def extract_text_style(layout):
-        ''' extract span text and style from layout'''
+    def get_text_image_blocks(layout):
+        ''' get text blocks from both page and table level'''
+        # text block in page level
+        blocks = list(filter(lambda block: block['type'] in (0, 1), layout['blocks']))
+
+        # blocks in table cell level
+        tables = list(filter(lambda block: block['type'] in (3,4), layout['blocks']))
+        for table in tables:
+            for row in table['cells']:
+                for cell in row:
+                    if not cell: continue
+                    blocks.extend(cell['blocks'])
+        
+        return blocks
+
+    def extract_text_style(self, layout):
+        ''' extract span text and style from layout'''        
+        # text or image blocks
+        blocks = self.get_text_image_blocks(layout)
+
+        # check text format from text blocks
         res = []
-        for block in layout['blocks']:
+        for block in blocks:
             if block['type']==1: continue
             for line in block['lines']:
                 for span in line['spans']:
@@ -111,11 +130,14 @@ class TestUtility(Utility, unittest.TestCase):
                     })
         return res
 
-    @staticmethod
-    def extract_image(layout):
+    def extract_image(self, layout):
         ''' extract image bbox from layout'''
+        # text or image blocks
+        blocks = self.get_text_image_blocks(layout)
+
+        # extract images
         res = []
-        for block in layout['blocks']:
+        for block in blocks:
             if block['type']==1:
                 res.append(block['bbox'])
             else:

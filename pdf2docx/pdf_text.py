@@ -33,7 +33,7 @@ import copy
 
 from .pdf_debug import debug_plot
 from .pdf_shape import rect_to_style
-from .pdf_block import (is_text_block, is_image_block, is_table_block, merge_lines_in_block)
+from .pdf_block import (is_text_block, is_image_block, is_table_block, insert_image_to_text_block)
 from . import utils
 
 
@@ -81,24 +81,19 @@ def merge_inline_images(blocks):
         if len(index_inline)==num: break
 
         # check all images for current block
-        image_merged = False
         for i, image in index_images:
             # an inline image belongs to only one block
             if i in index_inline: continue
 
             # horizontally aligned with current text block?
             # no, pass
-            if not utils.is_horizontal_aligned(block['bbox'], image['bbox']): continue
+            if not utils.is_horizontal_aligned(block['bbox'], image['bbox']):
+                continue
 
-            # yes, inline image: set as a line in block
-            image_merged = True
+            # yes, inline image: set as a line span in block
             index_inline.append(i)
-            _insert_image_to_block(image, block)
+            insert_image_to_text_block(image, block)
 
-        # if current block get images merged as new line,
-        # go further step here: merge image into span if necessary
-        if image_merged:
-            merge_lines_in_block(block)
 
     # remove inline images from top layout
     # the index of element in original list changes when any elements are removed
@@ -238,31 +233,3 @@ def _index_chars_in_rect(span, rect):
 
     return pos, length
 
-
-def _insert_image_to_block(image, block):
-    '''insert inline image to associated block'''
-    image_rect = fitz.Rect(image['bbox'])
-
-    # get the insetting position
-    for i,line in enumerate(block['lines']):
-        if image_rect.x0 < line['bbox'][0]:
-            break
-    else:
-        i = 0
-
-    # insert image as a line in block, 
-    # and waiting for further step: merge image into span as necessary
-    image_line = {
-        "wmode": 0,
-        "dir"  : (1, 0),
-        "bbox" : image['bbox'],
-        "spans": [image]
-        }
-    block['lines'].insert(i, image_line)
-
-    # update bbox accordingly
-    x0 = min(block['bbox'][0], image['bbox'][0])
-    y0 = min(block['bbox'][1], image['bbox'][1])
-    x1 = max(block['bbox'][2], image['bbox'][2])
-    y1 = max(block['bbox'][3], image['bbox'][3])
-    block['bbox'] = (x0, y0, x1, y1)

@@ -1,4 +1,6 @@
-# pdf2docx
+# pdf2docx 
+
+![pdf2docx-test](https://github.com/dothinking/pdf2docx/workflows/pdf2docx-test/badge.svg?branch=master)
 
 - Parse text, table and layout from PDF file with `PyMuPDF`
 - Generate docx with `python-docx`
@@ -20,6 +22,7 @@
 
 ## Limitations
 
+- text-based PDF file only
 - Normal reading direction only
     - horizontal paragraph/line/word
     - no word transformation, e.g. rotation
