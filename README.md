@@ -1,19 +1,22 @@
 # pdf2docx
 
-- Parse layout/text format from PDF file with `PyMuPDF`
+- Parse text, table and layout from PDF file with `PyMuPDF`
 - Generate docx with `python-docx`
 
 ## Features
 
-- [x] Rebuild page layout in docx
-	- [x] paragraph and line spacing
-	- [x] in-line image
 - [x] Parse and re-create text format
 	- [x] font style, e.g. font name, size, weight, italic and color
     - [x] highlight, underline, strike-through converted from docx
     - [x] highlight, underline, strike-through applied from PDF annotations
 - [ ] Parse and re-create list style
 - [x] Parse and re-create table
+    - [x] border style, e.g. width, color
+    - [x] shading style, i.e. background color
+    - [x] merged cells
+- [x] Rebuild page layout in docx
+	- [x] paragraph layout: horizontal and vertical spacing
+	- [x] in-line image
 
 ## Limitations
 
@@ -50,4 +53,4 @@ pdf.close()
 
 ## Sample
 
-![sample_compare.png](https://s1.ax1x.com/2020/05/17/Yg8XLt.png)
+![sample_compare.png](https://s1.ax1x.com/2020/06/21/N39L6I.png)

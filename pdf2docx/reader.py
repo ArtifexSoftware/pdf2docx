@@ -105,6 +105,10 @@ class Reader:
 
         # plot raw layout
         if self.debug_mode:
+            # new section for current pdf page
+            pdf_debug.new_page_section(self._debug_doc, layout, f'Page {page.number}')
+
+            # initial layout            
             pdf_debug.plot_layout(self._debug_doc, layout, 'Original Text Blocks')
             pdf_debug.plot_rectangles(self._debug_doc, layout, 'Original Rectangle Shapes')
 

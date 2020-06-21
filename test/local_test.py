@@ -14,7 +14,7 @@ import json
 if __name__ == '__main__':
 
     output = os.path.join(os.path.dirname(script_path), 'samples')
-    filename = 'demo-table-no-borders'
+    filename = 'demo-table'
     pdf_file = os.path.join(output, f'{filename}.pdf')
     docx_file = os.path.join(output, f'{filename}.docx')
 
@@ -36,7 +36,7 @@ if __name__ == '__main__':
             if block['type']==1: 
                 block['image'] = '<image>'
             # table block
-            elif block['type']==3:
+            elif block['type'] in (3, 4):
                 for row in block['cells']:
                     for cell in row:
                         if not cell: continue

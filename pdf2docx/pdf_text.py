@@ -33,49 +33,20 @@ import copy
 
 from .pdf_debug import debug_plot
 from .pdf_shape import rect_to_style
+from .pdf_block import (is_text_block, is_image_block, is_table_block, merge_lines_in_block)
 from . import utils
 
-
-def parse_text_and_image(layout, **kwargs):
-    ''' Parse text and image in both page and table context:
-        - merge inline images into text block
-        - parse text format, e.g. highlight, underline
-    '''
-    # inline images
-    merge_inline_images(layout, **kwargs)
-
-    # text format
-    parse_text_format(layout, **kwargs)
-
-
-@debug_plot('Merged Inline Images', True)
-def merge_inline_images(layout, **kwargs):
-    '''Merge inline image blocks in both page and table context.
-    '''
-    # blocks in page level
-    anything_changed = _merge_inline_images(layout['blocks'])
-
-    # blocks in table cell level
-    tables = list(filter(lambda block: block['type']==3, layout['blocks']))
-    for table in tables:
-        for row in table['cells']:
-            for cell in row:
-                if not cell: continue
-                if _merge_inline_images(cell['blocks']):
-                    anything_changed = True
-
-    return anything_changed
 
 
 @debug_plot('Parsed Text Blocks', True)
 def parse_text_format(layout, **kwargs):
     '''Parse text format in both page and table context.
     '''
-    # blocks in page level
+    # blocks in page level    
     anything_changed = _parse_text_format(layout['blocks'], layout['rects'])
 
     # blocks in table cell level
-    tables = list(filter(lambda block: block['type']==3, layout['blocks']))
+    tables = list(filter(lambda block: is_table_block(block), layout['blocks']))
     for table in tables:
         for row in table['cells']:
             for cell in row:
@@ -86,11 +57,11 @@ def parse_text_format(layout, **kwargs):
     return anything_changed
 
 
-def _merge_inline_images(blocks):
+def merge_inline_images(blocks):
     '''merge inline image blocks into text block: a block line or a line span.
-    '''
+    '''    
     # get all images blocks with index
-    f = lambda item: item[1]['type']==1
+    f = lambda item: is_image_block(item[1])
     index_images = list(filter(f, enumerate(blocks)))
     if not index_images: return False
 
@@ -101,10 +72,10 @@ def _merge_inline_images(blocks):
     for block in blocks:
 
         # suppose no overlap between two images
-        if block['type']==1: continue
+        if is_image_block(block): continue
 
         # innore table block
-        if block['type']==3: continue
+        if is_table_block(block): continue
 
         # all images found their block, then quit
         if len(index_inline)==num: break
@@ -127,11 +98,11 @@ def _merge_inline_images(blocks):
         # if current block get images merged as new line,
         # go further step here: merge image into span if necessary
         if image_merged:
-            _merge_lines_in_block(block)
+            merge_lines_in_block(block)
 
     # remove inline images from top layout
     # the index of element in original list changes when any elements are removed
-    # so try to 
+    # so try to delete item in reverse order
     for i in index_inline[::-1]:
         blocks.pop(i)
 
@@ -147,8 +118,7 @@ def _parse_text_format(blocks, rects):
     for block in blocks:
 
         # ignore image and table blocks
-        # actually there're no text contents in table yet at this point of time
-        if block['type'] in (1, 3): continue
+        if is_image_block(block) or is_table_block(block): continue
 
         block_rect = fitz.Rect(block['bbox'])
 
@@ -296,36 +266,3 @@ def _insert_image_to_block(image, block):
     x1 = max(block['bbox'][2], image['bbox'][2])
     y1 = max(block['bbox'][3], image['bbox'][3])
     block['bbox'] = (x0, y0, x1, y1)
-
-
-def _merge_lines_in_block(block):
-    ''' Merge lines aligned horizontally in a block.
-        Generally, it is performed when inline image is added into block line.
-    '''
-    new_lines = []
-    for line in block['lines']:        
-        # add line directly if not aligned horizontally with previous line
-        if not new_lines or not utils.is_horizontal_aligned(line['bbox'], new_lines[-1]['bbox']):
-            new_lines.append(line)
-            continue
-
-        # if it exists x-distance obviously to previous line,
-        # take it as a separate line as it is
-        if abs(line['bbox'][0]-new_lines[-1]['bbox'][2]) > utils.DM:
-            new_lines.append(line)
-            continue
-
-        # now, this line will be append to previous line as a span
-        new_lines[-1]['spans'].extend(line['spans'])
-
-        # update bbox
-        new_lines[-1]['bbox'] = (
-            new_lines[-1]['bbox'][0],
-            min(new_lines[-1]['bbox'][1], line['bbox'][1]),
-            line['bbox'][2],
-            max(new_lines[-1]['bbox'][3], line['bbox'][3])
-            )
-
-    # update lines in block
-    block['lines'] = new_lines
-
