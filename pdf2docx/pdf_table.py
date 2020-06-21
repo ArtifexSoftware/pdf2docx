@@ -212,6 +212,10 @@ def parse_table_structure_from_blocks(layout, **kwargs):
             # update line status            
             new_line = True
 
+        # NOTE: close table detecting manually if last block
+        if i==num-1:
+            table_end = True
+
         # end of current table
         if table_lines and table_end: 
             # parse borders based on contents in cell
@@ -234,7 +238,7 @@ def parse_table_structure_from_blocks(layout, **kwargs):
         return False
 
 
-@debug_plot('Parsed Table', False, 'layout')
+@debug_plot('Parsed Table', True, 'layout')
 def parse_table_content(layout, **kwargs):
     '''Add block lines to associated cells.'''
 

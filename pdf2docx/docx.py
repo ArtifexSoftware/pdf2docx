@@ -73,7 +73,15 @@ def make_page(doc, layout):
             table = doc.add_table(rows=len(block['cells']), cols=len(block['cells'][0]))
             table.autofit = False
             table.allow_autofit  = False
-            make_table(table, block, width, layout['margin'])            
+            make_table(table, block, width, layout['margin'])
+            
+            # NOTE: If this table is at the end of a page, a new paragraph is automatically 
+            # added by the rending engine, e.g. MS Word, which resulting in an unexpected
+            # page break. The solution is to never put a table at the end of a page, so add
+            # an empty paragraph and reset its format, particularly line spacing, when a table
+            # is created.
+            p = doc.add_paragraph()
+            _reset_paragraph_format(p, Pt(1.0))
 
 
 def make_paragraph(p, block, X0, X1):
@@ -140,10 +148,8 @@ def make_paragraph(p, block, X0, X1):
             if line==block['lines'][-1]: 
                 line_break = False
             
-            # different lines in space, i.e. break line if they are not horizontally aligned
-            # Line i+1 y0 > Line i y1 is a simple criterion, but not so general since overlap may exist
-            # so a overlap with at least 0.5 times of line width is applied here
-            elif utils.is_horizontal_aligned(block['lines'][i+1]['bbox'], line['bbox']):
+            # do not break line if they're indeed in same line
+            elif utils.in_same_row(block['lines'][i+1]['bbox'], line['bbox']):
                 line_break = False
             
             # now, we have two lines, check whether word wrap or line break
@@ -208,10 +214,14 @@ def make_table(table, block, page_width, page_margin):
                 make_paragraph(p, block, x0, x1)
 
 
-def _reset_paragraph_format(p):
-    '''paragraph format'''
+def _reset_paragraph_format(p, line_spacing=1.05):
+    ''' reset paragraph format, especially line spacing.
+        Two kinds of line spacing, corresponding to the setting in MS Office Word:
+        - line_spacing=1.05: single or multiple
+        - line_spacing=Pt(1): exactly
+    '''
     pf = p.paragraph_format
-    pf.line_spacing = 1.05 # single
+    pf.line_spacing = line_spacing # single by default
     pf.space_before = Pt(0)
     pf.space_after = Pt(0)
     pf.left_indent = Pt(0)
