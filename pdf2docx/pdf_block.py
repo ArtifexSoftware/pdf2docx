@@ -69,6 +69,51 @@ def is_discrete_lines_in_block(block, distance=25, threshold=3):
     return cnt > threshold
 
 
+def remove_floating_blocks(blocks):
+    ''' Remove floating blocks, especially images. When a text block is floating behind 
+        an image block, the background image block will be deleted, considering that 
+        floating elements are not supported in python-docx when re-create the document.
+    '''
+    # get text/image blocks seperately, and suppose no overlap between text blocks
+    text_blocks = list(
+        filter( lambda block: is_text_block(block),  blocks))
+    image_blocks = list(
+        filter( lambda block: is_image_block(block),  blocks))    
+
+    # check image block: no significant overlap with any text/image blocks
+    res_image_blocks = []
+    for image_block in image_blocks:
+        # 1. overlap with any text block?
+        for text_block in text_blocks:            
+            if utils.get_main_bbox(image_block['bbox'], text_block['bbox'], 0.75):
+                overlap = True
+                break
+        else:
+            overlap = False
+
+        # yes, then this is an invalid image block
+        if overlap: continue
+
+        # 2. overlap with any valid image blocks?
+        for valid_image in res_image_blocks:
+            if utils.get_main_bbox(image_block['bbox'], valid_image['bbox'], 0.75):
+                overlap = True
+                break
+        else:
+            overlap = False
+        
+        # yes, then this is an invalid image block
+        if overlap: continue
+
+        # finally, add this image block
+        res_image_blocks.append(image_block)
+
+    # return all valid blocks
+    res = []
+    res.extend(text_blocks)
+    res.extend(res_image_blocks)
+    return res
+
 
 def merge_blocks(blocks):
     '''merge blocks aligned horizontally.'''
