@@ -51,7 +51,7 @@ import fitz
 from .pdf_debug import debug_plot
 from .pdf_table import parse_table
 from .pdf_text import merge_inline_images, parse_text_format
-from .pdf_block import (is_text_block, is_image_block, is_table_block)
+from .pdf_block import (is_text_block, is_image_block, is_table_block, remove_floating_blocks)
 from . import utils
 
 
@@ -89,38 +89,41 @@ def layout(layout, **kwargs):
     parse_vertical_spacing(layout)
 
 
-@debug_plot('Preprocessing', plot=False)
+@debug_plot('Preprocessing', plot=True)
 def preprocessing(layout, **kwargs):
     '''preprocessing for the raw layout of PDF page'''
-    # remove blocks exceeds page region: negative bbox
-    layout['blocks'] = list(filter(
-        lambda block: all(x>0 for x in block['bbox']), 
-        layout['blocks']))
 
-    # reorder to reading direction:
-    # from up to down, from left to right
-    layout['blocks'].sort(
-        key=lambda block: (block['bbox'][1], 
-            block['bbox'][0]))
+    # remove negative blocks
+    blocks = list(
+        filter( lambda block: all(x>0 for x in block['bbox']), layout['blocks']))
 
-    # joining chars in span
-    for block in layout['blocks']:
+    # remove overlap blocks: no floating elements are supported
+    blocks = remove_floating_blocks(blocks)
+    
+    # joining chars in text span
+    for block in blocks:
         # skip image
         if is_image_block(block): continue
 
-        # join chars
+        # join chars: apply on original text block only
         for line in block['lines']:
             for span in line['spans']:
                 chars = [char['c'] for char in span['chars']]
                 span['text'] = ''.join(chars)
+    
+    # sort in reading direction: from up to down, from left to right
+    blocks.sort(
+        key=lambda block: (block['bbox'][1], block['bbox'][0]))
+        
+    # merge inline images into text block
+    merge_inline_images(blocks)
+    
+    layout['blocks'] = blocks
 
     # round bbox of rectangles: one decimal place is enough, 
-    # otherwise, would encounter float error, especially get intersection of two bbox-es
+    # otherwise, probally to encounter float error, especially get intersection of two bbox-es
     for rect in layout['rects']:
-        rect['bbox'] = tuple([round(x,1) for x in rect['bbox']])
-
-    # merge inline images into text block
-    merge_inline_images(layout['blocks'])
+        rect['bbox'] = tuple([round(x,1) for x in rect['bbox']])    
 
     return True
 
@@ -165,10 +168,12 @@ def page_margin(layout):
     x_max = max(map(lambda x: x[2], list_bbox))
     w, h = layout['width'], layout['height']
     right = min(w-x_max, left)
+    right = max(right, 0.0)
 
     # top/bottom margin
     top = min(map(lambda x: x[1], list_bbox))
     bottom = h-max(map(lambda x: x[3], list_bbox))
+    bottom = max(bottom, 0.0)
 
     # reduce calculated bottom margin -> more free space left,
     # to avoid page content exceeding current page
