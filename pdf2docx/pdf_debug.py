@@ -170,23 +170,25 @@ def _plot_table_block(page, block, style=True, content=True):
     for rows in block['cells']:
         for cell in rows:
             # ignore merged cells
-            if not cell: continue
-
-            # border color and width
-            bc = [x/255.0 for x in utils.RGB_component(cell['border-color'][0])]
-            w = cell['border-width'][0]
-
-            # shading color
-            if cell['bg-color'] != None:
-                sc = [x/255.0 for x in utils.RGB_component(cell['bg-color'])] 
-            else:
-                sc = None
+            if not cell: continue            
             
-            # plot cell style or just an illustration
+            # plot cell style
             if style:
+                # border color and width
+                bc = [x/255.0 for x in utils.RGB_component(cell['border-color'][0])]
+                w = cell['border-width'][0]
+
+                # shading color
+                if cell['bg-color'] != None:
+                    sc = [x/255.0 for x in utils.RGB_component(cell['bg-color'])] 
+                else:
+                    sc = None
                 page.drawRect(cell['bbox'], color=bc, fill=sc, width=w, overlay=False)
+            
+            # or just an illustration
             else:
-                page.drawRect(cell['bbox'], color=(1,0,0), fill=None, width=1, overlay=False)
+                bc = (1,0,0) if is_explicit_table_block(block) else (0.6,0.7,0.8)
+                page.drawRect(cell['bbox'], color=bc, fill=None, width=1, overlay=False)
 
             # plot blocks in cell
             if content:
