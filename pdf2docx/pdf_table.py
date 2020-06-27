@@ -20,7 +20,7 @@ So, a combined process:
 
 Data structure for table block recognized from rectangle shapes and text blocks:
 {
-    'type': 3,
+    'type': 3, # or 4 for implicit table
     'bbox': (x0, y0, x1, y1),
     'cells': [[
         {
@@ -73,7 +73,7 @@ def parse_table(layout, **kwargs):
 
 
 
-@debug_plot('Cleaned Rectangle Shapes', False, 'shape')
+@debug_plot('Cleaned Rectangle Shapes', True, 'shape')
 def clean_rects(layout, **kwargs):
     '''clean rectangles:
         - delete rectangles with white background-color
@@ -287,32 +287,44 @@ def parse_table_content(layout, **kwargs):
 def _group_rects(rects):
     ''' split rects into groups, to be further checked if it's a table group.        
     '''
-    # sort in reading order
-    rects.sort(key=lambda rect: (rect['bbox'][1],  
-                    rect['bbox'][0],
-                    rect['bbox'][2]))
+    num = len(rects)
 
     # group intersected rects: a list of {'Rect': fitz.Rect(), 'rects': []}
     groups = []
-    for rect in rects:
-        # NOTE: skip the rect marked already as a table border.
-        if is_cell_border(rect):
+    counted_index = []
+    for i in range(num):
+        # do nothing if current rect has considered already
+        if i in counted_index:
             continue
 
-        fitz_rect = fitz.Rect(rect['bbox'])
-        for group in groups:
+        # start a new group
+        rect = rects[i]
+        group = {
+            'Rect': fitz.Rect(rect['bbox']),
+            'rects': [rect]
+        }
+
+        # check all rects contained in this group
+        for j in range(i+1, num):
+            other_rect = rects[j]
+            fitz_rect = fitz.Rect(other_rect['bbox'])
             # add to the group containing current rect
             if fitz_rect & (group['Rect']+utils.DR): 
-                group['Rect'] = fitz_rect | group['Rect']
-                group['rects'].append(rect)
-                break
+                counted_index.append(j) # mark the counted rect
 
-        # no any intersections: new group
-        else:            
-            groups.append({
-                'Rect': fitz_rect,
-                'rects': [rect]
-            })
+                # update group
+                group['Rect'] = fitz_rect | group['Rect']
+                group['rects'].append(other_rect)
+
+        # add to groups list
+        # NOTE: merge group if any intersection with existing group
+        for _group in groups:
+            if group['Rect'] & _group['Rect']:
+                _group['Rect'] = group['Rect'] | _group['Rect']
+                _group['rects'].extend(group['rects'])
+                break
+        else:
+            groups.append(group)
 
     return groups
 
@@ -338,7 +350,7 @@ def _set_table_borders(rects, border_threshold=6):
         if min(x1-x0, y1-y0) <= border_threshold:
             thin_rects.append(rect)
 
-    # These thin rects may be cell borders, or text format, e.g. underline with cell.
+    # These thin rects may be cell borders, or text format, e.g. underline within cell.
     # Compared to text format, cell border always has intersection with other rects
     for rect in thin_rects:
         fitz_rect = fitz.Rect(rect['bbox'])
