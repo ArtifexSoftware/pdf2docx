@@ -32,7 +32,10 @@ class Reader:
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            stop = index.stop if not index.stop is None else self._doc.pageCount
+            if index.stop is None or index.stop > self._doc.pageCount:
+                stop = self._doc.pageCount
+            else:
+                stop = index.stop
             res = [self._doc[i] for i in range(stop)]
             return res[index]
         else:

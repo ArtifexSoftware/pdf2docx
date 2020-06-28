@@ -1,10 +1,12 @@
 outputs/
+build/
+dist/
+*egg-info/
 
 *.docx
 *.pyc
 *.jp*g
 *.txt
-
 
 debug_*.pdf
 raw.json

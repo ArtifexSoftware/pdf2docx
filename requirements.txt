@@ -1,2 +1,3 @@
-PyMuPDF
-python-docx
+PyMuPDF>=1.16.16
+python-docx>=0.8.10
+fire>=0.3.0

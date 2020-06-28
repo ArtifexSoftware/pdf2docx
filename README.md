@@ -20,7 +20,7 @@
 	- [x] paragraph layout: horizontal and vertical spacing
 	- [x] in-line image
 
-## Limitations
+### Limitations
 
 - text-based PDF file only
 - Normal reading direction only
@@ -29,7 +29,80 @@
 - No floating images
 - Full borders table only
 
+
+## Installation
+
+### From Pypi (TODO)
+
+```
+$ pip install pdf2docx
+```
+
+### From source code
+
+Clone or download this project, and navigate to the root directory:
+
+```
+$ python setup.py install
+```
+
+Or install it in developing mode:
+
+```
+$ python setup.py develop
+```
+
+### Uninstall
+
+```
+$ pip uninstall pdf2docx
+```
+
 ## Usage
+
+### By range of pages
+
+```
+$ pdf2docx test.pdf test.docx --start=5 --end=10
+```
+
+### By page numbers
+
+```
+$ pdf2docx test.pdf test.docx --pages=5,7,9
+```
+
+```
+$ pdf2docx --help
+
+NAME
+    pdf2docx - Run the pdf2docx parser
+
+SYNOPSIS
+    pdf2docx PDF_FILE DOCX_FILE <flags>
+
+DESCRIPTION
+    Run the pdf2docx parser
+
+POSITIONAL ARGUMENTS
+    PDF_FILE
+        PDF filename to read from
+    DOCX_FILE
+        DOCX filename to write to
+
+FLAGS
+    --start=START
+        first page to process, starting from zero
+    --end=END
+        last page to process, starting from zero
+    --pages=PAGES
+        range of pages
+
+NOTES
+    You can also use flags syntax for POSITIONAL ARGUMENTS
+```
+
+### As a source package
 
 ```python
 import os
@@ -56,4 +129,9 @@ pdf.close()
 
 ## Sample
 
-![sample_compare.png](https://s1.ax1x.com/2020/06/21/N39L6I.png)
+![sample_compare.png](https://s1.ax1x.com/2020/06/29/NWSJzT.png)
+
+## License
+
+- [GPL-3.0 License](./LICENSE)
+- [AGPL-3.0 License](./LICENSE_AGPL)
