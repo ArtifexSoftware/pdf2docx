@@ -87,10 +87,10 @@ class TestUtility(Utility, unittest.TestCase):
         matched = area/b1.getArea()>=threshold and area/b2.getArea()>=threshold
 
         if not matched:
-            # right position with red box
-            page.drawRect(sample_bbox, color=(1,0,0), overlay=False)
-            # mismatched postion in test case
-            page.drawRect(test_bbox, color=(1,1,0), overlay=False)
+            # right position in sample file
+            page.drawRect(sample_bbox, color=(1,1,0), overlay=False)
+            # mismatched postion in red box
+            page.drawRect(test_bbox, color=(1,0,0), overlay=False)
             # save file
             result_file = self.SAMPLE_PDF.filename.replace(f'{self.PREFIX_SAMPLE}-', '')
             self.SAMPLE_PDF.core.save(result_file)
@@ -201,9 +201,9 @@ class MainTest(TestUtility):
         if self.SAMPLE_PDF: self.SAMPLE_PDF.close()
         if self.TEST_PDF: self.TEST_PDF.close()
 
-        # delete sample pdf files
+        # delete pdf files generated for comparison purpose
         for filename in os.listdir(self.output_dir):
-            if filename.startswith(self.PREFIX_SAMPLE):
+            if filename.startswith(self.PREFIX_SAMPLE) or filename.startswith(self.PREFIX_COMPARING):
                 os.remove(os.path.join(self.output_dir, filename))
 
 
