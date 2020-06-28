@@ -24,6 +24,8 @@ class TestUtility(Utility, unittest.TestCase):
     SAMPLE_PDF = None
     TEST_PDF = None
 
+    STATUS = False
+
     def init_test(self, filename):
         ''' Create pdf objects and set default class properties
             - create sample pdf Reader object
@@ -199,9 +201,9 @@ class MainTest(TestUtility):
         if self.SAMPLE_PDF: self.SAMPLE_PDF.close()
         if self.TEST_PDF: self.TEST_PDF.close()
 
-        # delete pdf files generated for comparison purpose
+        # delete sample pdf files
         for filename in os.listdir(self.output_dir):
-            if filename.startswith(self.PREFIX_SAMPLE) or filename.startswith(self.PREFIX_COMPARING):
+            if filename.startswith(self.PREFIX_SAMPLE):
                 os.remove(os.path.join(self.output_dir, filename))
 
 

@@ -42,7 +42,8 @@ jobs:
         python -m unittest test.py
 
     - name: Archive converted files
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
+      if: failure()
       with:
-        name: docx
+        name: test
         path: ./test/outputs
