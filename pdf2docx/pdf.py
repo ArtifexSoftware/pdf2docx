@@ -89,7 +89,7 @@ def layout(layout, **kwargs):
     parse_vertical_spacing(layout)
 
 
-@debug_plot('Preprocessing', plot=True)
+@debug_plot('Preprocessing', plot=False)
 def preprocessing(layout, **kwargs):
     '''preprocessing for the raw layout of PDF page'''
 

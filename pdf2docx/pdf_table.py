@@ -72,8 +72,7 @@ def parse_table(layout, **kwargs):
     parse_table_content(layout, **kwargs) # cell contents
 
 
-
-@debug_plot('Cleaned Rectangle Shapes', True, 'shape')
+@debug_plot('Cleaned Rectangle Shapes', plot=False, category='shape')
 def clean_rects(layout, **kwargs):
     '''clean rectangles:
         - delete rectangles with white background-color
@@ -127,7 +126,7 @@ def clean_rects(layout, **kwargs):
     return rect_changed
 
 
-@debug_plot('Explicit Table Structure', True, 'table')
+@debug_plot('Explicit Table Structure', plot=True, category='table')
 def parse_table_structure_from_rects(layout, **kwargs):
     '''parse table structure from rectangle shapes'''    
     # group rects: each group may be a potential table
@@ -157,7 +156,7 @@ def parse_table_structure_from_rects(layout, **kwargs):
         return False
 
 
-@debug_plot('Implicit Table Structure', True, 'implicit_table')
+@debug_plot('Implicit Table Structure', plot=True, category='implicit_table')
 def parse_table_structure_from_blocks(layout, **kwargs):
     ''' Parse table structure based on the layout of text/image blocks.
 
@@ -238,7 +237,7 @@ def parse_table_structure_from_blocks(layout, **kwargs):
         return False
 
 
-@debug_plot('Parsed Table', True, 'layout')
+@debug_plot('Parsed Table', plot=False, category='layout')
 def parse_table_content(layout, **kwargs):
     '''Add block lines to associated cells.'''
 
