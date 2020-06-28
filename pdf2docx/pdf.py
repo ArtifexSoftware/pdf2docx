@@ -224,7 +224,7 @@ def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
         start_pos = block['bbox'][1] - dw
         para_space = start_pos - ref_pos
 
-        # paragraph-1 (ref) to paragraph-2 (current): set before-space for paragraph-2
+        # ref to current (paragraph): set before-space for paragraph
         if is_text_block(block):
 
             # spacing before this paragraph
@@ -262,12 +262,12 @@ def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
                 para_space = para_space + first_line_height - line_space
                 block['before_space'] = para_space
 
-            # adjust last block to avoid exceeding current page
+            # adjust last block to avoid exceeding current page <- seems of no use
             free_space = Y1-(ref_pos+para_space+block_height) 
             if free_space<=0:
                 block['before_space'] = para_space+free_space-utils.DM*2.0
 
-        # paragraph (ref) to table (current): set after-space for paragraph        
+        # ref (paragraph) to current: set after-space for ref paragraph        
         elif is_text_block(ref_block):
             ref_block['after_space'] = para_space
 

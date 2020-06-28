@@ -534,7 +534,7 @@ def _border_rects_from_table_lines(bbox_lines):
     
     # all centerlines to rectangle shapes
     borders.extend(inner_borders)
-    rects = _centerline_to_rect(borders, width=0.1)
+    rects = _centerline_to_rect(borders, width=0.0) # no border for implicit table
 
     return rects
 
