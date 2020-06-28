@@ -282,8 +282,10 @@ def _set_cell_style(table, indexes, block_cell):
     i, j = indexes
     cell = table.cell(i, j)
 
-    # set borders:
-    # Note border width is specified in eighths of a point, with a minimum value of 
+    # ---------------------
+    # borders
+    # ---------------------
+    # NOTE: border width is specified in eighths of a point, with a minimum value of 
     # two (1/4 of a point) and a maximum value of 96 (twelve points)
     keys = ('top', 'end', 'bottom', 'start')
     kwargs = {}
@@ -298,25 +300,33 @@ def _set_cell_style(table, indexes, block_cell):
         for n in range(j, j+n_col):
             _set_cell_border(table.cell(m, n), **kwargs)
 
-    # merge cells            
+    # ---------------------
+    # merge cells
+    # ---------------------        
     if n_row*n_col!=1:
         _cell = table.cell(i+n_row-1, j+n_col-1)
         cell.merge(_cell)
 
-    # set cell width/height
-    # only for separate cells without cell merging
+    # ---------------------
+    # cell width/height
+    # ---------------------
     x0, y0, x1, y1 = block_cell['bbox']
     w_t, _, w_b, _ = block_cell['border-width']
+    # set cell height by setting row height
+    # NOTE: consider separate rows (without cell merging) only since merged rows are determined accordingly.
     if n_row==1:
-        # NOTE:
-        # cell bbox is counted from the center-line of top border to center line of bottom border,
-        # so border size should be excluded from the whole cell height
+        # NOTE: cell bbox is counted from the center-line of top border to center line of bottom border,
+        # so border size should be excluded from the whole cell height.
         dw = (w_t+w_b)/2.0
         table.rows[i].height = Pt(y1-y0-dw) # Note cell does not have height property.
-    if n_col==1:
-        cell.width = Pt(x1-x0)
+    
+    # set cell width
+    # experience: width of merged cells may change if not setting width for merged cells
+    cell.width = Pt(x1-x0)
 
-    # set bg-color
+    # ---------------------
+    # cell bg-color
+    # ---------------------
     if block_cell['bg-color']!=None:
         _set_cell_shading(cell, block_cell['bg-color'])
 
