@@ -82,6 +82,11 @@ class TestUtility(Utility, unittest.TestCase):
             page: pdf page where these box-es come from, used for illustration if check failed
         '''
         b1, b2 = fitz.Rect(sample_bbox), fitz.Rect(test_bbox)
+
+        # ignore small bbox, e.g. single letter bbox
+        if b1.width < 20:
+            return True
+            
         b = b1 & b2
         area = b.getArea()
         matched = area/b1.getArea()>=threshold and area/b2.getArea()>=threshold
