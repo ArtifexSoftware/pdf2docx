@@ -63,8 +63,16 @@ def is_discrete_lines_in_block(block, distance=25, threshold=3):
     for i in range(num-1):
         bbox = block['lines'][i]['bbox']
         next_bbox = block['lines'][i+1]['bbox']
-        if utils.is_horizontal_aligned(bbox, next_bbox) and abs(bbox[2]-next_bbox[0]) > distance:
-            cnt += 1
+
+        if utils.is_horizontal_aligned(bbox, next_bbox):
+            # horizontally aligned but not in a same row -> discrete block
+            if not utils.in_same_row(bbox, next_bbox):
+                return True
+            
+            # otherwise, check the distance only
+            else:
+                if abs(bbox[2]-next_bbox[0]) > distance:
+                    cnt += 1
 
     return cnt > threshold
 

@@ -24,6 +24,8 @@ class TestUtility(Utility, unittest.TestCase):
     SAMPLE_PDF = None
     TEST_PDF = None
 
+    STATUS = False
+
     def init_test(self, filename):
         ''' Create pdf objects and set default class properties
             - create sample pdf Reader object
@@ -80,15 +82,20 @@ class TestUtility(Utility, unittest.TestCase):
             page: pdf page where these box-es come from, used for illustration if check failed
         '''
         b1, b2 = fitz.Rect(sample_bbox), fitz.Rect(test_bbox)
+
+        # ignore small bbox, e.g. single letter bbox
+        if b1.width < 20:
+            return True
+            
         b = b1 & b2
         area = b.getArea()
         matched = area/b1.getArea()>=threshold and area/b2.getArea()>=threshold
 
         if not matched:
-            # right position with red box
-            page.drawRect(sample_bbox, color=(1,0,0), overlay=False)
-            # mismatched postion in test case
-            page.drawRect(test_bbox, color=(1,1,0), overlay=False)
+            # right position in sample file
+            page.drawRect(sample_bbox, color=(1,1,0), overlay=False)
+            # mismatched postion in red box
+            page.drawRect(test_bbox, color=(1,0,0), overlay=False)
             # save file
             result_file = self.SAMPLE_PDF.filename.replace(f'{self.PREFIX_SAMPLE}-', '')
             self.SAMPLE_PDF.core.save(result_file)

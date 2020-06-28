@@ -9,6 +9,7 @@ from io import BytesIO
 
 from docx.shared import Pt
 from docx.enum.section import WD_SECTION
+from docx.enum.table import WD_ROW_HEIGHT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import RGBColor
@@ -16,7 +17,7 @@ from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 
 from . import utils
-from .pdf_block import (is_text_block, is_image_block, is_table_block)
+from .pdf_block import (is_text_block, is_image_block, is_table_block, is_explicit_table_block)
 
 
 
@@ -186,6 +187,7 @@ def make_table(table, block, page_width, page_margin):
 
     # cell format and contents
     block_cells = block['cells']
+    border_style = is_explicit_table_block(block)
     for i in range(len(table.rows)):
         for j in range(len(table.columns)):           
 
@@ -194,7 +196,8 @@ def make_table(table, block, page_width, page_margin):
             if not block_cell: continue
             
             # set cell style
-            _set_cell_style(table, (i,j), block_cell)
+            # no borders for implicit table
+            _set_cell_style(table, (i,j), block_cell, border_style)
 
             # clear cell margin
             # NOTE: the start position of a table is based on text in cell, rather than left border of table. 
@@ -270,7 +273,7 @@ def _add_span(span, paragraph):
                 text_span.font.strike = True
 
 
-def _set_cell_style(table, indexes, block_cell):
+def _set_cell_style(table, indexes, block_cell, border_style=True):
     ''' Set python-docx cell style, e.g. border, shading, width, row height, 
         based on cell block parsed from PDF.
 
@@ -281,42 +284,56 @@ def _set_cell_style(table, indexes, block_cell):
     '''
     i, j = indexes
     cell = table.cell(i, j)
+    n_row, n_col = block_cell['merged-cells']
 
-    # set borders:
-    # Note border width is specified in eighths of a point, with a minimum value of 
+    # ---------------------
+    # border style
+    # ---------------------
+    # NOTE: border width is specified in eighths of a point, with a minimum value of 
     # two (1/4 of a point) and a maximum value of 96 (twelve points)
-    keys = ('top', 'end', 'bottom', 'start')
-    kwargs = {}
-    for k, w, c in zip(keys, block_cell['border-width'], block_cell['border-color']):
-        hex_c = f'#{hex(c)[2:].zfill(6)}'
-        kwargs[k] = {
-            'sz': 8*w, 'val': 'single', 'color': hex_c.upper()
-        }
-    # merged cells are assumed to have same borders with the main cell
-    n_row, n_col = block_cell['merged-cells']    
-    for m in range(i, i+n_row):
-        for n in range(j, j+n_col):
-            _set_cell_border(table.cell(m, n), **kwargs)
+    if border_style:
+        keys = ('top', 'end', 'bottom', 'start')
+        kwargs = {}
+        for k, w, c in zip(keys, block_cell['border-width'], block_cell['border-color']):
+            hex_c = f'#{hex(c)[2:].zfill(6)}'
+            kwargs[k] = {
+                'sz': 8*w, 'val': 'single', 'color': hex_c.upper()
+            }
+        # merged cells are assumed to have same borders with the main cell        
+        for m in range(i, i+n_row):
+            for n in range(j, j+n_col):
+                _set_cell_border(table.cell(m, n), **kwargs)
 
-    # merge cells            
+    # ---------------------
+    # merge cells
+    # ---------------------        
     if n_row*n_col!=1:
         _cell = table.cell(i+n_row-1, j+n_col-1)
         cell.merge(_cell)
 
-    # set cell width/height
-    # only for separate cells without cell merging
+    # ---------------------
+    # cell width/height
+    # ---------------------
     x0, y0, x1, y1 = block_cell['bbox']
-    w_t, _, w_b, _ = block_cell['border-width']
+    
+    # set cell height by setting row height
+    # NOTE: consider separate rows (without cell merging) only since merged rows are determined accordingly.
     if n_row==1:
-        # NOTE:
-        # cell bbox is counted from the center-line of top border to center line of bottom border,
-        # so border size should be excluded from the whole cell height
-        dw = (w_t+w_b)/2.0
-        table.rows[i].height = Pt(y1-y0-dw) # Note cell does not have height property.
-    if n_col==1:
-        cell.width = Pt(x1-x0)
+        row = table.rows[i]
+        # to control the layout precisely, set `exact` value, rather than `at least` value
+        # the associated steps in MS word: Table Properties -> Row -> Row height -> exactly
+        row.height_rule = WD_ROW_HEIGHT.EXACTLY        
+        # NOTE: cell height is counted from center-line of top border to center line of bottom border,
+        # i.e. the height of cell bbox
+        row.height = Pt(y1-y0) # Note cell does not have height property.    
+    
+    # set cell width
+    # experience: width of merged cells may change if not setting width for merged cells
+    cell.width = Pt(x1-x0)
 
-    # set bg-color
+    # ---------------------
+    # cell bg-color
+    # ---------------------
     if block_cell['bg-color']!=None:
         _set_cell_shading(cell, block_cell['bg-color'])
 
