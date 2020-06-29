@@ -1,0 +1,120 @@
+# Create release and publish to Pypi when pushing tags
+
+name: pdf2docx-publish
+
+# Trigger the workflow on push tags, matching vM.n.p, i.e. v3.2.10
+on:  
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+# Jobs to do:
+# - build package
+# - create release with asset
+# - publish to Pypi
+jobs:
+
+  # -----------------------------------------------------------
+  # create python env and setup package
+  # -----------------------------------------------------------
+  build:
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
+
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel
+
+      # build package for tags, e.g. 3.2.1 extracted from 'refs/tags/v3.2.1'
+      - name: Build package
+        run: |
+          echo ${GITHUB_REF#refs/tags/v} > version.txt
+          python setup.py sdist --formats=gztar,zip
+          python setup.py bdist_wheel
+
+      # upload the artifacts for further jobs
+      # - app-tag.tar.gz
+      # - app-tag.zip
+      # - app-tag-info.whl
+      - name: Archive package
+        uses: actions/upload-artifact@v2
+        with:
+            name: dist
+            path: ./dist
+  
+  # -----------------------------------------------------------
+  # create release and upload asset
+  # -----------------------------------------------------------
+  release:
+    runs-on: ubuntu-latest
+
+    # Run this job after build completes successfully
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # download artifacts from job: build
+      - name: Download artifacts from build
+        uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+
+      # create release and upload assets
+      - name: Create release with assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./dist/*.tar.gz
+            ./dist/*.zip
+            ./dist/*.whl
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # upload wheel file for further job
+      - name: Archive wheel file
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: ./dist/*.whl
+
+  # -----------------------------------------------------------
+  # publish to Pypi
+  # -----------------------------------------------------------
+  publish:
+    runs-on: ubuntu-latest
+
+    # Run this job after both build and release completes successfully
+    needs: [build, release]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Download artifacts from release
+        uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.PYPI_PASSWORD }}
