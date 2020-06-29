@@ -2,16 +2,33 @@
 
 name: pdf2docx-test
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
+# Controls when the action will run. 
 on:
+  # Trigger the workflow on push, but only for the master branch, or
+  # tags matching vM.n.p, i.e. v3.2.10
   push:
-    branches: [ master ]
+    branches:
+      - master
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+  # Also Trigger the workflow on pull request, but only for the master branch    
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
+
+# Set env vars
+env:
+  RELEASE_VERSION: ${GITHUB_REF#refs/*/} # e.g. refs/tags/0.3.1
+  VERSION_FILE: version.txt
+
 
 jobs:
-  build-and-test:
+
+  # -----------------------------------------------------------
+  # build env and run test for any valid triggers
+  # -----------------------------------------------------------
+  build_and_test:
 
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -19,7 +36,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
 
-    - name: Check out repo.
+    - name: Check out code
       uses: actions/checkout@v2
 
     - name: Set up Python 3.x
@@ -33,17 +50,77 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pylovepdf
+        pip install setuptools wheel pylovepdf
         pip install -r requirements.txt
 
+    # run unit test, and upload debug files if failed
     - name: Run unit test
       run: |
         cd test
         python -m unittest test.py
 
-    - name: Archive converted files
+    - name: Archive debug files if failed
       uses: actions/upload-artifact@v2
       if: failure()
       with:
         name: test
         path: ./test/outputs
+
+    # build package for tags if passing test
+    - name: Build package
+      if: startsWith(github.ref, 'refs/tags')
+      run: |
+        echo $RELEASE_VERSION > $VERSION_FILE
+        python setup.py sdist --formats=gztar,zip
+        python setup.py bdist_wheel
+
+    # upload the artifacts for further jobs
+    - name: Archive package
+      if: startsWith(github.ref, 'refs/tags')
+      uses: actions/upload-artifact@v2
+      with:
+        name: dist
+        path: ./dist
+  
+  # -----------------------------------------------------------
+  # create release package on tags
+  # -----------------------------------------------------------
+  release:
+    runs-on: ubuntu-latest
+
+    # Run this job after build_and_test completes successfully
+    needs: build_and_test
+
+    # trigger this job only on tags
+    if: startsWith(github.ref, 'refs/tags')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # download artifacts from job: build_and_test
+      - name: Download package from build_and_test
+        uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+
+      # create release and upload assets
+      - name: Create release with assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./dist/*.tar.gz
+            ./dist/*.zip
+            ./dist/*.whl
+            LICENSE
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # upload wheel file for further job
+      - name: Archive wheel file
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: ./dist/*.whl
+
