@@ -1,6 +1,7 @@
 # pdf2docx 
 
-![pdf2docx-test](https://github.com/dothinking/pdf2docx/workflows/pdf2docx-test/badge.svg?branch=master)
+![pdf2docx-test](https://github.com/dothinking/pdf2docx/workflows/pdf2docx-test/badge.svg)
+![pdf2docx-publish](https://github.com/dothinking/pdf2docx/workflows/pdf2docx-publish/badge.svg)
 
 - Parse text, table and layout from PDF file with `PyMuPDF`
 - Generate docx with `python-docx`
@@ -32,7 +33,7 @@
 
 ## Installation
 
-### From Pypi (TODO)
+### From Pypi
 
 ```
 $ pip install pdf2docx
