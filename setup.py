@@ -46,6 +46,7 @@ setup(
     keywords=["pdf-to-word", "pdf-to-docx"],
     description="parse PDF files to docx",
     long_description=load_long_description('README.md'),
+    long_description_content_type='text/markdown',
     license="GPL v3", 
     author="dothinking",
     author_email="train8808@gmail.com",

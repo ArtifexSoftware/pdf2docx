@@ -111,9 +111,8 @@ jobs:
       # Error when two sdist files created in build job are uploaded to Pipi:
       # HTTPError: 400 Bad Request from https://upload.pypi.org/legacy/
       # Only one sdist may be uploaded per release.
-      # Keep *.zip file here.
       - name: Remove duplicated sdist
-        run: rm ./dist/*.tar.gz
+        run: rm ./dist/*.zip
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@master
