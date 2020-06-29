@@ -1,23 +1,37 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
+import os
 from setuptools import find_packages, setup
 
 EXCLUDE_FROM_PACKAGES = ["build", "dist", "test"]
 
+
+def get_version(fname):
+    if os.path.exists(fname):
+        with open(fname, 'r') as f:
+            version = f.readline().strip()
+    else:
+        version = 'alpha'
+
+    return version
+
 def load_requirements(fname):
     try:
         from pip._internal.req import parse_requirements
+        reqs = parse_requirements(fname, session=False)
+        requirements = [str(ir.requirement) for ir in reqs]
     except ImportError:
         from pip.req import parse_requirements
-    reqs = parse_requirements(fname, session="test")
-    return [str(ir.req) for ir in reqs]
+        reqs = parse_requirements(fname, session=False)
+        requirements = [str(ir.req) for ir in reqs]
+
+    return requirements
 
 
 setup(
     name="pdf2docx",    
-    version="1.0.0",
+    version=get_version('version.txt'),
     keywords = ["pdf-to-word", "pdf-to-docx"],
     description="parse PDF files to docx",
     long_description = "parse PDF file with PyMuPDF and generate docx with python-docx",
