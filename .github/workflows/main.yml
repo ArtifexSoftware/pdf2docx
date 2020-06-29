@@ -99,7 +99,7 @@ jobs:
         uses: actions/checkout@v2
 
       # download artifacts from job: build_and_test
-      - name: Download package from build_and_test
+      - name: Download artifacts from build_and_test
         uses: actions/download-artifact@v2
         with:
           name: dist
@@ -124,3 +124,29 @@ jobs:
           name: dist
           path: ./dist/*.whl
 
+  # -----------------------------------------------------------
+  # publish distribution on tags
+  # -----------------------------------------------------------
+  publish:
+    runs-on: ubuntu-latest
+
+    # Run this job after build_and_test and release completes successfully
+    needs: [build_and_test, release]
+
+    # trigger this job only on tags
+    if: startsWith(github.ref, 'refs/tags')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Download wheel file from release
+        uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.PYPI_PASSWORD }}
