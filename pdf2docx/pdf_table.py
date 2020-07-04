@@ -166,30 +166,33 @@ def parse_table_structure_from_blocks(layout, **kwargs):
         Ensure no horizontally aligned blocks in each column, so that these blocks can be converted to
         paragraphs consequently in docx.
         
-        Table may exist if:
-            - lines in blocks are not connected sequently
-            - multi-blocks are in a same row (horizontally aligned)
+        Table may exist on the following two conditions:
+            - (a) lines in blocks are not connected sequently -> determined by current block only
+            - (b) multi-blocks are in a same row (horizontally aligned) -> determined by two adjacent blocks
     '''    
     if len(layout['blocks'])<=1: return False    
 
     table_lines = []
-    new_line = False
+    new_line = True
     tables = []
     num = len(layout['blocks'])
     for i in range(num):
         block = layout['blocks'][i]
         next_block = layout['blocks'][i+1] if i<num-1 else {}
         
-        # lines in current block are not connected sequently?
-        if is_discrete_lines_in_block(block):
+        # there is gap between these two criteria, so consider condition (a) only if if it's the first block in new row
+        # (a) lines in current block are connected sequently?
+        # yes, counted as table lines
+        if new_line and is_discrete_lines_in_block(block): 
             table_lines.extend( _collect_table_lines(block) )
             
             # update table / line status
             new_line = False
             table_end = False
 
-        # then, check the layout with next block: in a same row?
-        elif utils.is_horizontal_aligned(block['bbox'], next_block.get('bbox', None)):
+        # (b) multi-blocks are in a same row: check layout with next block?
+        # yes, add both current and next blocks
+        if utils.is_horizontal_aligned(block['bbox'], next_block.get('bbox', None)):
             # if it's start of new table row: add the first block
             if new_line: 
                 table_lines.extend( _collect_table_lines(block) )
@@ -201,6 +204,7 @@ def parse_table_structure_from_blocks(layout, **kwargs):
             new_line = False
             table_end = False
 
+        # no, consider to start a new row
         else:
             # table end 
             # - if it's a text line, i.e. no more than one block in a same line
