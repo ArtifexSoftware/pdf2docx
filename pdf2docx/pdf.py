@@ -170,8 +170,9 @@ def page_margin(layout):
     # right margin
     x_max = max(map(lambda x: x[2], list_bbox))
     w, h = layout['width'], layout['height']
-    right = min(w-x_max, left)
-    right = max(right, 0.0)
+    right = w-x_max-utils.DM*2.0 # consider tolerance: leave more free space
+    right = min(right, left)     # symmetry margin if necessary
+    right = max(right, 0.0)      # avoid negative margin
 
     # top/bottom margin
     top = min(map(lambda x: x[1], list_bbox))
