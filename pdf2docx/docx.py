@@ -141,8 +141,7 @@ def make_paragraph(p, block, X0, X1):
                 if 'image' in span:
                     pf.line_spacing = 1.05
 
-            # break line or word wrap?
-            # new line by default
+            # break line? new line by default
             line_break = True
 
             # no more lines after last line
@@ -152,24 +151,6 @@ def make_paragraph(p, block, X0, X1):
             # do not break line if they're indeed in same line
             elif utils.in_same_row(block['lines'][i+1]['bbox'], line['bbox']):
                 line_break = False
-            
-            # now, we have two lines, check whether word wrap or line break
-            else:                
-                # word wrap if rest space of this line can't accommodate even one word of next line span
-                # bbox of first span in next line
-                next_span = block['lines'][i+1]['spans'][0]
-                required_space = next_span['bbox'][2] - next_span['bbox'][0] # width of whole span
-
-                # calculate first word length approximately for text span
-                if 'image' not in next_span:                    
-                    words = next_span['text'].strip()
-                    if words:
-                        word = words.split(' ')[0]
-                        required_space *= len(word) / len(words)
-
-                free_space = X1-line['bbox'][2]
-                if required_space >= free_space:
-                    line_break = False
             
             if line_break:
                 p.add_run('\n')

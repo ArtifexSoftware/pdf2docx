@@ -54,6 +54,10 @@ def parse_text_format(layout, **kwargs):
                 if _parse_text_format(cell['blocks'], layout['rects']):
                     anything_changed = True
 
+    # some text blocks are assign to cell if any table blocks exist, so it's also counted as text format changed
+    if tables:
+        anything_changed = True
+
     return anything_changed
 
 

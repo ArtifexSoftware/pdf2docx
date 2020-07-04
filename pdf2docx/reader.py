@@ -98,24 +98,21 @@ class Reader:
         ''' raw dict of PDF page retrieved with PyMuPDF, and with rectangles included.
         '''
         # raw layout
-        layout = page.getText('rawdict')
-
-        # calculate page margin
-        layout['margin'] = pdf.page_margin(layout)
-
+        raw_layout = page.getText('rawdict')
+        
         # rectangles: appended to raw layout
-        layout['rects'] = self.rects(page)
-
+        raw_layout['rects'] = self.rects(page)
+        
         # plot raw layout
         if self.debug_mode:
             # new section for current pdf page
-            pdf_debug.new_page_section(self._debug_doc, layout, f'Page {page.number}')
+            pdf_debug.new_page_section(self._debug_doc, raw_layout, f'Page {page.number}')
 
-            # initial layout            
-            pdf_debug.plot_layout(self._debug_doc, layout, 'Original Text Blocks')
-            pdf_debug.plot_rectangles(self._debug_doc, layout, 'Original Rectangle Shapes')
+            # initial layout
+            pdf_debug.plot_layout(self._debug_doc, raw_layout, 'Original Text Blocks')
+            pdf_debug.plot_rectangles(self._debug_doc, raw_layout, 'Original Rectangle Shapes')
 
-        return layout
+        return raw_layout
 
 
     def parse(self, page):
@@ -127,9 +124,9 @@ class Reader:
                 filename: pdf filename for the plotted layout
         '''
         # page source
-        layout = self.layout(page)        
+        layout = self.layout(page)
 
-        # parse page
+        # parse page: text/table/layout format
         pdf.layout(layout, **self.debug_kwargs)
 
         # save layout plotting as pdf file

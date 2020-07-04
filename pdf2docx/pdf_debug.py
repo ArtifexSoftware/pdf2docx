@@ -133,21 +133,22 @@ def _new_page_with_margin(doc, layout, title):
     w, h = layout['width'], layout['height']
     page = doc.newPage(width=w, height=h)
     
-    # page margin must be calculated already
-    blue = utils.getColor('blue')
-    args = {
-        'color': blue,
-        'width': 0.5
-    }
-    dL, dR, dT, dB = layout['margin']
-    page.drawLine((dL, 0), (dL, h), **args) # left border
-    page.drawLine((w-dR, 0), (w-dR, h), **args) # right border
-    page.drawLine((0, dT), (w, dT), **args) # top
-    page.drawLine((0, h-dB), (w, h-dB), **args) # bottom
+    # plot borders if page margin is calculated
+    if 'margin' in layout:
+        blue = utils.getColor('blue')
+        args = {
+            'color': blue,
+            'width': 0.5
+        }
+        dL, dR, dT, dB = layout['margin']
+        page.drawLine((dL, 0), (dL, h), **args) # left border
+        page.drawLine((w-dR, 0), (w-dR, h), **args) # right border
+        page.drawLine((0, dT), (w, dT), **args) # top
+        page.drawLine((0, h-dB), (w, h-dB), **args) # bottom
 
-    # plot title within the top margin
+    # plot title at the top-left corner
     gray = utils.getColor('gray')
-    page.insertText((dL, dT*0.66), title, color=gray, fontsize=dT/3.0)    
+    page.insertText((5, 16), title, color=gray, fontsize=15)
     
     return page
 

@@ -76,6 +76,9 @@ def layout(layout, **kwargs):
     # preprocessing, e.g. change block order, clean negative block, 
     # get span text by joining chars
     preprocessing(layout, **kwargs)
+
+    # calculate page margin based on preprocessed layout
+    page_margin(layout)
    
     # parse table blocks: 
     #  - table structure/format recognized from rectangles
@@ -167,8 +170,9 @@ def page_margin(layout):
     # right margin
     x_max = max(map(lambda x: x[2], list_bbox))
     w, h = layout['width'], layout['height']
-    right = min(w-x_max, left)
-    right = max(right, 0.0)
+    right = w-x_max-utils.DM*2.0 # consider tolerance: leave more free space
+    right = min(right, left)     # symmetry margin if necessary
+    right = max(right, 0.0)      # avoid negative margin
 
     # top/bottom margin
     top = min(map(lambda x: x[1], list_bbox))
@@ -180,14 +184,12 @@ def page_margin(layout):
     bottom *= 0.5
 
     # use normal margin if calculated margin is large enough
-    margin = (
+    layout['margin'] = (
         min(utils.ITP, left), 
         min(utils.ITP, right), 
         min(utils.ITP, top), 
         min(utils.ITP, bottom)
         )
-
-    return margin
 
 
 def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
