@@ -170,7 +170,12 @@ def parse_table_structure_from_blocks(layout, **kwargs):
             - (a) lines in blocks are not connected sequently -> determined by current block only
             - (b) multi-blocks are in a same row (horizontally aligned) -> determined by two adjacent blocks
     '''    
-    if len(layout['blocks'])<=1: return False    
+    if len(layout['blocks'])<=1: return False
+    
+    # horizontal range of table
+    left, right, *_ = layout['margin']
+    X0 = left
+    X1 = layout['width'] - right
 
     table_lines = []
     new_line = True
@@ -222,7 +227,7 @@ def parse_table_structure_from_blocks(layout, **kwargs):
         # end of current table
         if table_lines and table_end: 
             # parse borders based on contents in cell
-            rects = _border_rects_from_table_lines(table_lines)
+            rects = _border_rects_from_table_lines(table_lines, X0, X1)
 
             # parse table
             table = _parse_table_structure_from_rects(rects)
@@ -513,15 +518,19 @@ def _collect_table_lines(block):
     return res
         
 
-def _border_rects_from_table_lines(bbox_lines):
-    '''Construct border rects based on contents in table cells.'''
+def _border_rects_from_table_lines(bbox_lines, X0, X1):
+    ''' Construct border rects based on contents in table cells.
+        Args:
+          - X0, X1: default left and right borders of table
+    '''
     rects = []
 
     # boundary box (considering margin) of all line box
+
     margin = 2.0
-    x0 = min([bbox[0] for bbox in bbox_lines]) - margin
+    x0 = X0 - margin
     y0 = min([bbox[1] for bbox in bbox_lines]) - margin
-    x1 = max([bbox[2] for bbox in bbox_lines]) + margin
+    x1 = X1 + margin
     y1 = max([bbox[3] for bbox in bbox_lines]) + margin    
     border_bbox = (x0, y0, x1, y1)
 
