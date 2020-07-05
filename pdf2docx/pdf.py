@@ -159,7 +159,8 @@ def page_margin(layout):
     '''
     # return normal page margin if no blocks exist
     if not layout['blocks']:
-        return (utils.ITP, ) * 4 # 1 Inch = 72 pt
+        layout['margin'] = (utils.ITP, ) * 4 # 1 Inch = 72 pt
+        return
 
     # check candidates for left margin:
     list_bbox = list(map(lambda x: x['bbox'], layout['blocks']))
