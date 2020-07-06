@@ -270,8 +270,12 @@ def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
             if free_space<=0:
                 block['before_space'] = para_space+free_space-utils.DM*2.0
 
-        # ref (paragraph) to current: set after-space for ref paragraph        
-        elif is_text_block(ref_block):
+        # if ref to current (image): set before-space for paragraph
+        elif is_image_block(block):
+            block['before_space'] = para_space
+
+        # ref (paragraph/image) to current: set after-space for ref paragraph        
+        elif is_text_block(ref_block) or is_image_block(ref_block):
             ref_block['after_space'] = para_space
 
         # situation with very low probability, e.g. table to table
