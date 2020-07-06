@@ -231,9 +231,13 @@ def parse_table_structure_from_blocks(layout, **kwargs):
 
             # parse table
             table = _parse_table_structure_from_rects(rects)
+
+            # ignore table if contains only one cell
             if table: 
-                set_implicit_table_block(table)
-                tables.append(table)
+                rows = table['cells']
+                if len(rows)>1 or len(rows[0])>1:
+                    set_implicit_table_block(table)
+                    tables.append(table)
 
             # reset table_blocks
             table_lines = []
