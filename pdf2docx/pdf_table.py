@@ -47,7 +47,7 @@ Data structure for table block recognized from rectangle shapes and text blocks:
 import fitz
 from . import utils
 from .pdf_debug import debug_plot
-from .pdf_shape import (set_cell_border, set_cell_shading, is_cell_border, is_cell_shading)
+from .pdf_shape import (set_cell_border, set_cell_shading, is_cell_border, is_cell_shading, centerline_to_rect)
 from .pdf_block import (is_text_block, is_image_block, is_table_block, is_discrete_lines_in_block,
         set_implicit_table_block, set_explicit_table_block, merge_blocks)
 
@@ -527,10 +527,7 @@ def _border_rects_from_table_lines(bbox_lines, X0, X1):
         Args:
           - X0, X1: default left and right borders of table
     '''
-    rects = []
-
     # boundary box (considering margin) of all line box
-
     margin = 2.0
     x0 = X0 - margin
     y0 = min([bbox[1] for bbox in bbox_lines]) - margin
@@ -548,10 +545,16 @@ def _border_rects_from_table_lines(bbox_lines, X0, X1):
 
     # centerline of inner borders
     inner_borders = _borders_from_bboxes(bbox_lines, border_bbox)
+    borders.extend(inner_borders)
     
     # all centerlines to rectangle shapes
-    borders.extend(inner_borders)
-    rects = _centerline_to_rect(borders, width=0.0) # no border for implicit table
+    rects = []
+    color = utils.RGB_value((1,1,1))
+    for border in borders:        
+        rect = centerline_to_rect(border, color, width=0.0) # no border for implicit table
+        if not rect: continue
+        set_cell_border(rect) # set border style
+        rects.append(rect)
 
     return rects
 
@@ -660,24 +663,6 @@ def _row_borders_from_bboxes(bboxes):
             rows_rects.append(fitz.Rect(bbox))
 
     return rows_bboxes, rows_rects
-
-
-def _centerline_to_rect(borders, width=2.0):
-    ''' convert centerline to rectangle shape '''
-    rects = []
-    h = width / 2.0
-    for (x0, y0, x1, y1) in borders:
-        # consider horizontal or vertical line only
-        if x0==x1 or y0==y1:
-            rect = {
-                'type': -1,
-                'bbox': (x0-h, y0-h, x1+h, y1+h),
-                'color': utils.RGB_value((1,1,1))
-            }
-            set_cell_border(rect)
-            rects.append(rect)
-
-    return rects
 
 
 def _get_rect_with_bbox(bbox, rects, threshold):
