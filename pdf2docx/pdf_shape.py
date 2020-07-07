@@ -39,9 +39,10 @@ def rects_from_source(xref_stream, height):
         --------
         
         Refer to:
-        - Appendix A from PDF reference for associated operators:
-          https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdf_reference_archive/pdf_reference_1-7.pdf
-        - https://github.com/pymupdf/PyMuPDF/issues/263
+            - PDF reference https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdf_reference_archive/pdf_reference_1-7.pdf
+                - Appendix A for associated operators
+                - Section 8.5 Path COnstruction and Painting
+            - https://github.com/pymupdf/PyMuPDF/issues/263
 
         typical mark of rectangle in xref stream:
             /P<</MCID 0>> BDC
@@ -97,7 +98,9 @@ def rects_from_source(xref_stream, height):
     # check xref stream word by word (line always changes)    
     begin_text_setting = False    
     lines = xref_stream.split()
+    path = []
     for (i, line) in enumerate(lines):
+
         # skip any lines between `BT` and `ET`, 
         # since text setting has no effects on shape        
         if line=='BT':  # begin text
@@ -188,13 +191,17 @@ def rects_from_source(xref_stream, height):
             Y1 = height-Y1
 
             # filled rectangle: add it directly
-            if  lines[i+1] in ('f', 'f*'):
+            if  lines[i+1] in ('f', 'F', 'f*'):
                 rect = {
                     'type': -1,
                     'bbox': (X0, Y0, X1, Y1), 
                     'color': Wc
                 }
                 res.append(rect)
+
+            # clipping path: ignore
+            elif lines[i+1] in ( 'W', 'W*'):
+                pass
             
             # rectangle without filling: add each border as thin rectangles
             else:
@@ -209,23 +216,43 @@ def rects_from_source(xref_stream, height):
                     if rect: res.append(rect)
 
         # line is also considered as rectangle by adding a height
-        elif line=='m' and lines[i+3]=='l':
-            # start point
-            x_s, y_s = map(float, lines[i-2:i])
-            # end point
-            x_e, y_e = map(float, lines[i+1:i+3])
+        # m, l to draw path
+        elif line=='m' or line=='l':
+            path.append(lines[i-2:i])
 
-            # transformate to original PDF CS
-            sx, sy, tx, ty = WCS            
-            x0 = sx*x_s + tx
-            y0 = sy*y_s + ty
-            x1 = sx*x_e + tx
-            y1 = sy*y_e + ty
+        # stroke the path
+        elif line=='S':
+            # at least two points
+            if len(path)<2: pass
 
-            # convert line to rectangle with a default height 0.5pt
-            centerline = (x0, height-y0, x1, height-y1) # bbox in PyMuPDF coordinates system
-            rect = centerline_to_rect(centerline, Wc, width=0.5)
-            if rect: res.append(rect)
+            for j in range(len(path)-1):
+                # start point
+                x_s, y_s = map(float, path[j])
+                # end point
+                x_e, y_e = map(float, path[j+1])
+
+                # transformate to original PDF CS
+                sx, sy, tx, ty = WCS            
+                x0 = sx*x_s + tx
+                y0 = sy*y_s + ty
+                x1 = sx*x_e + tx
+                y1 = sy*y_e + ty
+
+                # pdf to PyMuPDF CS
+                y0 = height-y0
+                y1 = height-y1
+
+                # ensure from top-left to bottom-right
+                if x0>x1 or y0>y1:
+                    x0, y0, x1, y1 = x1, y1, x0, y0
+
+                # convert line to rectangle with a default height 0.5pt
+                centerline = (x0, y0, x1, y1)
+                rect = centerline_to_rect(centerline, Wc, width=0.5)
+                if rect: res.append(rect)
+
+            # reset path
+            path = []
  
     return res
 
