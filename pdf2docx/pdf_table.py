@@ -269,7 +269,7 @@ def parse_table_content(layout, **kwargs):
         # collect blocks contained in table region
         for table, blocks_in_table in zip(tables, blocks_in_tables):
             fitz_table = fitz.Rect(table['bbox'])
-            if fitz_table.contains(block['bbox']):
+            if fitz_table.intersects(block['bbox']):
                 blocks_in_table.append(block)
                 break
         # normal blocks
