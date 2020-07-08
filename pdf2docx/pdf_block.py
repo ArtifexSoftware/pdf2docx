@@ -148,8 +148,44 @@ def merge_blocks(blocks):
                 max(res[-1]['bbox'][2], text_block['bbox'][2]),
                 max(res[-1]['bbox'][3], text_block['bbox'][3])
                 )
+    
+    # sort lines in block
+    for block in res:
+        sort_lines(block) 
 
     return res
+
+
+def sort_lines(block):
+    ''' Sort lines in block.
+        In most cases, lines in block are already in reading order, i.e. from top to bottom, from left to right.
+        However, regarding two elements in same lines, from left to right is a higher priority.
+        In the following example, A should come before B.
+                        +-----------+
+            +---------+  |           |
+            |   A     |  |     B     |
+            +---------+  +-----------+
+    '''
+    # split lines in separate row
+    lines_in_rows = [] # [ [lines in row1], [...] ]
+    for line in block.get('lines', []):
+
+        # add lines to a row group if not in same row with previous line
+        if not lines_in_rows or not utils.in_same_row(line['bbox'], lines_in_rows[-1][-1]['bbox']):
+            lines_in_rows.append([line])
+        
+        # otherwise, append current row group
+        else:
+            lines_in_rows[-1].append(line)
+    
+    # sort lines in each row
+    lines = []
+    for row in lines_in_rows:
+        row.sort(key=lambda line: line['bbox'][0])
+        lines.extend(row)
+
+    block['lines'] = lines
+
 
 
 def convert_image_to_text_block(image):
