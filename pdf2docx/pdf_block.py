@@ -157,15 +157,22 @@ def merge_blocks(blocks):
 
 
 def sort_lines(block):
-    ''' Sort lines in block.
-        In most cases, lines in block are already in reading order, i.e. from top to bottom, from left to right.
-        However, regarding two elements in same lines, from left to right is a higher priority.
+    ''' Sort lines in block.        
+
         In the following example, A should come before B.
                         +-----------+
             +---------+  |           |
             |   A     |  |     B     |
             +---------+  +-----------+
+
+        Steps:
+            (a) sort lines in reading order, i.e. from top to bottom, from left to right.
+            (b) group lines in row
+            (c) sort lines in row: from left to right
     '''
+    # sort in reading order
+    block['lines'].sort(key=lambda block: (block['bbox'][1], block['bbox'][0]))
+
     # split lines in separate row
     lines_in_rows = [] # [ [lines in row1], [...] ]
     for line in block.get('lines', []):
