@@ -97,8 +97,12 @@ def preprocessing(layout, **kwargs):
     '''preprocessing for the raw layout of PDF page'''
 
     # remove negative blocks
-    blocks = list(
-        filter( lambda block: all(x>0 for x in block['bbox']), layout['blocks']))
+    blocks = list(filter(
+        lambda block: all(x>0 for x in block['bbox']), layout['blocks']))
+
+    # remove blocks with transformed text: text direction is not (1, 0)
+    blocks = list(filter(
+        lambda block: 'lines' not in block or all(line['dir'][0]==1.0 for line in block['lines']), layout['blocks']))
 
     # remove overlap blocks: no floating elements are supported
     blocks = remove_floating_blocks(blocks)
