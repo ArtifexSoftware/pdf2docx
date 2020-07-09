@@ -112,7 +112,7 @@ def make_paragraph(p, block, X0, X1):
     if is_image_block(block):
         # left indent implemented with tab
         pos = block['bbox'][0]-X0
-        if abs(pos) > utils.DM:
+        if pos > utils.DM:
             pf.tab_stops.add_tab_stop(Pt(pos))
             p.add_run().add_tab()
         # create image with bytes data stored in block.
@@ -128,7 +128,7 @@ def make_paragraph(p, block, X0, X1):
 
             # left indent implemented with tab
             pos = line['bbox'][0]-X0
-            if abs(pos) > utils.DM:
+            if pos > utils.DM:
                 pf.tab_stops.add_tab_stop(Pt(pos))
                 p.add_run().add_tab()
 

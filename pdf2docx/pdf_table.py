@@ -44,10 +44,11 @@ Data structure for table block recognized from rectangle shapes and text blocks:
 
 '''
 
+import copy
 import fitz
 from . import utils
 from .pdf_debug import debug_plot
-from .pdf_shape import (set_cell_border, set_cell_shading, is_cell_border, is_cell_shading)
+from .pdf_shape import (set_cell_border, set_cell_shading, is_cell_border, is_cell_shading, centerline_to_rect)
 from .pdf_block import (is_text_block, is_image_block, is_table_block, is_discrete_lines_in_block,
         set_implicit_table_block, set_explicit_table_block, merge_blocks)
 
@@ -231,9 +232,13 @@ def parse_table_structure_from_blocks(layout, **kwargs):
 
             # parse table
             table = _parse_table_structure_from_rects(rects)
+
+            # ignore table if contains only one cell
             if table: 
-                set_implicit_table_block(table)
-                tables.append(table)
+                rows = table['cells']
+                if len(rows)>1 or len(rows[0])>1:
+                    set_implicit_table_block(table)
+                    tables.append(table)
 
             # reset table_blocks
             table_lines = []
@@ -265,7 +270,7 @@ def parse_table_content(layout, **kwargs):
         # collect blocks contained in table region
         for table, blocks_in_table in zip(tables, blocks_in_tables):
             fitz_table = fitz.Rect(table['bbox'])
-            if fitz_table.contains(block['bbox']):
+            if fitz_table.intersects(block['bbox']):
                 blocks_in_table.append(block)
                 break
         # normal blocks
@@ -278,7 +283,16 @@ def parse_table_content(layout, **kwargs):
         for row in table['cells']:
             for cell in row:
                 if not cell: continue
-                blocks_in_cell = _assign_blocks_to_cell(cell, blocks_in_table)
+
+                # check candidate blocks
+                blocks_in_cell = []
+                fitz_cell = fitz.Rect(cell['bbox'])
+                for block in blocks_in_table:
+                    cell_block = _assign_block_to_cell(block, fitz_cell)
+                    if cell_block:
+                        blocks_in_cell.append(cell_block)
+
+                # merge blocks if contained blocks found
                 if blocks_in_cell: 
                     cell_blocks = merge_blocks(blocks_in_cell)
                     cell['blocks'].extend(cell_blocks)
@@ -523,10 +537,7 @@ def _border_rects_from_table_lines(bbox_lines, X0, X1):
         Args:
           - X0, X1: default left and right borders of table
     '''
-    rects = []
-
     # boundary box (considering margin) of all line box
-
     margin = 2.0
     x0 = X0 - margin
     y0 = min([bbox[1] for bbox in bbox_lines]) - margin
@@ -544,10 +555,16 @@ def _border_rects_from_table_lines(bbox_lines, X0, X1):
 
     # centerline of inner borders
     inner_borders = _borders_from_bboxes(bbox_lines, border_bbox)
+    borders.extend(inner_borders)
     
     # all centerlines to rectangle shapes
-    borders.extend(inner_borders)
-    rects = _centerline_to_rect(borders, width=0.0) # no border for implicit table
+    rects = []
+    color = utils.RGB_value((1,1,1))
+    for border in borders:        
+        rect = centerline_to_rect(border, color, width=0.0) # no border for implicit table
+        if not rect: continue
+        set_cell_border(rect) # set border style
+        rects.append(rect)
 
     return rects
 
@@ -658,24 +675,6 @@ def _row_borders_from_bboxes(bboxes):
     return rows_bboxes, rows_rects
 
 
-def _centerline_to_rect(borders, width=2.0):
-    ''' convert centerline to rectangle shape '''
-    rects = []
-    h = width / 2.0
-    for (x0, y0, x1, y1) in borders:
-        # consider horizontal or vertical line only
-        if x0==x1 or y0==y1:
-            rect = {
-                'type': -1,
-                'bbox': (x0-h, y0-h, x1+h, y1+h),
-                'color': utils.RGB_value((1,1,1))
-            }
-            set_cell_border(rect)
-            rects.append(rect)
-
-    return rects
-
-
 def _get_rect_with_bbox(bbox, rects, threshold):
     '''get rect within given bbox'''
     target_rect = fitz.Rect(bbox)
@@ -777,35 +776,86 @@ def _check_merged_cells(ref, borders, direction='row'):
     return res
 
 
-def _assign_blocks_to_cell(cell, blocks):
-    ''' Get blocks contained in cell bbox.
-        Note: If a block is partly contained in a cell, the contained lines should be extracted
-              as a new block and assign to the cell.
+def _assign_block_to_cell(block, fitz_bbox):
+    ''' Get part of block contained in bbox. 
+        Note: If the block is partly contained in a cell, it must deep into line -> span -> char.
     '''
-    res = []
-    fitz_cell = fitz.Rect(cell['bbox'])
-    for block in blocks:
-        # add it directly if fully contained in a cell
-        if fitz_cell.contains(block['bbox']):
-            res.append(block)
-        
-        # add the contained lines if any intersection
-        elif fitz_cell.intersects(block['bbox']):
-            lines = []
-            bbox = fitz.Rect()
-            # check each line
-            for line in block.get('lines', []): # no lines if image block
-                # contains and intersects does not work since tolerance may exists
-                if utils.get_main_bbox(cell['bbox'], line['bbox'], 0.5):
-                    lines.append(line)
-                    bbox = bbox | fitz.Rect(line['bbox'])
-            
-            # join contained lines back to block
-            if lines:
-                res.append({
-                    'type': 0,
-                    'bbox': (bbox.x0, bbox.y0, bbox.x1, bbox.y1),
-                    'lines': lines
-                })
-            
+    res = None
+
+    # add block directly if fully contained in cell
+    if fitz_bbox.contains(block['bbox']):
+        res = block
+
+    # otherwise, further check lines in block
+    elif fitz_bbox.intersects(block['bbox']):
+        block_bbox = fitz.Rect()
+        block_lines = []
+
+        for line in block.get('lines', []): # no lines if image block                
+            cell_line = _assign_line_to_bbox(line, fitz_bbox)
+            if cell_line:
+                block_lines.append(cell_line)
+                block_bbox = block_bbox | cell_line['bbox']
+
+        # update block
+        if block_lines:
+            res = copy.deepcopy(block)
+            res['bbox'] = (block_bbox.x0, block_bbox.y0, block_bbox.x1, block_bbox.y1)
+            res['lines'] = block_lines
+
     return res
+
+
+def _assign_line_to_bbox(line, fitz_bbox):
+    ''' Get line spans contained in bbox. '''
+    res = None
+
+    # add line directly if fully contained in bbox
+    if fitz_bbox.contains(line['bbox']):
+        res = line
+    
+    # further check spans in line
+    elif fitz_bbox.intersects(line['bbox']):
+        line_bbox = fitz.Rect()
+        line_spans = []
+
+        for span in line.get('spans', []):
+            cell_span = _assign_span_to_bbox(span, fitz_bbox)
+            if cell_span:
+                line_spans.append(cell_span)
+                line_bbox = line_bbox | cell_span['bbox']
+        
+        # update line
+        if line_spans:
+            res = copy.deepcopy(line)
+            res['bbox'] = (line_bbox.x0, line_bbox.y0, line_bbox.x1, line_bbox.y1)
+            res['spans'] = line_spans
+
+    return res
+
+def _assign_span_to_bbox(span, fitz_bbox):
+    ''' Get span chars contained in bbox. '''
+    res = None
+
+    # add span directly if fully contained in bbox
+    if fitz_bbox.contains(span['bbox']):
+        res = span
+
+    # furcher check chars in span
+    elif fitz_bbox.intersects(span['bbox']):
+        span_chars = []
+        span_bbox = fitz.Rect()
+        for char in span.get('chars', []):
+            if utils.get_main_bbox(char['bbox'], fitz_bbox, 0.2):
+                span_chars.append(char)
+                span_bbox = span_bbox | char['bbox']
+
+        # update span
+        if span_chars:
+            res = copy.deepcopy(span)
+            res['chars'] = span_chars
+            res['bbox'] = (span_bbox.x0, span_bbox.y0, span_bbox.x1, span_bbox.y1)
+            res['text'] = ''.join([c['c'] for c in span_chars])
+
+    return res
+        

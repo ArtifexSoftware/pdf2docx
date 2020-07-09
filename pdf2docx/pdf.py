@@ -97,8 +97,12 @@ def preprocessing(layout, **kwargs):
     '''preprocessing for the raw layout of PDF page'''
 
     # remove negative blocks
-    blocks = list(
-        filter( lambda block: all(x>0 for x in block['bbox']), layout['blocks']))
+    blocks = list(filter(
+        lambda block: all(x>0 for x in block['bbox']), layout['blocks']))
+
+    # remove blocks with transformed text: text direction is not (1, 0)
+    blocks = list(filter(
+        lambda block: 'lines' not in block or all(line['dir'][0]==1.0 for line in block['lines']), layout['blocks']))
 
     # remove overlap blocks: no floating elements are supported
     blocks = remove_floating_blocks(blocks)
@@ -159,7 +163,8 @@ def page_margin(layout):
     '''
     # return normal page margin if no blocks exist
     if not layout['blocks']:
-        return (utils.ITP, ) * 4 # 1 Inch = 72 pt
+        layout['margin'] = (utils.ITP, ) * 4 # 1 Inch = 72 pt
+        return
 
     # check candidates for left margin:
     list_bbox = list(map(lambda x: x['bbox'], layout['blocks']))
@@ -269,8 +274,12 @@ def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
             if free_space<=0:
                 block['before_space'] = para_space+free_space-utils.DM*2.0
 
-        # ref (paragraph) to current: set after-space for ref paragraph        
-        elif is_text_block(ref_block):
+        # if ref to current (image): set before-space for paragraph
+        elif is_image_block(block):
+            block['before_space'] = para_space
+
+        # ref (paragraph/image) to current: set after-space for ref paragraph        
+        elif is_text_block(ref_block) or is_image_block(ref_block):
             ref_block['after_space'] = para_space
 
         # situation with very low probability, e.g. table to table
