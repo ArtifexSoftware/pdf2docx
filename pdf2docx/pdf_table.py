@@ -44,6 +44,7 @@ Data structure for table block recognized from rectangle shapes and text blocks:
 
 '''
 
+import copy
 import fitz
 from . import utils
 from .pdf_debug import debug_plot
@@ -282,7 +283,16 @@ def parse_table_content(layout, **kwargs):
         for row in table['cells']:
             for cell in row:
                 if not cell: continue
-                blocks_in_cell = _assign_blocks_to_cell(cell, blocks_in_table)
+
+                # check candidate blocks
+                blocks_in_cell = []
+                fitz_cell = fitz.Rect(cell['bbox'])
+                for block in blocks_in_table:
+                    cell_block = _assign_block_to_cell(block, fitz_cell)
+                    if cell_block:
+                        blocks_in_cell.append(cell_block)
+
+                # merge blocks if contained blocks found
                 if blocks_in_cell: 
                     cell_blocks = merge_blocks(blocks_in_cell)
                     cell['blocks'].extend(cell_blocks)
@@ -766,35 +776,86 @@ def _check_merged_cells(ref, borders, direction='row'):
     return res
 
 
-def _assign_blocks_to_cell(cell, blocks):
-    ''' Get blocks contained in cell bbox.
-        Note: If a block is partly contained in a cell, the contained lines should be extracted
-              as a new block and assign to the cell.
+def _assign_block_to_cell(block, fitz_bbox):
+    ''' Get part of block contained in bbox. 
+        Note: If the block is partly contained in a cell, it must deep into line -> span -> char.
     '''
-    res = []
-    fitz_cell = fitz.Rect(cell['bbox'])
-    for block in blocks:
-        # add it directly if fully contained in a cell
-        if fitz_cell.contains(block['bbox']):
-            res.append(block)
-        
-        # add the contained lines if any intersection
-        elif fitz_cell.intersects(block['bbox']):
-            lines = []
-            bbox = fitz.Rect()
-            # check each line
-            for line in block.get('lines', []): # no lines if image block
-                # contains and intersects does not work since tolerance may exists
-                if utils.get_main_bbox(cell['bbox'], line['bbox'], 0.5):
-                    lines.append(line)
-                    bbox = bbox | fitz.Rect(line['bbox'])
-            
-            # join contained lines back to block
-            if lines:
-                res.append({
-                    'type': 0,
-                    'bbox': (bbox.x0, bbox.y0, bbox.x1, bbox.y1),
-                    'lines': lines
-                })
-            
+    res = None
+
+    # add block directly if fully contained in cell
+    if fitz_bbox.contains(block['bbox']):
+        res = block
+
+    # otherwise, further check lines in block
+    elif fitz_bbox.intersects(block['bbox']):
+        block_bbox = fitz.Rect()
+        block_lines = []
+
+        for line in block.get('lines', []): # no lines if image block                
+            cell_line = _assign_line_to_bbox(line, fitz_bbox)
+            if cell_line:
+                block_lines.append(cell_line)
+                block_bbox = block_bbox | cell_line['bbox']
+
+        # update block
+        if block_lines:
+            res = copy.deepcopy(block)
+            res['bbox'] = (block_bbox.x0, block_bbox.y0, block_bbox.x1, block_bbox.y1)
+            res['lines'] = block_lines
+
     return res
+
+
+def _assign_line_to_bbox(line, fitz_bbox):
+    ''' Get line spans contained in bbox. '''
+    res = None
+
+    # add line directly if fully contained in bbox
+    if fitz_bbox.contains(line['bbox']):
+        res = line
+    
+    # further check spans in line
+    elif fitz_bbox.intersects(line['bbox']):
+        line_bbox = fitz.Rect()
+        line_spans = []
+
+        for span in line.get('spans', []):
+            cell_span = _assign_span_to_bbox(span, fitz_bbox)
+            if cell_span:
+                line_spans.append(cell_span)
+                line_bbox = line_bbox | cell_span['bbox']
+        
+        # update line
+        if line_spans:
+            res = copy.deepcopy(line)
+            res['bbox'] = (line_bbox.x0, line_bbox.y0, line_bbox.x1, line_bbox.y1)
+            res['spans'] = line_spans
+
+    return res
+
+def _assign_span_to_bbox(span, fitz_bbox):
+    ''' Get span chars contained in bbox. '''
+    res = None
+
+    # add span directly if fully contained in bbox
+    if fitz_bbox.contains(span['bbox']):
+        res = span
+
+    # furcher check chars in span
+    elif fitz_bbox.intersects(span['bbox']):
+        span_chars = []
+        span_bbox = fitz.Rect()
+        for char in span.get('chars', []):
+            if utils.get_main_bbox(char['bbox'], fitz_bbox, 0.2):
+                span_chars.append(char)
+                span_bbox = span_bbox | char['bbox']
+
+        # update span
+        if span_chars:
+            res = copy.deepcopy(span)
+            res['chars'] = span_chars
+            res['bbox'] = (span_bbox.x0, span_bbox.y0, span_bbox.x1, span_bbox.y1)
+            res['text'] = ''.join([c['c'] for c in span_chars])
+
+    return res
+        
