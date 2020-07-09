@@ -124,6 +124,10 @@ def _parse_text_format(blocks, rects):
         # use each rectangle (a specific text format) to split line spans
         for rect in rects:
 
+            # a same style rect applies on only one block
+            if rect['type']!=-1:
+                continue
+
             # any intersection with current block?
             the_rect = fitz.Rect(rect['bbox'])
             if not block_rect.intersects(the_rect): continue
