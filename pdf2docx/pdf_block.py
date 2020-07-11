@@ -194,7 +194,6 @@ def sort_lines(block):
     block['lines'] = lines
 
 
-
 def convert_image_to_text_block(image):
     '''convert image block to text block: a span'''
     # convert image as a span in line
@@ -280,3 +279,12 @@ def _merge_lines_in_block(block):
 
     # update lines in block
     block['lines'] = new_lines
+
+
+def block_text(block):
+    '''get text content in block, joning each line with '\n'.'''
+    lines = []
+    for line in block.get('lines', []):
+        line_text = ''.join([span['text'] for span in line['spans']])
+        lines.append(line_text)
+    return '\n'.join(lines)

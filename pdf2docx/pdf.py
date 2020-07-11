@@ -49,9 +49,9 @@ Note: The length unit for each boundary box is pt, which is 1/72 Inch.
 
 import fitz
 from .pdf_debug import debug_plot
-from .pdf_table import parse_table
+from .pdf_table import (parse_explicit_table, parse_implicit_table)
 from .pdf_text import merge_inline_images, parse_text_format
-from .pdf_block import (is_text_block, is_image_block, is_table_block, remove_floating_blocks)
+from .pdf_block import (is_text_block, is_image_block, is_table_block, is_explicit_table_block, block_text, remove_floating_blocks)
 from . import utils
 
 
@@ -70,7 +70,7 @@ def layout(layout, **kwargs):
                     'debug': bool,
                     'doc': fitz document or None,
                     'filename': str
-                }            
+                }
     '''
 
     # preprocessing, e.g. change block order, clean negative block, 
@@ -81,15 +81,49 @@ def layout(layout, **kwargs):
     page_margin(layout)
    
     # parse table blocks: 
-    #  - table structure/format recognized from rectangles
+    #  - table structure/format recognized from rectangles    
+    parse_explicit_table(layout, **kwargs)
+    
     #  - cell contents extracted from text blocks
-    parse_table(layout, **kwargs)
+    parse_implicit_table(layout, **kwargs)
 
     # parse text format, e.g. highlight, underline
     parse_text_format(layout, **kwargs)
     
     # paragraph / line spacing
     parse_vertical_spacing(layout)
+
+
+def extract_tables(layout):
+    ''' extract content from explicit table.'''
+    # parsing explicit table
+    preprocessing(layout)
+    parse_explicit_table(layout)
+
+    # check table
+    tables = []
+    for table_block in filter(lambda block: is_explicit_table_block(block), layout['blocks']):
+        table = []
+        # check each row
+        for row_block in table_block['cells']:
+            row = []
+            # check each cell
+            for cell_block in row_block:
+                if cell_block:
+                    cell = '\n'.join([block_text(block) for block in cell_block['blocks']])
+                else:
+                    cell = None
+    
+                # add cell to row
+                row.append(cell)
+            
+            # add row to table
+            table.append(row)
+
+        # add to tables
+        tables.append(table)
+
+    return tables                    
 
 
 @debug_plot('Preprocessing', plot=False)

@@ -2,7 +2,9 @@
 Plot PDF layout for debug
 '''
 
+import json
 import fitz
+
 from . import utils
 from .pdf_shape import (is_cell_border, is_cell_shading)
 from .pdf_block import (is_text_block, is_image_block, is_table_block, is_implicit_table_block, is_explicit_table_block)
@@ -125,6 +127,22 @@ def new_page_section(doc, layout, title):
     gray = utils.getColor('gray')
     f = 10.0
     page.insertText((w/4.0, (h+h/f)/2.0), title, color=gray, fontsize=h/f)
+
+
+def serialize(layout, filename):
+    ''' Write layout to specified file. '''
+    # image content is in byte format, leading to TypeError: 
+    # Object of type bytes is not JSON serializable.
+    # So, create a user encoder to just remove such image content.
+    class LayoutEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj, bytes):
+                return '<image>'
+            return json.JSONEncoder.default(self, obj)
+
+    # write to file
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write(json.dumps(layout, cls=LayoutEncoder, indent=4))        
 
 
 def _new_page_with_margin(doc, layout, title):

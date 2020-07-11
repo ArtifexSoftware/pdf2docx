@@ -53,22 +53,17 @@ from .pdf_block import (is_text_block, is_image_block, is_table_block, is_discre
         set_implicit_table_block, set_explicit_table_block, merge_blocks)
 
 
-def parse_table(layout, **kwargs):
-    ''' parse table blocks: 
-        - table structure recognized from rectangles
-        - cell contents extracted from text blocks
-    '''
-    # -----------------------------------------------------
-    # table structure from rects
-    # -----------------------------------------------------
+def parse_explicit_table(layout, **kwargs):
+    '''Parse table structure recognized from rectangles.'''
     clean_rects(layout, **kwargs) # clean rects
     parse_table_structure_from_rects(layout, **kwargs)    
     parse_table_content(layout, **kwargs) # cell contents
 
-    # -----------------------------------------------------
-    # table structure from layout of text lines
-    # This MUST come after explicit tables are already detected.
-    # -----------------------------------------------------
+
+def parse_implicit_table(layout, **kwargs):
+    ''' Parse table structure recognized from text blocks.
+        This MUST come after explicit tables are already detected.
+    '''
     parse_table_structure_from_blocks(layout, **kwargs)    
     parse_table_content(layout, **kwargs) # cell contents
 
@@ -129,7 +124,7 @@ def clean_rects(layout, **kwargs):
 
 @debug_plot('Explicit Table Structure', plot=True, category='table')
 def parse_table_structure_from_rects(layout, **kwargs):
-    '''parse table structure from rectangle shapes'''    
+    '''parse table structure from rectangle shapes'''
     # group rects: each group may be a potential table
     groups = _group_rects(layout['rects'])
 
@@ -832,6 +827,7 @@ def _assign_line_to_bbox(line, fitz_bbox):
             res['spans'] = line_spans
 
     return res
+
 
 def _assign_span_to_bbox(span, fitz_bbox):
     ''' Get span chars contained in bbox. '''

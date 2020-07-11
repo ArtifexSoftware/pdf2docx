@@ -1,4 +1,5 @@
 import os
+
 from docx import Document
 import fitz
 
@@ -28,6 +29,9 @@ class Reader:
         path, filename = os.path.split(file_path)
         self._debug_doc_path = os.path.join(path, f'debug_{filename}')
         self._debug_doc = fitz.open() if debug else None
+
+        # to serialize layout for debug purpose
+        self._debug_layout_file = os.path.join(path, 'layout.json')
 
 
     def __getitem__(self, index):
@@ -95,7 +99,7 @@ class Reader:
 
     
     def layout(self, page):
-        ''' raw dict of PDF page retrieved with PyMuPDF, and with rectangles included.
+        ''' Raw dict of PDF page retrieved with PyMuPDF, and with rectangles included.
         '''
         # raw layout
         raw_layout = page.getText('rawdict')
@@ -116,12 +120,7 @@ class Reader:
 
 
     def parse(self, page):
-        ''' parse page layout
-
-            args:
-                page: current page
-                debug: plot layout for illustration if True            
-                filename: pdf filename for the plotted layout
+        ''' Parse page layout.
         '''
         # page source
         layout = self.layout(page)
@@ -129,15 +128,27 @@ class Reader:
         # parse page: text/table/layout format
         pdf.layout(layout, **self.debug_kwargs)
 
-        # save layout plotting as pdf file
-        self.save_debug_doc()
+        # debug:
+        # - save layout plotting as pdf file
+        # - write layout information
+        if self.debug_mode:
+            self._debug_doc.save(self._debug_doc_path)
+            pdf_debug.serialize(layout, self._debug_layout_file)
 
         return layout
 
-    
-    def save_debug_doc(self):
-        if self.debug_mode:
-            self._debug_doc.save(self._debug_doc_path)
+
+    def extract_tables(self, page):
+        ''' Extract table contents.
+        '''
+        # page source
+        layout = self.layout(page)
+
+        # extract tables
+        tables = pdf.extract_tables(layout)
+
+        return tables
+
     
     def close(self):
         self._doc.close()
