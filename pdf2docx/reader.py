@@ -95,7 +95,7 @@ class Reader:
 
     
     def layout(self, page):
-        ''' raw dict of PDF page retrieved with PyMuPDF, and with rectangles included.
+        ''' Raw dict of PDF page retrieved with PyMuPDF, and with rectangles included.
         '''
         # raw layout
         raw_layout = page.getText('rawdict')
@@ -116,12 +116,7 @@ class Reader:
 
 
     def parse(self, page):
-        ''' parse page layout
-
-            args:
-                page: current page
-                debug: plot layout for illustration if True            
-                filename: pdf filename for the plotted layout
+        ''' Parse page layout.
         '''
         # page source
         layout = self.layout(page)
@@ -133,6 +128,18 @@ class Reader:
         self.save_debug_doc()
 
         return layout
+
+
+    def extract_tables(self, page):
+        ''' Extract table contents.
+        '''
+        # page source
+        layout = self.layout(page)
+
+        # extract tables
+        tables = pdf.extract_tables(layout)
+
+        return tables
 
     
     def save_debug_doc(self):
