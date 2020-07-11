@@ -7,7 +7,7 @@ from pdf2docx.writer import Writer
 
 
 def parse(pdf_file, docx_file, start=0, end=None, pages=[]):
-    ''' Run the pdf2docx parser
+    ''' Run the pdf2docx parser.
     
         Args:
             pdf_file (str) : PDF filename to read from
@@ -40,6 +40,38 @@ def parse(pdf_file, docx_file, start=0, end=None, pages=[]):
     docx.save(docx_file)
     pdf.close()
     
+
+def extract_tables(pdf_file, start=0, end=None, pages=[]):
+    ''' Extract table content from pdf pages.
+    
+        Args:
+            pdf_file (str) : PDF filename to read from
+            start (int)    : first page to process, starting from zero
+            end (int)      : last page to process, starting from zero
+            pages (list)   : range of pages
+    '''
+
+    pdf = Reader(pdf_file)
+
+    # parsing arguments
+    pdf_len = len(pdf)
+    if pages: 
+        pdf_pages = [pdf[int(x)] for x in pages]
+    else:
+        end = end or pdf_len
+        pdf_pages = pdf[int(start):int(end)]
+
+    # process page by page
+    tables = []
+    for page in pdf_pages:
+        print(f"Processing {page.number}/{pdf_len-1}...")
+        page_tables = pdf.extract_tables(page)
+        tables.extend(page_tables)
+
+    pdf.close()
+
+    return tables
+
 
 def main():
     import fire
