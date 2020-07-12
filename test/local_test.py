@@ -3,7 +3,9 @@
 '''
 
 import os
-from pdf2docx.main import parse, extract_tables
+
+from pdf2docx.reader import Reader
+from pdf2docx.writer import Writer
 
 
 if __name__ == '__main__':
@@ -14,10 +16,23 @@ if __name__ == '__main__':
     pdf_file = os.path.join(output, f'{filename}.pdf')
     docx_file = os.path.join(output, f'{filename}.docx')
 
-    # convert pdf to docx
-    parse(pdf_file, docx_file, start=0, end=1)
+    pdf = Reader(pdf_file, debug=True)
+    docx = Writer()
 
-    # extract tables
-    tables = extract_tables(pdf_file, start=0, end=1)
-    for table in tables:
-        print(table)
+    # process page by page
+    for page in pdf[0:1]:
+
+        # parse layout
+        layout = pdf.parse(page)
+        
+        # extract tables
+        tables = pdf.extract_tables(page)
+        for table in tables:
+            print(table)
+
+        # create docx
+        docx.make_page(layout)
+
+    # save docx, close pdf
+    docx.save(docx_file)
+    pdf.close()

@@ -9,4 +9,4 @@ dist/
 *.txt
 
 debug_*.pdf
-raw.json
+layout.json
