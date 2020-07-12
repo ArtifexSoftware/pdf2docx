@@ -59,7 +59,7 @@ def is_discrete_lines_in_block(block, distance=25, threshold=3):
     if num==1: return False
 
     # check the count of discrete lines
-    cnt = 0
+    cnt = 1
     for i in range(num-1):
         bbox = block['lines'][i]['bbox']
         next_bbox = block['lines'][i+1]['bbox']
@@ -74,7 +74,7 @@ def is_discrete_lines_in_block(block, distance=25, threshold=3):
                 if abs(bbox[2]-next_bbox[0]) > distance:
                     cnt += 1
 
-    return cnt > threshold
+    return cnt >= threshold
 
 
 def remove_floating_blocks(blocks):
