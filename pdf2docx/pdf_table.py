@@ -131,18 +131,19 @@ def parse_table_structure_from_rects(layout, **kwargs):
     # check each group
     tables = []
     for group in groups:
-        # at least 2 inner borders exist for a 'normal' table
-        if len(group['rects'])<2:
+        # skip if not a table group
+        if not _set_table_borders(group['rects']):
             continue
-        else:
-            # identify rect type: table border or cell shading
-            _set_table_borders(group['rects'])
 
-            # parse table structure based on rects in border type
-            table = _parse_table_structure_from_rects(group['rects'])
-            if table: 
-                set_explicit_table_block(table)
-                tables.append(table)
+        # parse table structure based on rects in border type
+        table = _parse_table_structure_from_rects(group['rects'])
+        if table: 
+            set_explicit_table_block(table)
+            tables.append(table)
+        # reset border type if parse table failed
+        else:
+            for rect in group['rects']:
+                rect['type'] = -1
 
     # add parsed table structure to blocks list
     if tables:
@@ -346,42 +347,6 @@ def _group_rects(rects):
     return groups
 
 
-def _set_table_borders(rects, border_threshold=6):
-    ''' Detect table borders from rects.
-        These rects may be categorized as three types:
-            - cell border
-            - cell shading
-            - text format, e.g. highlight, underline
-
-        Cell borders are detected based on the experiences that:
-            - compared to cell shading, the size of cell border never exceeds 6 pt
-            - compared to text format, cell border always has intersection with other rects
-
-        Note:
-            cell shading is determined after the table structure is parsed from these cell borders.
-    '''
-    # Get all rects with on condition: size < 6 Pt
-    thin_rects = []
-    for rect in rects:
-        x0, y0, x1, y1 = rect['bbox']
-        if min(x1-x0, y1-y0) <= border_threshold:
-            thin_rects.append(rect)
-
-    # These thin rects may be cell borders, or text format, e.g. underline within cell.
-    # Compared to text format, cell border always has intersection with other rects
-    for rect in thin_rects:
-        fitz_rect = fitz.Rect(rect['bbox'])
-        # check intersections with other rect
-        for other_rect in thin_rects:
-            if rect==other_rect: continue
-            # it's a cell border if intersection found
-            # Note: if the intersection is an edge, method `intersects` returns False, while
-            # the operator `&` return True. So, `&` is used here.
-            if fitz_rect & fitz.Rect(other_rect['bbox']):                
-                set_cell_border(rect)
-                break
-
-
 def _parse_table_structure_from_rects(rects):
     ''' Parse table structure from rects in table border/shading type.
     '''
@@ -523,16 +488,35 @@ def _collect_explicit_borders(rects):
             # candidates for horizontal outer border
             h_outer.extend([the_rect.y0, the_rect.y1])
 
-    # at least 1 vertical border and 1 horizontal border exist
-    if not h_borders or not v_borders:
+    # at least 2 inner borders exist
+    if len(h_borders)+len(v_borders)<2:
         return None, None
 
     # Note: add dummy borders if no outer borders exist
     # check whether outer borders exists in collected borders
-    top, bottom = min(h_outer), max(h_outer)
-    left, right = min(v_outer), max(v_outer)
+    if h_borders:
+        top_rects = h_borders[min(h_borders)]
+        bottom_rects = h_borders[max(h_borders)]
+        left   = min(v_outer)
+        right  = max(v_outer)
+    else:
+        top_rects = []
+        bottom_rects = []
+        left   = None
+        right  = None
 
-    if not _exist_outer_border(top, h_borders[min(h_borders)], 'h'):
+    if v_borders:
+        left_rects = v_borders[min(v_borders)]
+        right_rects = v_borders[max(v_borders)]
+        top   = min(h_outer)
+        bottom  = max(h_outer)
+    else:
+        left_rects = []
+        right_rects = []
+        top   = None
+        bottom  = None    
+
+    if not _exist_outer_border(top, top_rects, 'h'):
         h_borders[top] = [
             {
                 'type': -1,
@@ -540,7 +524,7 @@ def _collect_explicit_borders(rects):
                 'color': utils.RGB_value((1,1,1))
             }
         ]
-    if not _exist_outer_border(bottom, h_borders[max(h_borders)], 'h'):
+    if not _exist_outer_border(bottom, bottom_rects, 'h'):
         h_borders[bottom] = [
             {
                 'type': -1,
@@ -548,7 +532,7 @@ def _collect_explicit_borders(rects):
                 'color': utils.RGB_value((1,1,1))
             }
         ]
-    if not _exist_outer_border(left, v_borders[min(v_borders)], 'v'):
+    if not _exist_outer_border(left, left_rects, 'v'):
         v_borders[left] = [
             {
                 'type': -1,
@@ -556,7 +540,7 @@ def _collect_explicit_borders(rects):
                 'color': utils.RGB_value((1,1,1))
             }
         ]
-    if not _exist_outer_border(right, v_borders[max(v_borders)], 'v'):
+    if not _exist_outer_border(right, right_rects, 'v'):
         v_borders[right] = [
             {
                 'type': -1,
@@ -566,6 +550,52 @@ def _collect_explicit_borders(rects):
         ]
 
     return h_borders, v_borders
+
+
+def _set_table_borders(rects, border_threshold=6):
+    ''' Detect table borders from rects.
+        These rects may be categorized as three types:
+            - cell border
+            - cell shading
+            - text format, e.g. highlight, underline
+
+        Cell borders are detected based on the experiences that:
+            - compared to cell shading, the size of cell border never exceeds 6 pt
+            - compared to text format, cell border always has intersection with other rects
+
+        Note:
+            cell shading is determined after the table structure is parsed from these cell borders.
+    '''
+    # Get all rects with on condition: size < 6 Pt
+    thin_rects = []
+    for rect in rects:
+        x0, y0, x1, y1 = rect['bbox']
+        if min(x1-x0, y1-y0) <= border_threshold:
+            thin_rects.append(rect)
+
+    # These thin rects may be cell borders, or text format, e.g. underline within cell.
+    # Compared to text format, cell border always has intersection with other rects
+    borders = []
+    for rect in thin_rects:
+        fitz_rect = fitz.Rect(rect['bbox'])
+        # check intersections with other rect
+        for other_rect in thin_rects:
+            if rect==other_rect: continue
+            # it's a cell border if intersection found
+            # Note: if the intersection is an edge, method `intersects` returns False, while
+            # the operator `&` return True. So, `&` is used here.
+            if fitz_rect & fitz.Rect(other_rect['bbox']):                
+                borders.append(rect)
+                break
+    
+    # at least two inner borders exist for a normal table
+    if len(borders)>=2:
+        # set table border type
+        for rect in borders:
+            set_cell_border(rect)
+        return True
+    else:
+        return False
 
 
 def _collect_table_lines(block):
@@ -746,6 +776,13 @@ def _exist_outer_border(target, borders, direction='h'):
             borders: list, a list of rects representing borders
             direction: str, 'h'->horizontal border; 'v'->vertical border
     '''
+    # no target outer border needed
+    if target==None:
+        return True
+
+    # need outer border if no borders exist
+    if not borders:
+        return False
     
     if direction=='h':
         # centerline of source borders
