@@ -6,7 +6,7 @@ Recognize content and format from PDF file with PyMuPDF
 
 The raw page content extracted with with PyMuPDF, especially in JSON 
 format is described per link:
-https://pymupdf.readthedocs.io/en/latest/textpage/
+https://pymupdf.readthedocs.io/en/latest/textpage.html
 
 The parsed results of this module is similar to the raw layout dict, 
 but with some new features added, e.g.

@@ -361,7 +361,9 @@ def _set_cell_margins(cell, **kwargs):
 
 
 def _set_cell_shading(cell, RGB_value):
-    '''set cell background-color'''
+    ''' set cell background-color.
+        https://stackoverflow.com/questions/26752856/python-docx-set-table-cell-background-and-text-color
+    '''
     c = hex(RGB_value)[2:].zfill(6)
     cell._tc.get_or_add_tcPr().append(parse_xml(r'<w:shd {} w:fill="{}"/>'.format(nsdecls('w'), c)))
 

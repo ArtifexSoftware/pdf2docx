@@ -269,7 +269,7 @@ def rects_from_annots(annots):
 
     # map rect type from PyMuPDF
     # Annotation types:
-    # https://pymupdf.readthedocs.io/en/latest/vars/#annotationtypes    
+    # https://pymupdf.readthedocs.io/en/latest/vars.html#annotation-types   
     # PDF_ANNOT_HIGHLIGHT 8
     # PDF_ANNOT_UNDERLINE 9
     # PDF_ANNOT_SQUIGGLY 10
