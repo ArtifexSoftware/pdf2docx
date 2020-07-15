@@ -323,36 +323,38 @@ def rect_to_style(rect, span_bbox):
         rect: {'type': int, 'bbox': (,,,), 'color': int}
     '''
 
-    # if the type of rect is unknown (-1), recognize type first 
-    # based on rect and the span it applying to
-    if rect['type']==-1:
-        # region height
-        h_rect = rect['bbox'][3] - rect['bbox'][1]
-        h_span = span_bbox[3] - span_bbox[1]
+    # consider text format type only
+    if is_cell_border(rect) or is_cell_shading(rect):
+        return None
 
-        # distance to span bootom border
-        d = span_bbox[3] - rect['bbox'][1]
+    # recognize text format based on rect and the span it applying to
+    # region height
+    h_rect = rect['bbox'][3] - rect['bbox'][1]
+    h_span = span_bbox[3] - span_bbox[1]
 
-        # the height of rect is large enough?
-        # yes, it's highlight
-        if h_rect > 0.75*h_span:
-            rect['type'] = 0
+    # distance to span bootom border
+    d = span_bbox[3] - rect['bbox'][1]
 
-        # near to bottom of span? yes, underline
-        elif d < 0.25*h_span:
-            rect['type'] = 1
+    # the height of rect is large enough?
+    # yes, it's highlight
+    if h_rect > 0.75*h_span:
+        rect['type'] = 0
 
-        # near to center of span? yes, strike-through-line
-        elif 0.35*h_span < d < 0.75*h_span:
-            rect['type'] = 2
+    # near to bottom of span? yes, underline
+    elif d < 0.25*h_span:
+        rect['type'] = 1
 
-        # unknown style
-        else:
-            pass
+    # near to center of span? yes, strike-through-line
+    elif 0.35*h_span < d < 0.75*h_span:
+        rect['type'] = 2
+
+    # unknown style
+    else:
+        rect['type'] = -1
 
     # check rect type again
     if rect['type']==-1:
-        style = {}
+        style = None
     else:
         style =  {
             'type': rect['type'],
