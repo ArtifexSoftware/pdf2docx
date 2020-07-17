@@ -255,12 +255,12 @@ def _parse_paragraph_and_line_spacing(blocks, Y0, Y1):
     ref_pos = Y0
     for block in blocks:
 
+        dw = 0.0
+
         # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
         # size should be excluded from the calculated vertical spacing
-        if is_table_block(block):
+        if is_table_block(block) and block['cells'][0][0]:
             dw = block['cells'][0][0]['border-width'][0] / 2.0 # use top border of the first cell
-        else:
-            dw = 0.0
 
         start_pos = block['bbox'][1] - dw
         para_space = start_pos - ref_pos

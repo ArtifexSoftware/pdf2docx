@@ -41,7 +41,7 @@ def rects_from_source(xref_stream, height):
         Refer to:
             - PDF reference https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdf_reference_archive/pdf_reference_1-7.pdf
                 - Appendix A for associated operators
-                - Section 8.5 Path COnstruction and Painting
+                - Section 8.5 Path Construction and Painting
             - https://github.com/pymupdf/PyMuPDF/issues/263
 
         typical mark of rectangle in xref stream:
@@ -220,11 +220,13 @@ def rects_from_source(xref_stream, height):
         elif line=='m' or line=='l':
             path.append(lines[i-2:i])
 
-        # stroke the path
-        elif line=='S':
-            # at least two points
-            if len(path)<2: pass
+            # continue collect points if not stroke the path
+            if not lines[i+1].upper() in ('S', 'F'): continue
 
+            # at least two points for a valid path
+            if len(path)<2: continue
+
+            # collect each line in path
             for j in range(len(path)-1):
                 # start point
                 x_s, y_s = map(float, path[j])
@@ -249,11 +251,12 @@ def rects_from_source(xref_stream, height):
                 # convert line to rectangle with a default height 0.5pt
                 centerline = (x0, y0, x1, y1)
                 rect = centerline_to_rect(centerline, Wc, width=0.5)
-                if rect: res.append(rect)
+                if rect:
+                    res.append(rect)
 
             # reset path
             path = []
- 
+    
     return res
 
 
