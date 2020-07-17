@@ -219,6 +219,7 @@ def _add_span(span, paragraph):
     '''
     # inline image span
     if 'image' in span:
+        # TODO: docx.image.exceptions.UnrecognizedImageError
         image_span = paragraph.add_run()
         image_span.add_picture(BytesIO(span['image']), width=Pt(span['bbox'][2]-span['bbox'][0]))
 
