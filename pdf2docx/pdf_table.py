@@ -68,20 +68,15 @@ def parse_implicit_table(layout, **kwargs):
     parse_table_content(layout, **kwargs) # cell contents
 
 
-@debug_plot('Cleaned Rectangle Shapes', plot=False, category='shape')
+@debug_plot('Cleaned Rectangle Shapes', plot=True, category='shape')
 def clean_rects(layout, **kwargs):
     '''clean rectangles:
-        - delete rectangles with white background-color
         - delete rectangles fully contained in another one (beside, they have same bg-color)
         - join intersected and horizontally aligned rectangles with same height and bg-color
         - join intersected and vertically aligned rectangles with same width and bg-color
     '''
-    # ignore rect in white bg-color
-    f = lambda rect: rect['color']!=utils.RGB_value((1,1,1))
-    rects = list(filter(f, layout['rects']))
-    
     # sort in reading order
-    rects.sort(key=lambda rect: (rect['bbox'][1],  
+    layout['rects'].sort(key=lambda rect: (rect['bbox'][1],  
                     rect['bbox'][0],
                     rect['bbox'][2]))
 
@@ -90,7 +85,7 @@ def clean_rects(layout, **kwargs):
     #  - same filling color with the containing rectangle
     rects_unique = []
     rect_changed = False
-    for rect in rects:
+    for rect in layout['rects']:
         for ref_rect in rects_unique:
             # Do nothing if these two rects in different bg-color
             if ref_rect['color']!=rect['color']: continue     
