@@ -338,7 +338,11 @@ def rect_to_style(rect, span_bbox):
     # the height of rect is large enough?
     # yes, it's highlight
     if h_rect > 0.75*h_span:
-        rect['type'] = 0
+        # In general, highlight color isn't white
+        if rect['color'] != utils.RGB_value((1,1,1)): 
+            rect['type'] = 0
+        else:
+            rect['type'] = -1
 
     # near to bottom of span? yes, underline
     elif d < 0.25*h_span:
