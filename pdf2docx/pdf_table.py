@@ -443,6 +443,10 @@ def _parse_table_structure_from_rects(rects):
             })
                 
         # one row finished
+        # check table: the first cell in first row MUST NOT be None
+        if i==0 and cells_in_row[0]==None:
+            return None
+
         cells.append(cells_in_row)    
 
     return {
