@@ -15,6 +15,7 @@ from docx.oxml.ns import qn
 from docx.shared import RGBColor
 from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
+from docx.image.exceptions import UnrecognizedImageError
 
 from . import utils
 from .pdf_block import (is_text_block, is_image_block, is_table_block, is_explicit_table_block)
@@ -118,6 +119,7 @@ def make_paragraph(p, block, X0, X1):
     if is_image_block(block):
         # left indent implemented with tab
         pos = round(block['bbox'][0]-X0, 2)
+        pf.tab_stops.add_tab_stop(Pt(pos))
         _add_stop(p, Pt(pos), Pt(0.0))
         # create image with bytes data stored in block.
         span = p.add_run()
@@ -129,6 +131,14 @@ def make_paragraph(p, block, X0, X1):
         pf.line_spacing = Pt(round(block['line_space'],1))
         current_pos = 0.0
 
+        # set all tab stops
+        all_pos = set([
+            round(line['bbox'][0]-X0, 2) for line in block['lines'] if line['bbox'][0]>=X0+utils.DM
+            ])
+        for pos in all_pos:
+            pf.tab_stops.add_tab_stop(Pt(pos))
+
+        # add line by line
         for i, line in enumerate(block['lines']):
 
             # left indent implemented with tab
@@ -157,7 +167,7 @@ def make_paragraph(p, block, X0, X1):
                 p.add_run('\n')
                 current_pos = 0
             else:
-                current_pos = line['bbox'][2]
+                current_pos = round(line['bbox'][2]-X0, 2)
 
     return p
     
@@ -222,26 +232,21 @@ def _add_stop(p, pos, current_pos):
     ''' set horizontal position in current position with tab stop. 
 
         Note: multiple tab stops may exist in paragraph, 
-              so tabs are added based on current position and target position.
-        
+              so tabs are added based on current position and target position.        
         ---
-        Args:
-            pos, current_pos: target and current positions (Pt)
+        Args: 
+            - pos: target position in Pt
+            - current_pos: current position in Pt
     '''
     # ignore small pos
     if pos < Pt(utils.DM): return
-    
-    # add tab stop for current paragraph
-    tab_stops = p.paragraph_format.tab_stops
-    all_pos = [t.position for t in tab_stops] # Unit: Pt
-    if pos not in all_pos:
-        tab_stops.add_tab_stop(pos)
 
     # add tab to reach target position
-    for t in tab_stops:
-        if current_pos < t.position:
+    for t in p.paragraph_format.tab_stops:
+        if t.position < current_pos:
+            continue
+        elif t.position<pos or abs(t.position-pos)<=Pt(utils.DM):
             p.add_run().add_tab()
-            current_pos = t.position
         else:
             break
 
@@ -252,7 +257,10 @@ def _add_span(span, paragraph):
     if 'image' in span:
         # TODO: docx.image.exceptions.UnrecognizedImageError
         image_span = paragraph.add_run()
-        image_span.add_picture(BytesIO(span['image']), width=Pt(span['bbox'][2]-span['bbox'][0]))
+        try:
+            image_span.add_picture(BytesIO(span['image']), width=Pt(span['bbox'][2]-span['bbox'][0]))
+        except UnrecognizedImageError:
+            print('TODO: Unrecognized Image.')
 
     # text span
     else:
