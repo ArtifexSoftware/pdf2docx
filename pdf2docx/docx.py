@@ -87,7 +87,7 @@ def make_page(doc, layout):
 
 def make_paragraph(p, block, X0, X1):
     '''create paragraph for a text block.
-       join line sets with TAB and set position according to bbox.
+       Join line sets with TAB and set position according to bbox.
 
        Generally, a pdf block is a docx paragraph, with block|line as line in paragraph.
        But without the context, it's not able to recognize a block line as word wrap, or a 
@@ -96,6 +96,9 @@ def make_paragraph(p, block, X0, X1):
         - (1) this line and next line are actually in the same line (y-position)
         - (2) if the rest space of this line can't accommodate even one span of next line, 
               it's supposed to be normal word wrap.
+
+        Refer to python-docx doc for details on text format:
+        https://python-docx.readthedocs.io/en/latest/user/text.html
 
         ---
         Args:
@@ -114,8 +117,8 @@ def make_paragraph(p, block, X0, X1):
     # add image
     if is_image_block(block):
         # left indent implemented with tab
-        pos = block['bbox'][0]-X0
-        _add_stop(p, pos, 0.0)
+        pos = round(block['bbox'][0]-X0, 2)
+        _add_stop(p, Pt(pos), Pt(0.0))
         # create image with bytes data stored in block.
         span = p.add_run()
         span.add_picture(BytesIO(block['image']), width=Pt(block['bbox'][2]-block['bbox'][0]))
@@ -129,8 +132,8 @@ def make_paragraph(p, block, X0, X1):
         for i, line in enumerate(block['lines']):
 
             # left indent implemented with tab
-            pos = line['bbox'][0]-X0
-            _add_stop(p, pos, current_pos)
+            pos = round(line['bbox'][0]-X0, 2)
+            _add_stop(p, Pt(pos), Pt(current_pos))
 
             # add line
             for span in line['spans']:
@@ -220,21 +223,25 @@ def _add_stop(p, pos, current_pos):
 
         Note: multiple tab stops may exist in paragraph, 
               so tabs are added based on current position and target position.
+        
+        ---
+        Args:
+            pos, current_pos: target and current positions (Pt)
     '''
     # ignore small pos
-    if pos < utils.DM:
-        return
+    if pos < Pt(utils.DM): return
     
     # add tab stop for current paragraph
     tab_stops = p.paragraph_format.tab_stops
     all_pos = [t.position for t in tab_stops] # Unit: Pt
-    if Pt(pos) not in all_pos:
-        tab_stops.add_tab_stop(Pt(pos))
+    if pos not in all_pos:
+        tab_stops.add_tab_stop(pos)
 
     # add tab to reach target position
     for t in tab_stops:
-        if Pt(current_pos) < t.position:
+        if current_pos < t.position:
             p.add_run().add_tab()
+            current_pos = t.position
         else:
             break
 
