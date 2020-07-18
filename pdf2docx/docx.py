@@ -106,15 +106,16 @@ def make_paragraph(p, block, X0, X1):
     after_spacing = max(round(block.get('after_space', 0.0), 1), 0.0)
     pf = _reset_paragraph_format(p)
     pf.space_before = Pt(before_spacing)
-    pf.space_after = Pt(after_spacing)    
+    pf.space_after = Pt(after_spacing)
+    
+    # restore default tabs
+    pf.tab_stops.clear_all()
 
     # add image
     if is_image_block(block):
         # left indent implemented with tab
         pos = block['bbox'][0]-X0
-        if pos > utils.DM:
-            pf.tab_stops.add_tab_stop(Pt(pos))
-            p.add_run().add_tab()
+        _add_stop(p, pos, 0.0)
         # create image with bytes data stored in block.
         span = p.add_run()
         span.add_picture(BytesIO(block['image']), width=Pt(block['bbox'][2]-block['bbox'][0]))
@@ -123,14 +124,13 @@ def make_paragraph(p, block, X0, X1):
     else:
         # set line spacing for text paragraph
         pf.line_spacing = Pt(round(block['line_space'],1))
+        current_pos = 0.0
 
         for i, line in enumerate(block['lines']):
 
             # left indent implemented with tab
             pos = line['bbox'][0]-X0
-            if pos > utils.DM:
-                pf.tab_stops.add_tab_stop(Pt(pos))
-                p.add_run().add_tab()
+            _add_stop(p, pos, current_pos)
 
             # add line
             for span in line['spans']:
@@ -143,17 +143,18 @@ def make_paragraph(p, block, X0, X1):
 
             # break line? new line by default
             line_break = True
-
             # no more lines after last line
             if line==block['lines'][-1]: 
-                line_break = False
-            
+                line_break = False            
             # do not break line if they're indeed in same line
             elif utils.in_same_row(block['lines'][i+1]['bbox'], line['bbox']):
                 line_break = False
             
             if line_break:
                 p.add_run('\n')
+                current_pos = 0
+            else:
+                current_pos = line['bbox'][2]
 
     return p
     
@@ -213,6 +214,29 @@ def _reset_paragraph_format(p, line_spacing=1.05):
     pf.widow_control = True
     return pf
 
+
+def _add_stop(p, pos, current_pos):
+    ''' set horizontal position in current position with tab stop. 
+
+        Note: multiple tab stops may exist in paragraph, 
+              so tabs are added based on current position and target position.
+    '''
+    # ignore small pos
+    if pos < utils.DM:
+        return
+    
+    # add tab stop for current paragraph
+    tab_stops = p.paragraph_format.tab_stops
+    all_pos = [t.position for t in tab_stops] # Unit: Pt
+    if Pt(pos) not in all_pos:
+        tab_stops.add_tab_stop(Pt(pos))
+
+    # add tab to reach target position
+    for t in tab_stops:
+        if Pt(current_pos) < t.position:
+            p.add_run().add_tab()
+        else:
+            break
 
 def _add_span(span, paragraph):
     '''add text span to a paragraph.       
