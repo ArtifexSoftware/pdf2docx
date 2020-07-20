@@ -167,10 +167,10 @@ def rects_from_source(xref_stream, height):
             c, m, y, k = map(float, lines[i-4:i])
             #  nonstroking color
             if line=='k':
-                Wcf = utils.CMYK_to_RGB(c, m, y, k)
+                Wcf = utils.CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)
             # stroking color
             else:
-                Wcs = utils.CMYK_to_RGB(c, m, y, k)
+                Wcs = utils.CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)
 
         # - set color: either gray, or RGB or CMYK mode
         elif line.upper()=='SC': # c1 c2 ... cn SC
@@ -520,7 +520,7 @@ def _RGB_from_color_components(components):
     # CMYK mode
     if all(map(utils.is_number, components)):
         c, m, y, k = map(float, components)
-        color = utils.CMYK_to_RGB(c, m, y, k)
+        color = utils.CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)
 
     # RGB mode
     elif all(map(utils.is_number, components[1:])):
