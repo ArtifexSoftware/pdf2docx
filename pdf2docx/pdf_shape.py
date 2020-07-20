@@ -110,8 +110,7 @@ def rects_from_source(xref_stream, height):
     # check xref stream word by word (line always changes)    
     begin_text_setting = False    
     lines = xref_stream.split()
-    with open('D:/21_GitHub/pdf2docx/test/samples/xref.txt', 'w', encoding='utf-8') as f:
-        f.write('\n'.join(lines))
+
     for (i, line) in enumerate(lines):
 
         # skip any lines between `BT` and `ET`, 
@@ -137,12 +136,9 @@ def rects_from_source(xref_stream, height):
             WCS = [WCS[0]*sx, WCS[1]*sy, WCS[2]+tx, WCS[3]+ty]
 
         # painting color
-        # - reset stroking color
-        elif line=='CS':
+        # - reset color space
+        elif line.upper()=='CS':
             Wcs = utils.RGB_value((0.0, 0.0, 0.0))
-
-        # reset nonstroking color, i.e. filling color
-        elif line=='cs':
             Wcf = utils.RGB_value((0.0, 0.0, 0.0))
 
         # - gray mode
