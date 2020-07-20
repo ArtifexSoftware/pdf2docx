@@ -68,20 +68,15 @@ def parse_implicit_table(layout, **kwargs):
     parse_table_content(layout, **kwargs) # cell contents
 
 
-@debug_plot('Cleaned Rectangle Shapes', plot=False, category='shape')
+@debug_plot('Cleaned Rectangle Shapes', plot=True, category='shape')
 def clean_rects(layout, **kwargs):
     '''clean rectangles:
-        - delete rectangles with white background-color
         - delete rectangles fully contained in another one (beside, they have same bg-color)
         - join intersected and horizontally aligned rectangles with same height and bg-color
         - join intersected and vertically aligned rectangles with same width and bg-color
     '''
-    # ignore rect in white bg-color
-    f = lambda rect: rect['color']!=utils.RGB_value((1,1,1))
-    rects = list(filter(f, layout['rects']))
-    
     # sort in reading order
-    rects.sort(key=lambda rect: (rect['bbox'][1],  
+    layout['rects'].sort(key=lambda rect: (rect['bbox'][1],  
                     rect['bbox'][0],
                     rect['bbox'][2]))
 
@@ -90,7 +85,7 @@ def clean_rects(layout, **kwargs):
     #  - same filling color with the containing rectangle
     rects_unique = []
     rect_changed = False
-    for rect in rects:
+    for rect in layout['rects']:
         for ref_rect in rects_unique:
             # Do nothing if these two rects in different bg-color
             if ref_rect['color']!=rect['color']: continue     
@@ -131,18 +126,19 @@ def parse_table_structure_from_rects(layout, **kwargs):
     # check each group
     tables = []
     for group in groups:
-        # at least 4 borders exist for a 'normal' table
-        if len(group['rects'])<4:
+        # skip if not a table group
+        if not _set_table_borders(group['rects']):
             continue
-        else:
-            # identify rect type: table border or cell shading
-            _set_table_borders(group['rects'])
 
-            # parse table structure based on rects in border type
-            table = _parse_table_structure_from_rects(group['rects'])
-            if table: 
-                set_explicit_table_block(table)
-                tables.append(table)
+        # parse table structure based on rects in border type
+        table = _parse_table_structure_from_rects(group['rects'])
+        if table: 
+            set_explicit_table_block(table)
+            tables.append(table)
+        # reset border type if parse table failed
+        else:
+            for rect in group['rects']:
+                rect['type'] = -1
 
     # add parsed table structure to blocks list
     if tables:
@@ -346,76 +342,19 @@ def _group_rects(rects):
     return groups
 
 
-def _set_table_borders(rects, border_threshold=6):
-    ''' Detect table borders from rects.
-        These rects may be categorized as three types:
-            - cell border
-            - cell shading
-            - text format, e.g. highlight, underline
-
-        Cell borders are detected based on the experiences that:
-            - compared to cell shading, the size of cell border never exceeds 6 pt
-            - compared to text format, cell border always has intersection with other rects
-
-        Note:
-            cell shading is determined after the table structure is parsed from these cell borders.
-    '''
-    # Get all rects with on condition: size < 6 Pt
-    thin_rects = []
-    for rect in rects:
-        x0, y0, x1, y1 = rect['bbox']
-        if min(x1-x0, y1-y0) <= border_threshold:
-            thin_rects.append(rect)
-
-    # These thin rects may be cell borders, or text format, e.g. underline within cell.
-    # Compared to text format, cell border always has intersection with other rects
-    for rect in thin_rects:
-        fitz_rect = fitz.Rect(rect['bbox'])
-        # check intersections with other rect
-        for other_rect in thin_rects:
-            if rect==other_rect: continue
-            # it's a cell border if intersection found
-            # Note: if the intersection is an edge, method `intersects` returns False, while
-            # the operator `&` return True. So, `&` is used here.
-            if fitz_rect & fitz.Rect(other_rect['bbox']):                
-                set_cell_border(rect)
-                break
-
-
 def _parse_table_structure_from_rects(rects):
     ''' Parse table structure from rects in table border/shading type.
     '''
     # --------------------------------------------------
     # group horizontal/vertical borders
     # --------------------------------------------------
-    borders = list(filter(lambda rect: is_cell_border(rect), rects))
-    if not borders: return None
-
-    h_borders, v_borders = {}, {}
-    for rect in borders:
-        the_rect = fitz.Rect(rect['bbox'])
-        # group horizontal borders in each row
-        if the_rect.width > the_rect.height:
-            y = round((the_rect.y0 + the_rect.y1) / 2.0, 1)
-            if y in h_borders:
-                h_borders[y].append(rect)
-            else:
-                h_borders[y] = [rect]
-        # group vertical borders in each column
-        else:
-            x = round((the_rect.x0 + the_rect.x1) / 2.0, 1)
-            if x in v_borders:
-                v_borders[x].append(rect)
-            else:
-                v_borders[x] = [rect]
+    h_borders, v_borders = _collect_explicit_borders(rects)
+    if not h_borders or not v_borders:
+        return None
 
     # sort
     rows = sorted(h_borders)
     cols = sorted(v_borders)
-
-    # check the outer borders: 
-    if not _check_outer_borders(h_borders[rows[0]], v_borders[cols[-1]], h_borders[rows[-1]], v_borders[cols[0]]):
-        return None
         
     # --------------------------------------------------
     # parse table structure, especially the merged cells
@@ -470,11 +409,11 @@ def _parse_table_structure_from_rects(rects):
                 else:
                     break
 
-            # cell border rects
+            # cell border rects: merged cells considered
             top = h_borders[rows[i]][0]
-            bottom = h_borders[rows[i+1]][0]
+            bottom = h_borders[rows[i+n_row]][0]
             left = v_borders[cols[j]][0]
-            right = v_borders[cols[j+1]][0]
+            right = v_borders[cols[j+n_col]][0]
 
             w_top = top['bbox'][3]-top['bbox'][1]
             w_right = right['bbox'][2]-right['bbox'][0]
@@ -504,6 +443,10 @@ def _parse_table_structure_from_rects(rects):
             })
                 
         # one row finished
+        # check table: the first cell in first row MUST NOT be None
+        if i==0 and cells_in_row[0]==None:
+            return None
+
         cells.append(cells_in_row)    
 
     return {
@@ -511,6 +454,147 @@ def _parse_table_structure_from_rects(rects):
         'bbox': (cols[0], rows[0], cols[-1], rows[-1]),
         'cells': cells
     }
+
+
+def _collect_explicit_borders(rects):
+    ''' Collect explicit borders in horizontal and vertical groups respectively.'''
+    borders = list(filter(lambda rect: is_cell_border(rect), rects))
+    h_borders, v_borders = {}, {}
+    h_outer, v_outer = [], []
+    for rect in borders:
+        the_rect = fitz.Rect(rect['bbox'])
+        # group horizontal borders in each row
+        if the_rect.width > the_rect.height:
+            # row centerline
+            y = round((the_rect.y0 + the_rect.y1) / 2.0, 1)
+            if y in h_borders:
+                h_borders[y].append(rect)
+            else:
+                h_borders[y] = [rect]
+            
+            # candidates for vertical outer border
+            v_outer.extend([the_rect.x0, the_rect.x1])
+
+        # group vertical borders in each column
+        else:
+            # column centerline
+            x = round((the_rect.x0 + the_rect.x1) / 2.0, 1)
+            if x in v_borders:
+                v_borders[x].append(rect)
+            else:
+                v_borders[x] = [rect]
+            
+            # candidates for horizontal outer border
+            h_outer.extend([the_rect.y0, the_rect.y1])
+
+    # at least 2 inner borders exist
+    if len(h_borders)+len(v_borders)<2:
+        return None, None
+
+    # Note: add dummy borders if no outer borders exist
+    # check whether outer borders exists in collected borders
+    if h_borders:
+        top_rects = h_borders[min(h_borders)]
+        bottom_rects = h_borders[max(h_borders)]
+        left   = min(v_outer)
+        right  = max(v_outer)
+    else:
+        top_rects = []
+        bottom_rects = []
+        left   = None
+        right  = None
+
+    if v_borders:
+        left_rects = v_borders[min(v_borders)]
+        right_rects = v_borders[max(v_borders)]
+        top   = min(h_outer)
+        bottom  = max(h_outer)
+    else:
+        left_rects = []
+        right_rects = []
+        top   = None
+        bottom  = None    
+
+    if not _exist_outer_border(top, top_rects, 'h'):
+        h_borders[top] = [
+            {
+                'type': -1,
+                'bbox': (left, top, right, top),
+                'color': utils.RGB_value((1,1,1))
+            }
+        ]
+    if not _exist_outer_border(bottom, bottom_rects, 'h'):
+        h_borders[bottom] = [
+            {
+                'type': -1,
+                'bbox': (left, bottom, right, bottom),
+                'color': utils.RGB_value((1,1,1))
+            }
+        ]
+    if not _exist_outer_border(left, left_rects, 'v'):
+        v_borders[left] = [
+            {
+                'type': -1,
+                'bbox': (left, top, left, bottom),
+                'color': utils.RGB_value((1,1,1))
+            }
+        ]
+    if not _exist_outer_border(right, right_rects, 'v'):
+        v_borders[right] = [
+            {
+                'type': -1,
+                'bbox': (right, top, right, bottom),
+                'color': utils.RGB_value((1,1,1))
+            }
+        ]
+
+    return h_borders, v_borders
+
+
+def _set_table_borders(rects, border_threshold=6):
+    ''' Detect table borders from rects.
+        These rects may be categorized as three types:
+            - cell border
+            - cell shading
+            - text format, e.g. highlight, underline
+
+        Cell borders are detected based on the experiences that:
+            - compared to cell shading, the size of cell border never exceeds 6 pt
+            - compared to text format, cell border always has intersection with other rects
+
+        Note:
+            cell shading is determined after the table structure is parsed from these cell borders.
+    '''
+    # Get all rects with on condition: size < 6 Pt
+    thin_rects = []
+    for rect in rects:
+        x0, y0, x1, y1 = rect['bbox']
+        if min(x1-x0, y1-y0) <= border_threshold:
+            thin_rects.append(rect)
+
+    # These thin rects may be cell borders, or text format, e.g. underline within cell.
+    # Compared to text format, cell border always has intersection with other rects
+    borders = []
+    for rect in thin_rects:
+        fitz_rect = fitz.Rect(rect['bbox'])
+        # check intersections with other rect
+        for other_rect in thin_rects:
+            if rect==other_rect: continue
+            # it's a cell border if intersection found
+            # Note: if the intersection is an edge, method `intersects` returns False, while
+            # the operator `&` return True. So, `&` is used here.
+            if fitz_rect & fitz.Rect(other_rect['bbox']):                
+                borders.append(rect)
+                break
+    
+    # at least two inner borders exist for a normal table
+    if len(borders)>=2:
+        # set table border type
+        for rect in borders:
+            set_cell_border(rect)
+        return True
+    else:
+        return False
 
 
 def _collect_table_lines(block):
@@ -684,42 +768,34 @@ def _get_rect_with_bbox(bbox, rects, threshold):
     return res
 
 
-def _check_outer_borders(top_rects, right_rects, bottom_rects, left_rects):
-    ''' Check outer borders: whether end points are concurrent.
-        top: top lines in rectangle shape
+def _exist_outer_border(target, borders, direction='h'):
+    ''' Check outer borders: whether target border exists in collected borders.
+        Args:
+            target: float, target position of outer border
+            borders: list, a list of rects representing borders
+            direction: str, 'h'->horizontal border; 'v'->vertical border
     '''
-    # start/end line segments of borders
-    top_start, top_end = top_rects[0]['bbox'], top_rects[-1]['bbox']
-    right_start, right_end = right_rects[0]['bbox'], right_rects[-1]['bbox']
-    bottom_start, bottom_end = bottom_rects[0]['bbox'], bottom_rects[-1]['bbox']
-    left_start, left_end = left_rects[0]['bbox'], left_rects[-1]['bbox']
+    # no target outer border needed
+    if target==None:
+        return True
 
-    # width of each line
-    w_top, w_bottom = top_start[3]-top_start[1], bottom_start[3]-bottom_start[1]
-    w_left, w_right = left_start[2]-left_start[0], right_start[2]-right_start[0]
-
-    # the max allowable distance for the corner points
-    # sqrt(w_1^2+w_2^2) <= sqrt(2)*w_max
-    square_tolerance = 2 * max(w_top, w_bottom, w_left, w_right)**2
-
-    # check corner points:
-    # top_left
-    if not utils.check_concurrent_points(top_start[0:2], left_start[0:2], square_tolerance):
-        return False
-
-    # top_right
-    if not utils.check_concurrent_points(top_end[2:], right_start[0:2], square_tolerance):
+    # need outer border if no borders exist
+    if not borders:
         return False
     
-    # bottom_left
-    if not utils.check_concurrent_points(bottom_start[0:2], left_end[2:], square_tolerance):
-        return False
+    if direction=='h':
+        # centerline of source borders
+        source = round((borders[0]['bbox'][1] + borders[0]['bbox'][3]) / 2.0, 1)
+        # max width of source borders
+        width = max(map(lambda rect: rect['bbox'][3]-rect['bbox'][1], borders))
+    else:
+        source = round((borders[0]['bbox'][0] + borders[0]['bbox'][2]) / 2.0, 1)
+        width = max(map(lambda rect: rect['bbox'][2]-rect['bbox'][0], borders))
 
-    # bottom_right
-    if not utils.check_concurrent_points(bottom_end[2:], right_end[2:], square_tolerance):
-        return False
-    
-    return True
+    target = round(target, 1)
+    width = round(width, 1)
+
+    return abs(target-source) <= width
 
 
 def _check_merged_cells(ref, borders, direction='row'):

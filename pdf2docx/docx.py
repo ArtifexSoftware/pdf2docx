@@ -15,6 +15,7 @@ from docx.oxml.ns import qn
 from docx.shared import RGBColor
 from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
+from docx.image.exceptions import UnrecognizedImageError
 
 from . import utils
 from .pdf_block import (is_text_block, is_image_block, is_table_block, is_explicit_table_block)
@@ -87,7 +88,7 @@ def make_page(doc, layout):
 
 def make_paragraph(p, block, X0, X1):
     '''create paragraph for a text block.
-       join line sets with TAB and set position according to bbox.
+       Join line sets with TAB and set position according to bbox.
 
        Generally, a pdf block is a docx paragraph, with block|line as line in paragraph.
        But without the context, it's not able to recognize a block line as word wrap, or a 
@@ -96,6 +97,9 @@ def make_paragraph(p, block, X0, X1):
         - (1) this line and next line are actually in the same line (y-position)
         - (2) if the rest space of this line can't accommodate even one span of next line, 
               it's supposed to be normal word wrap.
+
+        Refer to python-docx doc for details on text format:
+        https://python-docx.readthedocs.io/en/latest/user/text.html
 
         ---
         Args:
@@ -106,15 +110,17 @@ def make_paragraph(p, block, X0, X1):
     after_spacing = max(round(block.get('after_space', 0.0), 1), 0.0)
     pf = _reset_paragraph_format(p)
     pf.space_before = Pt(before_spacing)
-    pf.space_after = Pt(after_spacing)    
+    pf.space_after = Pt(after_spacing)
+    
+    # restore default tabs
+    pf.tab_stops.clear_all()
 
     # add image
     if is_image_block(block):
         # left indent implemented with tab
-        pos = block['bbox'][0]-X0
-        if pos > utils.DM:
-            pf.tab_stops.add_tab_stop(Pt(pos))
-            p.add_run().add_tab()
+        pos = round(block['bbox'][0]-X0, 2)
+        pf.tab_stops.add_tab_stop(Pt(pos))
+        _add_stop(p, Pt(pos), Pt(0.0))
         # create image with bytes data stored in block.
         span = p.add_run()
         span.add_picture(BytesIO(block['image']), width=Pt(block['bbox'][2]-block['bbox'][0]))
@@ -123,14 +129,21 @@ def make_paragraph(p, block, X0, X1):
     else:
         # set line spacing for text paragraph
         pf.line_spacing = Pt(round(block['line_space'],1))
+        current_pos = 0.0
 
+        # set all tab stops
+        all_pos = set([
+            round(line['bbox'][0]-X0, 2) for line in block['lines'] if line['bbox'][0]>=X0+utils.DM
+            ])
+        for pos in all_pos:
+            pf.tab_stops.add_tab_stop(Pt(pos))
+
+        # add line by line
         for i, line in enumerate(block['lines']):
 
             # left indent implemented with tab
-            pos = line['bbox'][0]-X0
-            if pos > utils.DM:
-                pf.tab_stops.add_tab_stop(Pt(pos))
-                p.add_run().add_tab()
+            pos = round(line['bbox'][0]-X0, 2)
+            _add_stop(p, Pt(pos), Pt(current_pos))
 
             # add line
             for span in line['spans']:
@@ -143,17 +156,18 @@ def make_paragraph(p, block, X0, X1):
 
             # break line? new line by default
             line_break = True
-
             # no more lines after last line
             if line==block['lines'][-1]: 
-                line_break = False
-            
+                line_break = False            
             # do not break line if they're indeed in same line
             elif utils.in_same_row(block['lines'][i+1]['bbox'], line['bbox']):
                 line_break = False
             
             if line_break:
                 p.add_run('\n')
+                current_pos = 0
+            else:
+                current_pos = round(line['bbox'][2]-X0, 2)
 
     return p
     
@@ -214,13 +228,39 @@ def _reset_paragraph_format(p, line_spacing=1.05):
     return pf
 
 
+def _add_stop(p, pos, current_pos):
+    ''' set horizontal position in current position with tab stop. 
+
+        Note: multiple tab stops may exist in paragraph, 
+              so tabs are added based on current position and target position.        
+        ---
+        Args: 
+            - pos: target position in Pt
+            - current_pos: current position in Pt
+    '''
+    # ignore small pos
+    if pos < Pt(utils.DM): return
+
+    # add tab to reach target position
+    for t in p.paragraph_format.tab_stops:
+        if t.position < current_pos:
+            continue
+        elif t.position<pos or abs(t.position-pos)<=Pt(utils.DM):
+            p.add_run().add_tab()
+        else:
+            break
+
 def _add_span(span, paragraph):
     '''add text span to a paragraph.       
     '''
     # inline image span
     if 'image' in span:
+        # TODO: docx.image.exceptions.UnrecognizedImageError
         image_span = paragraph.add_run()
-        image_span.add_picture(BytesIO(span['image']), width=Pt(span['bbox'][2]-span['bbox'][0]))
+        try:
+            image_span.add_picture(BytesIO(span['image']), width=Pt(span['bbox'][2]-span['bbox'][0]))
+        except UnrecognizedImageError:
+            print('TODO: Unrecognized Image.')
 
     # text span
     else:
@@ -361,7 +401,9 @@ def _set_cell_margins(cell, **kwargs):
 
 
 def _set_cell_shading(cell, RGB_value):
-    '''set cell background-color'''
+    ''' set cell background-color.
+        https://stackoverflow.com/questions/26752856/python-docx-set-table-cell-background-and-text-color
+    '''
     c = hex(RGB_value)[2:].zfill(6)
     cell._tc.get_or_add_tcPr().append(parse_xml(r'<w:shd {} w:fill="{}"/>'.format(nsdecls('w'), c)))
 
