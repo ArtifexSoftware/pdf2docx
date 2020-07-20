@@ -13,6 +13,15 @@ ITP = 72.0
 DR = fitz.Rect(-DM, -DM, DM, DM) / 2.0
 
 
+def is_number(str_number):
+    try:
+        float(str_number)
+    except:
+        return False
+    else:
+        return True
+
+
 def getColor(name=None):
     '''get a named RGB color (or random color) from fitz predefined colors'''
     # get color index
@@ -38,6 +47,13 @@ def RGB_value(rgb):
     for (i,x) in enumerate(rgb):
         res += int(x*(16**2-1)) * 16**(4-2*i)
     return int(res)
+
+def CMYK_to_RGB(c, m, y, k, cmyk_scale=100):
+    ''' CMYK components to GRB value.'''
+    r = (1.0 - c / float(cmyk_scale)) * (1.0 - k / float(cmyk_scale))
+    g = (1.0 - m / float(cmyk_scale)) * (1.0 - k / float(cmyk_scale))
+    b = (1.0 - y / float(cmyk_scale)) * (1.0 - k / float(cmyk_scale))
+    return RGB_value((r, g, b))
 
 
 def to_Highlight_color(sRGB):
