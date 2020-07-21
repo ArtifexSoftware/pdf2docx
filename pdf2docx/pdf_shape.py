@@ -244,14 +244,15 @@ def rects_from_source(xref_stream, height):
 
             paths.append(path)
 
-        # lines: m, l to draw path
-        elif line=='m' or line=='l':
+        # lines: m -> move to point to start a path
+        elif line=='m':
             x0, y0 = map(float, lines[i-2:i])
-            if not paths:
-                path = [(x0, y0)]
-                paths.append(path)
-            else:
-                paths[-1].append((x0, y0))
+            paths.append([(x0, y0)])
+        
+        # lines: l -> straight line to point
+        elif line=='l':
+            x0, y0 = map(float, lines[i-2:i])
+            paths[-1].append((x0, y0))
 
         # close the path
         elif line=='h': 
