@@ -127,17 +127,17 @@ def parse_table_structure_from_rects(layout, **kwargs):
     tables = []
     for group in groups:
         # skip if not a table group
-        if not _set_table_borders(group['rects']):
+        if not _set_table_borders(group):
             continue
 
         # parse table structure based on rects in border type
-        table = _parse_table_structure_from_rects(group['rects'])
+        table = _parse_table_structure_from_rects(group)
         if table: 
             set_explicit_table_block(table)
             tables.append(table)
         # reset border type if parse table failed
         else:
-            for rect in group['rects']:
+            for rect in group:
                 rect['type'] = -1
 
     # add parsed table structure to blocks list
@@ -176,6 +176,8 @@ def parse_table_structure_from_blocks(layout, **kwargs):
     for i in range(num):
         block = layout['blocks'][i]
         next_block = layout['blocks'][i+1] if i<num-1 else {}
+
+        table_end = False
         
         # there is gap between these two criteria, so consider condition (a) only if if it's the first block in new row
         # (a) lines in current block are connected sequently?
@@ -183,9 +185,9 @@ def parse_table_structure_from_blocks(layout, **kwargs):
         if new_line and is_discrete_lines_in_block(block): 
             table_lines.extend( _collect_table_lines(block) )
             
-            # update table / line status
+            # update line status
             new_line = False
-            table_end = False
+            
 
         # (b) multi-blocks are in a same row: check layout with next block?
         # yes, add both current and next blocks
@@ -197,9 +199,8 @@ def parse_table_structure_from_blocks(layout, **kwargs):
             # add next block
             table_lines.extend( _collect_table_lines(next_block) )
 
-            # update table / line status
+            # update line status
             new_line = False
-            table_end = False
 
         # no, consider to start a new row
         else:
@@ -300,46 +301,52 @@ def parse_table_content(layout, **kwargs):
 def _group_rects(rects):
     ''' split rects into groups, to be further checked if it's a table group.        
     '''
-    num = len(rects)
-
-    # group intersected rects: a list of {'Rect': fitz.Rect(), 'rects': []}
     groups = []
-    counted_index = []
-    for i in range(num):
-        # do nothing if current rect has considered already
+    counted_index = set()
+
+    for i in range(len(rects)):
+
+        # do nothing if current rect has been considered already
         if i in counted_index:
             continue
 
         # start a new group
         rect = rects[i]
-        group = {
-            'Rect': fitz.Rect(rect['bbox']),
-            'rects': [rect]
-        }
+        group = { i }
 
-        # check all rects contained in this group
-        for j in range(i+1, num):
-            other_rect = rects[j]
-            fitz_rect = fitz.Rect(other_rect['bbox'])
-            # add to the group containing current rect
-            if fitz_rect & (group['Rect']+utils.DR): 
-                counted_index.append(j) # mark the counted rect
+        # get intersected rects
+        _get_intersected_rects(rect, rects, group)
 
-                # update group
-                group['Rect'] = fitz_rect | group['Rect']
-                group['rects'].append(other_rect)
+        # update counted rects
+        counted_index = counted_index | group
 
-        # add to groups list
-        # NOTE: merge group if any intersection with existing group
-        for _group in groups:
-            if group['Rect'] & _group['Rect']:
-                _group['Rect'] = group['Rect'] | _group['Rect']
-                _group['rects'].extend(group['rects'])
-                break
-        else:
-            groups.append(group)
+        # add rect to groups
+        group_rects = [rects[x] for x in group]
+        groups.append(group_rects)
 
     return groups
+
+
+def _get_intersected_rects(rect, rects, group):
+    ''' Get intersected rects from `rects` and store in `group`.
+        ---
+        Args:
+            - group: a set() of index of intersected rect
+    '''
+    # source rect to intersect with
+    fitz_source = fitz.Rect(rect['bbox'])
+
+    for i in range(len(rects)):
+
+        # ignore rect already processed
+        if i in group: continue
+
+        # if intersected, check rects further
+        target = rects[i]
+        fitz_target = fitz.Rect(target['bbox'])
+        if fitz_source & fitz_target:
+            group.add(i)
+            _get_intersected_rects(target, rects, group)
 
 
 def _parse_table_structure_from_rects(rects):
