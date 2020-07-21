@@ -304,6 +304,10 @@ def rects_from_source(xref_stream, height):
             # reset path
             paths = []
 
+        # TODO: clip the path
+        elif line in ('W', 'W*'):
+            pass
+
         # end the path without stroking or filling
         elif line=='n':
             paths = []
