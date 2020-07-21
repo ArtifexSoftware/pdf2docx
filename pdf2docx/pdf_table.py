@@ -314,7 +314,7 @@ def _group_rects(rects):
         rect = rects[i]
         group = {
             'Rect': fitz.Rect(rect['bbox']),
-            'rects': [rect]
+            'rects': {i} # use set to avoid duplication; use index to avoid unhashable dict
         }
 
         # check all rects contained in this group
@@ -327,17 +327,21 @@ def _group_rects(rects):
 
                 # update group
                 group['Rect'] = fitz_rect | group['Rect']
-                group['rects'].append(other_rect)
+                group['rects'].add(j)
 
         # add to groups list
         # NOTE: merge group if any intersection with existing group
         for _group in groups:
             if group['Rect'] & _group['Rect']:
                 _group['Rect'] = group['Rect'] | _group['Rect']
-                _group['rects'].extend(group['rects'])
+                _group['rects'] = _group['rects'] | group['rects']
                 break
         else:
             groups.append(group)
+
+    # change index back to rect itself
+    for group in groups:
+        group['rects'] = [rects[i] for i in group['rects']]
 
     return groups
 
