@@ -17,7 +17,8 @@ Rectangle data structure:
 
 import copy
 from .base import RectType
-from pdf2docx import utils
+from .Rectangle import Rectangle
+from .. import utils
 
 
 class Rectangles:
@@ -40,6 +41,9 @@ class Rectangles:
 
     def __len__(self):
         return len(self._rects)
+
+    def store(self) -> list:
+        return [ rect.store() for rect in self._rects]
 
     def from_annotations(self, annotations: list):
         ''' Get rect from annotations(comment shapes) in PDF page
@@ -83,6 +87,7 @@ class Rectangles:
             rect.type = type_map[key]
 
             self._rects.append(rect)
+
 
     def from_stream(self, xref_stream: str, height: float):
         ''' Get rectangle shape by parsing page cross reference stream.
@@ -222,7 +227,7 @@ class Rectangles:
 
             # - set color: either gray, or RGB or CMYK mode
             elif line.upper()=='SC': # c1 c2 ... cn SC
-                c = _RGB_from_color_components(lines[i-4:i])
+                c = self._RGB_from_color_components(lines[i-4:i])
                 #  nonstroking color
                 if line=='sc':
                     Wcf = c
@@ -233,9 +238,9 @@ class Rectangles:
             # - set color: either gray, or RGB or CMYK mode
             elif line.upper()=='SCN': # c1 c2 ... cn [name] SC
                 if utils.is_number(lines[i-1]):
-                    c = _RGB_from_color_components(lines[i-4:i])
+                    c = self._RGB_from_color_components(lines[i-4:i])
                 else:
-                    c = _RGB_from_color_components(lines[i-5:i-1])
+                    c = self._RGB_from_color_components(lines[i-5:i-1])
 
                 #  nonstroking color
                 if line=='scn':
@@ -305,19 +310,19 @@ class Rectangles:
             # close the path
             elif line=='h': 
                 for path in paths:
-                    _close_path(path)
+                    self._close_path(path)
 
             # close and stroke the path
             elif line.upper()=='S':
                 # close
                 if line=='s':
                     for path in paths:
-                        _close_path(path)
+                        self._close_path(path)
 
                 # stroke path
                 for path in paths:
-                    rects = _stroke_path(path, WCS, Wcs, Wd, height)
-                    res.extend(rects)
+                    rects = self._stroke_path(path, WCS, Wcs, Wd, height)
+                    self._rects.extend(rects)
 
                 # reset path
                 paths = []
@@ -326,11 +331,11 @@ class Rectangles:
             elif line in ('f', 'F', 'f*'):            
                 for path in paths: 
                     # close the path implicitly
-                    _close_path(path)
+                    self._close_path(path)
                 
                     # fill path
-                    rect = _fill_rect_path(path, WCS, Wcf, height)
-                    if rect: res.append(rect)
+                    rect = self._fill_rect_path(path, WCS, Wcf, height)
+                    if rect: self._rects.append(rect)
 
                 # reset path
                 paths = []
@@ -339,15 +344,15 @@ class Rectangles:
             elif line.upper() in ('B', 'B*'): 
                 for path in paths: 
                     # close path
-                    _close_path(path)
+                    self._close_path(path)
                     
                     # fill path
-                    rect = _fill_rect_path(path, WCS, Wcf, height)
-                    if rect: res.append(rect)
+                    rect = self._fill_rect_path(path, WCS, Wcf, height)
+                    if rect: self._rects.append(rect)
 
                     # stroke path
-                    rects = _stroke_path(path, WCS, Wcs, Wd, height)
-                    res.extend(rects)
+                    rects = self._stroke_path(path, WCS, Wcs, Wd, height)
+                    self._rects.extend(rects)
 
                 # reset path
                 paths = []
@@ -359,8 +364,7 @@ class Rectangles:
             # end the path without stroking or filling
             elif line=='n':
                 paths = []
-        
-        return res
+
 
     @staticmethod
     def _transform_path(path: list, WCS: list, height: float) -> list:
@@ -386,7 +390,14 @@ class Rectangles:
         return res
 
 
-    def _stroke_path(self, path: list, WCS: list, color: int, width: float, page_height: float):
+    @staticmethod
+    def _close_path(path):
+        if not path: return
+        if path[-1]!=path[0]:
+            path.append(path[0])
+
+
+    def _stroke_path(self, path: list, WCS: list, color: int, width: float, page_height: float) -> list:
         ''' Stroke path with a given width. Only horizontal/vertical paths are considered.
         '''
         # CS transformation
@@ -403,19 +414,23 @@ class Rectangles:
             if x0>x1 or y0>y1:
                 x0, y0, x1, y1 = x1, y1, x0, y0
 
-            # convert line to rectangle with a default height 0.5pt
-            centerline = (x0, y0, x1, y1)
-            rect = centerline_to_rect(centerline, color, width)
-            if rect:
+            # convert line to rectangle
+            bbox = utils.expand_centerline((x0, y0), (x1, y1), width)
+            if bbox:
+                rect = Rectangle({
+                    'bbox': bbox,
+                    'color': color
+                })
                 rects.append(rect)
+        
         return rects
 
 
-    def _fill_rect_path(path, WCS, color, page_height):
+    def _fill_rect_path(self, path:list, WCS:list, color:int, page_height:float) -> Rectangle:
         ''' Fill bbox of path with a given color. Only horizontal/vertical paths are considered.
         '''
         # CS transformation
-        t_path = _transform_path(path, WCS, page_height)
+        t_path = self._transform_path(path, WCS, page_height)
 
         # find bbox of path region
         X = [p[0] for p in t_path]
@@ -424,16 +439,16 @@ class Rectangles:
         y0, y1 = min(Y), max(Y)
 
         # filled rectangle
-        rect = {
-            'type': -1,
+        rect = Rectangle({
             'bbox': (x0, y0, x1, y1), 
             'color': color
-        }
+        })
             
         return rect
 
 
-    def _RGB_from_color_components(components):
+    @staticmethod
+    def _RGB_from_color_components(components:list) -> int:
         ''' Detect color mode from given components and calculate the RGB value.
             ---
             Args:

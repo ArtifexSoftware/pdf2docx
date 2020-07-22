@@ -48,6 +48,7 @@ def RGB_value(rgb):
         res += int(x*(16**2-1)) * 16**(4-2*i)
     return int(res)
 
+
 def CMYK_to_RGB(c, m, y, k, cmyk_scale=100):
     ''' CMYK components to GRB value.'''
     r = (1.0 - c / float(cmyk_scale)) * (1.0 - k / float(cmyk_scale))
@@ -70,26 +71,22 @@ def to_Highlight_color(sRGB):
     return color_map.get(sRGB, WD_COLOR_INDEX.YELLOW)
 
 
-def get_main_bbox(bbox_1, bbox_2, threshold=0.95):
+def get_main_bbox(bbox_1:fitz.Rect, bbox_2:fitz.Rect, threshold:float=0.95):
     ''' If the intersection of bbox_1 and bbox_2 exceeds the threshold, return the union of
         these two bbox-es; else return None.
     '''
-    # rects
-    b1 = fitz.Rect(bbox_1)
-    b2 = fitz.Rect(bbox_2)
-    b = b1 & b2
-
-    # areas    
-    a1, a2, a = b1.getArea(), b2.getArea(), b.getArea()
+    # areas
+    b = bbox_1 & bbox_2
+    a1, a2, a = bbox_1.getArea(), bbox_2.getArea(), b.getArea()
 
     # no intersection
     if not b: return None
 
-    # Note: if b1 and b2 intersects with only an edge, b is not empty but b.getArea()=0
+    # Note: if bbox_1 and bbox_2 intersects with only an edge, b is not empty but b.getArea()=0
     # so give a small value when they're intersected but the area is zero
     factor = a/min(a1,a2) if a else 1e-6
     if factor >= threshold:
-        u = b1 | b2
+        u = bbox_1 | bbox_2
         return tuple([round(x,1) for x in (u.x0, u.y0, u.x1, u.y1)])
     else:
         return None
@@ -104,63 +101,48 @@ def parse_font_name(font_name):
     return font_name
 
 
-def is_char_in_rect(char, rect):
-    ''' whether a char locates in a rect, or
-        they have a intersection larger than a half of the char bbox
-
-        char: a dict with keys bbox
-        rect: fitz.Rect instance
-    '''
-    # char in rect?
-    c_rect = fitz.Rect(char['bbox'])
-    if c_rect in rect:
-        return True
-
-    # intersection?
-    intsec = c_rect & rect
-    return intsec.width > 0.5*c_rect.width
-
-
-def is_vertical_aligned(bbox1, bbox2, horizontal=True, factor=0.0):
-    ''' check whether two boxes have enough intersection in vertical direction.
-        vertical direction is perpendicular to reading direction
-
-        - bbox1, bbox2: bbox region defined by top-left, bottom-right corners,
-                       e.g. (x0, y0, x1, y1).
-        - horizontal  : is reading direction from left to right? True by default.
-        - factor      : threshold of overlap ratio, the larger it is, the higher
-                       probability the two bbox-es are aligned.
-
+def is_vertical_aligned(bbox1:fitz.Rect, bbox2:fitz.Rect, horizontal:bool=True, factor:float=0.0) -> bool:
+    ''' Check whether two boxes have enough intersection in vertical direction, i.e. perpendicular to reading direction.
         An enough intersection is defined based on the minimum width of two boxes:
         L1+L2-L>factor*min(L1,L2)
+        ---
+        Args:
+        - bbox1, bbox2: bbox region in fitz.Rect type.
+        - horizontal  : is reading direction from left to right? True by default.
+        - factor      : threshold of overlap ratio, the larger it is, the higher probability the two bbox-es are aligned.
+
+        
     '''
     if not bbox1 or not bbox2:
         return False
 
     if horizontal: # reading direction: x
-        L1 = bbox1[2]-bbox1[0]
-        L2 = bbox2[2]-bbox2[0]
-        L = max(bbox1[2], bbox2[2]) - min(bbox1[0], bbox2[0])
+        L1 = bbox1.x1-bbox1.x0
+        L2 = bbox2.x1-bbox2.x0
+        L = max(bbox1.x1, bbox2.x1) - min(bbox1.x0, bbox2.x0)
     else:
-        L1 = bbox1[3]-bbox1[1]
-        L2 = bbox2[3]-bbox2[1]
-        L = max(bbox1[3], bbox2[3]) - min(bbox1[1], bbox2[1])
+        L1 = bbox1.y1-bbox1.y0
+        L2 = bbox2.y1-bbox2.y0
+        L = max(bbox1.y1, bbox2.y1) - min(bbox1.y0, bbox2.y0)
 
     return L1+L2-L>=factor*max(L1,L2)
 
 
-def is_horizontal_aligned(bbox1, bbox2, horizontal=True, factor=0.0):
-    ''' it is opposite to vertical align situation
-        - bbox1, bbox2: bbox region defined by top-left, bottom-right corners,
-                       e.g. (x0, y0, x1, y1).
+def is_horizontal_aligned(bbox1:fitz.Rect, bbox2:fitz.Rect, horizontal:bool=True, factor:float=0.0):
+    ''' Check whether two boxes have enough intersection in horizontal direction, i.e. the reading direction.
+        An enough intersection is defined based on the minimum width of two boxes:
+        L1+L2-L>factor*min(L1,L2)
+        ---
+        Args:
+        - bbox1, bbox2: bbox region in fitz.Rect type.
         - horizontal  : is reading direction from left to right? True by default.
-        - factor      : threshold of overlap ratio, the larger it is, the higher
-                        probability the two bbox-es are aligned.
+        - factor      : threshold of overlap ratio, the larger it is, the higher probability the two bbox-es are aligned.
     '''
+    # it is opposite to vertical align situation
     return is_vertical_aligned(bbox1, bbox2, not horizontal, factor)
 
 
-def in_same_row(bbox1, bbox2):
+def in_same_row(bbox1:fitz.Rect, bbox2:fitz.Rect):
     ''' Check whether two boxes are in same row/line:
         - yes: the bottom edge of each box is lower than the centerline of the other one;
         - otherwise, not in same row.
@@ -171,11 +153,11 @@ def in_same_row(bbox1, bbox2):
     if not bbox1 or not bbox2:
         return False
 
-    c1 = (bbox1[1] + bbox1[3]) / 2.0
-    c2 = (bbox2[1] + bbox2[3]) / 2.0
+    c1 = (bbox1.y0 + bbox1.y1) / 2.0
+    c2 = (bbox2.y0 + bbox2.y1) / 2.0
 
     # Note y direction under PyMuPDF context
-    return c1<bbox2[3] and c2<bbox1[3]
+    return c1<bbox2.y1 and c2<bbox1.y1
 
 
 def check_concurrent_points(p1, p2, square_tolerance=0.0):
@@ -186,10 +168,18 @@ def check_concurrent_points(p1, p2, square_tolerance=0.0):
     return (x1-x2)**2+(y1-y2)**2 <= square_tolerance
 
 
-def centerline_to_rect(start_end_points: list, width:float=2.0) -> tuple:
+def expand_centerline(start: list, end: list, width:float=2.0) -> tuple:
     ''' convert centerline to rectangle shape.
-        centerline is represented with start_end_points: (x0, y0, x1, y1).
+        centerline is represented with start/end points: (x0, y0), (x1, y1).
     '''
     h = width / 2.0
-    x0, y0, x1, y1 = start_end_points
-    return (x0-h, y0-h, x1+h, y1+h)
+    x0, y0 = start
+    x1, y1 = end
+
+    # consider horizontal or vertical line only
+    if x0==x1 or y0==y1:
+        res = (x0-h, y0-h, x1+h, y1+h)
+    else:
+        res = None
+
+    return res
