@@ -184,3 +184,12 @@ def check_concurrent_points(p1, p2, square_tolerance=0.0):
     x1, y1 = p1
     x2, y2 = p2
     return (x1-x2)**2+(y1-y2)**2 <= square_tolerance
+
+
+def centerline_to_rect(start_end_points: list, width:float=2.0) -> tuple:
+    ''' convert centerline to rectangle shape.
+        centerline is represented with start_end_points: (x0, y0, x1, y1).
+    '''
+    h = width / 2.0
+    x0, y0, x1, y1 = start_end_points
+    return (x0-h, y0-h, x1+h, y1+h)
