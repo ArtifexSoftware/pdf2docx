@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import random
 import fitz
 from fitz.utils import getColorList, getColorInfoList
@@ -71,7 +73,7 @@ def to_Highlight_color(sRGB):
     return color_map.get(sRGB, WD_COLOR_INDEX.YELLOW)
 
 
-def get_main_bbox(bbox_1:fitz.Rect, bbox_2:fitz.Rect, threshold:float=0.95):
+def get_main_bbox(bbox_1:fitz.Rect, bbox_2:fitz.Rect, threshold:float=0.95) -> fitz.Rect:
     ''' If the intersection of bbox_1 and bbox_2 exceeds the threshold, return the union of
         these two bbox-es; else return None.
     '''
@@ -80,16 +82,15 @@ def get_main_bbox(bbox_1:fitz.Rect, bbox_2:fitz.Rect, threshold:float=0.95):
     a1, a2, a = bbox_1.getArea(), bbox_2.getArea(), b.getArea()
 
     # no intersection
-    if not b: return None
+    if not b: return fitz.Rect()
 
     # Note: if bbox_1 and bbox_2 intersects with only an edge, b is not empty but b.getArea()=0
     # so give a small value when they're intersected but the area is zero
     factor = a/min(a1,a2) if a else 1e-6
     if factor >= threshold:
-        u = bbox_1 | bbox_2
-        return tuple([round(x,1) for x in (u.x0, u.y0, u.x1, u.y1)])
+        return bbox_1 | bbox_2
     else:
-        return None
+        return fitz.Rect()
 
 
 def parse_font_name(font_name):
@@ -128,7 +129,7 @@ def is_vertical_aligned(bbox1:fitz.Rect, bbox2:fitz.Rect, horizontal:bool=True, 
     return L1+L2-L>=factor*max(L1,L2)
 
 
-def is_horizontal_aligned(bbox1:fitz.Rect, bbox2:fitz.Rect, horizontal:bool=True, factor:float=0.0):
+def is_horizontal_aligned(bbox1:fitz.Rect, bbox2:fitz.Rect, horizontal:bool=True, factor:float=0.0) -> bool:
     ''' Check whether two boxes have enough intersection in horizontal direction, i.e. the reading direction.
         An enough intersection is defined based on the minimum width of two boxes:
         L1+L2-L>factor*min(L1,L2)
@@ -142,7 +143,7 @@ def is_horizontal_aligned(bbox1:fitz.Rect, bbox2:fitz.Rect, horizontal:bool=True
     return is_vertical_aligned(bbox1, bbox2, not horizontal, factor)
 
 
-def in_same_row(bbox1:fitz.Rect, bbox2:fitz.Rect):
+def in_same_row(bbox1:fitz.Rect, bbox2:fitz.Rect) -> bool:
     ''' Check whether two boxes are in same row/line:
         - yes: the bottom edge of each box is lower than the centerline of the other one;
         - otherwise, not in same row.
@@ -183,7 +184,7 @@ def new_page_section(doc:fitz.Document, width:float, height:float, title):
     page = doc.newPage(width=width, height=height)
 
     # plot title in page center
-    gray = getColor('gray')
+    gray = RGB_component_from_name('gray')
     f = 10.0
     page.insertText((width/4.0, (height+height/f)/2.0), title, color=gray, fontsize=height/f)
 
@@ -193,20 +194,21 @@ def new_page_with_margin(doc:fitz.Document, width:float, height:float, margin:tu
     # insert a new page
     page = doc.newPage(width=width, height=height)
     
-    # plot borders
-    blue = getColor('blue')
-    args = {
-        'color': blue,
-        'width': 0.5
-    }
-    dL, dR, dT, dB = margin
-    page.drawLine((dL, 0), (dL, height), **args) # left border
-    page.drawLine((width-dR, 0), (width-dR, height), **args) # right border
-    page.drawLine((0, dT), (width, dT), **args) # top
-    page.drawLine((0, height-dB), (width, height-dB), **args) # bottom
+    # plot borders if page margin is provided
+    if margin:
+        blue = RGB_component_from_name('blue')
+        args = {
+            'color': blue,
+            'width': 0.5
+        }
+        dL, dR, dT, dB = margin
+        page.drawLine((dL, 0), (dL, height), **args) # left border
+        page.drawLine((width-dR, 0), (width-dR, height), **args) # right border
+        page.drawLine((0, dT), (width, dT), **args) # top
+        page.drawLine((0, height-dB), (width, height-dB), **args) # bottom
 
     # plot title at the top-left corner
-    gray = getColor('gray')
+    gray = RGB_component_from_name('gray')
     page.insertText((5, 16), title, color=gray, fontsize=15)
     
     return page

@@ -57,11 +57,11 @@ class Rectangles:
             rect.plot(page, c)
 
     def from_annotations(self, annotations: list):
-        ''' Get rect from annotations(comment shapes) in PDF page
+        ''' Get rect from annotations(comment shapes) in PDF page.
             Note: consider highlight, underline, strike-through-line only. 
             ---
             Args:
-                - annotations: a list of PyMuPDF Annot objects        
+              - annotations: a list of PyMuPDF Annot objects        
         '''
         # map rect type from PyMuPDF
         # Annotation types:
@@ -108,15 +108,15 @@ class Rectangles:
 
             ---
             Args:
-                - xref_streams: doc._getXrefStream(xref).decode()        
-                - height: page height for coordinate system conversion from pdf CS to fitz CS 
+              - xref_streams: doc._getXrefStream(xref).decode()        
+              - height: page height for coordinate system conversion from pdf CS to fitz CS 
 
             --------            
             References:
-                - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdf_reference_archive/pdf_reference_1-7.pdf
-                    - Appendix A for associated operators
-                    - Section 8.5 Path Construction and Painting
-                - https://github.com/pymupdf/PyMuPDF/issues/263
+              - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdf_reference_archive/pdf_reference_1-7.pdf
+                - Appendix A for associated operators
+                - Section 8.5 Path Construction and Painting
+              - https://github.com/pymupdf/PyMuPDF/issues/263
 
             typical mark of rectangle in xref stream:
                 /P<</MCID 0>> BDC
@@ -133,19 +133,19 @@ class Rectangles:
                 EMC
 
             where,
-                - `MCID` indicates a Marked content, where rectangles exist
-                - `cm` specify a coordinate system transformation, 
-                here (0,0) translates to (90.0240021 590.380005)
-                - `q`/`Q` save/restores graphic status
-                - `rg` / `g` specify color mode: rgb / grey
-                - `re`, `f` or `f*`: fill rectangle path with pre-defined color. If no `f`/`f*` coming after
-                `re`, it's a rectangle with borders only (no filling).
-                in this case,
-                    - fill color is yellow (1,1,0)
-                    - lower left corner: (285.17 500.11)
-                    - width: 193.97
-                    - height: 13.44
-                - `m`, `l`: draw line from `m` (move to) to `l` (line to)
+              - `MCID` indicates a Marked content, where rectangles exist
+              - `cm` specify a coordinate system transformation, 
+            here (0,0) translates to (90.0240021 590.380005)
+              - `q`/`Q` save/restores graphic status
+              - `rg` / `g` specify color mode: rgb / grey
+              - `re`, `f` or `f*`: fill rectangle path with pre-defined color. If no `f`/`f*` coming after
+            `re`, it's a rectangle with borders only (no filling).
+            in this case,
+                - fill color is yellow (1,1,0)
+                - lower left corner: (285.17 500.11)
+                - width: 193.97
+                - height: 13.44
+              - `m`, `l`: draw line from `m` (move to) to `l` (line to)
 
             Note: coordinates system transformation should be considered if text format
                 is set from PDF file with edit mode. 
@@ -375,6 +375,101 @@ class Rectangles:
             # end the path without stroking or filling
             elif line=='n':
                 paths = []
+
+
+    @utils.debug_plot('Cleaned Rectangle Shapes', plot=True, category='shape')
+    def clean(self, **kwargs) -> bool:
+        '''Clean rectangles:
+            - delete rectangles fully contained in another one (beside, they have same bg-color)
+            - join intersected and horizontally aligned rectangles with same height and bg-color
+            - join intersected and vertically aligned rectangles with same width and bg-color
+        '''
+        # sort in reading order
+        self._rects.sort(key=lambda rect: (rect.bbox.y0, rect.bbox.x0, rect.bbox.x1))
+
+        # skip rectangles with both of the following two conditions satisfied:
+        #  - fully or almost contained in another rectangle
+        #  - same filling color with the containing rectangle
+        rects_unique = [] # type: list [Rectangle]
+        rect_changed = False
+        for rect in self._rects:
+            for ref_rect in rects_unique:
+                # Do nothing if these two rects in different bg-color
+                if ref_rect.color!=rect.color: continue     
+
+                # combine two rects in a same row if any intersection exists
+                # ideally the aligning threshold should be 1.0, but use 0.98 here to consider tolerance
+                if utils.is_horizontal_aligned(rect.bbox, ref_rect.bbox, True, 0.98): 
+                    main_bbox = utils.get_main_bbox(rect.bbox, ref_rect.bbox, 0.0)
+
+                # combine two rects in a same column if any intersection exists
+                elif utils.is_vertical_aligned(rect.bbox, ref_rect.bbox, True, 0.98):
+                    main_bbox = utils.get_main_bbox(rect.bbox, ref_rect.bbox, 0.0)
+
+                # combine two rects if they have a large intersection
+                else:
+                    main_bbox = utils.get_main_bbox(rect.bbox, ref_rect.bbox, 0.5)
+
+                if main_bbox:
+                    rect_changed = True
+                    ref_rect.update(main_bbox)
+                    break            
+            else:
+                rects_unique.append(rect)
+                
+        # update layout
+        if rect_changed:
+            self._rects = rects_unique
+
+        return rect_changed
+
+
+    def group(self) -> list[list[Rectangle]]:
+        '''Split rects into groups, to be further checked if it's a table group.        
+        '''
+        groups = []
+        counted_index = set() # type: set[int]
+
+        for i in range(len(self._rects)):
+
+            # do nothing if current rect has been considered already
+            if i in counted_index:
+                continue
+
+            # start a new group
+            rect = self._rects[i]
+            group = { i }
+
+            # get intersected rects
+            self._get_intersected_rects(rect, group)
+
+            # update counted rects
+            counted_index = counted_index | group
+
+            # add rect to groups
+            group_rects = [self._rects[x] for x in group]
+            groups.append(group_rects)
+
+        return groups
+
+
+    def _get_intersected_rects(self, rect:Rectangle, group:set[int]):
+        ''' Get intersected rects from `rects` and store in `group`.
+            ---
+            Args:
+              - group: a set() of index of intersected rect
+        '''
+
+        for i in range(len(self._rects)):
+
+            # ignore rect already processed
+            if i in group: continue
+
+            # if intersected, check rects further
+            target = self._rects[i]
+            if rect.bbox & target.bbox:
+                group.add(i)
+                self._get_intersected_rects(target, group)
 
 
     @staticmethod

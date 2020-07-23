@@ -38,14 +38,15 @@ from ..shape.Rectangles import Rectangles
 class Layout:
     ''' Object representing the whole page, e.g. margins, blocks, shapes, spacing.'''
 
-    def __init__(self, raw: dict, rects:Rectangles) -> None:
+    def __init__(self, raw: dict) -> None:
         self.width = raw.get('width', 0.0)
         self.height = raw.get('height', 0.0)
         self.blocks = Blocks(raw.get('blocks', []))
 
         # introduced attributes
         self._margin = None
-        self.rects = rects
+        self.rects = Rectangles()
+
 
     def store(self) -> dict:
         return {
@@ -55,6 +56,7 @@ class Layout:
             'blocks': self.blocks.store(),
             'rects': self.rects.store(),
         }
+
 
     def serialize(self, filename:str):
         '''Write layout to specified file.'''
@@ -73,13 +75,13 @@ class Layout:
         if key == 'layout': 
             objects = list(self.blocks)
         
-        #  - explicit table block only
+        #  - explicit table structure only
         elif key == 'table': 
             objects = list(filter(
                 lambda block: block.is_explicit_table_block(), self.blocks
             ))
         
-        #  - explicit table block only
+        #  - implicit table structure only
         elif key == 'implicit_table': 
             objects = list(filter(
                 lambda block: block.is_implicit_table_block(), self.blocks
@@ -98,18 +100,89 @@ class Layout:
         # insert a new page
         page = utils.new_page_with_margin(doc, self.width, self.height, self.margin, title)
 
-        # plot each object
-        for item in objects:
-            item.plot(page) 
+        # plot styled table but no text blocks in cell
+        if key=='table': 
+            for item in objects:
+                item.plot(page, style=True, content=False)
+        
+        # plot non-styled table and no text blocks in cell
+        elif key=='implicit_table': 
+            for item in objects:
+                item.plot(page, style=False, content=False)
+        
+        else:
+            for item in objects:
+                item.plot(page) # default args for TableBlock.plot
+
 
     @property
     def margin(self):
-        if self._margin is None:
-            self._margin = self.page_margin()
-
         return self._margin
 
+
+    def parse(self, **kwargs):
+        ''' Parse page layout.
+            ---
+            Args:
+              - kwargs: dict for layout plotting
+                    kwargs = {
+                        'debug': bool,
+                        'doc': fitz.Document object or None,
+                        'filename': str
+                    }
+        '''
+
+        # preprocessing, e.g. change block order, clean negative block
+        self.blocks.preprocessing(**kwargs)
+
+        # calculate page margin based on preprocessed layout
+        self.page_margin()
     
+        # parse table blocks: 
+        #  - table structure/format recognized from rectangles    
+        parse_explicit_table(layout, **kwargs)
+        
+        #  - cell contents extracted from text blocks
+        parse_implicit_table(layout, **kwargs)
+
+        # parse text format, e.g. highlight, underline
+        parse_text_format(layout, **kwargs)
+        
+        # paragraph / line spacing
+        parse_vertical_spacing(layout)
+
+
+    @utils.debug_plot('Explicit Table Structure', plot=True, category='table')
+    def parse_table_structure_from_rects(self, **kwargs) -> bool:
+        '''parse table structure from rectangle shapes'''
+        # group rects: each group may be a potential table
+        groups = self.rects.group()
+
+        # check each group
+        tables = []
+        for group in groups:
+            # skip if not a table group
+            if not _set_table_borders(group):
+                continue
+
+            # parse table structure based on rects in border type
+            table = _parse_table_structure_from_rects(group)
+            if table: 
+                set_explicit_table_block(table)
+                tables.append(table)
+            # reset border type if parse table failed
+            else:
+                for rect in group:
+                    rect['type'] = -1
+
+        # add parsed table structure to blocks list
+        if tables:
+            layout['blocks'].extend(tables)
+            return True
+        else:
+            return False
+
+
     def parse_vertical_spacing(self):
         ''' Calculate external and internal vertical space for paragraph blocks under page context 
             or table context. It'll used as paragraph spacing and line spacing when creating paragraph.
@@ -129,7 +202,7 @@ class Layout:
                     cell.blocks.parse_vertical_spacing(y0+w_top/2.0, y1-w_bottom/2.0)
 
 
-    def page_margin(self) -> tuple:
+    def page_margin(self):
         '''Calculate page margin:
             - left: MIN(bbox[0])
             - right: MIN(left, width-max(bbox[2]))
@@ -138,7 +211,8 @@ class Layout:
         '''
         # return normal page margin if no blocks exist
         if not self.blocks:
-            return (utils.ITP, ) * 4 # 1 Inch = 72 pt
+            self._margin = (utils.ITP, ) * 4 # 1 Inch = 72 pt
+            return
 
         # check candidates for left margin:
         list_bbox = list(map(lambda x: x.bbox, self.blocks))
@@ -162,7 +236,7 @@ class Layout:
         bottom *= 0.5
 
         # use normal margin if calculated margin is large enough
-        return (
+        self._margin = (
             min(utils.ITP, left), 
             min(utils.ITP, right), 
             min(utils.ITP, top), 

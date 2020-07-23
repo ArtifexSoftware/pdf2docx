@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
 
 '''
-Span and Char objects based on PDF raw dict extracted with PyMuPDF.
+Text Span object based on PDF raw dict extracted with PyMuPDF.
+
 @created: 2020-07-22
 @author: train8808@gmail.com
 ---
 
-- raw dict for Char
-    {
-        'bbox'  : (x0, y0, x1, y1), 
-        'c'     : str, 
-        'origin': (x,y)
-    }
+Refer to: https://pymupdf.readthedocs.io/en/latest/textpage.html
 
-- data structure for Span
+data structure for Span
     {
         # raw dict
         ---------------------------
@@ -35,45 +31,12 @@ Span and Char objects based on PDF raw dict extracted with PyMuPDF.
             ...
         ]
     }
-
-https://pymupdf.readthedocs.io/en/latest/textpage.html
 '''
 
 import copy
-
+from .Char import Char
 from ..common.BBox import BBox
 from ..shape.Rectangle import Rectangle
-
-
-class Char(BBox):
-    '''Object representing a character.'''
-    def __init__(self, raw: dict):
-        super(Char, self).__init__(raw)
-        self.c = raw.get('c', '')
-        self.origin = raw.get('origin', None)       
-
-
-    def contained_in_rect(self, rect:Rectangle) -> bool:
-        ''' Detect whether locates in a rect, or has an intersection 
-            larger than half of the char bbox.
-        '''
-        # char in rect?
-        if self.bbox in rect.bbox:
-            return True
-
-        # intersection?
-        else:
-            intsec = self.bbox & rect.bbox
-            return intsec.width > 0.5*self.bbox.width
-
-    def store(self) -> dict:
-        res = super().store()
-        res.update({
-            'c': self.c,
-            'origin': self.origin
-        })
-
-        return res
 
 
 class TextSpan(BBox):
@@ -198,33 +161,3 @@ class TextSpan(BBox):
 
         return pos, length
 
-
-class ImageSpan(BBox):
-    '''Text block.'''
-    def __init__(self, raw: dict) -> None:
-        super(ImageSpan, self).__init__(raw)
-        self.ext = raw.get('ext', 'png')
-        self.width = raw.get('width', 0.0)
-        self.height = raw.get('height', 0.0)
-        self.image = raw.get('image', b'')
-
-    def store(self) -> dict:
-        res = super().store()
-        res.update({
-            'ext': self.ext,
-            'width': self.width,
-            'height': self.height,
-            'image': '<image>' # drop real content to reduce size
-        })
-        return res
-
-    def plot(self, page, color:tuple):
-        '''Plot image bbox with diagonal lines.
-            ---
-            Args: 
-              - page: fitz.Page object
-        '''
-        x0, y0, x1, y1 = self.bbox_raw
-        page.drawLine((x0, y0), (x1, y1), color=color, width=1)
-        page.drawLine((x0, y1), (x1, y0), color=color, width=1)
-        page.drawRect(self.bbox, color=color, fill=None, overlay=False)

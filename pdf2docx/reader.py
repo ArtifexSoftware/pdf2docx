@@ -1,11 +1,8 @@
+from Github.pdf2docx.pdf2docx.common import utils
 import os
-
-from docx import Document
 import fitz
 
-from . import pdf
-from . import pdf_shape
-from . import pdf_debug
+from .layout.Layout import Layout
 
 
 class Reader:
@@ -63,79 +60,51 @@ class Reader:
                 'filename': self._debug_doc_path
             }
 
-
-    def rects(self, page):
-        ''' Get rectangle shapes from page source and comment annotations.            
-            return a list of rectangles:
-                [{
-                    "bbox": (x0, y0, x1, y1),
-                    "color": sRGB,
-                    'type': None
-                    },
-                    {...}
-                ]
-        '''
-        res = []
-
-        # use page height to convert the default origin from bottom left (PDF)
-        # to top right (PyMuPDF)
-        height = page.MediaBox.y1
-
+    
+    def parse(self, page):
+        '''Parse page layout.'''
+        # -----------------------------------------------------
+        # Layout object based on raw dict
+        # -----------------------------------------------------
+        raw_layout = page.getText('rawdict')
+        L = Layout(raw_layout)
+        
         # get rectangle shapes from page source:
         # these shapes are generally converted from docx, e.g. highlight, underline,
         # which are different from PDF comments like highlight, rectangle.
-        for xref in page._getContents():
+        for xref in page._getContents():            
             page_content = self._doc._getXrefStream(xref).decode(encoding="ISO-8859-1")
-            rects = pdf_shape.rects_from_source(page_content, height)
-            res.extend(rects)
+            L.rects.from_stream(page_content, L.height)
         
         # get annotations(comment shapes) from PDF page: consider highlight, underline, 
         # strike-through-line only.
         annots = page.annots()
-        rects = pdf_shape.rects_from_annots(annots)
-        res.extend(rects)
-
-        return res
-
-    
-    def layout(self, page):
-        ''' Raw dict of PDF page retrieved with PyMuPDF, and with rectangles included.
-        '''
-        # raw layout
-        raw_layout = page.getText('rawdict')
-        
-        # rectangles: appended to raw layout
-        raw_layout['rects'] = self.rects(page)
+        L.rects.from_annotations(annots)
         
         # plot raw layout
         if self.debug_mode:
             # new section for current pdf page
-            pdf_debug.new_page_section(self._debug_doc, raw_layout, f'Page {page.number}')
+            utils.new_page_section(self._debug_doc, L.width, L.height, f'Page {page.number}')
 
             # initial layout
-            pdf_debug.plot_layout(self._debug_doc, raw_layout, 'Original Text Blocks')
-            pdf_debug.plot_rectangles(self._debug_doc, raw_layout, 'Original Rectangle Shapes')
+            L.plot(self._debug_doc, 'Original Text Blocks', key='layout')
+            L.plot(self._debug_doc, 'Original Rectangle Shapes', key='shape')
 
-        return raw_layout
-
-
-    def parse(self, page):
-        ''' Parse page layout.
-        '''
-        # page source
-        layout = self.layout(page)
-
+        # -----------------------------------------------------
         # parse page: text/table/layout format
-        pdf.layout(layout, **self.debug_kwargs)
+        # -----------------------------------------------------
+        L.parse(**self.debug_kwargs)
 
+        # -----------------------------------------------------
         # debug:
         # - save layout plotting as pdf file
         # - write layout information
+        # -----------------------------------------------------
         if self.debug_mode:
             self._debug_doc.save(self._debug_doc_path)
-            pdf_debug.serialize(layout, self._debug_layout_file)
+            L.serialize(self._debug_layout_file)
 
-        return layout
+        return L
 
 
     def extract_tables(self, page):

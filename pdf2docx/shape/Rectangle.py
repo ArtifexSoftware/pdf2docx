@@ -26,7 +26,7 @@ Rectangle data structure:
 from ..common.BBox import BBox
 from ..common.base import RectType
 from ..common import utils
-from ..text.Span import TextSpan
+from ..text.TextSpan import TextSpan
 
 
 class Rectangle(BBox):

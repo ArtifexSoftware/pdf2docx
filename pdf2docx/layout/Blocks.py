@@ -32,9 +32,6 @@ class Blocks:
             # add to list
             if block: self._blocks.append(block)
 
-        # preprocessing
-        self.preprocessing()
-
 
     def __getitem__(self, idx):
         try:
@@ -50,6 +47,9 @@ class Blocks:
 
     def __len__(self):
         return len(self._blocks)
+
+    def extend(self, blocks:list[Block]):
+        self._blocks.extend(blocks)
 
     def store(self) -> list:
         return [ block.store() for block in self._blocks]

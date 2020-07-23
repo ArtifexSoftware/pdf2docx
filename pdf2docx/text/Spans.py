@@ -7,10 +7,7 @@ A group of TextSpan and ImageSpan objects.
 @author: train8808@gmail.com
 '''
 
-from .Span import TextSpan, ImageSpan
-
-from ..common.BBox import BBox
-from ..shape.Rectangle import Rectangle
+from .TextSpan import TextSpan
 
 
 class Spans:
