@@ -29,17 +29,16 @@ In addition to the raw layout dict, some new features are also included, e.g.
 }
 '''
 
-
-
-from .base import BlockType
-from .Rectangles import Rectangles
+import json
 from .Blocks import Blocks
-from pdf2docx import utils
+from ..common import utils
+from ..shape.Rectangles import Rectangles
+
 
 class Layout:
     ''' Object representing the whole page, e.g. margins, blocks, shapes, spacing.'''
 
-    def __init__(self, raw: dict, rects:Rectangles):
+    def __init__(self, raw: dict, rects:Rectangles) -> None:
         self.width = raw.get('width', 0.0)
         self.height = raw.get('height', 0.0)
         self.blocks = Blocks(raw.get('blocks', []))
@@ -56,6 +55,52 @@ class Layout:
             'blocks': self.blocks.store(),
             'rects': self.rects.store(),
         }
+
+    def serialize(self, filename:str):
+        '''Write layout to specified file.'''
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(json.dumps(self.store(), indent=4))
+
+
+    def plot(self, doc, title:str, key:str='layout'):
+        '''Plot specified type of blocks layout with PyMuPDF.
+            ---
+            Args:
+              - doc: fitz.Document object
+        '''
+        # get objects to plot
+        #  - all blocks
+        if key == 'layout': 
+            objects = list(self.blocks)
+        
+        #  - explicit table block only
+        elif key == 'table': 
+            objects = list(filter(
+                lambda block: block.is_explicit_table_block(), self.blocks
+            ))
+        
+        #  - explicit table block only
+        elif key == 'implicit_table': 
+            objects = list(filter(
+                lambda block: block.is_implicit_table_block(), self.blocks
+            ))
+        
+        #  - rectangle shapes
+        elif key == 'shape': 
+            objects = list(self.rects)
+
+        else:
+            objects = []
+
+        # do nothing if no objects
+        if not objects: return
+
+        # insert a new page
+        page = utils.new_page_with_margin(doc, self.width, self.height, self.margin, title)
+
+        # plot each object
+        for item in objects:
+            item.plot(page) 
 
     @property
     def margin(self):

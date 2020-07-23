@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
 '''
-A group of Text, Image or Table block.
+A group of Text/Image or Table block.
 @created: 2020-07-22
 @author: train8808@gmail.com
 '''
 
 
-from .base import BlockType
-from .TextBlock import ImageBlock, TextBlock
-from ..pdf_debug import debug_plot
-from .. import utils
+from ..common.base import BlockType
+from ..common import utils
+from ..common.Block import Block
+from ..text.TextBlock import ImageBlock, TextBlock
 
 
 class Blocks:
     '''Text block.'''
-    def __init__(self, raws: list):
+    def __init__(self, raws: list [dict]) -> None:
         ''' Construct Text blocks (image blocks included) from a list of raw block dict.'''
         # initialize blocks
-        self._blocks = []
+        self._blocks = [] # type: list [Block]
         for raw in raws:
             block = None
             # image block
@@ -55,7 +55,7 @@ class Blocks:
         return [ block.store() for block in self._blocks]
 
 
-    @debug_plot('Preprocessing', plot=False)
+    @utils.debug_plot('Preprocessing', plot=False)
     def preprocessing(self, **kwargs):
         '''Preprocessing for blocks initialized from the raw layout.'''
 
@@ -126,7 +126,11 @@ class Blocks:
 
 
     def merge_inline_images(self) -> bool:
-        '''merge inline image blocks into text block: a block line or a line span.
+        '''Merge inline image blocks into text block: a block line or a line span.
+
+           From docx aspect, inline image and text are in same paragraph; while they are not in pdf block level.
+           Instead, there's overlap between these image block and text block, so have to merge image block into text block
+           to avoid floating blocks.
         '''    
         # get all images blocks with index
         f = lambda item: item[1].is_image_block()

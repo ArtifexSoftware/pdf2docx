@@ -7,13 +7,13 @@ Base class for text/image/table blocks.
 @author: train8808@gmail.com
 '''
 
-from .base import BBox, BlockType
-from .. import utils
+from .base import BlockType
+from .BBox import BBox
 
 
 class Block(BBox):
     '''Text block.'''
-    def __init__(self, raw: dict):
+    def __init__(self, raw: dict) -> None:
         super(Block, self).__init__(raw)
         self._type = BlockType.UNDEFINED
 
@@ -55,3 +55,11 @@ class Block(BBox):
         ''' Check whether lines in block are discrete, False by default. 
             Rewrite it if necessary, e.g. in TextBlock'''
         return False
+
+    def plot(self, page):
+        '''Plot block bbox in PDF page.
+           ---
+            Args: 
+              - page: fitz.Page object
+        '''
+        raise NotImplementedError

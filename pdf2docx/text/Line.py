@@ -17,19 +17,17 @@ Data structure of line in text block:
 https://pymupdf.readthedocs.io/en/latest/textpage.html
 '''
 
-from .base import BBox
-from .Span import TextSpan
+from ..common.BBox import BBox
+from .Spans import Spans
 
 
 class Line(BBox):
     '''Object representing a line in text block.'''
-    def __init__(self, raw: dict):
+    def __init__(self, raw: dict) -> None:
         super(Line, self).__init__(raw)
         self.wmode = raw.get('wmode', 0) # writing mode
         self.dir = raw.get('dir', [1, 0]) # writing direction
-        self.spans = [
-            TextSpan(s) for s in raw.get('spans', []) # text span by default
-        ]
+        self.spans = Spans(raw.get('spans', []))
 
     def store(self) -> dict:
         res = super().store()
@@ -42,4 +40,12 @@ class Line(BBox):
         })
 
         return res
+
+    def plot(self, page, color:int):
+        '''Plot line border in red.
+           ---
+            Args: 
+              - page: fitz.Page object
+        '''
+        page.drawRect(self.bbox, color=color, fill=None, overlay=False)
         

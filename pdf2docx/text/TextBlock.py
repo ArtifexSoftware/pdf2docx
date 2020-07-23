@@ -40,13 +40,15 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
 
 '''
 
-from .base import Block, Spacing
 from .Line import Line
-from .. import utils
+from ..common.base import Spacing
+from ..common.Block import Block
+from ..common import utils
+
 
 class ImageBlock(Block, Spacing):
     '''Text block.'''
-    def __init__(self, raw: dict):
+    def __init__(self, raw: dict) -> None:
         super(ImageBlock, self).__init__(raw)
         self.ext = raw.get('ext', 'png')
         self.width = raw.get('width', 0.0)
@@ -66,15 +68,33 @@ class ImageBlock(Block, Spacing):
         })
         return res
 
+    def plot(self, page, color:tuple):
+        '''Plot image bbox with diagonal lines.
+            ---
+            Args: 
+              - page: fitz.Page object
+        '''
+        x0, y0, x1, y1 = self.bbox_raw
+        page.drawLine((x0, y0), (x1, y1), color=color, width=1)
+        page.drawLine((x0, y1), (x1, y0), color=color, width=1)
+        page.drawRect(self.bbox, color=color, fill=None, overlay=False)
+
 
 class TextBlock(Block, Spacing):
     '''Text block.'''
-    def __init__(self, raw: dict):
+    def __init__(self, raw: dict) -> None:
         super(TextBlock, self).__init__(raw)
-        self.lines = [ Line(line) for line in raw.get('lines', []) ]
+        self.lines = [ Line(line) for line in raw.get('lines', []) ] # type: list [Line]
 
         # set type
         self.set_text_block()
+
+    @property
+    def text(self) -> str:
+        '''Get text content in block, joning each line with `\n`.'''
+        lines = [line.spans.text for line in self.lines]
+        return '\n'.join(lines)
+
 
     def store(self) -> dict:
         res = super().store()
@@ -82,6 +102,28 @@ class TextBlock(Block, Spacing):
             'lines': [line.store() for line in self.lines]
         })
         return res
+
+    def plot(self, page):
+        '''Plot block/line/span area, in PDF page.
+           ---
+            Args: 
+              - page: fitz.Page object
+        '''
+        # block border in blue
+        blue = utils.RGB_component_from_name('blue')   
+        page.drawRect(self.bbox, color=blue, fill=None, overlay=False)
+
+        # lines and spans
+        for line in self.lines:
+            # line border in red
+            red = utils.RGB_component_from_name('red')
+            line.plot(page, red)
+
+            # span regions in random color
+            for span in line.spans:
+                c = utils.RGB_component_from_name('')                
+                span.plot(page, c)
+
 
     def contains_discrete_lines(self, distance:float=25, threshold:int=3):
         ''' Check whether lines in block are discrete: 

@@ -16,16 +16,16 @@ Rectangle data structure:
 '''
 
 import copy
-from .base import RectType
 from .Rectangle import Rectangle
-from .. import utils
+from ..common.base import RectType
+from ..common import utils
 
 
 class Rectangles:
     ''' A group of rectangle objects.'''
-    def __init__(self):
+    def __init__(self) -> None:
         ''' Construct Text blocks (image blocks included) from a list of raw block dict.'''
-        self._rects = []
+        self._rects = [] # type: list [Rectangle]
 
     def __getitem__(self, idx):
         try:
@@ -44,6 +44,17 @@ class Rectangles:
 
     def store(self) -> list:
         return [ rect.store() for rect in self._rects]
+
+    def plot(self, page):
+        '''Plot rectangle shapes with PyMuPDF.
+            ---
+            Args:
+              - doc: fitz.Page object
+        '''
+        # draw rectangle one by one
+        for rect in self._rects:       
+            c = utils.RGB_component(rect.color)
+            rect.plot(page, c)
 
     def from_annotations(self, annotations: list):
         ''' Get rect from annotations(comment shapes) in PDF page

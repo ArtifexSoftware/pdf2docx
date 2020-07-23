@@ -41,8 +41,8 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
 
 import copy
 
-from .base import BBox
-from .Rectangle import Rectangle
+from ..common.BBox import BBox
+from ..shape.Rectangle import Rectangle
 
 
 class Char(BBox):
@@ -76,10 +76,9 @@ class Char(BBox):
         return res
 
 
-
 class TextSpan(BBox):
     '''Object representing text span.'''
-    def __init__(self, raw: dict):
+    def __init__(self, raw: dict) -> None:
         super(TextSpan, self).__init__(raw)
         self.color = raw.get('color', 0)
         self.font = raw.get('font', None)
@@ -100,6 +99,27 @@ class TextSpan(BBox):
             self._text = ''.join(chars)
         
         return self._text
+
+    def store(self) -> dict:
+        res = super().store()
+        res.update({
+            'color': self.color,
+            'font': self.font,
+            'size': self.size,
+            'flags': self.flags,
+            'chars': [
+                char.store() for char in self.chars
+            ]
+        })
+        return res
+
+    def plot(self, page, color:tuple):
+        '''Fill bbox with given color.
+           ---
+            Args: 
+              - page: fitz.Page object
+        '''
+        page.drawRect(self.bbox, color=color, fill=color, width=0, overlay=False)
 
 
     def split(self, rect:Rectangle) -> list:
@@ -179,23 +199,9 @@ class TextSpan(BBox):
         return pos, length
 
 
-    def store(self) -> dict:
-        res = super().store()
-        res.update({
-            'color': self.color,
-            'font': self.font,
-            'size': self.size,
-            'flags': self.flags,
-            'chars': [
-                char.store() for char in self.chars
-            ]
-        })
-        return res
-
-
 class ImageSpan(BBox):
     '''Text block.'''
-    def __init__(self, raw: dict):
+    def __init__(self, raw: dict) -> None:
         super(ImageSpan, self).__init__(raw)
         self.ext = raw.get('ext', 'png')
         self.width = raw.get('width', 0.0)
@@ -211,3 +217,14 @@ class ImageSpan(BBox):
             'image': '<image>' # drop real content to reduce size
         })
         return res
+
+    def plot(self, page, color:tuple):
+        '''Plot image bbox with diagonal lines.
+            ---
+            Args: 
+              - page: fitz.Page object
+        '''
+        x0, y0, x1, y1 = self.bbox_raw
+        page.drawLine((x0, y0), (x1, y1), color=color, width=1)
+        page.drawLine((x0, y1), (x1, y0), color=color, width=1)
+        page.drawRect(self.bbox, color=color, fill=None, overlay=False)

@@ -23,14 +23,15 @@ Rectangle data structure:
 '''
 
 
-from .base import BBox, RectType
-from .Span import TextSpan
-from .. import utils
+from ..common.BBox import BBox
+from ..common.base import RectType
+from ..common import utils
+from ..text.Span import TextSpan
 
 
 class Rectangle(BBox):
     ''' Rectangle or line shapes parsed from pdf.'''
-    def __init__(self, raw: dict):
+    def __init__(self, raw: dict) -> None:
         super(Rectangle, self).__init__(raw)
         self._type = RectType.UNDEFINED # no type by default
         self.color = raw.get('color', 0)
@@ -50,6 +51,14 @@ class Rectangle(BBox):
             'color': self.color
         })
         return res
+
+    def plot(self, page, color:tuple):
+        '''Plot rectangle shapes with PyMuPDF.
+            ---
+            Args:
+              - page: fitz.Page object
+        '''        
+        page.drawRect(self.bbox, color=color, fill=color, width=0, overlay=False)
 
 
     def to_text_style(self, span: TextSpan) -> dict:
