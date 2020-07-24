@@ -14,7 +14,7 @@ class Spans:
     '''Text span.'''
     def __init__(self, raws: list [dict]) -> None:
         ''' Construct text span from a list of raw span dict.'''
-        self._spans = [ TextSpan(raw) for raw in raws] # text span by default 
+        self._spans = [ TextSpan(raw) for raw in raws ] # text span by default 
 
 
     def __getitem__(self, idx):
@@ -31,6 +31,9 @@ class Spans:
 
     def __len__(self):
         return len(self._spans)
+
+    def append(self, span:TextSpan):
+        self._spans.append(span)
 
     def store(self) -> list:
         return [ span.store() for span in self._spans]

@@ -31,8 +31,11 @@ In addition to the raw layout dict, some new features are also included, e.g.
 
 import json
 from .Blocks import Blocks
+from ..common.Block import Block
 from ..common import utils
 from ..shape.Rectangles import Rectangles
+from ..table.TableBlock import TableBlock
+from ..table.functions import set_table_borders
 
 
 class Layout:
@@ -140,16 +143,20 @@ class Layout:
     
         # parse table blocks: 
         #  - table structure/format recognized from rectangles    
-        parse_explicit_table(layout, **kwargs)
+        self.rects.clean(**kwargs) # clean rects
+        self.parse_table_structure_from_rects(**kwargs)    
+        parse_table_content(layout, **kwargs) # cell contents
         
         #  - cell contents extracted from text blocks
-        parse_implicit_table(layout, **kwargs)
+        parse_table_structure_from_blocks(layout, **kwargs)    
+        parse_table_content(layout, **kwargs) # cell contents
 
         # parse text format, e.g. highlight, underline
         parse_text_format(layout, **kwargs)
         
         # paragraph / line spacing
-        parse_vertical_spacing(layout)
+        self.parse_vertical_spacing()
+
 
 
     @utils.debug_plot('Explicit Table Structure', plot=True, category='table')
@@ -159,16 +166,17 @@ class Layout:
         groups = self.rects.group()
 
         # check each group
-        tables = []
+        tables = [] # type: list[TableBlock]
         for group in groups:
             # skip if not a table group
-            if not _set_table_borders(group):
+            if not set_table_borders(group):
                 continue
 
             # parse table structure based on rects in border type
-            table = _parse_table_structure_from_rects(group)
+            table = TableBlock()
+            table.parse_structure(group)
             if table: 
-                set_explicit_table_block(table)
+                table.set_explicit_table_block()
                 tables.append(table)
             # reset border type if parse table failed
             else:
@@ -177,10 +185,64 @@ class Layout:
 
         # add parsed table structure to blocks list
         if tables:
-            layout['blocks'].extend(tables)
+            self.blocks.extend(tables)
             return True
         else:
             return False
+
+
+    @utils.debug_plot('Parsed Table', plot=False, category='layout')
+    def parse_table_content(self, **kwargs) -> bool:
+        '''Add block lines to associated cells.'''
+
+        # table blocks
+        table_found = False
+        tables = list(filter(lambda block: block.is_table_block(), self.blocks))
+        if not tables: return table_found
+
+        # collect blocks in table region
+        blocks = []   # type: list[Block]
+        blocks_in_tables = [[] for _ in tables] # type: list[list[Block]]
+        for block in self.blocks:
+            # ignore table block
+            if block.is_table_block(): continue
+
+            # collect blocks contained in table region
+            for table, blocks_in_table in zip(tables, blocks_in_tables):
+                if table.bbox.intersects(block.bbox):
+                    blocks_in_table.append(block)
+                    break
+            # normal blocks
+            else:
+                blocks.append(block)
+
+        # assign blocks to associated cells
+        # ATTENTION: no nested table is considered
+        for table, blocks_in_table in zip(tables, blocks_in_tables):
+            for row in table.cells:
+                for cell in row:
+                    if not cell: continue
+
+                    # check candidate blocks
+                    blocks_in_cell = []
+                    fitz_cell = fitz.Rect(cell['bbox'])
+                    for block in blocks_in_table:
+                        cell_block = _assign_block_to_cell(block, fitz_cell)
+                        if cell_block:
+                            blocks_in_cell.append(cell_block)
+
+                    # merge blocks if contained blocks found
+                    if blocks_in_cell: 
+                        cell_blocks = merge_blocks(blocks_in_cell)
+                        cell['blocks'].extend(cell_blocks)
+                        table_found = True
+
+        # sort in natural reading order and update layout blocks
+        blocks.extend(tables)
+        blocks.sort(key=lambda block: (block['bbox'][1], block['bbox'][0]))
+        self.blocks = blocks
+
+        return table_found
 
 
     def parse_vertical_spacing(self):

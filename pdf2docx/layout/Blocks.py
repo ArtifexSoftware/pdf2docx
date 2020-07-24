@@ -51,6 +51,9 @@ class Blocks:
     def extend(self, blocks:list[Block]):
         self._blocks.extend(blocks)
 
+    def append(self, block:Block):
+        if block: self._blocks.append(block)
+
     def store(self) -> list:
         return [ block.store() for block in self._blocks]
 
@@ -175,6 +178,100 @@ class Blocks:
 
         # anything changed in this step?
         return True if index_inline else False
+
+
+    def merge_blocks(blocks):
+        '''merge blocks aligned horizontally.'''
+        res = []
+        for block in blocks:
+            # convert to text block if image block
+            if is_image_block(block):
+                text_block = convert_image_to_text_block(block)
+            else:
+                text_block = block
+
+            # add block directly if not aligned horizontally with previous block
+            if not res or not utils.is_horizontal_aligned(text_block['bbox'], res[-1]['bbox']):
+                res.append(text_block)
+
+            # otherwise, append to previous block as lines
+            else:
+                res[-1]['lines'].extend(text_block['lines'])
+
+                # update bbox
+                res[-1]['bbox'] = (
+                    min(res[-1]['bbox'][0], text_block['bbox'][0]),
+                    min(res[-1]['bbox'][1], text_block['bbox'][1]),
+                    max(res[-1]['bbox'][2], text_block['bbox'][2]),
+                    max(res[-1]['bbox'][3], text_block['bbox'][3])
+                    )
+        
+        # sort lines in block
+        for block in res:
+            sort_lines(block) 
+
+        return res
+
+
+    def sort_lines(block):
+        ''' Sort lines in block.        
+
+            In the following example, A should come before B.
+                            +-----------+
+                +---------+  |           |
+                |   A     |  |     B     |
+                +---------+  +-----------+
+
+            Steps:
+                (a) sort lines in reading order, i.e. from top to bottom, from left to right.
+                (b) group lines in row
+                (c) sort lines in row: from left to right
+        '''
+        # sort in reading order
+        block['lines'].sort(key=lambda block: (block['bbox'][1], block['bbox'][0]))
+
+        # split lines in separate row
+        lines_in_rows = [] # [ [lines in row1], [...] ]
+        for line in block.get('lines', []):
+
+            # add lines to a row group if not in same row with previous line
+            if not lines_in_rows or not utils.in_same_row(line['bbox'], lines_in_rows[-1][-1]['bbox']):
+                lines_in_rows.append([line])
+            
+            # otherwise, append current row group
+            else:
+                lines_in_rows[-1].append(line)
+        
+        # sort lines in each row
+        lines = []
+        for row in lines_in_rows:
+            row.sort(key=lambda line: line['bbox'][0])
+            lines.extend(row)
+
+        block['lines'] = lines
+
+
+    def convert_image_to_text_block(image):
+        '''convert image block to text block: a span'''
+        # convert image as a span in line
+        image_line = {
+            "wmode": 0,
+            "dir"  : (1, 0),
+            "bbox" : image['bbox'],
+            "spans": [image]
+            }
+        
+        # insert line to block
+        block = {
+            'type': -1,
+            'bbox': image['bbox'],
+            'lines': [image_line]
+        }
+
+        # set text block
+        set_text_block(block)
+
+        return block    
 
 
     def parse_vertical_spacing(self, Y0:float, Y1:float):

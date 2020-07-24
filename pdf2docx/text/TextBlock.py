@@ -32,7 +32,7 @@ from ..common import utils
 
 class TextBlock(Block, Spacing):
     '''Text block.'''
-    def __init__(self, raw: dict) -> None:
+    def __init__(self, raw:dict={}) -> None:
         super(TextBlock, self).__init__(raw)
         self.lines = [ Line(line) for line in raw.get('lines', []) ] # type: list [Line]
 
@@ -52,6 +52,14 @@ class TextBlock(Block, Spacing):
             'lines': [line.store() for line in self.lines]
         })
         return res
+
+
+    def add(self, line:Line):
+        '''Add line to TextBlock.'''
+        if line and isinstance(line, Line):
+            self.line.append(line)
+            self.union(line.bbox)
+
 
     def plot(self, page):
         '''Plot block/line/span area, in PDF page.
@@ -121,7 +129,7 @@ class TextBlock(Block, Spacing):
         self.lines.insert(i, line)
 
         # update bbox accordingly
-        self.update(self.bbox | image.bbox)
+        self.union(image.bbox)
 
         # Step 2: merge image into span in line, especially overlap exists
         self.merge_lines()
@@ -131,7 +139,7 @@ class TextBlock(Block, Spacing):
         ''' Merge lines aligned horizontally in a block.
             Generally, it is performed when inline image is added into block line.
         '''
-        new_lines = []
+        new_lines = [] # type: list[Line]
         for line in self.lines:        
             # add line directly if not aligned horizontally with previous line
             if not new_lines or not utils.is_horizontal_aligned(line.bbox, new_lines[-1].bbox):
@@ -145,10 +153,7 @@ class TextBlock(Block, Spacing):
                 continue
 
             # now, this line will be append to previous line as a span
-            new_lines[-1].spans.extend(line.spans)
-
-            # update bbox
-            new_lines[-1].update(new_lines[-1].bbox | line.bbox)
+            new_lines[-1].add(list(line.spans))
 
         # update lines in block
         self.lines = new_lines

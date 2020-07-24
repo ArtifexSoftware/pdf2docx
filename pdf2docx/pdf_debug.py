@@ -124,7 +124,7 @@ def new_page_section(doc, layout, title):
     page = doc.newPage(width=w, height=h)
 
     # plot title in page center
-    gray = utils.getColor('gray')
+    gray = utils.get_color('gray')
     f = 10.0
     page.insertText((w/4.0, (h+h/f)/2.0), title, color=gray, fontsize=h/f)
 
@@ -153,7 +153,7 @@ def _new_page_with_margin(doc, layout, title):
     
     # plot borders if page margin is calculated
     if 'margin' in layout:
-        blue = utils.getColor('blue')
+        blue = utils.get_color('blue')
         args = {
             'color': blue,
             'width': 0.5
@@ -165,7 +165,7 @@ def _new_page_with_margin(doc, layout, title):
         page.drawLine((0, h-dB), (w, h-dB), **args) # bottom
 
     # plot title at the top-left corner
-    gray = utils.getColor('gray')
+    gray = utils.get_color('gray')
     page.insertText((5, 16), title, color=gray, fontsize=15)
     
     return page
@@ -174,7 +174,7 @@ def _new_page_with_margin(doc, layout, title):
 def _plot_text_block(page, block):
     '''Plot text/image block, i.e. block/line/span area, in PDF page'''
     # block border in blue
-    blue = utils.getColor('blue')    
+    blue = utils.get_color('blue')    
     if is_image_block(block):
         _plot_image(page, block['bbox'], blue)
     else:
@@ -219,13 +219,13 @@ def _plot_lines_and_spans(page, lines):
     '''Plot lines and spans bbox'''    
     for line in lines:
         # line border in red
-        red = utils.getColor('red')
+        red = utils.get_color('red')
         r = fitz.Rect(line['bbox'])
         page.drawRect(r, color=red, fill=None, overlay=False)
 
         # span regions
         for span in line.get('spans', []):
-            c = utils.getColor('')
+            c = utils.get_color('')
             bbox = span['bbox']
 
             # image span: diagonal lines

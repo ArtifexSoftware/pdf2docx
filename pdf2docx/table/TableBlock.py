@@ -32,13 +32,11 @@ Table block object parsed from raw image and text blocks.
 
 '''
 
-import fitz
-
 from .Cell import Cell
+from . import functions
 from ..shape.Rectangle import Rectangle
 from ..common.Block import Block
 from ..common.base import RectType
-from ..common.utils import utils
 
 
 class TableBlock(Block):
@@ -78,7 +76,7 @@ class TableBlock(Block):
         # --------------------------------------------------
         # group horizontal/vertical borders
         # --------------------------------------------------
-        h_borders, v_borders = self._collect_explicit_borders(rects)
+        h_borders, v_borders = functions.collect_explicit_borders(rects)
         if not h_borders or not v_borders:
             return
 
@@ -94,7 +92,7 @@ class TableBlock(Block):
         for i, row in enumerate(rows[0:-1]):
             ref_y = (row+rows[i+1])/2.0
             ordered_v_borders = [v_borders[k] for k in cols]
-            row_structure = self._check_merged_cells(ref_y, ordered_v_borders, 'row')
+            row_structure = functions.check_merged_cells(ref_y, ordered_v_borders, 'row')
             merged_cells_rows.append(row_structure)
 
         # check merged cells in each column
@@ -102,7 +100,7 @@ class TableBlock(Block):
         for i, col in enumerate(cols[0:-1]):
             ref_x = (col+cols[i+1])/2.0
             ordered_h_borders = [h_borders[k] for k in rows]
-            col_structure = self._check_merged_cells(ref_x, ordered_h_borders, 'column')        
+            col_structure = functions.check_merged_cells(ref_x, ordered_h_borders, 'column')        
             merged_cells_cols.append(col_structure)
 
         # --------------------------------------------------
@@ -117,7 +115,7 @@ class TableBlock(Block):
                 # if current cell is merged horizontally or vertically, set None.
                 # actually, it will be counted in the top-left cell of the merged range.
                 if merged_cells_rows[i][j]==0 or merged_cells_cols[j][i]==0:
-                    cells_in_row.append(None)
+                    cells_in_row.append(Cell())
                     continue
 
                 # Now, this is the top-left cell of merged range.
@@ -156,7 +154,7 @@ class TableBlock(Block):
                 # shading rect in this cell
                 # modify the cell bbox from border center to inner region
                 inner_bbox = (bbox[0]+w_left/2.0, bbox[1]+w_top/2.0, bbox[2]-w_right/2.0, bbox[3]-w_bottom/2.0)
-                shading_rect = self._get_rect_with_bbox(inner_bbox, rects, threshold=0.9)
+                shading_rect = functions.get_rect_with_bbox(inner_bbox, rects, threshold=0.9)
                 if shading_rect:
                     shading_rect.type = RectType.SHADING # set shaing type
                     bg_color = shading_rect.color
@@ -190,187 +188,4 @@ class TableBlock(Block):
 
 
 
-    def _collect_explicit_borders(self, rects:list[Rectangle]) -> tuple[dict[float,list[Rectangle]]]:
-        ''' Collect explicit borders in horizontal and vertical groups respectively.'''
-        borders = list(filter(
-            lambda rect: rect.type==RectType.BORDER, rects))
-        h_borders = {} # type: dict [float, list[Rectangle]]
-        v_borders = {} # type: dict [float, list[Rectangle]]
-        h_outer = []   # type: list[float]
-        v_outer = []   # type: list[float]
-
-        for rect in borders:
-            # group horizontal borders in each row
-            if rect.bbox.width > rect.bbox.height:
-                # row centerline
-                y = round((rect.bbox.y0 + rect.bbox.y1) / 2.0, 1)
-                if y in h_borders:
-                    h_borders[y].append(rect)
-                else:
-                    h_borders[y] = [rect]
-                
-                # candidates for vertical outer border
-                v_outer.extend([rect.bbox.x0, rect.bbox.x1])
-
-            # group vertical borders in each column
-            else:
-                # column centerline
-                x = round((rect.bbox.x0 + rect.bbox.x1) / 2.0, 1)
-                if x in v_borders:
-                    v_borders[x].append(rect)
-                else:
-                    v_borders[x] = [rect]
-                
-                # candidates for horizontal outer border
-                h_outer.extend([rect.bbox.y0, rect.bbox.y1])
-
-        # at least 2 inner borders exist
-        if len(h_borders)+len(v_borders)<2:
-            return None, None
-
-        # Note: add dummy borders if no outer borders exist
-        # check whether outer borders exists in collected borders
-        if h_borders:
-            top_rects = h_borders[min(h_borders)]
-            bottom_rects = h_borders[max(h_borders)]
-            left   = min(v_outer)
-            right  = max(v_outer)
-        else:
-            top_rects = []
-            bottom_rects = []
-            left   = None
-            right  = None
-
-        if v_borders:
-            left_rects = v_borders[min(v_borders)]
-            right_rects = v_borders[max(v_borders)]
-            top   = min(h_outer)
-            bottom  = max(h_outer)
-        else:
-            left_rects = []
-            right_rects = []
-            top   = None
-            bottom  = None    
-
-        if not self._exist_outer_border(top, top_rects, 'h'):
-            h_borders[top] = [Rectangle({
-                    'bbox': (left, top, right, top),
-                    'color': utils.RGB_value((1,1,1))
-                })
-            ]
-        if not self._exist_outer_border(bottom, bottom_rects, 'h'):
-            h_borders[bottom] = [Rectangle({
-                    'bbox': (left, bottom, right, bottom),
-                    'color': utils.RGB_value((1,1,1))
-                })
-            ]
-        if not self._exist_outer_border(left, left_rects, 'v'):
-            v_borders[left] = [Rectangle({
-                    'bbox': (left, top, left, bottom),
-                    'color': utils.RGB_value((1,1,1))
-                })
-            ]
-        if not self._exist_outer_border(right, right_rects, 'v'):
-            v_borders[right] = [Rectangle({
-                    'bbox': (right, top, right, bottom),
-                    'color': utils.RGB_value((1,1,1))
-                })
-            ]
-
-        return h_borders, v_borders
-
     
-    @staticmethod
-    def _exist_outer_border(target:float, borders:list[Rectangle], direction:str='h') -> bool:
-        ''' Check outer borders: whether target border exists in collected borders.
-            ---
-            Args:
-              - target: float, target position of outer border
-              - borders: list, a list of rects representing borders
-              - direction: str, 'h'->horizontal border; 'v'->vertical border
-        '''
-        # no target outer border needed
-        if target==None:
-            return True
-
-        # need outer border if no borders exist
-        if not borders:
-            return False
-        
-        if direction=='h':
-            # centerline of source borders
-            source = round((borders[0]['bbox'][1] + borders[0]['bbox'][3]) / 2.0, 1)
-            # max width of source borders
-            width = max(map(lambda rect: rect['bbox'][3]-rect['bbox'][1], borders))
-        else:
-            source = round((borders[0]['bbox'][0] + borders[0]['bbox'][2]) / 2.0, 1)
-            width = max(map(lambda rect: rect['bbox'][2]-rect['bbox'][0], borders))
-
-        target = round(target, 1)
-        width = round(width, 1)
-
-        return abs(target-source) <= width
-
-
-    @staticmethod
-    def _check_merged_cells(ref:float, borders:list[list[Rectangle]], direction:str='row') -> list[int]:
-        ''' Check merged cells in a row/column. 
-
-            Taking cells in a row (direction=0) for example, give a horizontal line (y=ref) passing through this row, 
-            check the intersection with vertical borders. The n-th cell is merged if no intersection with the n-th border.
-
-            ---
-            Args:
-              - ref: y (or x) coordinate of horizontal (or vertical) passing-through line
-              - borders: a list of vertical (or horizontal) rects list in a column (or row)
-              - direction: 
-                'row' - check merged cells in row; 
-                'column' - check merged cells in a column
-        '''
-
-        res = []
-        for rects in borders[0:-1]:
-            # multi-lines exist in a row/column
-            for rect in rects:
-
-                # reference coordinates depending on checking direction
-                if direction=='row':
-                    _, ref0, _, ref1 = rect.bbox_raw
-                else:
-                    ref0, _, ref1, _ = rect.bbox_raw
-
-                # 1) intersection found
-                if ref0 < ref < ref1:
-                    res.append(1)
-                    break
-                
-                # 2) reference line locates below current rect:
-                # still have a chance to find intersection with next rect, but,
-                # no chance if this is the last rect, see the else-clause
-                elif ref > ref1:
-                    continue
-
-                # 3) current rect locates below the reference line:
-                # no intersection is possible any more
-                elif ref < ref0:
-                    res.append(0)
-                    break
-            
-            # see notes 2), no change any more
-            else:
-                res.append(0)
-
-        return res
-
-    
-    def _get_rect_with_bbox(bbox:tuple[float], rects:list[Rectangle], threshold:float) -> Rectangle:
-        '''Get rect within given bbox.'''
-        target_rect = fitz.Rect(bbox)
-        for rect in rects:
-            intersection = target_rect & rect.bbox
-            if intersection.getArea() / target_rect.getArea() >= threshold:
-                res = rect
-                break
-        else:
-            res = None
-        return res

@@ -17,6 +17,7 @@ Rectangle data structure:
 
 import copy
 from .Rectangle import Rectangle
+from . import functions
 from ..common.base import RectType
 from ..common import utils
 
@@ -238,7 +239,7 @@ class Rectangles:
 
             # - set color: either gray, or RGB or CMYK mode
             elif line.upper()=='SC': # c1 c2 ... cn SC
-                c = self._RGB_from_color_components(lines[i-4:i])
+                c = functions.RGB_from_color_components(lines[i-4:i])
                 #  nonstroking color
                 if line=='sc':
                     Wcf = c
@@ -249,9 +250,9 @@ class Rectangles:
             # - set color: either gray, or RGB or CMYK mode
             elif line.upper()=='SCN': # c1 c2 ... cn [name] SC
                 if utils.is_number(lines[i-1]):
-                    c = self._RGB_from_color_components(lines[i-4:i])
+                    c = functions.RGB_from_color_components(lines[i-4:i])
                 else:
-                    c = self._RGB_from_color_components(lines[i-5:i-1])
+                    c = functions.RGB_from_color_components(lines[i-5:i-1])
 
                 #  nonstroking color
                 if line=='scn':
@@ -321,18 +322,18 @@ class Rectangles:
             # close the path
             elif line=='h': 
                 for path in paths:
-                    self._close_path(path)
+                    functions.close_path(path)
 
             # close and stroke the path
             elif line.upper()=='S':
                 # close
                 if line=='s':
                     for path in paths:
-                        self._close_path(path)
+                        functions.close_path(path)
 
                 # stroke path
                 for path in paths:
-                    rects = self._stroke_path(path, WCS, Wcs, Wd, height)
+                    rects = functions.stroke_path(path, WCS, Wcs, Wd, height)
                     self._rects.extend(rects)
 
                 # reset path
@@ -342,10 +343,10 @@ class Rectangles:
             elif line in ('f', 'F', 'f*'):            
                 for path in paths: 
                     # close the path implicitly
-                    self._close_path(path)
+                    functions.close_path(path)
                 
                     # fill path
-                    rect = self._fill_rect_path(path, WCS, Wcf, height)
+                    rect = functions.fill_rect_path(path, WCS, Wcf, height)
                     if rect: self._rects.append(rect)
 
                 # reset path
@@ -355,14 +356,14 @@ class Rectangles:
             elif line.upper() in ('B', 'B*'): 
                 for path in paths: 
                     # close path
-                    self._close_path(path)
+                    functions.close_path(path)
                     
                     # fill path
-                    rect = self._fill_rect_path(path, WCS, Wcf, height)
+                    rect = functions.fill_rect_path(path, WCS, Wcf, height)
                     if rect: self._rects.append(rect)
 
                     # stroke path
-                    rects = self._stroke_path(path, WCS, Wcs, Wd, height)
+                    rects = functions.stroke_path(path, WCS, Wcs, Wd, height)
                     self._rects.extend(rects)
 
                 # reset path
@@ -470,112 +471,3 @@ class Rectangles:
             if rect.bbox & target.bbox:
                 group.add(i)
                 self._get_intersected_rects(target, group)
-
-
-    @staticmethod
-    def _transform_path(path: list, WCS: list, height: float) -> list:
-        ''' Transform path to page coordinate system. 
-            ---
-            Args:
-                - path: a list of (x,y) point
-                - WCS: transformation matrix
-                - height: page height for converting CS from pdf to fitz
-        '''
-        res = []
-        sx, sy, tx, ty = WCS
-        for (x0, y0) in path:
-            # transformate to original PDF CS                    
-            x = sx*x0 + tx
-            y = sy*y0 + ty
-
-            # pdf to PyMuPDF CS
-            y = height-y
-            
-            res.append((x, y))
-
-        return res
-
-
-    @staticmethod
-    def _close_path(path):
-        if not path: return
-        if path[-1]!=path[0]:
-            path.append(path[0])
-
-
-    def _stroke_path(self, path: list, WCS: list, color: int, width: float, page_height: float) -> list:
-        ''' Stroke path with a given width. Only horizontal/vertical paths are considered.
-        '''
-        # CS transformation
-        t_path = self._transform_path(path, WCS, page_height)
-
-        rects = []
-        for i in range(len(t_path)-1):
-            # start point
-            x0, y0 = t_path[i]
-            # end point
-            x1, y1 = t_path[i+1]
-
-            # ensure from top-left to bottom-right
-            if x0>x1 or y0>y1:
-                x0, y0, x1, y1 = x1, y1, x0, y0
-
-            # convert line to rectangle
-            bbox = utils.expand_centerline((x0, y0), (x1, y1), width)
-            if bbox:
-                rect = Rectangle({
-                    'bbox': bbox,
-                    'color': color
-                })
-                rects.append(rect)
-        
-        return rects
-
-
-    def _fill_rect_path(self, path:list, WCS:list, color:int, page_height:float) -> Rectangle:
-        ''' Fill bbox of path with a given color. Only horizontal/vertical paths are considered.
-        '''
-        # CS transformation
-        t_path = self._transform_path(path, WCS, page_height)
-
-        # find bbox of path region
-        X = [p[0] for p in t_path]
-        Y = [p[1] for p in t_path]
-        x0, x1 = min(X), max(X)
-        y0, y1 = min(Y), max(Y)
-
-        # filled rectangle
-        rect = Rectangle({
-            'bbox': (x0, y0, x1, y1), 
-            'color': color
-        })
-            
-        return rect
-
-
-    @staticmethod
-    def _RGB_from_color_components(components:list) -> int:
-        ''' Detect color mode from given components and calculate the RGB value.
-            ---
-            Args:
-                - components: a list with 4 elements
-        '''
-        color = utils.RGB_value((0.0,0.0,0.0))
-
-        # CMYK mode
-        if all(map(utils.is_number, components)):
-            c, m, y, k = map(float, components)
-            color = utils.CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)
-
-        # RGB mode
-        elif all(map(utils.is_number, components[1:])):
-            r, g, b = map(float, components[1:])
-            color = utils.RGB_value((r, g, b))
-
-        # gray mode
-        elif utils.is_number(components[-1]):
-            g = float(components[-1])
-            color = utils.RGB_value((g,g,g))
-
-        return color
-

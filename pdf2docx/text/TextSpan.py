@@ -33,9 +33,12 @@ data structure for Span
     }
 '''
 
+
+import fitz
 import copy
 from .Char import Char
 from ..common.BBox import BBox
+from ..common import utils
 from ..shape.Rectangle import Rectangle
 
 
@@ -86,71 +89,25 @@ class TextSpan(BBox):
 
 
     def split(self, rect:Rectangle) -> list:
-        '''Split span with the intersection: span-intersection-span.'''   
-
-        # split spans
-        split_spans = []
-
+        '''Split span with the intersection: span-intersection-span.'''
         # any intersection in this span?
         intsec = rect.bbox & self.bbox
 
         # no, then add this span as it is
-        if not intsec:
-            split_spans.append(self)
+        if not intsec: return [self]
 
         # yes, then split spans:
         # - add new style to the intersection part
         # - keep the original style for the rest
-        else:
-            # expand the intersection area, e.g. for strike through line,
-            # the intersection is a `line`, i.e. a rectangle with very small height,
-            # so expand the height direction to span height
-            intsec.y0 = self.bbox.y0
-            intsec.y1 = self.bbox.y1
+        split_spans = [] # type: list[TextSpan]
 
-            # calculate chars in the format rectangle
-            pos, length = self.chars_index_in_rect(intsec)
-            pos_end = max(pos+length, 0) # max() is used in case: pos=-1, length=0
+        # expand the intersection area, e.g. for strike through line,
+        # the intersection is a `line`, i.e. a rectangle with very small height,
+        # so expand the height direction to span height
+        intsec.y0 = self.bbox.y0
+        intsec.y1 = self.bbox.y1
 
-            # split span with the intersection: span-intersection-span
-            # 
-            # left part if exists
-            if pos > 0:
-                split_span = copy.deepcopy(self)
-                split_span.bbox = (self.bbox.x0, self.bbox.y0, intsec.x0, self.bbox.y1)
-                split_span.chars = self.chars[0:pos]
-                split_span.text = self.text[0:pos]
-                split_spans.append(split_span)
-
-            # middle intersection part if exists
-            if length > 0:
-                split_span = copy.deepcopy(self)            
-                split_span.bbox = (intsec.x0, intsec.y0, intsec.x1, intsec.y1)
-                split_span.chars = self.chars[pos:pos_end]
-                split_span.text = self.text[pos:pos_end]
-
-                # update style
-                new_style = rect.to_text_style(split_span)
-                if new_style:
-                    split_span.style.append(new_style)
-
-                split_spans.append(split_span)                
-
-            # right part if exists
-            if pos_end < len(self.chars):
-                split_span = copy.deepcopy(self)
-                split_span.bbox = (intsec.x1, self.bbox.y0, self.bbox.x1, self.bbox.y1)
-                split_span.chars = self.chars[pos_end:]
-                split_span.text = self.text[pos_end:]
-                split_spans.append(split_span)
-
-        return split_spans
-
-
-    def chars_index_in_rect(self, rect:Rectangle) -> tuple:
-        ''' Get the index of span chars in a given rectangle region.
-            return (start index, length) of span chars
-        '''
+        # calculate chars in the format rectangle
         # combine an index with enumerate(), so the second element is the char
         f = lambda items: items[1].contained_in_rect(rect)
         index_chars = list(filter(f, enumerate(self.chars)))
@@ -158,6 +115,66 @@ class TextSpan(BBox):
         # then we get target chars in a sequence
         pos = index_chars[0][0] if index_chars else -1 # start index -1 if nothing found
         length = len(index_chars)
+        pos_end = max(pos+length, 0) # max() is used in case: pos=-1, length=0
 
-        return pos, length
+        # split span with the intersection: span-intersection-span
+        # 
+        # left part if exists
+        if pos > 0:
+            split_span = copy.deepcopy(self)
+            split_span.bbox = (self.bbox.x0, self.bbox.y0, intsec.x0, self.bbox.y1)
+            split_span.chars = self.chars[0:pos]
+            split_span.text = self.text[0:pos]
+            split_spans.append(split_span)
 
+        # middle intersection part if exists
+        if length > 0:
+            split_span = copy.deepcopy(self)            
+            split_span.bbox = (intsec.x0, intsec.y0, intsec.x1, intsec.y1)
+            split_span.chars = self.chars[pos:pos_end]
+            split_span.text = self.text[pos:pos_end]
+
+            # update style
+            new_style = rect.to_text_style(split_span)
+            if new_style:
+                split_span.style.append(new_style)
+
+            split_spans.append(split_span)                
+
+        # right part if exists
+        if pos_end < len(self.chars):
+            split_span = copy.deepcopy(self)
+            split_span.bbox = (intsec.x1, self.bbox.y0, self.bbox.x1, self.bbox.y1)
+            split_span.chars = self.chars[pos_end:]
+            split_span.text = self.text[pos_end:]
+            split_spans.append(split_span)
+
+        return split_spans
+
+
+    def intersect(self, rect:fitz.Rect):
+        '''Create new Span object with chars contained in given bbox. '''
+        # add span directly if fully contained in bbox
+        if rect.contains(self.bbox):
+            return self.copy()
+
+        # no intersection
+        if not rect.intersects(self.bbox):
+            return TextSpan()
+
+        # furcher check chars in span
+        span_chars = [] # type: list[Char]
+        span_bbox = fitz.Rect()
+        for char in self.chars:
+            if utils.get_main_bbox(char.bbox, rect, 0.2):
+                span_chars.append(char)
+                span_bbox = span_bbox | self.bbox
+        
+        if not span_chars: return TextSpan()
+            
+        # update span
+        span = self.copy()
+        span.chars = span_chars
+        span.update(span_bbox)
+
+        return span
