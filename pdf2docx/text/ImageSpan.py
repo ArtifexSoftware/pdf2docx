@@ -8,17 +8,28 @@ Image Span based on same raw data structure with image block.
 '''
 
 
+from .ImageBlock import ImageBlock
 from ..common.BBox import BBox
 
 
 class ImageSpan(BBox):
     '''Text block.'''
-    def __init__(self, raw: dict) -> None:
+    def __init__(self, raw:dict={}) -> None:
         super(ImageSpan, self).__init__(raw)
         self.ext = raw.get('ext', 'png')
         self.width = raw.get('width', 0.0)
         self.height = raw.get('height', 0.0)
         self.image = raw.get('image', b'')
+
+
+    def from_image_block(self, image:ImageBlock):
+        '''Update with image block.'''
+        self.ext = image.ext
+        self.width = image.width
+        self.height = image.height
+        self.image = image.image
+        self.update(image.bbox)
+
 
     def store(self) -> dict:
         res = super().store()
@@ -29,6 +40,7 @@ class ImageSpan(BBox):
             'image': '<image>' # drop real content to reduce size
         })
         return res
+
 
     def plot(self, page, color:tuple):
         '''Plot image bbox with diagonal lines.

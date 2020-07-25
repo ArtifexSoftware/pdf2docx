@@ -13,9 +13,14 @@ from .BBox import BBox
 
 class Block(BBox):
     '''Text block.'''
-    def __init__(self, raw: dict) -> None:
+    def __init__(self, raw:dict={}) -> None:
         super(Block, self).__init__(raw)
         self._type = BlockType.UNDEFINED
+
+    @property
+    def sub_bboxes(self) -> list:
+        '''sub-region bbox of this block, e.g. Lines in TextBlock. Return self.bbox by default.'''
+        return [self.bbox]
 
     def is_text_block(self):
         return self._type==BlockType.TEXT

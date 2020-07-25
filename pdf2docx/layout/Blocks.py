@@ -6,16 +6,16 @@ A group of Text/Image or Table block.
 @author: train8808@gmail.com
 '''
 
-
 from ..common.base import BlockType
 from ..common import utils
 from ..common.Block import Block
 from ..text.TextBlock import ImageBlock, TextBlock
+from ..shape.Rectangle import Rectangle
 
 
 class Blocks:
     '''Text block.'''
-    def __init__(self, raws: list [dict]) -> None:
+    def __init__(self, raws:list[dict]=[]) -> None:
         ''' Construct Text blocks (image blocks included) from a list of raw block dict.'''
         # initialize blocks
         self._blocks = [] # type: list [Block]
@@ -48,6 +48,9 @@ class Blocks:
     def __len__(self):
         return len(self._blocks)
 
+    def reset(self, blocks:list[Block]):
+        self._blocks = blocks
+
     def extend(self, blocks:list[Block]):
         self._blocks.extend(blocks)
 
@@ -56,7 +59,6 @@ class Blocks:
 
     def store(self) -> list:
         return [ block.store() for block in self._blocks]
-
 
     @utils.debug_plot('Preprocessing', plot=False)
     def preprocessing(self, **kwargs):
@@ -81,6 +83,215 @@ class Blocks:
         self.merge_inline_images()
 
         return True
+
+
+    @utils.debug_plot('Parsed Table', plot=False, category='layout')
+    def parse_table_content(self, **kwargs) -> bool:
+        '''Add block lines to associated cells.'''
+
+        # table blocks
+        tables = list(filter(lambda block: block.is_table_block(), self._blocks))
+        if not tables: return False
+
+        # collect blocks in table region        
+        blocks_in_tables = [[] for _ in tables] # type: list[list[Block]]
+        blocks = []   # type: list[Block]
+        for block in self._blocks:
+            # ignore table block
+            if block.is_table_block(): continue
+
+            # collect blocks contained in table region
+            for table, blocks_in_table in zip(tables, blocks_in_tables):
+                if table.bbox.intersects(block.bbox):
+                    blocks_in_table.append(block)
+                    break
+            
+            # normal blocks
+            else:
+                blocks.append(block)
+
+        # assign blocks to associated cells
+        # ATTENTION: no nested table is considered
+        for table, blocks_in_table in zip(tables, blocks_in_tables):
+            for row in table.cells:
+                for cell in row:
+                    if not cell: continue
+                    # check candidate blocks
+                    for block in blocks_in_table:
+                        cell.add(block)
+
+                    # merge blocks if contained blocks found
+                    cell.blocks.merge()
+
+        # sort in natural reading order and update layout blocks
+        blocks.extend(tables)
+        blocks.sort(key=lambda block: (block.bbox.y0, block.bbox.x0))
+
+        self._blocks = blocks
+
+        return True
+
+
+    def collect_table_content(self) -> list[list[Rectangle]]:
+        ''' Collect bbox, e.g. Line of TextBlock, which may contained in an implicit table region.
+            
+            Table may exist on the following conditions:
+             - (a) lines in blocks are not connected sequently -> determined by current block only
+             - (b) multi-blocks are in a same row (horizontally aligned) -> determined by two adjacent blocks
+        '''  
+
+        res = [] # type: list[list[Rectangle]]
+
+        table_lines = [] # type: list[Rect]
+        new_line = True
+        num = len(self._blocks)
+
+        for i in range(num):
+            block =self._blocks[i]
+            next_block =self._blocks[i+1] if i<num-1 else Block()
+
+            table_end = False
+            
+            # there is gap between these two criteria, so consider condition (a) only if if it's the first block in new row
+            # (a) lines in current block are connected sequently?
+            # yes, counted as table lines
+            if new_line and block.contains_discrete_lines(): 
+                table_lines.extend(block.sub_bboxes)                
+                
+                # update line status
+                new_line = False            
+
+            # (b) multi-blocks are in a same row: check layout with next block?
+            # yes, add both current and next blocks
+            if utils.is_horizontal_aligned(block.bbox, next_block.bbox):
+                # if it's start of new table row: add the first block
+                if new_line: 
+                    table_lines.extend(block.sub_bboxes)
+                
+                # add next block
+                table_lines.extend(next_block.sub_bboxes)
+
+                # update line status
+                new_line = False
+
+            # no, consider to start a new row
+            else:
+                # table end 
+                # - if it's a text line, i.e. no more than one block in a same line
+                # - or the next block is also a table
+                if new_line or block.is_table_block():
+                    table_end = True
+
+                # update line status            
+                new_line = True
+
+            # NOTE: close table detecting manually if last block
+            if i==num-1:
+                table_end = True
+
+            # end of current table
+            if table_lines and table_end: 
+                # from fitz.Rect to Rectangle type
+                rects = [Rectangle().update(line) for line in table_lines]
+                res.append(rects)
+
+                # reset table_blocks
+                table_lines = []
+        
+        return res
+
+
+    def parse_vertical_spacing(self, Y0:float, Y1:float):
+        ''' Calculate external and internal vertical space for text blocks.
+        
+            - paragraph spacing is determined by the vertical distance to previous block. 
+              For the first block, the reference position is top margin.
+            
+                It's easy to set before-space or after-space for a paragraph with python-docx,
+                so, if current block is a paragraph, set before-space for it; if current block 
+                is not a paragraph, e.g. a table, set after-space for previous block (generally, 
+                previous block should be a paragraph).
+            
+            - line spacing is defined as the average line height in current block.
+
+            ---
+            Args:
+            - Y0, Y1: the blocks are restricted in a vertical range within (Y0, Y1)
+        '''
+        if not self._blocks: return
+
+        ref_block = self._blocks[0]
+        ref_pos = Y0
+        for block in self._blocks:
+
+            dw = 0.0
+
+            # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
+            # size should be excluded from the calculated vertical spacing
+            if block.is_table_block() and block.cells[0][0]:
+                dw = block.cells[0][0].border_width[0] / 2.0 # use top border of the first cell
+
+            start_pos = block.bbox.y0 - dw
+            para_space = start_pos - ref_pos
+
+            # ref to current (paragraph): set before-space for paragraph
+            if block.is_text_block():
+
+                # spacing before this paragraph
+                block.before_space = para_space
+
+                # calculate average line spacing in paragraph
+                # e.g. line-space-line-space-line, excepting first line -> space-line-space-line,
+                # so an average line height = space+line
+                # then, the height of first line can be adjusted by updating paragraph before-spacing.
+                # 
+                ref_bbox = None
+                count = 0
+                for line in block.lines:
+                    # count of lines
+                    if not utils.in_same_row(line.bbox, ref_bbox):
+                        count += 1
+                    # update reference line
+                    ref_bbox = line.bbox            
+                
+                _, y0, _, y1 = block.lines[0].bbox_raw   # first line
+                first_line_height = y1 - y0
+                block_height = block.bbox.y1-block.bbox.y0
+                if count > 1:
+                    line_space = (block_height-first_line_height)/(count-1)
+                else:
+                    line_space = block_height
+                block.line_space = line_space
+
+                # if only one line exists, don't have to set line spacing, use default setting,
+                # i.e. single line instead
+                if count > 1:
+                    # since the line height setting in docx may affect the original bbox in pdf, 
+                    # it's necessary to update the before spacing:
+                    # taking bottom left corner of first line as the reference point                
+                    para_space = para_space + first_line_height - line_space
+                    block.before_space = para_space
+
+                # adjust last block to avoid exceeding current page <- seems of no use
+                free_space = Y1-(ref_pos+para_space+block_height) 
+                if free_space<=0:
+                    block.before_space = para_space+free_space-utils.DM*2.0
+
+            # if ref to current (image): set before-space for paragraph
+            elif block.is_image_block():
+                block.before_space = para_space
+
+            # ref (paragraph/image) to current: set after-space for ref paragraph        
+            elif ref_block.is_table_block():
+                ref_block.after_space = para_space
+
+            # situation with very low probability, e.g. table to table
+            else:
+                pass
+
+            # update reference block        
+            ref_block = block
+            ref_pos = block.bbox.y1 + dw
 
 
     def remove_floating_images(self):
@@ -180,188 +391,29 @@ class Blocks:
         return True if index_inline else False
 
 
-    def merge_blocks(blocks):
-        '''merge blocks aligned horizontally.'''
-        res = []
-        for block in blocks:
+    def merge(self):
+        '''Merge blocks aligned horizontally.'''
+        res = [] # type: list[TextBlock]
+
+        for block in self._blocks:
             # convert to text block if image block
-            if is_image_block(block):
-                text_block = convert_image_to_text_block(block)
+            if block.is_image_block():
+                text_block = block.to_text_block() # type: TextBlock
             else:
-                text_block = block
+                text_block = block # type: TextBlock
 
             # add block directly if not aligned horizontally with previous block
-            if not res or not utils.is_horizontal_aligned(text_block['bbox'], res[-1]['bbox']):
+            if not res or not utils.is_horizontal_aligned(text_block.bbox, res[-1]['bbox']):
                 res.append(text_block)
 
             # otherwise, append to previous block as lines
             else:
-                res[-1]['lines'].extend(text_block['lines'])
-
-                # update bbox
-                res[-1]['bbox'] = (
-                    min(res[-1]['bbox'][0], text_block['bbox'][0]),
-                    min(res[-1]['bbox'][1], text_block['bbox'][1]),
-                    max(res[-1]['bbox'][2], text_block['bbox'][2]),
-                    max(res[-1]['bbox'][3], text_block['bbox'][3])
-                    )
+                res[-1].lines.extend(list(text_block.lines))
         
         # sort lines in block
         for block in res:
-            sort_lines(block) 
-
-        return res
-
-
-    def sort_lines(block):
-        ''' Sort lines in block.        
-
-            In the following example, A should come before B.
-                            +-----------+
-                +---------+  |           |
-                |   A     |  |     B     |
-                +---------+  +-----------+
-
-            Steps:
-                (a) sort lines in reading order, i.e. from top to bottom, from left to right.
-                (b) group lines in row
-                (c) sort lines in row: from left to right
-        '''
-        # sort in reading order
-        block['lines'].sort(key=lambda block: (block['bbox'][1], block['bbox'][0]))
-
-        # split lines in separate row
-        lines_in_rows = [] # [ [lines in row1], [...] ]
-        for line in block.get('lines', []):
-
-            # add lines to a row group if not in same row with previous line
-            if not lines_in_rows or not utils.in_same_row(line['bbox'], lines_in_rows[-1][-1]['bbox']):
-                lines_in_rows.append([line])
-            
-            # otherwise, append current row group
-            else:
-                lines_in_rows[-1].append(line)
+            block.lines.sort()
         
-        # sort lines in each row
-        lines = []
-        for row in lines_in_rows:
-            row.sort(key=lambda line: line['bbox'][0])
-            lines.extend(row)
-
-        block['lines'] = lines
+        self._blocks = res
 
 
-    def convert_image_to_text_block(image):
-        '''convert image block to text block: a span'''
-        # convert image as a span in line
-        image_line = {
-            "wmode": 0,
-            "dir"  : (1, 0),
-            "bbox" : image['bbox'],
-            "spans": [image]
-            }
-        
-        # insert line to block
-        block = {
-            'type': -1,
-            'bbox': image['bbox'],
-            'lines': [image_line]
-        }
-
-        # set text block
-        set_text_block(block)
-
-        return block    
-
-
-    def parse_vertical_spacing(self, Y0:float, Y1:float):
-        ''' Calculate external and internal vertical space for text blocks.
-        
-            - paragraph spacing is determined by the vertical distance to previous block. 
-              For the first block, the reference position is top margin.
-            
-                It's easy to set before-space or after-space for a paragraph with python-docx,
-                so, if current block is a paragraph, set before-space for it; if current block 
-                is not a paragraph, e.g. a table, set after-space for previous block (generally, 
-                previous block should be a paragraph).
-            
-            - line spacing is defined as the average line height in current block.
-
-            ---
-            Args:
-            - Y0, Y1: the blocks are restricted in a vertical range within (Y0, Y1)
-        '''
-        if not self._blocks: return
-
-        ref_block = self._blocks[0]
-        ref_pos = Y0
-        for block in self._blocks:
-
-            dw = 0.0
-
-            # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
-            # size should be excluded from the calculated vertical spacing
-            if block.is_table_block() and block.cells[0][0]:
-                dw = block.cells[0][0].border_width[0] / 2.0 # use top border of the first cell
-
-            start_pos = block.bbox.y0 - dw
-            para_space = start_pos - ref_pos
-
-            # ref to current (paragraph): set before-space for paragraph
-            if block.is_text_block():
-
-                # spacing before this paragraph
-                block.before_space = para_space
-
-                # calculate average line spacing in paragraph
-                # e.g. line-space-line-space-line, excepting first line -> space-line-space-line,
-                # so an average line height = space+line
-                # then, the height of first line can be adjusted by updating paragraph before-spacing.
-                # 
-                ref_bbox = None
-                count = 0
-                for line in block.lines:
-                    # count of lines
-                    if not utils.in_same_row(line.bbox, ref_bbox):
-                        count += 1
-                    # update reference line
-                    ref_bbox = line.bbox            
-                
-                _, y0, _, y1 = block.lines[0].bbox_raw   # first line
-                first_line_height = y1 - y0
-                block_height = block.bbox.y1-block.bbox.y0
-                if count > 1:
-                    line_space = (block_height-first_line_height)/(count-1)
-                else:
-                    line_space = block_height
-                block.line_space = line_space
-
-                # if only one line exists, don't have to set line spacing, use default setting,
-                # i.e. single line instead
-                if count > 1:
-                    # since the line height setting in docx may affect the original bbox in pdf, 
-                    # it's necessary to update the before spacing:
-                    # taking bottom left corner of first line as the reference point                
-                    para_space = para_space + first_line_height - line_space
-                    block.before_space = para_space
-
-                # adjust last block to avoid exceeding current page <- seems of no use
-                free_space = Y1-(ref_pos+para_space+block_height) 
-                if free_space<=0:
-                    block.before_space = para_space+free_space-utils.DM*2.0
-
-            # if ref to current (image): set before-space for paragraph
-            elif block.is_image_block():
-                block.before_space = para_space
-
-            # ref (paragraph/image) to current: set after-space for ref paragraph        
-            elif ref_block.is_table_block():
-                ref_block.after_space = para_space
-
-            # situation with very low probability, e.g. table to table
-            else:
-                pass
-
-            # update reference block        
-            ref_block = block
-            ref_pos = block.bbox.y1 + dw

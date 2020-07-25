@@ -21,7 +21,6 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
 import fitz
 from ..common.BBox import BBox
 from .Spans import Spans
-from .TextSpan import TextSpan
 
 
 class Line(BBox):
@@ -30,7 +29,7 @@ class Line(BBox):
         super(Line, self).__init__(raw)
         self.wmode = raw.get('wmode', 0) # writing mode
         self.dir = raw.get('dir', [1, 0]) # writing direction
-        self.spans = Spans(raw.get('spans', []))
+        self.spans = Spans(raw.get('spans', []), self)
 
     def store(self) -> dict:
         res = super().store()
@@ -54,7 +53,7 @@ class Line(BBox):
 
 
     def add(self, span_or_list):
-        '''Add spans to current Line and update the bbox accordingly.
+        '''Add span list to current Line.
             ---
             Args:
               - span_or_list: a TextSpan or TextSpan list
@@ -65,12 +64,11 @@ class Line(BBox):
         else:
             self.add_span(span_or_list)
 
-    def add_span(self, span:TextSpan):
-        '''Add span to current Line and update the bbox accordingly.'''
-        if span and isinstance(span, TextSpan):
+
+    def add_span(self, span:BBox):
+        '''Add span to current Line.'''
+        if isinstance(span, BBox):
             self.spans.append(span)
-            # update bbox
-            self.union(span.bbox)
 
 
     def intersect(self, rect:fitz.Rect):

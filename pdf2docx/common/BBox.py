@@ -29,14 +29,15 @@ class BBox:
     def copy(self):
         return copy.deepcopy(self)
 
-    def update(self, rect):
+    def update(self, rect): # type: BBox
         fitz_rect = fitz.Rect(rect)
         bbox = (fitz_rect.x0, fitz_rect.y0, fitz_rect.x1, fitz_rect.y1)
         self._bbox = tuple([round(x,1) for x in bbox])
+        return self
 
-    def union(self, rect):
+    def union(self, rect): # tpe: BBox
         fitz_rect = self.bbox | fitz.Rect(rect)
-        self.update(fitz_rect)
+        return self.update(fitz_rect)
 
     def store(self) -> dict:
         return { 'bbox': self._bbox }

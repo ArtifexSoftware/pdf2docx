@@ -23,8 +23,10 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
     }
 '''
 
-from .ImageBlock import ImageBlock
 from .Line import Line
+from .Lines import Lines
+from .ImageSpan import ImageSpan
+from .ImageBlock import ImageBlock
 from ..common.base import Spacing
 from ..common.Block import Block
 from ..common import utils
@@ -34,7 +36,7 @@ class TextBlock(Block, Spacing):
     '''Text block.'''
     def __init__(self, raw:dict={}) -> None:
         super(TextBlock, self).__init__(raw)
-        self.lines = [ Line(line) for line in raw.get('lines', []) ] # type: list [Line]
+        self.lines = Lines(raw.get('lines', []), self)
 
         # set type
         self.set_text_block()
@@ -46,19 +48,24 @@ class TextBlock(Block, Spacing):
         return '\n'.join(lines)
 
 
+    @property
+    def sub_bboxes(self) -> list:
+        '''bbox of sub-region, i.e. Line.'''
+        return [line.bbox for line in self.lines]
+
+
     def store(self) -> dict:
         res = super().store()
         res.update({
-            'lines': [line.store() for line in self.lines]
+            'lines': self.lines.store()
         })
         return res
 
 
     def add(self, line:Line):
         '''Add line to TextBlock.'''
-        if line and isinstance(line, Line):
-            self.line.append(line)
-            self.union(line.bbox)
+        if isinstance(line, Line):
+            self.lines.append(line)
 
 
     def plot(self, page):
@@ -83,7 +90,7 @@ class TextBlock(Block, Spacing):
                 span.plot(page, c)
 
 
-    def contains_discrete_lines(self, distance:float=25, threshold:int=3):
+    def contains_discrete_lines(self, distance:float=25, threshold:int=3) -> bool:
         ''' Check whether lines in block are discrete: 
             the count of lines with a distance larger than `distance` is greater then `threshold`.
         '''
@@ -119,42 +126,14 @@ class TextBlock(Block, Spacing):
             i = 0
 
         # Step 1: insert image as a line in block
-        raw_image = {
-            "wmode": 0,
-            "dir"  : (1, 0),
-            "bbox" : image.bbox_raw,
-            "spans": [image.store()]
-            }
-        line = Line(raw_image)
+        # image span
+        span = ImageSpan()
+        span.from_image_block(image)
+
+        # add span to line
+        line = Line()
+        line.add(span)
         self.lines.insert(i, line)
 
-        # update bbox accordingly
-        self.union(image.bbox)
-
         # Step 2: merge image into span in line, especially overlap exists
-        self.merge_lines()
-
-
-    def merge_lines(self):
-        ''' Merge lines aligned horizontally in a block.
-            Generally, it is performed when inline image is added into block line.
-        '''
-        new_lines = [] # type: list[Line]
-        for line in self.lines:        
-            # add line directly if not aligned horizontally with previous line
-            if not new_lines or not utils.is_horizontal_aligned(line.bbox, new_lines[-1].bbox):
-                new_lines.append(line)
-                continue
-
-            # if it exists x-distance obviously to previous line,
-            # take it as a separate line as it is
-            if abs(line.bbox.x0-new_lines[-1].bbox.x1) > utils.DM:
-                new_lines.append(line)
-                continue
-
-            # now, this line will be append to previous line as a span
-            new_lines[-1].add(list(line.spans))
-
-        # update lines in block
-        self.lines = new_lines
-
+        self.lines.merge()

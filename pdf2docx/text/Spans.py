@@ -8,13 +8,14 @@ A group of TextSpan and ImageSpan objects.
 '''
 
 from .TextSpan import TextSpan
-
+from .Line import Line
 
 class Spans:
-    '''Text span.'''
-    def __init__(self, raws: list [dict]) -> None:
+    '''Text span list.'''
+    def __init__(self, raws:list[dict]=[], parent=None) -> None:
         ''' Construct text span from a list of raw span dict.'''
         self._spans = [ TextSpan(raw) for raw in raws ] # text span by default 
+        self._parent = parent # type: Line
 
 
     def __getitem__(self, idx):
@@ -33,7 +34,11 @@ class Spans:
         return len(self._spans)
 
     def append(self, span:TextSpan):
+        ''' Add a span and update the bbox accordingly.'''
+        if not span: return
         self._spans.append(span)
+        if self._parent:
+            self._parent.union(span.bbox)
 
     def store(self) -> list:
         return [ span.store() for span in self._spans]

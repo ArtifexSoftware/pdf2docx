@@ -8,12 +8,12 @@ Table Cell object.
 '''
 
 
-from pdf2docx.pdf2docx.text.TextBlock import TextBlock
+from ..text.TextBlock import TextBlock
 from ..common.BBox import BBox
-from ..common.base import RectType
 from ..common.Block import Block
 from ..common import utils
 from ..layout.Blocks import Blocks
+
 
 class Cell(BBox):
     ''' Cell object.'''
@@ -75,7 +75,7 @@ class Cell(BBox):
 
     def add(self, block:Block):
         ''' Add block to this cell. 
-            ---
+
             Note: If the block is partly contained in a cell, it must deep into line -> span -> char.
         '''
         if not block.is_text_block():

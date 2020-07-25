@@ -20,13 +20,14 @@ from .Rectangle import Rectangle
 from . import functions
 from ..common.base import RectType
 from ..common import utils
+from ..table.functions import borders_from_bboxes
 
 
 class Rectangles:
     ''' A group of rectangle objects.'''
-    def __init__(self) -> None:
+    def __init__(self, rects:list[Rectangle]=None) -> None:
         ''' Construct Text blocks (image blocks included) from a list of raw block dict.'''
-        self._rects = [] # type: list [Rectangle]
+        self._rects = rects if rects else [] # type: list [Rectangle]
 
     def __getitem__(self, idx):
         try:
@@ -57,8 +58,9 @@ class Rectangles:
             c = utils.RGB_component(rect.color)
             rect.plot(page, c)
 
-    def from_annotations(self, annotations: list):
-        ''' Get rect from annotations(comment shapes) in PDF page.
+
+    def from_annotations(self, annotations: list): # type: Rectangles
+        ''' Get rectangle shapes from annotations(comment shapes) in PDF page.
             Note: consider highlight, underline, strike-through-line only. 
             ---
             Args:
@@ -100,9 +102,11 @@ class Rectangles:
 
             self._rects.append(rect)
 
+        return self
 
-    def from_stream(self, xref_stream: str, height: float):
-        ''' Get rectangle shape by parsing page cross reference stream.
+
+    def from_stream(self, xref_stream: str, height: float): # type: Rectangles
+        ''' Get rectangle shapes by parsing page cross reference stream.
 
             Note: these shapes are generally converted from pdf source, e.g. highlight, underline, 
             which are different from PDF comments shape.
@@ -377,6 +381,8 @@ class Rectangles:
             elif line=='n':
                 paths = []
 
+        return self
+
 
     @utils.debug_plot('Cleaned Rectangle Shapes', plot=True, category='shape')
     def clean(self, **kwargs) -> bool:
@@ -452,6 +458,50 @@ class Rectangles:
             groups.append(group_rects)
 
         return groups
+
+
+    def implicit_borders(self, X0:float, X1:float) -> list[Rectangle]:
+        ''' Construct border rects based on contents rects, e.g. contents in table cells.
+            ---
+            Args:
+              - X0, X1: default left and right outer borders
+        '''
+        # boundary box (considering margin) of all line box
+        margin = 2.0
+        x0 = X0 - margin
+        y0 = min([rect.bbox.y0 for rect in self._rects]) - margin
+        x1 = X1 + margin
+        y1 = max([rect.bbox.y1 for rect in self._rects]) + margin    
+        border_bbox = (x0, y0, x1, y1)
+
+        # centerline of outer borders
+        borders = [
+            (x0, y0, x1, y0), # top
+            (x1, y0, x1, y1), # right
+            (x0, y1, x1, y1), # bottom
+            (x0, y0, x0, y1)  # left
+        ]
+
+        # centerline of inner borders
+        inner_borders = borders_from_bboxes(self._rects, border_bbox)
+        borders.extend(inner_borders)
+        
+        # all centerlines to rectangle shapes
+        rects = [] # type: list[Rectangle]
+        color = utils.RGB_value((1,1,1))
+        for border in borders: 
+            bbox = utils.expand_centerline(border[0:2], border[2:], width=0.0) # no border for implicit table
+            if not bbox: continue
+
+            # create Rectangle object and set border style
+            rect = Rectangle({
+                'bbox': bbox,
+                'color': color
+            })
+            rect.type = RectType.BORDER
+            rects.append(rect)
+
+        return rects
 
 
     def _get_intersected_rects(self, rect:Rectangle, group:set[int]):

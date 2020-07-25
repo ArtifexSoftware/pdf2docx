@@ -9,6 +9,9 @@ from ..common.base import RectType
 from ..common import utils
 from ..shape.Rectangle import Rectangle
 
+# --------------------------------------------
+# explicit tables
+# --------------------------------------------
 
 def collect_explicit_borders(rects:list[Rectangle]) -> tuple[dict[float,list[Rectangle]]]:
     ''' Collect explicit borders in horizontal and vertical groups respectively.'''
@@ -234,3 +237,120 @@ def _exist_outer_border(target:float, borders:list[Rectangle], direction:str='h'
 
     return abs(target-source) <= width
 
+
+# --------------------------------------------
+# implicit tables
+# --------------------------------------------
+
+def borders_from_bboxes(bboxes:list[Rectangle], border_bbox:tuple) -> list[tuple[float]]:
+    ''' Calculate the surrounding borders of given bbox-es.
+        ---
+        Args:
+          - bboxes: a list of bbox, representing a content region in the table.
+          - border_bbox: border of table region
+        
+        These borders construct table cells. Considering the re-building of cell content in docx, 
+          - only one bbox is allowed in a line, 
+          - but multi-lines are allowed in a cell.
+    '''
+    borders = []  # type: list[tuple[float]]
+
+    # collect bbox-ex column by column
+    X0, Y0, X1, Y1 = border_bbox
+    cols_rects, cols_rect = _column_borders_from_bboxes(bboxes)
+    col_num = len(cols_rects)
+
+    for i in range(col_num):
+        # add column border
+        x0 = X0 if i==0 else (cols_rect[i-1].bbox.x1 + cols_rect[i].bbox.x0) / 2.0
+        x1 = X1 if i==col_num-1 else (cols_rect[i].bbox.x1 + cols_rect[i+1].bbox.x0) / 2.0
+
+        if i<col_num-1:
+            borders.append((x1, Y0, x1, Y1))
+
+        # collect bboxes row by row        
+        rows_rects, rows_rect = _row_borders_from_bboxes(cols_rects[i])
+
+        # NOTE: unnecessary o split row if the count of row is 1
+        row_num = len(rows_rects)
+        if row_num==1: continue
+    
+        for j in range(row_num):
+            # add row border
+            y0 = Y0 if j==0 else (rows_rect[j-1].bbox.y1 + rows_rect[j].bbox.y0) / 2.0
+            y1 = Y1 if j==row_num-1 else (rows_rect[j].bbox.y1 + rows_rect[j+1].bbox.y0) / 2.0
+            
+            # it's Ok if single bbox in a line
+            if len(rows_rects[j])<2:
+                continue
+
+            # otherwise, add row border and check borders further
+            if j==0:
+                borders.append((x0, y1, x1, y1))
+            elif j==row_num-1:
+                borders.append((x0, y0, x1, y0))
+            else:
+                borders.append((x0, y0, x1, y0))
+                borders.append((x0, y1, x1, y1))
+
+            # recursion
+            _borders = borders_from_bboxes(rows_rects[j], (x0, y0, x1, y1))
+            borders.extend(_borders)        
+
+    return borders
+
+
+def _column_borders_from_bboxes(rects:list[Rectangle]):
+    ''' split bbox-es into column groups and add border for adjacent two columns.'''
+    # sort bbox-ex in column first mode: from left to right, from top to bottom
+    rects.sort(key=lambda rect: (rect.bbox.x0, rect.bbox.y0, rect.bbox.x1))
+    
+    #  bboxes list in each column
+    cols_rects = [] # type: list[list[Rectangle]]
+    
+    # bbox of each column
+    cols_rect = [] # type: list[Rectangle]
+
+    # collect bbox-es column by column
+    for rect in rects:
+        col_rect = cols_rect[-1] if cols_rect else None
+
+        # same column group if vertically aligned
+        if utils.is_vertical_aligned(col_rect.bbox, rect.bbox):
+            cols_rects[-1].append(rect)
+            cols_rect[-1].union(rect.bbox)
+        
+        # otherwise, start a new column group
+        else:
+            cols_rects.append([rect])
+            cols_rect.append(rect)    
+
+    return cols_rects, cols_rect
+
+
+def _row_borders_from_bboxes(rects:list[Rectangle]):
+    ''' split bbox-es into row groups and add border for adjacent two rows.'''
+    # sort bbox-ex in row first mode: from top to bottom, from left to right
+    rects.sort(key=lambda rect: (rect.y0, rect.x0, rect.y1))
+
+   #  bboxes list in each row
+    rows_rects = [] # type: list[list[Rectangle]]
+    
+    # bbox of each row
+    rows_rect = [] # type: list[Rectangle]
+
+    # collect bbox-es row by row
+    for rect in rects:
+        row_rect = rows_rect[-1] if rows_rect else None
+
+        # same row group if horizontally aligned
+        if utils.is_horizontal_aligned(row_rect.bbox, rect.bbox):
+            rows_rects[-1].append(rect)
+            rows_rect[-1].union(rect.bbox)
+        
+        # otherwise, start a new row group
+        else:
+            rows_rects.append([rect])
+            rows_rect.append(rect)
+
+    return rows_rects, rows_rect

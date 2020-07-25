@@ -70,7 +70,7 @@ class TableBlock(Block):
                 cell.plot(page, style, content)
 
     
-    def parse_structure(self, rects:list[Rectangle]):
+    def parse_structure(self, rects:list[Rectangle]) -> bool:
         ''' Parse table structure from rects in table border/shading type.
         '''
         # --------------------------------------------------
@@ -78,7 +78,7 @@ class TableBlock(Block):
         # --------------------------------------------------
         h_borders, v_borders = functions.collect_explicit_borders(rects)
         if not h_borders or not v_borders:
-            return
+            return False
 
         # sort
         rows = sorted(h_borders)
@@ -175,13 +175,15 @@ class TableBlock(Block):
             # one row finished
             # check table: the first cell in first row MUST NOT be None
             if i==0 and cells_in_row[0]==None:
-                return
+                return False
 
             cells.append(cells_in_row)
 
         # update table
         self.update((cols[0], rows[0], cols[-1], rows[-1]))
         self.cells = cells
+
+        return True
 
 
 

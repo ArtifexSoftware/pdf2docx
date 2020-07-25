@@ -29,10 +29,11 @@ In addition to the raw layout dict, some new features are also included, e.g.
 }
 '''
 
+
 import json
 from .Blocks import Blocks
-from ..common.Block import Block
 from ..common import utils
+from ..common.base import RectType
 from ..shape.Rectangles import Rectangles
 from ..table.TableBlock import TableBlock
 from ..table.functions import set_table_borders
@@ -142,14 +143,14 @@ class Layout:
         self.page_margin()
     
         # parse table blocks: 
-        #  - table structure/format recognized from rectangles    
+        #  - table structure/format recognized from rectangles
         self.rects.clean(**kwargs) # clean rects
-        self.parse_table_structure_from_rects(**kwargs)    
-        parse_table_content(layout, **kwargs) # cell contents
+        self.parse_table_structure_from_rects(**kwargs)
+        self.blocks.parse_table_content(**kwargs) # cell contents
         
         #  - cell contents extracted from text blocks
-        parse_table_structure_from_blocks(layout, **kwargs)    
-        parse_table_content(layout, **kwargs) # cell contents
+        self.parse_table_structure_from_blocks(**kwargs)
+        self.blocks.parse_table_content(**kwargs) # cell contents
 
         # parse text format, e.g. highlight, underline
         parse_text_format(layout, **kwargs)
@@ -166,7 +167,7 @@ class Layout:
         groups = self.rects.group()
 
         # check each group
-        tables = [] # type: list[TableBlock]
+        flag = False
         for group in groups:
             # skip if not a table group
             if not set_table_borders(group):
@@ -174,75 +175,56 @@ class Layout:
 
             # parse table structure based on rects in border type
             table = TableBlock()
-            table.parse_structure(group)
-            if table: 
+            if table.parse_structure(group):
                 table.set_explicit_table_block()
-                tables.append(table)
+                self.blocks.append(table)
+                flag = True
+ 
             # reset border type if parse table failed
             else:
                 for rect in group:
-                    rect['type'] = -1
+                    rect.type = RectType.UNDEFINED
 
-        # add parsed table structure to blocks list
-        if tables:
-            self.blocks.extend(tables)
-            return True
-        else:
-            return False
+        return flag
 
 
-    @utils.debug_plot('Parsed Table', plot=False, category='layout')
-    def parse_table_content(self, **kwargs) -> bool:
-        '''Add block lines to associated cells.'''
+    @utils.debug_plot('Implicit Table Structure', plot=True, category='implicit_table')
+    def parse_table_structure_from_blocks(self, **kwargs):
+        ''' Parse table structure based on the layout of text/image blocks.
 
-        # table blocks
-        table_found = False
-        tables = list(filter(lambda block: block.is_table_block(), self.blocks))
-        if not tables: return table_found
+            Since no cell borders exist in this case, there may be various probabilities of table structures. 
+            Among which, we use the simplest one, i.e. 1-row and n-column, to make the docx look like pdf.
 
-        # collect blocks in table region
-        blocks = []   # type: list[Block]
-        blocks_in_tables = [[] for _ in tables] # type: list[list[Block]]
-        for block in self.blocks:
-            # ignore table block
-            if block.is_table_block(): continue
+            Ensure no horizontally aligned blocks in each column, so that these blocks can be converted to
+            paragraphs consequently in docx.
+        '''    
+        if len(self.blocks)<=1: return False
+        
+        # horizontal range of table
+        left, right, *_ = self.margin
+        X0 = left
+        X1 = self.width - right
 
-            # collect blocks contained in table region
-            for table, blocks_in_table in zip(tables, blocks_in_tables):
-                if table.bbox.intersects(block.bbox):
-                    blocks_in_table.append(block)
-                    break
-            # normal blocks
-            else:
-                blocks.append(block)
+        # potential bboxes
+        tables_bboxes = self.blocks.collect_table_content()
 
-        # assign blocks to associated cells
-        # ATTENTION: no nested table is considered
-        for table, blocks_in_table in zip(tables, blocks_in_tables):
-            for row in table.cells:
-                for cell in row:
-                    if not cell: continue
+        # parse tables
+        flag = False
+        for table_bboxes in tables_bboxes:
+            # parse borders based on contents in cell
+            rects = Rectangles(table_bboxes).implicit_borders(X0, X1)
 
-                    # check candidate blocks
-                    blocks_in_cell = []
-                    fitz_cell = fitz.Rect(cell['bbox'])
-                    for block in blocks_in_table:
-                        cell_block = _assign_block_to_cell(block, fitz_cell)
-                        if cell_block:
-                            blocks_in_cell.append(cell_block)
+            # parse table structure based on rects in border type
+            table = TableBlock()
+            if table.parse_structure(rects):
+                # ignore table if contains only one cell
+                rows = table.cells
+                if len(rows)>1 or len(rows[0])>1:
+                    table.set_implicit_table_block()
+                    self.blocks.append(table)
+                    flag = True
 
-                    # merge blocks if contained blocks found
-                    if blocks_in_cell: 
-                        cell_blocks = merge_blocks(blocks_in_cell)
-                        cell['blocks'].extend(cell_blocks)
-                        table_found = True
-
-        # sort in natural reading order and update layout blocks
-        blocks.extend(tables)
-        blocks.sort(key=lambda block: (block['bbox'][1], block['bbox'][0]))
-        self.blocks = blocks
-
-        return table_found
+        return flag
 
 
     def parse_vertical_spacing(self):

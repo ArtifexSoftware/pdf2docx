@@ -24,6 +24,9 @@ Note: the raw image block will be merged into text block: Text > Line > Span.
 '''
 
 
+from .Line import Line
+from .ImageSpan import ImageSpan
+from .TextBlock import TextBlock
 from ..common import utils
 from ..common.base import Spacing
 from ..common.Block import Block
@@ -41,6 +44,7 @@ class ImageBlock(Block, Spacing):
         # set type
         self.set_image_block()
 
+
     def store(self) -> dict:
         res = super().store()
         res.update({
@@ -50,6 +54,7 @@ class ImageBlock(Block, Spacing):
             'image': '<image>' # drop real content to reduce size
         })
         return res
+
 
     def plot(self, page):
         '''Plot image bbox with diagonal lines.
@@ -63,3 +68,23 @@ class ImageBlock(Block, Spacing):
         page.drawLine((x0, y0), (x1, y1), color=color, width=1)
         page.drawLine((x0, y1), (x1, y0), color=color, width=1)
         page.drawRect(self.bbox, color=color, fill=None, overlay=False)
+
+
+    def to_text_block(self) -> TextBlock:
+        '''convert image block to text block: a span'''
+        # image span
+        span = ImageSpan()
+        span.from_image_block(self)
+
+        # add span to line
+        image_line = Line()
+        image_line.add(span)
+        
+        # insert line to block
+        block = TextBlock()
+        block.add(image_line)
+
+        # set text block
+        block.set_text_block()
+
+        return block    
