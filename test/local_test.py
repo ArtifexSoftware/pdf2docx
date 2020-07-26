@@ -4,8 +4,7 @@
 
 import os
 
-from pdf2docx.reader import Reader
-from pdf2docx.writer import Writer
+from pdf2docx.converter import Converter
 
 
 if __name__ == '__main__':
@@ -16,23 +15,18 @@ if __name__ == '__main__':
     pdf_file = os.path.join(output, f'{filename}.pdf')
     docx_file = os.path.join(output, f'{filename}.docx')
 
-    pdf = Reader(pdf_file, debug=True)
-    docx = Writer()
+    cv = Converter(pdf_file, docx_file, debug=True)
 
     # process page by page
-    for page in pdf[0:1]:
+    for page in cv[0:1]:
 
         # parse layout
-        layout = pdf.parse(page)
+        cv.parse(page).make_page()
         
-        # extract tables
-        tables = pdf.extract_tables(page)
-        for table in tables:
-            print(table)
+        # # extract tables
+        # tables = cv.extract_tables(page)
+        # for table in tables:
+        #     print(table)
 
-        # create docx
-        docx.make_page(layout)
-
-    # save docx, close pdf
-    docx.save(docx_file)
-    pdf.close()
+    # close pdf
+    cv.close()

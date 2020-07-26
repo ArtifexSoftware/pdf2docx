@@ -9,7 +9,7 @@ from ..common import utils
 from .Rectangle import Rectangle
 
 
-def transform_path(path: list, WCS: list, height: float) -> list:
+def transform_path(path: list, WCS: list, height: float):
     ''' Transform path to page coordinate system. 
         ---
         Args:
@@ -32,13 +32,13 @@ def transform_path(path: list, WCS: list, height: float) -> list:
     return res
 
 
-def close_path(path):
+def close_path(path:list):
     if not path: return
     if path[-1]!=path[0]:
         path.append(path[0])
 
 
-def stroke_path(path: list, WCS: list, color: int, width: float, page_height: float) -> list[Rectangle]:
+def stroke_path(path: list, WCS: list, color: int, width: float, page_height: float):
     ''' Stroke path with a given width. Only horizontal/vertical paths are considered.
     '''
     # CS transformation
@@ -67,7 +67,7 @@ def stroke_path(path: list, WCS: list, color: int, width: float, page_height: fl
     return rects
 
 
-def fill_rect_path(path:list, WCS:list, color:int, page_height:float) -> Rectangle:
+def fill_rect_path(path:list, WCS:list, color:int, page_height:float):
     ''' Fill bbox of path with a given color. Only horizontal/vertical paths are considered.
     '''
     # CS transformation
@@ -88,13 +88,13 @@ def fill_rect_path(path:list, WCS:list, color:int, page_height:float) -> Rectang
     return rect
 
 
-def RGB_from_color_components(components:list) -> int:
+def RGB_from_color_components(components:list):
     ''' Detect color mode from given components and calculate the RGB value.
         ---
         Args:
             - components: a list with 4 elements
     '''
-    color = utils.RGB_value((0.0,0.0,0.0))
+    color = utils.RGB_value((0.0,0.0,0.0)) # type: int
 
     # CMYK mode
     if all(map(utils.is_number, components)):

@@ -18,7 +18,6 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
 '''
 
 
-import fitz
 from ..common.BBox import BBox
 from .Spans import Spans
 
@@ -71,8 +70,12 @@ class Line(BBox):
             self.spans.append(span)
 
 
-    def intersect(self, rect:fitz.Rect):
-        '''Create new Line object with spans contained in given bbox. '''
+    def intersect(self, rect):
+        '''Create new Line object with spans contained in given bbox.
+            ---
+            Args:
+              - rect: fitz.Rect, target bbox
+        '''
         # add line directly if fully contained in bbox
         if rect.contains(self.bbox):
             return self.copy()
@@ -81,7 +84,7 @@ class Line(BBox):
         line = Line()
         for span in self.spans:
             contained_span = span.intersect(rect)
-            line.add(contained_span)        
+            line.add(contained_span)
 
         return line
         

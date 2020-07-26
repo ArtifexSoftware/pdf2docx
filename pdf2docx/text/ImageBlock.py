@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-Text block objects based on PDF raw dict extracted with PyMuPDF.
+Image block objects based on PDF raw dict extracted with PyMuPDF.
 
 @created: 2020-07-22
 @author: train8808@gmail.com
@@ -23,17 +23,16 @@ Note: the raw image block will be merged into text block: Text > Line > Span.
 
 '''
 
-
+from docx.shared import Pt
 from .Line import Line
 from .ImageSpan import ImageSpan
 from .TextBlock import TextBlock
 from ..common import utils
-from ..common.base import Spacing
 from ..common.Block import Block
 
 
-class ImageBlock(Block, Spacing):
-    '''Text block.'''
+class ImageBlock(Block):
+    '''Image block.'''
     def __init__(self, raw: dict) -> None:
         super(ImageBlock, self).__init__(raw)
         self.ext = raw.get('ext', 'png')
@@ -87,4 +86,37 @@ class ImageBlock(Block, Spacing):
         # set text block
         block.set_text_block()
 
-        return block    
+        return block
+        
+
+    def parse_text_format(self, rects) -> bool:
+        '''parse text format with style represented by rectangles. Not necessary for image block.'''
+        return False
+
+
+    def make_docx(self, p, X0:float):
+        ''' Create paragraph for an image block.
+            ---
+            Args:
+              - p: docx paragraph instance
+              - X0: left border of the paragraph
+        '''
+        # indent and space setting
+        before_spacing = max(round(self.before_space, 1), 0.0)
+        after_spacing = max(round(self.after_space, 1), 0.0)
+        pf = utils.reset_paragraph_format(p)
+        pf.space_before = Pt(before_spacing)
+        pf.space_after = Pt(after_spacing)
+        
+        # restore default tabs
+        pf.tab_stops.clear_all()
+
+        # left indent implemented with tab
+        pos = round(self.bbox.x0-X0, 2)
+        pf.tab_stops.add_tab_stop(Pt(pos))
+        utils.add_stop(p, Pt(pos), Pt(0.0))
+
+        # create image
+        utils.add_image(p, self.image, self.bbox.x1-self.bbox.x0)
+
+        return p

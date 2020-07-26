@@ -9,24 +9,26 @@ A group of Text/Image or Table block.
 from ..common.base import BlockType
 from ..common import utils
 from ..common.Block import Block
-from ..text.TextBlock import ImageBlock, TextBlock
+from ..text.TextBlock import TextBlock
+from ..text.ImageBlock import ImageBlock
 from ..shape.Rectangle import Rectangle
+from ..shape.Rectangles import Rectangles
 
 
 class Blocks:
     '''Text block.'''
-    def __init__(self, raws:list[dict]=[]) -> None:
+    def __init__(self, raws:list=[]):
         ''' Construct Text blocks (image blocks included) from a list of raw block dict.'''
         # initialize blocks
-        self._blocks = [] # type: list [Block]
+        self._blocks = [] # type: list [TextBlock or ImageBlock or TableBlock]
         for raw in raws:
             block = None
             # image block
-            block_type = raw.get('type', -1)
-            if block_type==BlockType.IMAGE:
+            block_type = raw.get('type', -1) # type: int
+            if block_type==BlockType.IMAGE.value:
                 block = ImageBlock(raw)
             # text block
-            elif block_type == BlockType.TEXT:
+            elif block_type == BlockType.TEXT.value:
                 block = TextBlock(raw)
             
             # add to list
@@ -48,20 +50,19 @@ class Blocks:
     def __len__(self):
         return len(self._blocks)
 
-    def reset(self, blocks:list[Block]):
+    def reset(self, blocks:list):
         self._blocks = blocks
 
-    def extend(self, blocks:list[Block]):
+    def extend(self, blocks:list):
         self._blocks.extend(blocks)
 
     def append(self, block:Block):
         if block: self._blocks.append(block)
 
-    def store(self) -> list:
+    def store(self):
         return [ block.store() for block in self._blocks]
 
-    @utils.debug_plot('Preprocessing', plot=False)
-    def preprocessing(self, **kwargs):
+    def preprocessing(self):
         '''Preprocessing for blocks initialized from the raw layout.'''
 
         # remove negative blocks
@@ -85,8 +86,7 @@ class Blocks:
         return True
 
 
-    @utils.debug_plot('Parsed Table', plot=False, category='layout')
-    def parse_table_content(self, **kwargs) -> bool:
+    def parse_table_content(self):
         '''Add block lines to associated cells.'''
 
         # table blocks
@@ -117,7 +117,7 @@ class Blocks:
                 for cell in row:
                     if not cell: continue
                     # check candidate blocks
-                    for block in blocks_in_table:
+                    for block in blocks_in_table:                        
                         cell.add(block)
 
                     # merge blocks if contained blocks found
@@ -132,7 +132,7 @@ class Blocks:
         return True
 
 
-    def collect_table_content(self) -> list[list[Rectangle]]:
+    def collect_table_content(self):
         ''' Collect bbox, e.g. Line of TextBlock, which may contained in an implicit table region.
             
             Table may exist on the following conditions:
@@ -201,7 +201,7 @@ class Blocks:
         return res
 
 
-    def parse_vertical_spacing(self, Y0:float, Y1:float):
+    def parse_vertical_spacing(self, Y0:float):
         ''' Calculate external and internal vertical space for text blocks.
         
             - paragraph spacing is determined by the vertical distance to previous block. 
@@ -216,7 +216,7 @@ class Blocks:
 
             ---
             Args:
-            - Y0, Y1: the blocks are restricted in a vertical range within (Y0, Y1)
+            - Y0: top border, i.e. start reference of all blocks
         '''
         if not self._blocks: return
 
@@ -231,6 +231,9 @@ class Blocks:
             if block.is_table_block() and block.cells[0][0]:
                 dw = block.cells[0][0].border_width[0] / 2.0 # use top border of the first cell
 
+                # calculate vertical spacing of blocks under this table
+                block.parse_vertical_spacing()
+
             start_pos = block.bbox.y0 - dw
             para_space = start_pos - ref_pos
 
@@ -241,48 +244,14 @@ class Blocks:
                 block.before_space = para_space
 
                 # calculate average line spacing in paragraph
-                # e.g. line-space-line-space-line, excepting first line -> space-line-space-line,
-                # so an average line height = space+line
-                # then, the height of first line can be adjusted by updating paragraph before-spacing.
-                # 
-                ref_bbox = None
-                count = 0
-                for line in block.lines:
-                    # count of lines
-                    if not utils.in_same_row(line.bbox, ref_bbox):
-                        count += 1
-                    # update reference line
-                    ref_bbox = line.bbox            
-                
-                _, y0, _, y1 = block.lines[0].bbox_raw   # first line
-                first_line_height = y1 - y0
-                block_height = block.bbox.y1-block.bbox.y0
-                if count > 1:
-                    line_space = (block_height-first_line_height)/(count-1)
-                else:
-                    line_space = block_height
-                block.line_space = line_space
-
-                # if only one line exists, don't have to set line spacing, use default setting,
-                # i.e. single line instead
-                if count > 1:
-                    # since the line height setting in docx may affect the original bbox in pdf, 
-                    # it's necessary to update the before spacing:
-                    # taking bottom left corner of first line as the reference point                
-                    para_space = para_space + first_line_height - line_space
-                    block.before_space = para_space
-
-                # adjust last block to avoid exceeding current page <- seems of no use
-                free_space = Y1-(ref_pos+para_space+block_height) 
-                if free_space<=0:
-                    block.before_space = para_space+free_space-utils.DM*2.0
+                block.parse_line_spacing()
 
             # if ref to current (image): set before-space for paragraph
             elif block.is_image_block():
                 block.before_space = para_space
 
             # ref (paragraph/image) to current: set after-space for ref paragraph        
-            elif ref_block.is_table_block():
+            elif ref_block.is_text_block() or ref_block.is_image_block():
                 ref_block.after_space = para_space
 
             # situation with very low probability, e.g. table to table
@@ -339,7 +308,7 @@ class Blocks:
         self._blocks.extend(res_image_blocks)
 
 
-    def merge_inline_images(self) -> bool:
+    def merge_inline_images(self):
         '''Merge inline image blocks into text block: a block line or a line span.
 
            From docx aspect, inline image and text are in same paragraph; while they are not in pdf block level.
@@ -394,7 +363,6 @@ class Blocks:
     def merge(self):
         '''Merge blocks aligned horizontally.'''
         res = [] # type: list[TextBlock]
-
         for block in self._blocks:
             # convert to text block if image block
             if block.is_image_block():
@@ -403,7 +371,7 @@ class Blocks:
                 text_block = block # type: TextBlock
 
             # add block directly if not aligned horizontally with previous block
-            if not res or not utils.is_horizontal_aligned(text_block.bbox, res[-1]['bbox']):
+            if not res or not utils.is_horizontal_aligned(text_block.bbox, res[-1].bbox):
                 res.append(text_block)
 
             # otherwise, append to previous block as lines
@@ -417,3 +385,58 @@ class Blocks:
         self._blocks = res
 
 
+    def parse_text_format(self, rects:Rectangles):
+        '''Parse text format with style represented by rectangles.
+
+            NOTE: `parse_text_format` must be implemented by TextBlock, ImageBlock and TableBlock.
+        '''
+        flag = False
+        for block in self._blocks:
+            if block.parse_text_format(rects):
+                flag = True        
+        return flag
+
+
+    def page_margin(self, width:float, height:float):
+        '''Calculate page margin:
+            - left: MIN(bbox[0])
+            - right: MIN(left, width-max(bbox[2]))
+            - top: MIN(bbox[1])
+            - bottom: height-MAX(bbox[3])
+            ---
+            Args:
+              - width: page width
+              - height: page height
+        '''
+        # return normal page margin if no blocks exist
+        if not self._blocks:
+            return (utils.ITP, ) * 4 # 1 Inch = 72 pt
+
+        # check candidates for left margin:
+        list_bbox = list(map(lambda x: x.bbox, self._blocks))
+
+        # left margin 
+        left = min(map(lambda x: x.x0, list_bbox))
+
+        # right margin
+        x_max = max(map(lambda x: x.x1, list_bbox))
+        right = width-x_max-utils.DM*2.0 # consider tolerance: leave more free space
+        right = min(right, left)     # symmetry margin if necessary
+        right = max(right, 0.0)      # avoid negative margin
+
+        # top/bottom margin
+        top = min(map(lambda x: x.y0, list_bbox))
+        bottom = height-max(map(lambda x: x.y1, list_bbox))
+        bottom = max(bottom, 0.0)
+
+        # reduce calculated bottom margin -> more free space left,
+        # to avoid page content exceeding current page
+        bottom *= 0.5
+
+        # use normal margin if calculated margin is large enough
+        return (
+            min(utils.ITP, left), 
+            min(utils.ITP, right), 
+            min(utils.ITP, top), 
+            min(utils.ITP, bottom)
+            )

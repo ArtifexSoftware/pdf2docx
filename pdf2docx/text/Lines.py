@@ -8,15 +8,15 @@ A group of Line objects.
 '''
 
 from .Line import Line
-from .TextBlock import TextBlock
 from ..common import utils
+from ..common.Block import Block
 
 class Lines:
     '''Text line list.'''
-    def __init__(self, raws:list[dict]=[], parent=None) -> None:
+    def __init__(self, raws:list=[], parent=None) -> None:
         ''' Construct text line from a list of raw line dict.'''
         self._lines = [ Line(raw) for raw in raws ] # type: list[Line]
-        self._parent = parent # type: TextBlock
+        self._parent = parent # type: Block
 
 
     def __getitem__(self, idx):
@@ -41,11 +41,11 @@ class Lines:
         ''' append a line and update parent's bbox accordingly.'''
         if not line: return
         self._lines.append(line)
-        if self._parent:
+        if not self._parent is None: # Note: `if self._parent` does not work here
             self._parent.union(line.bbox)
 
 
-    def extend(self, lines:list[Line]):
+    def extend(self, lines:list):
         for line in lines:
             self.append(line)
 
@@ -54,7 +54,7 @@ class Lines:
         '''Insert a line and update parent's bbox accordingly.'''
         if not line: return
         self._lines.insert(nth, line)
-        if self._parent:
+        if not self._parent is None:
             self._parent.union(line.bbox)
 
 

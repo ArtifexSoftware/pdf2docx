@@ -33,9 +33,9 @@ data structure for Span
     }
 '''
 
+from docx.shared import Pt
+from docx.shared import RGBColor
 
-import fitz
-import copy
 from .Char import Char
 from ..common.BBox import BBox
 from ..common.base import RectType
@@ -45,13 +45,13 @@ from ..shape.Rectangle import Rectangle
 
 class TextSpan(BBox):
     '''Object representing text span.'''
-    def __init__(self, raw: dict) -> None:
+    def __init__(self, raw:dict={}) -> None:
         super(TextSpan, self).__init__(raw)
         self.color = raw.get('color', 0)
         self.font = raw.get('font', None)
         self.size = raw.get('size', 12.0)
         self.flags = raw.get('flags', 0)
-        self.chars = [ Char(c) for c in raw.get('chars', []) ]
+        self.chars = [ Char(c) for c in raw.get('chars', []) ] # type: list[Char]
 
         # introduced attributes
         self._text = None
@@ -97,7 +97,7 @@ class TextSpan(BBox):
         page.drawRect(self.bbox, color=color, fill=color, width=0, overlay=False)
 
 
-    def split(self, rect:Rectangle) -> list:
+    def split(self, rect:Rectangle): # type: TextSpan
         '''Split span with the intersection: span-intersection-span.'''
         # any intersection in this span?
         intsec = rect.bbox & self.bbox
@@ -201,8 +201,12 @@ class TextSpan(BBox):
         return True
 
 
-    def intersect(self, rect:fitz.Rect):
-        '''Create new Span object with chars contained in given bbox. '''
+    def intersect(self, rect):
+        '''Create new TextSpan object with chars contained in given bbox.
+            ---
+            Args:
+              - rect: fitz.Rect, target bbox
+        '''
         # add span directly if fully contained in bbox
         if rect.contains(self.bbox):
             return self.copy()
@@ -212,18 +216,49 @@ class TextSpan(BBox):
             return TextSpan()
 
         # furcher check chars in span
-        span_chars = [] # type: list[Char]
-        span_bbox = fitz.Rect()
+        span = self.copy()
+        span.chars.clear()
+        span.update((0.0,0.0,0.0,0.0))
+
         for char in self.chars:
             if utils.get_main_bbox(char.bbox, rect, 0.2):
-                span_chars.append(char)
-                span_bbox = span_bbox | self.bbox
-        
-        if not span_chars: return TextSpan()
-            
-        # update span
-        span = self.copy()
-        span.chars = span_chars
-        span.update(span_bbox)
+                span.chars.append(char)
+                span.union(char.bbox)
 
         return span
+
+
+    def make_docx(self, paragraph):
+        '''Add text span to a docx paragraph.'''
+        docx_span = paragraph.add_run(self.text)
+
+        # style setting
+        # https://python-docx.readthedocs.io/en/latest/api/text.html#docx.text.run.Font
+
+        # basic font style
+        # line['flags'] is an integer, encoding bool of font properties:
+        # bit 0: superscripted (2^0)
+        # bit 1: italic (2^1)
+        # bit 2: serifed (2^2)
+        # bit 3: monospaced (2^3)
+        # bit 4: bold (2^4)
+        docx_span.superscript = bool(self.flags & 2**0)
+        docx_span.italic = bool(self.flags & 2**1)
+        docx_span.bold = bool(self.flags & 2**4)
+        docx_span.font.name = utils.parse_font_name(self.font)
+        docx_span.font.size = Pt(round(self.size*2)/2.0) # only x.0 and x.5 is accepted in docx
+        docx_span.font.color.rgb = RGBColor(*utils.RGB_component(self.color))
+
+        # font style parsed from PDF rectangles: 
+        # e.g. highlight, underline, strike-through-line
+        for style in self.style:
+            
+            t = style['type']
+            if t==RectType.HIGHLIGHT.value:
+                docx_span.font.highlight_color = utils.to_Highlight_color(style['color'])
+
+            elif t==RectType.UNDERLINE.value:
+                docx_span.font.underline = True
+
+            elif t==RectType.STRIKE.value:
+                docx_span.font.strike = True

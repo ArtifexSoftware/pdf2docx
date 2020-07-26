@@ -13,12 +13,18 @@ from .BBox import BBox
 
 class Block(BBox):
     '''Text block.'''
-    def __init__(self, raw:dict={}) -> None:
+    def __init__(self, raw:dict={}):
         super(Block, self).__init__(raw)
         self._type = BlockType.UNDEFINED
 
+        # spacing attributes
+        self.before_space = 0.0
+        self.after_space = 0.0
+        self.line_space = 0.0
+
+
     @property
-    def sub_bboxes(self) -> list:
+    def sub_bboxes(self):
         '''sub-region bbox of this block, e.g. Lines in TextBlock. Return self.bbox by default.'''
         return [self.bbox]
 
@@ -49,11 +55,18 @@ class Block(BBox):
     def set_implicit_table_block(self):
         self._type = BlockType.IMPLICIT_TABLE
 
-    def store(self) -> dict:
+    def store(self):
         res = super().store()
         res.update({
             'type': self._type.value
         })
+        # set spacing attributes for text and image block
+        if not self.is_table_block():
+            res.update({
+                'before_space': self.before_space,
+                'after_space': self.after_space,
+                'line_space': self.line_space
+            })
         return res
 
     def contains_discrete_lines(self, distance:float=25, threshold:int=3):
@@ -61,10 +74,20 @@ class Block(BBox):
             Rewrite it if necessary, e.g. in TextBlock'''
         return False
 
+
     def plot(self, page):
         '''Plot block bbox in PDF page.
            ---
             Args: 
               - page: fitz.Page object
+        '''
+        raise NotImplementedError
+
+
+    def parse_text_format(self, rects):
+        '''Parse text format with style represented by rectangles.
+            ---
+            Args:
+              - rects: Rectangles, format styles are represented by these rectangles.
         '''
         raise NotImplementedError

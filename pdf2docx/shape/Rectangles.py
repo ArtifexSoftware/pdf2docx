@@ -25,7 +25,7 @@ from ..table.functions import borders_from_bboxes
 
 class Rectangles:
     ''' A group of rectangle objects.'''
-    def __init__(self, rects:list[Rectangle]=None) -> None:
+    def __init__(self, rects:list=None):
         ''' Construct Text blocks (image blocks included) from a list of raw block dict.'''
         self._rects = rects if rects else [] # type: list [Rectangle]
 
@@ -44,20 +44,8 @@ class Rectangles:
     def __len__(self):
         return len(self._rects)
 
-    def store(self) -> list:
+    def store(self):
         return [ rect.store() for rect in self._rects]
-
-    def plot(self, page):
-        '''Plot rectangle shapes with PyMuPDF.
-            ---
-            Args:
-              - doc: fitz.Page object
-        '''
-        # draw rectangle one by one
-        for rect in self._rects:       
-            c = utils.RGB_component(rect.color)
-            rect.plot(page, c)
-
 
     def from_annotations(self, annotations: list): # type: Rectangles
         ''' Get rectangle shapes from annotations(comment shapes) in PDF page.
@@ -384,8 +372,7 @@ class Rectangles:
         return self
 
 
-    @utils.debug_plot('Cleaned Rectangle Shapes', plot=True, category='shape')
-    def clean(self, **kwargs) -> bool:
+    def clean(self):
         '''Clean rectangles:
             - delete rectangles fully contained in another one (beside, they have same bg-color)
             - join intersected and horizontally aligned rectangles with same height and bg-color
@@ -431,10 +418,10 @@ class Rectangles:
         return rect_changed
 
 
-    def group(self) -> list[list[Rectangle]]:
+    def group(self):
         '''Split rects into groups, to be further checked if it's a table group.        
         '''
-        groups = []
+        groups = [] # type: list[list[Rectangle]]
         counted_index = set() # type: set[int]
 
         for i in range(len(self._rects)):
@@ -460,7 +447,7 @@ class Rectangles:
         return groups
 
 
-    def implicit_borders(self, X0:float, X1:float) -> list[Rectangle]:
+    def implicit_borders(self, X0:float, X1:float):
         ''' Construct border rects based on contents rects, e.g. contents in table cells.
             ---
             Args:
@@ -504,11 +491,11 @@ class Rectangles:
         return rects
 
 
-    def _get_intersected_rects(self, rect:Rectangle, group:set[int]):
+    def _get_intersected_rects(self, rect:Rectangle, group:set):
         ''' Get intersected rects from `rects` and store in `group`.
             ---
             Args:
-              - group: a set() of index of intersected rect
+              - group: set[int], a set() of index of intersected rect
         '''
 
         for i in range(len(self._rects)):

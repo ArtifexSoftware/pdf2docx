@@ -31,8 +31,11 @@ In addition to the raw layout dict, some new features are also included, e.g.
 
 
 import json
+from docx.shared import Pt
+from docx.enum.section import WD_SECTION
+
 from .Blocks import Blocks
-from ..common import utils
+from ..common.utils import (debug_plot, new_page_with_margin, reset_paragraph_format)
 from ..common.base import RectType
 from ..shape.Rectangles import Rectangles
 from ..table.TableBlock import TableBlock
@@ -42,7 +45,7 @@ from ..table.functions import set_table_borders
 class Layout:
     ''' Object representing the whole page, e.g. margins, blocks, shapes, spacing.'''
 
-    def __init__(self, raw: dict) -> None:
+    def __init__(self, raw:dict) -> None:
         self.width = raw.get('width', 0.0)
         self.height = raw.get('height', 0.0)
         self.blocks = Blocks(raw.get('blocks', []))
@@ -52,7 +55,12 @@ class Layout:
         self.rects = Rectangles()
 
 
-    def store(self) -> dict:
+    @property
+    def margin(self):
+        return self._margin
+
+
+    def store(self):
         return {
             'width': self.width,
             'height': self.height,
@@ -102,26 +110,21 @@ class Layout:
         if not objects: return
 
         # insert a new page
-        page = utils.new_page_with_margin(doc, self.width, self.height, self.margin, title)
+        page = new_page_with_margin(doc, self.width, self.height, self.margin, title)
 
         # plot styled table but no text blocks in cell
         if key=='table': 
             for item in objects:
-                item.plot(page, style=True, content=False)
+                item.plot(page, content=False, style=True)
         
         # plot non-styled table and no text blocks in cell
         elif key=='implicit_table': 
             for item in objects:
-                item.plot(page, style=False, content=False)
+                item.plot(page, content=False, style=False)
         
         else:
             for item in objects:
-                item.plot(page) # default args for TableBlock.plot
-
-
-    @property
-    def margin(self):
-        return self._margin
+                 item.plot(page) # default args for TableBlock.plot
 
 
     def parse(self, **kwargs):
@@ -137,30 +140,63 @@ class Layout:
         '''
 
         # preprocessing, e.g. change block order, clean negative block
-        self.blocks.preprocessing(**kwargs)
+        self.preprocessing(**kwargs)
 
         # calculate page margin based on preprocessed layout
-        self.page_margin()
+        self._margin = self.blocks.page_margin(self.width, self.height)
     
         # parse table blocks: 
         #  - table structure/format recognized from rectangles
-        self.rects.clean(**kwargs) # clean rects
+        self.clean(**kwargs) # clean rects
         self.parse_table_structure_from_rects(**kwargs)
-        self.blocks.parse_table_content(**kwargs) # cell contents
+        self.parse_table_content(**kwargs) # cell contents
         
         #  - cell contents extracted from text blocks
         self.parse_table_structure_from_blocks(**kwargs)
-        self.blocks.parse_table_content(**kwargs) # cell contents
+        self.parse_table_content(**kwargs) # cell contents
 
         # parse text format, e.g. highlight, underline
-        parse_text_format(layout, **kwargs)
+        self.parse_text_format(**kwargs)
         
         # paragraph / line spacing
         self.parse_vertical_spacing()
 
 
+    def extract_tables(self):
+        '''Extract content from explicit tables.'''
+        # parsing explicit table
+        self.preprocessing()
+        
+        # parse explicit tables
+        self.clean() # clean rects
+        self.parse_table_structure_from_rects()
+        self.parse_table_content() # cell contents
 
-    @utils.debug_plot('Explicit Table Structure', plot=True, category='table')
+        # check table
+        tables = [] # type: list[ list[list[str]] ]
+        for table_block in filter(lambda block: block.is_table_block(), self.blocks):
+            tables.append(table_block.text)
+
+        return tables
+
+
+    @debug_plot('Preprocessing', plot=False)
+    def preprocessing(self, **kwargs):
+        '''Preprocessing for blocks initialized from the raw layout.'''
+        return self.blocks.preprocessing()
+
+
+    @debug_plot('Cleaned Rectangle Shapes', plot=True, category='shape')
+    def clean(self, **kwargs):
+        '''Clean rectangles:
+            - delete rectangles fully contained in another one (beside, they have same bg-color)
+            - join intersected and horizontally aligned rectangles with same height and bg-color
+            - join intersected and vertically aligned rectangles with same width and bg-color
+        '''
+        return self.rects.clean()
+
+
+    @debug_plot('Explicit Table Structure', plot=True, category='table')
     def parse_table_structure_from_rects(self, **kwargs) -> bool:
         '''parse table structure from rectangle shapes'''
         # group rects: each group may be a potential table
@@ -188,7 +224,7 @@ class Layout:
         return flag
 
 
-    @utils.debug_plot('Implicit Table Structure', plot=True, category='implicit_table')
+    @debug_plot('Implicit Table Structure', plot=True, category='implicit_table')
     def parse_table_structure_from_blocks(self, **kwargs):
         ''' Parse table structure based on the layout of text/image blocks.
 
@@ -202,8 +238,7 @@ class Layout:
         
         # horizontal range of table
         left, right, *_ = self.margin
-        X0 = left
-        X1 = self.width - right
+        X0, X1 = left, self.width - right
 
         # potential bboxes
         tables_bboxes = self.blocks.collect_table_content()
@@ -227,62 +262,76 @@ class Layout:
         return flag
 
 
+    @debug_plot('Parsed Table', plot=False, category='layout')
+    def parse_table_content(self, **kwargs):
+        '''Add block lines to associated cells.'''
+        return self.blocks.parse_table_content()
+
+
+    @debug_plot('Parsed Text Blocks', plot=True)
+    def parse_text_format(self, **kwargs):
+        '''Parse text format in both page and table context.'''
+        return self.blocks.parse_text_format(self.rects)
+ 
+ 
     def parse_vertical_spacing(self):
         ''' Calculate external and internal vertical space for paragraph blocks under page context 
             or table context. It'll used as paragraph spacing and line spacing when creating paragraph.
         '''
-        # blocks in page level
-        top, bottom = self.margin[-2:]
-        self.blocks.parse_vertical_spacing(top, self.height-bottom)
-
-        # blocks in table cell level
-        tables = list(filter(lambda block: block.is_table_block(), self.blocks))
-        for table in tables:
-            for row in table.cells:
-                for cell in row:
-                    if not cell: continue
-                    _, y0, _, y1 = cell.bbox_raw
-                    w_top, _, w_bottom, _ = cell.border_width
-                    cell.blocks.parse_vertical_spacing(y0+w_top/2.0, y1-w_bottom/2.0)
+        self.blocks.parse_vertical_spacing(self.margin[2])
 
 
-    def page_margin(self):
-        '''Calculate page margin:
-            - left: MIN(bbox[0])
-            - right: MIN(left, width-max(bbox[2]))
-            - top: MIN(bbox[1])
-            - bottom: height-MAX(bbox[3])
+    def make_page(self, doc):
+        ''' Create page based on layout data. 
+
+            To avoid incorrect page break from original document, a new page section
+            is created for each page.
+
+            Support general document style only:
+              - writing mode: from left to right, top to bottom
+              - text direction: horizontal
+
+            The vertical postion of paragraph/table is defined by space_before or 
+            space_after property of a paragraph.
         '''
-        # return normal page margin if no blocks exist
-        if not self.blocks:
-            self._margin = (utils.ITP, ) * 4 # 1 Inch = 72 pt
-            return
+        # new page section
+        # a default section is created when initialize the document,
+        # so we do not have to add section for the first time.
+        if not doc.paragraphs:
+            section = doc.sections[0]
+        else:
+            section = doc.add_section(WD_SECTION.NEW_PAGE)
 
-        # check candidates for left margin:
-        list_bbox = list(map(lambda x: x.bbox, self.blocks))
+        section.page_width  = Pt(self.width)
+        section.page_height = Pt(self.height)
 
-        # left margin 
-        left = min(map(lambda x: x.x0, list_bbox))
+        # set page margin
+        left,right,top,bottom = self.margin
+        section.left_margin = Pt(left)
+        section.right_margin = Pt(right)
+        section.top_margin = Pt(top)
+        section.bottom_margin = Pt(bottom)
 
-        # right margin
-        x_max = max(map(lambda x: x.x1, list_bbox))
-        right = self.width-x_max-utils.DM*2.0 # consider tolerance: leave more free space
-        right = min(right, left)     # symmetry margin if necessary
-        right = max(right, 0.0)      # avoid negative margin
-
-        # top/bottom margin
-        top = min(map(lambda x: x.y0, list_bbox))
-        bottom = self.height-max(map(lambda x: x.y1, list_bbox))
-        bottom = max(bottom, 0.0)
-
-        # reduce calculated bottom margin -> more free space left,
-        # to avoid page content exceeding current page
-        bottom *= 0.5
-
-        # use normal margin if calculated margin is large enough
-        self._margin = (
-            min(utils.ITP, left), 
-            min(utils.ITP, right), 
-            min(utils.ITP, top), 
-            min(utils.ITP, bottom)
-            )
+        # add paragraph or table according to parsed block
+        for block in self.blocks:
+            # make paragraphs
+            if block.is_text_block() or block.is_image_block():
+                # new paragraph
+                p = doc.add_paragraph()
+                block.make_docx(p, left)
+            
+            # make table
+            elif block.is_table_block():
+                # new table            
+                table = doc.add_table(rows=len(block.cells), cols=len(block.cells[0]))
+                table.autofit = False
+                table.allow_autofit  = False
+                block.make_docx(table, self.margin)
+                
+                # NOTE: If this table is at the end of a page, a new paragraph is automatically 
+                # added by the rending engine, e.g. MS Word, which resulting in an unexpected
+                # page break. The solution is to never put a table at the end of a page, so add
+                # an empty paragraph and reset its format, particularly line spacing, when a table
+                # is created.
+                p = doc.add_paragraph()
+                reset_paragraph_format(p, Pt(1.0))

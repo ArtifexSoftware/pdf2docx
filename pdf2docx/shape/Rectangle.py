@@ -25,11 +25,11 @@ Rectangle data structure:
 
 from ..common.BBox import BBox
 from ..common.base import RectType
-
+from ..common.utils import RGB_component
 
 class Rectangle(BBox):
     ''' Rectangle or line shapes.'''
-    def __init__(self, raw:dict={}) -> None:
+    def __init__(self, raw:dict={}):
         super(Rectangle, self).__init__(raw)
         self._type = RectType.UNDEFINED # no type by default
         self.color = raw.get('color', 0)
@@ -42,7 +42,7 @@ class Rectangle(BBox):
     def type(self, rect_type: RectType):
         self._type = rect_type
 
-    def store(self) -> dict:
+    def store(self):
         res = super().store()
         res.update({
             'type': self._type.value,
@@ -50,10 +50,11 @@ class Rectangle(BBox):
         })
         return res
 
-    def plot(self, page, color:tuple):
+    def plot(self, page):
         '''Plot rectangle shapes with PyMuPDF.
             ---
             Args:
               - page: fitz.Page object
-        '''        
+        '''
+        color = [c/255.0 for c in RGB_component(self.color)]
         page.drawRect(self.bbox, color=color, fill=color, width=0, overlay=False)

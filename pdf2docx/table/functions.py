@@ -13,8 +13,12 @@ from ..shape.Rectangle import Rectangle
 # explicit tables
 # --------------------------------------------
 
-def collect_explicit_borders(rects:list[Rectangle]) -> tuple[dict[float,list[Rectangle]]]:
-    ''' Collect explicit borders in horizontal and vertical groups respectively.'''
+def collect_explicit_borders(rects:list):
+    ''' Collect explicit borders in horizontal and vertical groups respectively.
+        ---
+        Args:
+          - rects: list[Rectangle], source border rects
+    '''
     borders = list(filter(
         lambda rect: rect.type==RectType.BORDER, rects))
 
@@ -104,7 +108,7 @@ def collect_explicit_borders(rects:list[Rectangle]) -> tuple[dict[float,list[Rec
     return h_borders, v_borders
 
 
-def check_merged_cells(ref:float, borders:list[list[Rectangle]], direction:str='row') -> list[int]:
+def check_merged_cells(ref:float, borders:list, direction:str='row'):
     ''' Check merged cells in a row/column. 
 
         Taking cells in a row (direction=0) for example, give a horizontal line (y=ref) passing through this row, 
@@ -112,14 +116,12 @@ def check_merged_cells(ref:float, borders:list[list[Rectangle]], direction:str='
 
         ---
         Args:
-            - ref: y (or x) coordinate of horizontal (or vertical) passing-through line
-            - borders: a list of vertical (or horizontal) rects list in a column (or row)
-            - direction: 
-            'row' - check merged cells in row; 
-            'column' - check merged cells in a column
+          - ref: y (or x) coordinate of horizontal (or vertical) passing-through line
+          - borders: list[list[Rectangle]], a list of vertical (or horizontal) rects list in a column (or row)
+          - direction: 'row' - check merged cells in row; 'column' - check merged cells in a column
     '''
 
-    res = []
+    res = [] # type: list[int]
     for rects in borders[0:-1]:
         # multi-lines exist in a row/column
         for rect in rects:
@@ -154,21 +156,30 @@ def check_merged_cells(ref:float, borders:list[list[Rectangle]], direction:str='
     return res
 
 
-def get_rect_with_bbox(bbox:tuple[float], rects:list[Rectangle], threshold:float) -> Rectangle:
-    '''Get rect within given bbox.'''
+def get_rect_with_bbox(bbox:tuple, rects:list, threshold:float):
+    '''Get rect within given bbox.
+        ---
+        Args:
+          - bbox: tuple[float], target bbox
+          - rects: list[Rectangle], source rects
+    '''
     target_rect = fitz.Rect(bbox)
     for rect in rects:
         intersection = target_rect & rect.bbox
         if intersection.getArea() / target_rect.getArea() >= threshold:
-            res = rect
+            res = rect # type:Rectangle
             break
     else:
         res = None
     return res
 
 
-def set_table_borders(rects:list[Rectangle], border_threshold:float=6.0) -> bool:
+def set_table_borders(rects:list, border_threshold:float=6.0):
     ''' Detect table borders from rects.
+        ---
+        Args:
+          - rects: list[Rectangle], source rectangles
+          - border_threshold: float, suppose border width is lower than this threshold value
 
         Cell borders are detected based on the experiences that:
             - compared to cell shading, the size of cell border never exceeds 6 pt
@@ -207,12 +218,12 @@ def set_table_borders(rects:list[Rectangle], border_threshold:float=6.0) -> bool
         return False
 
 
-def _exist_outer_border(target:float, borders:list[Rectangle], direction:str='h') -> bool:
+def _exist_outer_border(target:float, borders:list, direction:str='h'):
     ''' Check outer borders: whether target border exists in collected borders.
         ---
         Args:
             - target: float, target position of outer border
-            - borders: list, a list of rects representing borders
+            - borders: list[Rectangle], a list of rects representing borders
             - direction: str, 'h'->horizontal border; 'v'->vertical border
     '''
     # no target outer border needed
@@ -225,12 +236,12 @@ def _exist_outer_border(target:float, borders:list[Rectangle], direction:str='h'
     
     if direction=='h':
         # centerline of source borders
-        source = round((borders[0]['bbox'][1] + borders[0]['bbox'][3]) / 2.0, 1)
+        source = round((borders[0].bbox.y0 + borders[0].bbox.y1) / 2.0, 1)
         # max width of source borders
-        width = max(map(lambda rect: rect['bbox'][3]-rect['bbox'][1], borders))
+        width = max(map(lambda rect: rect.bbox.y1-rect.bbox.y0, borders))
     else:
-        source = round((borders[0]['bbox'][0] + borders[0]['bbox'][2]) / 2.0, 1)
-        width = max(map(lambda rect: rect['bbox'][2]-rect['bbox'][0], borders))
+        source = round((borders[0].bbox.x0 + borders[0].bbox.x1) / 2.0, 1)
+        width = max(map(lambda rect: rect.bbox.x1-rect.bbox.x0, borders))
 
     target = round(target, 1)
     width = round(width, 1)
@@ -242,16 +253,17 @@ def _exist_outer_border(target:float, borders:list[Rectangle], direction:str='h'
 # implicit tables
 # --------------------------------------------
 
-def borders_from_bboxes(bboxes:list[Rectangle], border_bbox:tuple) -> list[tuple[float]]:
+def borders_from_bboxes(bboxes:list, border_bbox:tuple):
     ''' Calculate the surrounding borders of given bbox-es.
         ---
         Args:
-          - bboxes: a list of bbox, representing a content region in the table.
+          - bboxes: list[Rectangle], a list of bbox representing a content region in the table.
           - border_bbox: border of table region
         
         These borders construct table cells. Considering the re-building of cell content in docx, 
           - only one bbox is allowed in a line, 
           - but multi-lines are allowed in a cell.
+
     '''
     borders = []  # type: list[tuple[float]]
 
@@ -300,7 +312,7 @@ def borders_from_bboxes(bboxes:list[Rectangle], border_bbox:tuple) -> list[tuple
     return borders
 
 
-def _column_borders_from_bboxes(rects:list[Rectangle]):
+def _column_borders_from_bboxes(rects:list):
     ''' split bbox-es into column groups and add border for adjacent two columns.'''
     # sort bbox-ex in column first mode: from left to right, from top to bottom
     rects.sort(key=lambda rect: (rect.bbox.x0, rect.bbox.y0, rect.bbox.x1))
@@ -313,7 +325,7 @@ def _column_borders_from_bboxes(rects:list[Rectangle]):
 
     # collect bbox-es column by column
     for rect in rects:
-        col_rect = cols_rect[-1] if cols_rect else None
+        col_rect = cols_rect[-1] if cols_rect else Rectangle()
 
         # same column group if vertically aligned
         if utils.is_vertical_aligned(col_rect.bbox, rect.bbox):
@@ -328,10 +340,10 @@ def _column_borders_from_bboxes(rects:list[Rectangle]):
     return cols_rects, cols_rect
 
 
-def _row_borders_from_bboxes(rects:list[Rectangle]):
+def _row_borders_from_bboxes(rects:list):
     ''' split bbox-es into row groups and add border for adjacent two rows.'''
     # sort bbox-ex in row first mode: from top to bottom, from left to right
-    rects.sort(key=lambda rect: (rect.y0, rect.x0, rect.y1))
+    rects.sort(key=lambda rect: (rect.bbox.y0, rect.bbox.x0, rect.bbox.y1))
 
    #  bboxes list in each row
     rows_rects = [] # type: list[list[Rectangle]]
@@ -341,7 +353,7 @@ def _row_borders_from_bboxes(rects:list[Rectangle]):
 
     # collect bbox-es row by row
     for rect in rects:
-        row_rect = rows_rect[-1] if rows_rect else None
+        row_rect = rows_rect[-1] if rows_rect else Rectangle()
 
         # same row group if horizontally aligned
         if utils.is_horizontal_aligned(row_rect.bbox, rect.bbox):

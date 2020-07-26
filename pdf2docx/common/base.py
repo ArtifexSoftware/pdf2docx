@@ -31,12 +31,3 @@ class RectType(Enum):
     STRIKE = 2
     BORDER = 10
     SHADING = 11
-
-
-class Spacing:
-    '''Spacing used in docx.'''
-    def __init__(self, *args, **kwargs) -> None:
-        # introduced attributes
-        self.before_space = None
-        self.after_space = None
-        self.line_space = None

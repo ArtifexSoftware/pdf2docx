@@ -24,7 +24,7 @@ from ..shape.Rectangle import Rectangle
 
 class Char(BBox):
     '''Object representing a character.'''
-    def __init__(self, raw: dict):
+    def __init__(self, raw:dict={}) -> None:
         super(Char, self).__init__(raw)
         self.c = raw.get('c', '')
         self.origin = raw.get('origin', None)       
