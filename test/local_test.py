@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 ''' local test file for developing, with pdf2docx installed by
     `python setpy.py develop`
 '''
