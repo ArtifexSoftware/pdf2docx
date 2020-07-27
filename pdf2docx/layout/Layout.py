@@ -35,11 +35,10 @@ from docx.shared import Pt
 from docx.enum.section import WD_SECTION
 
 from .Blocks import Blocks
-from ..common.utils import (debug_plot, new_page_with_margin, reset_paragraph_format)
-from ..common.base import RectType
 from ..shape.Rectangles import Rectangles
-from ..table.TableBlock import TableBlock
-from ..table.functions import set_table_borders
+from ..common.utils import (debug_plot, new_page_with_margin)
+from ..common.docx import reset_paragraph_format
+
 
 
 class Layout:
@@ -205,21 +204,14 @@ class Layout:
         # check each group
         flag = False
         for group in groups:
-            # skip if not a table group
-            if not set_table_borders(group):
-                continue
-
             # parse table structure based on rects in border type
-            table = TableBlock()
-            if table.parse_structure(group):
-                table.set_explicit_table_block()
-                self.blocks.append(table)
-                flag = True
- 
-            # reset border type if parse table failed
-            else:
-                for rect in group:
-                    rect.type = RectType.UNDEFINED
+            table = group.parse_table_structure()
+            if not table: continue
+
+            # add parsed table to page level blocks
+            table.set_explicit_table_block()
+            self.blocks.append(table)
+            flag = True
 
         return flag
 
@@ -246,18 +238,18 @@ class Layout:
         # parse tables
         flag = False
         for table_bboxes in tables_bboxes:
-            # parse borders based on contents in cell
+            # parse borders based on contents in cell,
+            # and parse table based on rect borders
             rects = Rectangles(table_bboxes).implicit_borders(X0, X1)
 
-            # parse table structure based on rects in border type
-            table = TableBlock()
-            if table.parse_structure(rects):
-                # ignore table if contains only one cell
-                rows = table.cells
-                if len(rows)>1 or len(rows[0])>1:
-                    table.set_implicit_table_block()
-                    self.blocks.append(table)
-                    flag = True
+            table = rects.parse_table_structure()
+
+            # add parsed table to page level blocks
+            # in addition, ignore table if contains only one cell since it's unnecessary for implicit table
+            if table and (table.num_rows>1 or table.num_cols>1):
+                table.set_implicit_table_block()
+                self.blocks.append(table)
+                flag = True
 
         return flag
 

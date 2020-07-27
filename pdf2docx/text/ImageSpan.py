@@ -7,7 +7,7 @@ Image Span based on same raw data structure with image block.
 @author: train8808@gmail.com
 '''
 
-from ..common import utils
+from ..common import docx
 from ..common.BBox import BBox
 
 
@@ -75,7 +75,7 @@ class ImageSpan(BBox):
     def make_docx(self, paragraph):
         '''Add image span to a docx paragraph.'''
         # add image
-        utils.add_image(paragraph, self.image, self.bbox.x1-self.bbox.x0)
+        docx.add_image(paragraph, self.image, self.bbox.x1-self.bbox.x0)
 
         # exactly line spacing will destroy image display, so set single line spacing instead
         paragraph.paragraph_format.line_spacing = 1.05

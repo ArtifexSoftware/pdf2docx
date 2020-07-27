@@ -27,10 +27,10 @@ from docx.shared import Pt
 from .Line import Line
 from .Lines import Lines
 from .ImageSpan import ImageSpan
-from ..shape.Rectangles import Rectangles
 from ..common.base import RectType
 from ..common.Block import Block
 from ..common import utils
+from ..common import docx
 
 
 class TextBlock(Block):
@@ -144,8 +144,12 @@ class TextBlock(Block):
         self.lines.merge()
 
 
-    def parse_text_format(self, rects:Rectangles) -> bool:
-        '''parse text format with style represented by rectangles.'''
+    def parse_text_format(self, rects) -> bool:
+        '''parse text format with style represented by rectangles.
+            ---
+            Args:
+              - rects: Rectangles, potential styles applied on blocks
+        '''
         flag = False
 
         # use each rectangle (a specific text format) to split line spans
@@ -245,7 +249,7 @@ class TextBlock(Block):
         # indent and space setting
         before_spacing = max(round(self.before_space, 1), 0.0)
         after_spacing = max(round(self.after_space, 1), 0.0)
-        pf = utils.reset_paragraph_format(p)
+        pf = docx.reset_paragraph_format(p)
         pf.space_before = Pt(before_spacing)
         pf.space_after = Pt(after_spacing)
         
@@ -268,7 +272,7 @@ class TextBlock(Block):
 
             # left indent implemented with tab
             pos = round(line.bbox.x0-X0, 2)
-            utils.add_stop(p, Pt(pos), Pt(current_pos))
+            docx.add_stop(p, Pt(pos), Pt(current_pos))
 
             # add line
             for span in line.spans:

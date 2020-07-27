@@ -40,6 +40,7 @@ from .Char import Char
 from ..common.BBox import BBox
 from ..common.base import RectType
 from ..common import utils
+from ..common import docx
 from ..shape.Rectangle import Rectangle
 
 
@@ -48,7 +49,7 @@ class TextSpan(BBox):
     def __init__(self, raw:dict={}) -> None:
         super(TextSpan, self).__init__(raw)
         self.color = raw.get('color', 0)
-        self.font = raw.get('font', None)
+        self._font = raw.get('font', None)
         self.size = raw.get('size', 12.0)
         self.flags = raw.get('flags', 0)
         self.chars = [ Char(c) for c in raw.get('chars', []) ] # type: list[Char]
@@ -56,6 +57,13 @@ class TextSpan(BBox):
         # introduced attributes
         self._text = None
         self.style = [] # a list of dict: { 'type': int, 'color': int }
+
+    @property
+    def font(self):
+        '''Parse raw font name, e.g. BCDGEE+Calibri-Bold, BCDGEE+Calibri.'''
+        font_name = self._font.split('+')[-1]
+        font_name = font_name.split('-')[0]
+        return font_name
 
 
     @property
@@ -83,7 +91,9 @@ class TextSpan(BBox):
             'flags': self.flags,
             'chars': [
                 char.store() for char in self.chars
-            ]
+            ],
+            'text': self.text,
+            'style': self.style
         })
         return res
 
@@ -245,7 +255,7 @@ class TextSpan(BBox):
         docx_span.superscript = bool(self.flags & 2**0)
         docx_span.italic = bool(self.flags & 2**1)
         docx_span.bold = bool(self.flags & 2**4)
-        docx_span.font.name = utils.parse_font_name(self.font)
+        docx_span.font.name = self.font
         docx_span.font.size = Pt(round(self.size*2)/2.0) # only x.0 and x.5 is accepted in docx
         docx_span.font.color.rgb = RGBColor(*utils.RGB_component(self.color))
 
@@ -255,7 +265,7 @@ class TextSpan(BBox):
             
             t = style['type']
             if t==RectType.HIGHLIGHT.value:
-                docx_span.font.highlight_color = utils.to_Highlight_color(style['color'])
+                docx_span.font.highlight_color = docx.to_Highlight_color(style['color'])
 
             elif t==RectType.UNDERLINE.value:
                 docx_span.font.underline = True

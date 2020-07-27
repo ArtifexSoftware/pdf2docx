@@ -57,10 +57,20 @@ class Converter:
         else:
             return self._doc_pdf[index]
 
-
     def __len__(self):
         return len(self._doc_pdf)
 
+    @property
+    def layout(self):
+        return self._layout
+
+    @property
+    def doc_pdf(self):
+        return self._doc_pdf
+
+    @property
+    def doc_docx(self):
+        return self._doc_docx
 
     @property
     def _debug_kwargs(self):
@@ -70,8 +80,7 @@ class Converter:
                 'filename': self.filename_debug
             }
 
-
-    def layout(self, page:fitz.Page) -> Layout:
+    def init(self, page:fitz.Page) -> Layout:
         '''Initialize layout object.'''
         # Layout object based on raw dict
         raw_layout = page.getText('rawdict')
@@ -104,7 +113,7 @@ class Converter:
     def parse(self, page:fitz.Page):
         '''Parse page layout.'''
         # parse page: text/table/layout format
-        self.layout(page).parse(**self._debug_kwargs)
+        self.init(page).parse(**self._debug_kwargs)
 
         # debug:
         # - save layout plotting as pdf file
@@ -119,19 +128,19 @@ class Converter:
     def make_page(self):
         '''Create docx page based on parsed layout.'''
         self._layout.make_page(self._doc_docx)
-        self.save()
+        self.save_docx()
 
 
     def extract_tables(self, page:fitz.Page):
         '''Extract table contents.'''
-        return self.layout(page).extract_tables()
+        return self.init(page).extract_tables()
 
 
-    def save(self):
-        '''Save docx file'''        
+    def save_docx(self):
+        '''Save docx file.'''        
         self._doc_docx.save(self.filename_docx)
 
-    
+
     def close(self):
         '''Close pdf files.'''
         self._doc_pdf.close()

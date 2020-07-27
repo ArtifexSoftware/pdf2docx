@@ -12,7 +12,6 @@ from ..common.Block import Block
 from ..text.TextBlock import TextBlock
 from ..text.ImageBlock import ImageBlock
 from ..shape.Rectangle import Rectangle
-from ..shape.Rectangles import Rectangles
 
 
 class Blocks:
@@ -385,8 +384,11 @@ class Blocks:
         self._blocks = res
 
 
-    def parse_text_format(self, rects:Rectangles):
+    def parse_text_format(self, rects):
         '''Parse text format with style represented by rectangles.
+            ---
+            Args:
+              - rects: Rectangles, potential styles applied on blocks
 
             NOTE: `parse_text_format` must be implemented by TextBlock, ImageBlock and TableBlock.
         '''

@@ -11,7 +11,8 @@ from docx.shared import Pt
 from docx.enum.table import WD_ROW_HEIGHT
 from ..text.TextBlock import TextBlock
 from ..common.BBox import BBox
-from ..common import utils
+from ..common.utils import RGB_component
+from ..common.docx import set_cell_border, set_cell_shading
 from ..layout.Blocks import Blocks
 
 
@@ -59,12 +60,12 @@ class Cell(BBox):
         # plot cell style
         if style:
             # border color and width
-            bc = [x/255.0 for x in utils.RGB_component(self.border_color[0])]
+            bc = [x/255.0 for x in RGB_component(self.border_color[0])]
             w = self.border_width[0]
 
             # shading color
             if self.bg_color != None:
-                sc = [x/255.0 for x in utils.RGB_component(self.bg_color)] 
+                sc = [x/255.0 for x in RGB_component(self.bg_color)] 
             else:
                 sc = None
             page.drawRect(self.bbox, color=bc, fill=sc, width=w, overlay=False)
@@ -137,7 +138,7 @@ class Cell(BBox):
             # merged cells are assumed to have same borders with the main cell        
             for m in range(i, i+n_row):
                 for n in range(j, j+n_col):
-                    utils.set_cell_border(table.cell(m, n), **kwargs)
+                    set_cell_border(table.cell(m, n), **kwargs)
 
         # ---------------------
         # merge cells
@@ -170,4 +171,4 @@ class Cell(BBox):
         # cell bg-color
         # ---------------------
         if self.bg_color!=None:
-            utils.set_cell_shading(cell, self.bg_color)
+            set_cell_shading(cell, self.bg_color)
