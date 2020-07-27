@@ -43,26 +43,41 @@ class TableBlock(Block):
     def __init__(self, raw:dict={}) -> None:
         super(TableBlock, self).__init__(raw)
 
-        self.cells = [] # type: list[list[Cell]]
+        self._cells = [] # type: list[list[Cell]]
         for row in raw.get('cells', []):            
             row_obj = [Cell(cell) for cell in row] # type: list [Cell]
-            self.cells.append(row_obj)
+            self._cells.append(row_obj)
 
         # explicit table by default
         self.set_explicit_table_block()
 
+    def __getitem__(self, idx):
+        try:
+            cells = self._cells[idx]
+        except IndexError:
+            msg = f'Row index {idx} out of range'
+            raise IndexError(msg)
+        else:
+            return cells
+
+    def __iter__(self):
+        return (row for row in self._cells)
+
+    def __len__(self):
+        return len(self._cells)
+
     @property
     def num_rows(self):
-        return len(self.cells)
+        return len(self._cells)
 
     @property
     def num_cols(self):
-        return len(self.cells[0]) if self.num_rows else 0
+        return len(self._cells[0]) if self.num_rows else 0
 
     @property
     def text(self) -> list:
         '''Get text contained in each cell.'''
-        return [ [cell.text for cell in row] for row in self.cells ]
+        return [ [cell.text for cell in row] for row in self._cells ]
 
     
     def append_row(self, row:list):
@@ -71,7 +86,7 @@ class TableBlock(Block):
             Args:
               - row: list[Cell], a list of cells
         '''
-        self.cells.append(row)
+        self._cells.append(row)
         for cell in row:
             self.union(cell.bbox)
 
@@ -79,7 +94,7 @@ class TableBlock(Block):
     def store(self) -> dict:
         res = super().store()
         res.update({
-            'cells': [ [cell.store() for cell in row] for row in self.cells]
+            'cells': [ [cell.store() for cell in row] for row in self._cells]
         })
         return res
 
@@ -92,7 +107,7 @@ class TableBlock(Block):
               - style: plot cell style if True, e.g. border width, shading
               - content: plot text blocks if True
         '''
-        for row in self.cells:
+        for row in self._cells:
             for cell in row:
                 # ignore merged cells
                 if not cell: continue            
@@ -109,7 +124,7 @@ class TableBlock(Block):
             Args:
               - rects: Rectangles, format styles are represented by these rectangles.
         '''
-        for row in self.cells:
+        for row in self._cells:
             for cell in row:
                 if not cell: continue
                 cell.blocks.parse_text_format(rects)
@@ -119,7 +134,7 @@ class TableBlock(Block):
 
     def parse_vertical_spacing(self):
         ''' Calculate vertical space for blocks contained in table cells.'''
-        for row in self.cells:
+        for row in self._cells:
             for cell in row:
                 if not cell: continue
                 y0 = cell.bbox.y0
@@ -145,7 +160,7 @@ class TableBlock(Block):
             for j in range(len(table.columns)):           
 
                 # ignore merged cells
-                block_cell = self.cells[i][j] # type: Cell
+                block_cell = self._cells[i][j] # type: Cell
                 if not block_cell: continue
                 
                 # set cell style

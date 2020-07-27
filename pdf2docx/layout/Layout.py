@@ -315,7 +315,7 @@ class Layout:
             # make table
             elif block.is_table_block():
                 # new table            
-                table = doc.add_table(rows=len(block.cells), cols=len(block.cells[0]))
+                table = doc.add_table(rows=block.num_rows, cols=block.num_cols)
                 table.autofit = False
                 table.allow_autofit  = False
                 block.make_docx(table, self.margin)

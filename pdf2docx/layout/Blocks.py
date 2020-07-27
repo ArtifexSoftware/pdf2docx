@@ -112,7 +112,7 @@ class Blocks:
         # assign blocks to associated cells
         # ATTENTION: no nested table is considered
         for table, blocks_in_table in zip(tables, blocks_in_tables):
-            for row in table.cells:
+            for row in table:
                 for cell in row:
                     if not cell: continue
                     # check candidate blocks
@@ -227,8 +227,8 @@ class Blocks:
 
             # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
             # size should be excluded from the calculated vertical spacing
-            if block.is_table_block() and block.cells[0][0]:
-                dw = block.cells[0][0].border_width[0] / 2.0 # use top border of the first cell
+            if block.is_table_block() and block[0][0]:
+                dw = block[0][0].border_width[0] / 2.0 # use top border of the first cell
 
                 # calculate vertical spacing of blocks under this table
                 block.parse_vertical_spacing()
