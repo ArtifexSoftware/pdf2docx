@@ -64,6 +64,8 @@ class Rectangles(BaseRects):
         # --------------------------------------------------
         h_borders, v_borders = self._collect_explicit_borders()
         if not h_borders or not v_borders:
+            # reset borders because it's a invalid table
+            self._unset_table_border()
             return None
 
         # sort
