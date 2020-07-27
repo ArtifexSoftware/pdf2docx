@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-from pdf2docx.reader import Reader
-from pdf2docx.writer import Writer
+from pdf2docx.converter import Converter
 
 
 def parse(pdf_file, docx_file, start=0, end=None, pages=[]):
@@ -17,28 +16,23 @@ def parse(pdf_file, docx_file, start=0, end=None, pages=[]):
             pages (list)   : range of pages
     '''
 
-    pdf = Reader(pdf_file)
-    docx = Writer()
+    cv = Converter(pdf_file, docx_file)
 
     # parsing arguments
-    pdf_len = len(pdf)
+    pdf_len = len(cv)
     if pages: 
-        pdf_pages = [pdf[int(x)] for x in pages]
+        pdf_pages = [cv[int(x)] for x in pages]
     else:
         end = end or pdf_len
-        pdf_pages = pdf[int(start):int(end)]
+        pdf_pages = cv[int(start):int(end)]
 
     # process page by page
     for page in pdf_pages:
         print(f"Processing {page.number}/{pdf_len-1}...")
-        # parse layout
-        layout = pdf.parse(page)        
-        # create docx
-        docx.make_page(layout)
+        cv.parse(page).make_page()
 
-    # save docx, close pdf
-    docx.save(docx_file)
-    pdf.close()
+    # close pdf
+    cv.close()
     
 
 def extract_tables(pdf_file, start=0, end=None, pages=[]):
@@ -51,24 +45,24 @@ def extract_tables(pdf_file, start=0, end=None, pages=[]):
             pages (list)   : range of pages
     '''
 
-    pdf = Reader(pdf_file)
+    cv = Converter(pdf_file)
 
     # parsing arguments
-    pdf_len = len(pdf)
+    pdf_len = len(cv)
     if pages: 
-        pdf_pages = [pdf[int(x)] for x in pages]
+        pdf_pages = [cv[int(x)] for x in pages]
     else:
         end = end or pdf_len
-        pdf_pages = pdf[int(start):int(end)]
+        pdf_pages = cv[int(start):int(end)]
 
     # process page by page
     tables = []
     for page in pdf_pages:
         print(f"Processing {page.number}/{pdf_len-1}...")
-        page_tables = pdf.extract_tables(page)
+        page_tables = cv.extract_tables(page)
         tables.extend(page_tables)
 
-    pdf.close()
+    cv.close()
 
     return tables
 

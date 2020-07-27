@@ -1,3 +1,13 @@
+# -*- coding: utf-8 -*-
+
+'''
+Convert docx to pdf.
+
+It's used to convert the pdf2docx generated docx file back to pdf, so that we can check the layout of
+these two pdf files, i.e. the source pdf and converted docx file.
+'''
+
+
 import os
 
 script_path = os.path.abspath(__file__) # current script path

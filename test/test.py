@@ -1,17 +1,23 @@
+# -*- coding: utf-8 -*-
+
+'''
+Testing the layouts between sample pdf and the converted docx:
+  - convert sample pdf to docx
+  - convert docx to pdf for comparison
+  - compare layouts between sample pdf and comparing pdf
+
+NOTE: pdf2docx should be installed in advance.
+'''
+
 import os
-import sys
 import shutil
 import unittest
 import fitz
 
 from utils import Utility
-
-script_path = os.path.abspath(__file__) # current script path
-project_path = os.path.dirname(os.path.dirname(script_path))
-sys.path.append(project_path)
-
-from pdf2docx.reader import Reader
-from pdf2docx.writer import Writer
+from pdf2docx.converter import Converter
+from pdf2docx.layout.Layout import Layout
+from pdf2docx.text.ImageSpan import ImageSpan
 
 
 class TestUtility(Utility, unittest.TestCase):
@@ -34,7 +40,8 @@ class TestUtility(Utility, unittest.TestCase):
         '''
         # sample pdf
         sample_pdf_file = os.path.join(self.output_dir, f'{self.PREFIX_SAMPLE}-{filename}')
-        sample_pdf = Reader(sample_pdf_file)
+        docx_file = os.path.join(self.output_dir, f'{filename[0:-3]}docx')
+        sample_pdf = Converter(sample_pdf_file, docx_file)
 
         # convert pdf to docx, besides, 
         # convert docx back to pdf for comparison next
@@ -44,7 +51,7 @@ class TestUtility(Utility, unittest.TestCase):
 
         # testing pdf
         test_pdf_file = os.path.join(self.output_dir, comparing_pdf_file)
-        test_pdf = Reader(test_pdf_file)
+        test_pdf = Converter(test_pdf_file)
 
         # set default properties
         self.TEST_FILE = filename
@@ -53,24 +60,16 @@ class TestUtility(Utility, unittest.TestCase):
 
         return layouts
 
-    def pdf2docx(self, pdf, comparing_pdf_file):
+    def pdf2docx(self, pdf:Converter, comparing_pdf_file:str):
         ''' test target: converting pdf to docx'''        
-        docx = Writer()
-        layouts = []
+        layouts = [] # type: list[Layout]
         for page in pdf:
             # parse layout
-            layout = pdf.parse(page)
-            layouts.append(layout)
-            # create docx
-            docx.make_page(layout)
+            pdf.parse(page).make_page()
+            layouts.append(pdf.layout)
         
-        # save docx
-        docx_file = pdf.filename[0:-3] + 'docx'
-        docx_file = docx_file.replace(f'{self.PREFIX_SAMPLE}-', '')
-        docx.save(docx_file)
-
         # convert to pdf for comparison
-        if self.docx2pdf(docx_file, comparing_pdf_file):
+        if self.docx2pdf(pdf.filename_docx, comparing_pdf_file):
             return layouts
         else:
             return None   
@@ -103,37 +102,40 @@ class TestUtility(Utility, unittest.TestCase):
         return matched
 
     @staticmethod
-    def get_text_image_blocks(layout):
+    def get_text_image_blocks(layout:Layout):
         ''' get text blocks from both page and table level'''
         # text block in page level
-        blocks = list(filter(lambda block: block['type'] in (0, 1), layout['blocks']))
+        blocks = list(filter(
+            lambda block: block.is_text_block() or block.is_image_block(), 
+            layout.blocks))
 
         # blocks in table cell level
-        tables = list(filter(lambda block: block['type'] in (3,4), layout['blocks']))
+        tables = list(filter(
+            lambda block: block.is_table_block(), 
+            layout.blocks))
         for table in tables:
-            for row in table['cells']:
+            for row in table.cells:
                 for cell in row:
                     if not cell: continue
-                    blocks.extend(cell['blocks'])
-        
+                    blocks.extend(list(cell.blocks))
+
         return blocks
 
-    def extract_text_style(self, layout):
-        ''' extract span text and style from layout'''        
+    def extract_text_style(self, layout:Layout):
+        '''Extract span text and style from layout.'''
         # text or image blocks
         blocks = self.get_text_image_blocks(layout)
 
         # check text format from text blocks
         res = []
         for block in blocks:
-            if block['type']==1: continue
-            for line in block['lines']:
-                for span in line['spans']:
-                    if not 'text' in span: continue
-                    if not 'style' in span: continue
+            if block.is_image_block(): continue
+            for line in block.lines:
+                for span in line.spans:
+                    if not span.style: continue
                     res.append({
-                        'text': span['text'],
-                        'style': [ t['type'] for t in span['style']]
+                        'text': span.text,
+                        'style': [ t['type'] for t in span.style]
                     })
         return res
 
@@ -145,13 +147,13 @@ class TestUtility(Utility, unittest.TestCase):
         # extract images
         res = []
         for block in blocks:
-            if block['type']==1:
-                res.append(block['bbox'])
-            else:
-                for line in block['lines']:
-                    for span in line['spans']:
-                        if not 'image' in span: continue
-                        res.append(span['bbox'])
+            if block.is_image_block():
+                res.append(block.bbox_raw)
+            elif block.is_text_block():
+                for line in block.lines:
+                    for span in line.spans:
+                        if isinstance(span, ImageSpan):
+                            res.append(span.bbox_raw)
         return res
 
     def verify_layout(self, threshold=0.7):
@@ -223,7 +225,7 @@ class MainTest(TestUtility):
         # check text style page by page
         for layout, page in zip(layouts, self.TEST_PDF):
             sample_style = self.extract_text_style(layout)
-            test_style = self.extract_text_style(self.TEST_PDF.parse(page))
+            test_style = self.extract_text_style(self.TEST_PDF.parse(page).layout)
 
             self.assertEqual(len(sample_style), len(test_style), 
                 msg=f'The count of extracted style format {len(test_style)} is inconsistent with sample file {len(sample_style)}.')
@@ -246,7 +248,7 @@ class MainTest(TestUtility):
         # check images page by page
         for i, (layout, page) in enumerate(zip(layouts, self.TEST_PDF)):
             sample_images = self.extract_image(layout)
-            test_images = self.extract_image(self.TEST_PDF.parse(page))
+            test_images = self.extract_image(self.TEST_PDF.parse(page).layout)
 
             self.assertEqual(len(sample_images), len(test_images), 
                 msg=f'The count of images {len(test_images)} is inconsistent with sample file {len(sample_images)}.')
