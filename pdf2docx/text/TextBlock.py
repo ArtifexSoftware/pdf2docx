@@ -225,13 +225,10 @@ class TextBlock(Block):
             line_space = block_height        
         self.line_space = line_space
 
-        # if only one line exists, don't have to set line spacing, use default setting,
-        # i.e. single line instead
-        if count > 1:
-            # since the line height setting in docx may affect the original bbox in pdf, 
-            # it's necessary to update the before spacing:
-            # taking bottom left corner of first line as the reference point                
-            self.before_space = self.before_space + first_line_height - line_space
+        # since the line height setting in docx may affect the original bbox in pdf, 
+        # it's necessary to update the before spacing:
+        # taking bottom left corner of first line as the reference point                
+        self.before_space += first_line_height - line_space
 
 
     def make_docx(self, p, X0:float):

@@ -90,14 +90,14 @@ class TestUtility(Utility, unittest.TestCase):
         area = b.getArea()
         matched = area/b1.getArea()>=threshold and area/b2.getArea()>=threshold
 
-        if not matched:
-            # right position in sample file
-            page.drawRect(sample_bbox, color=(1,1,0), overlay=False)
-            # mismatched postion in red box
-            page.drawRect(test_bbox, color=(1,0,0), overlay=False)
-            # save file
-            result_file = self.SAMPLE_PDF.filename.replace(f'{self.PREFIX_SAMPLE}-', '')
-            self.SAMPLE_PDF.core.save(result_file)
+        # draw bbox layout
+        # right position in sample file
+        page.drawRect(sample_bbox, color=(1,1,0), overlay=False)
+        # mismatched postion in red box
+        page.drawRect(test_bbox, color=(1,0,0), overlay=False)
+        # save file
+        result_file = self.SAMPLE_PDF.filename_pdf.replace(f'{self.PREFIX_SAMPLE}-', '')
+        self.SAMPLE_PDF.doc_pdf.save(result_file)
 
         return matched
 

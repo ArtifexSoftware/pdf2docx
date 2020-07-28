@@ -199,17 +199,18 @@ class Blocks(Collection):
 
         ref_block = self._instances[0]
         ref_pos = Y0
+
         for block in self._instances:
-
-            dw = 0.0
-
             # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
             # size should be excluded from the calculated vertical spacing
-            if block.is_table_block() and block[0][0]:
+            if block.is_table_block():
                 dw = block[0][0].border_width[0] / 2.0 # use top border of the first cell
 
                 # calculate vertical spacing of blocks under this table
                 block.parse_vertical_spacing()
+            
+            else:
+                dw = 0.0
 
             start_pos = block.bbox.y0 - dw
             para_space = start_pos - ref_pos
@@ -237,7 +238,7 @@ class Blocks(Collection):
 
             # update reference block        
             ref_block = block
-            ref_pos = block.bbox.y1 + dw
+            ref_pos = ref_block.bbox.y1 + dw # assume same bottom border with top one
 
 
     def remove_floating_images(self):
