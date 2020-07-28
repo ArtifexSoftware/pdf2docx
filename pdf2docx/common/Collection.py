@@ -62,12 +62,9 @@ class Collection:
             self._parent.union(bbox.bbox)
 
     def reset(self, bboxes:list):
-        self._instances = bboxes
+        self._instances = []
+        self.extend(bboxes)
         return self
-
-    
-    def sort(self, *args, **kwargs):
-        self._instances.sort(*args, **kwargs)
 
 
     def store(self) -> list:

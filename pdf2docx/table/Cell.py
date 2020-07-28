@@ -26,7 +26,9 @@ class Cell(BBox):
         self.merged_cells = raw.get('merged_cells', (1,1)) # type: tuple [int]
 
         # collect blocks
-        self.blocks = Blocks(None, self).from_dicts(raw.get('blocks', []))
+        # NOTE: The cell bbox is determined first, and then find blocks contained in this bbox.
+        # so, don't update cell bbox when appending blocks, i.e. set parent=None.
+        self.blocks = Blocks(None, parent=None).from_dicts(raw.get('blocks', []))
 
 
     @property
