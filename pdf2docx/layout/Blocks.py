@@ -15,6 +15,7 @@ from ..text.ImageBlock import ImageBlock
 from ..shape.Rectangle import Rectangle
 
 
+
 class Blocks(Collection):
     '''Block collections.'''
 
@@ -38,6 +39,36 @@ class Blocks(Collection):
         
         return self
 
+    @property
+    def text_blocks(self):
+        '''Get text blocks contained in this Collection.'''
+        return list(filter(
+            lambda block: block.is_text_block(), self._instances))
+    
+    @property
+    def image_blocks(self):
+        '''Get image blocks contained in this Collection.'''
+        return list(filter(
+            lambda block: block.is_image_block(), self._instances))
+    
+    @property
+    def explicit_table_blocks(self):
+        '''Get explicit table blocks contained in this Collection.'''
+        return list(filter(
+            lambda block: block.is_explicit_table(), self._instances))
+
+    @property
+    def implicit_table_blocks(self):
+        '''Get implicit table blocks contained in this Collection.'''
+        return list(filter(
+            lambda block: block.is_implicit_table_block(), self._instances))
+
+    @property
+    def table_blocks(self):
+        '''Get table blocks contained in this Collection.'''
+        return list(filter(
+            lambda block: block.is_table_block(), self._instances))
+
 
     def preprocessing(self):
         '''Preprocessing for blocks initialized from the raw layout.'''
@@ -51,23 +82,22 @@ class Blocks(Collection):
             lambda block: block.is_horizontal_block(), self._instances))
 
         # remove overlap blocks: no floating elements are supported
-        self.remove_floating_images()        
+        self._remove_floating_images()        
         
         # sort in reading direction: from up to down, from left to right
         self._instances.sort(
             key=lambda block: (block.bbox.y0, block.bbox.x0))
             
         # merge inline images into text block
-        self.merge_inline_images()
+        self._merge_inline_images()
 
         return True
 
 
     def parse_table_content(self):
-        '''Add block lines to associated cells.'''
-
+        '''Add Text/Image block lines to associated cells of Table blocks.'''
         # table blocks
-        tables = list(filter(lambda block: block.is_table_block(), self._instances))
+        tables = self.table_blocks
         if not tables: return False
 
         # collect blocks in table region        
@@ -115,9 +145,12 @@ class Blocks(Collection):
             Table may exist on the following conditions:
              - (a) lines in blocks are not connected sequently -> determined by current block only
              - (b) multi-blocks are in a same row (horizontally aligned) -> determined by two adjacent blocks
-        '''  
+        '''
+        # lazy import to avoid conflits: 
+        # Blocks -> Rectangles -> TableBlock -> Cell -> Blocks
+        from ..shape.Rectangles import Rectangles
 
-        res = [] # type: list[list[Rectangle]]
+        res = [] # type: list[Rectangles]
 
         table_lines = [] # type: list[Rect]
         new_line = True
@@ -170,7 +203,7 @@ class Blocks(Collection):
             if table_lines and table_end: 
                 # from fitz.Rect to Rectangle type
                 rects = [Rectangle().update(line) for line in table_lines]
-                res.append(rects)
+                res.append(Rectangles(rects))
 
                 # reset table_blocks
                 table_lines = []
@@ -241,103 +274,6 @@ class Blocks(Collection):
             ref_pos = ref_block.bbox.y1 + dw # assume same bottom border with top one
 
 
-    def remove_floating_images(self):
-        ''' Remove floating blocks, especially images. When a text block is floating behind 
-            an image block, the background image block will be deleted, considering that 
-            floating elements are not supported in python-docx when re-create the document.
-        '''
-        # get text/image blocks seperately, and suppose no overlap between text blocks
-        text_blocks = list(
-            filter( lambda block: block.is_text_block(),  self._instances))
-        image_blocks = list(
-            filter( lambda block: block.is_image_block(),  self._instances))
-
-        # check image block: no significant overlap with any text/image blocks
-        res_image_blocks = []
-        for image_block in image_blocks:
-            # 1. overlap with any text block?
-            for text_block in text_blocks:            
-                if utils.get_main_bbox(image_block.bbox, text_block.bbox, 0.75):
-                    overlap = True
-                    break
-            else:
-                overlap = False
-
-            # yes, then this is an invalid image block
-            if overlap: continue
-
-            # 2. overlap with any valid image blocks?
-            for valid_image in res_image_blocks:
-                if utils.get_main_bbox(image_block.bbox, valid_image.bbox, 0.75):
-                    overlap = True
-                    break
-            else:
-                overlap = False
-            
-            # yes, then this is an invalid image block
-            if overlap: continue
-
-            # finally, add this image block
-            res_image_blocks.append(image_block)
-
-        # return all valid blocks
-        self._instances = []
-        self._instances.extend(text_blocks)
-        self._instances.extend(res_image_blocks)
-
-
-    def merge_inline_images(self):
-        '''Merge inline image blocks into text block: a block line or a line span.
-
-           From docx aspect, inline image and text are in same paragraph; while they are not in pdf block level.
-           Instead, there's overlap between these image block and text block, so have to merge image block into text block
-           to avoid floating blocks.
-        '''    
-        # get all images blocks with index
-        f = lambda item: item[1].is_image_block()
-        index_images = list(filter(f, enumerate(self._instances)))
-        if not index_images: return False
-
-        # get index of inline images: intersected with text block
-        # assumption: an inline image intersects with only one text block
-        index_inline = []
-        num = len(index_images)
-        for block in self._instances:
-
-            # suppose no overlap between two images
-            if block.is_image_block(): continue
-
-            # innore table block
-            if block.is_table_block(): continue
-
-            # all images found their block, then quit
-            if len(index_inline)==num: break
-
-            # check all images for current block
-            for i, image in index_images:
-                # an inline image belongs to only one block
-                if i in index_inline: continue
-
-                # horizontally aligned with current text block?
-                # no, pass
-                if not utils.is_horizontal_aligned(block.bbox, image.bbox):
-                    continue
-
-                # yes, inline image: set as a line span in block
-                index_inline.append(i)
-                block.merge_image(image)
-
-
-        # remove inline images from top layout
-        # the index of element in original list changes when any elements are removed
-        # so try to delete item in reverse order
-        for i in index_inline[::-1]:
-            self._instances.pop(i)
-
-        # anything changed in this step?
-        return True if index_inline else False
-
-
     def merge(self):
         '''Merge blocks aligned horizontally.'''
         res = [] # type: list[TextBlock]
@@ -360,7 +296,7 @@ class Blocks(Collection):
         for block in res:
             block.lines.sort()
         
-        self._instances = res
+        self.reset(res)
 
 
     def parse_text_format(self, rects):
@@ -421,3 +357,96 @@ class Blocks(Collection):
             min(utils.ITP, top), 
             min(utils.ITP, bottom)
             )
+
+
+    def _remove_floating_images(self):
+        ''' Remove floating blocks, especially images. When a text block is floating behind 
+            an image block, the background image block will be deleted, considering that 
+            floating elements are not supported in python-docx when re-create the document.
+        '''
+        # get text/image blocks seperately, and suppose no overlap between text blocks
+        text_blocks = self.text_blocks
+        image_blocks = self.image_blocks
+
+        # check image block: no significant overlap with any text/image blocks
+        res_image_blocks = []
+        for image_block in image_blocks:
+            # 1. overlap with any text block?
+            for text_block in text_blocks:            
+                if utils.get_main_bbox(image_block.bbox, text_block.bbox, 0.75):
+                    overlap = True
+                    break
+            else:
+                overlap = False
+
+            # yes, then this is an invalid image block
+            if overlap: continue
+
+            # 2. overlap with any valid image blocks?
+            for valid_image in res_image_blocks:
+                if utils.get_main_bbox(image_block.bbox, valid_image.bbox, 0.75):
+                    overlap = True
+                    break
+            else:
+                overlap = False
+            
+            # yes, then this is an invalid image block
+            if overlap: continue
+
+            # finally, add this image block
+            res_image_blocks.append(image_block)
+
+        # return all valid blocks
+        self.reset(text_blocks).extend(res_image_blocks)
+
+
+    def _merge_inline_images(self):
+        '''Merge inline image blocks into text block: a block line or a line span.
+
+           From docx aspect, inline image and text are in same paragraph; while they are not in pdf block level.
+           Instead, there's overlap between these image block and text block, so have to merge image block into text block
+           to avoid floating blocks.
+        '''    
+        # get all images blocks with index
+        f = lambda item: item[1].is_image_block()
+        index_images = list(filter(f, enumerate(self._instances)))
+        if not index_images: return False
+
+        # get index of inline images: intersected with text block
+        # assumption: an inline image intersects with only one text block
+        index_inline = []
+        num = len(index_images)
+        for block in self._instances:
+
+            # suppose no overlap between two images
+            if block.is_image_block(): continue
+
+            # innore table block
+            if block.is_table_block(): continue
+
+            # all images found their block, then quit
+            if len(index_inline)==num: break
+
+            # check all images for current block
+            for i, image in index_images:
+                # an inline image belongs to only one block
+                if i in index_inline: continue
+
+                # horizontally aligned with current text block?
+                # no, pass
+                if not utils.is_horizontal_aligned(block.bbox, image.bbox):
+                    continue
+
+                # yes, inline image: set as a line span in block
+                index_inline.append(i)
+                block.merge_image(image)
+
+
+        # remove inline images from top layout
+        # the index of element in original list changes when any elements are removed
+        # so try to delete item in reverse order
+        for i in index_inline[::-1]:
+            self._instances.pop(i)
+
+        # anything changed in this step?
+        return True if index_inline else False

@@ -89,15 +89,11 @@ class Layout:
         
         #  - explicit table structure only
         elif key == 'table': 
-            objects = list(filter(
-                lambda block: block.is_explicit_table_block(), self.blocks
-            ))
+            objects = self.blocks.explicit_table_blocks
         
         #  - implicit table structure only
         elif key == 'implicit_table': 
-            objects = list(filter(
-                lambda block: block.is_implicit_table_block(), self.blocks
-            ))
+            objects = self.blocks.implicit_table_blocks
         
         #  - rectangle shapes
         elif key == 'shape': 
@@ -174,7 +170,7 @@ class Layout:
 
         # check table
         tables = [] # type: list[ list[list[str]] ]
-        for table_block in filter(lambda block: block.is_table_block(), self.blocks):
+        for table_block in self.blocks.table_blocks:
             tables.append(table_block.text)
 
         return tables
@@ -241,9 +237,7 @@ class Layout:
         for table_bboxes in tables_bboxes:
             # parse borders based on contents in cell,
             # and parse table based on rect borders
-            rects = Rectangles(table_bboxes).implicit_borders(X0, X1)
-
-            table = rects.parse_table_structure()
+            table = table_bboxes.implicit_borders(X0, X1).parse_table_structure()
 
             # add parsed table to page level blocks
             # in addition, ignore table if contains only one cell since it's unnecessary for implicit table

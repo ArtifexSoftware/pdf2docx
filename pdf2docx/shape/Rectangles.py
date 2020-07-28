@@ -20,6 +20,12 @@ from ..table.Cell import Cell
 
 class Rectangles(Collection):
 
+    @property
+    def border_rects(self):
+        '''Rectangles in border type.'''
+        return list(filter(
+            lambda rect: rect.type==RectType.BORDER, self._instances))
+
     def from_annotations(self, annotations: list): # type: BaseRects
         ''' Get rectangle shapes from annotations(comment shapes) in PDF page.
             Note: consider highlight, underline, strike-through-line only. 
@@ -642,16 +648,14 @@ class Rectangles(Collection):
 
 
     def _collect_explicit_borders(self):
-        ''' Collect explicit borders in horizontal and vertical groups respectively.'''
-        borders = list(filter(
-            lambda rect: rect.type==RectType.BORDER, self._instances))
+        ''' Collect explicit borders in horizontal and vertical groups respectively.'''        
 
         h_borders = {} # type: dict [float, Rectangles]
         v_borders = {} # type: dict [float, Rectangles]
         h_outer = []   # type: list[float]
         v_outer = []   # type: list[float]
 
-        for rect in borders:
+        for rect in self.border_rects:
             # group horizontal borders in each row
             if rect.bbox.width > rect.bbox.height:
                 # row centerline
