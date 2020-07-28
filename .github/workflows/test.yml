@@ -44,13 +44,13 @@ jobs:
           pip install -r requirements.txt
           python setup.py develop
 
-      # Run unit test, and upload debug files if failed
+      # Run unit test, and upload debug files
       - name: Run unit test
         run: |
           cd test
           python -m unittest test.py
 
-      - name: Archive debug files if failed
+      - name: Archive debug files
         uses: actions/upload-artifact@v2
         with:
           name: test
