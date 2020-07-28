@@ -52,7 +52,6 @@ jobs:
 
       - name: Archive debug files if failed
         uses: actions/upload-artifact@v2
-        if: failure()
         with:
           name: test
           path: ./test/outputs
