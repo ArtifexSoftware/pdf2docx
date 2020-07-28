@@ -42,7 +42,7 @@ class Collection:
 
 
     def append(self, bbox:BBox):
-        ''' Append an instance and update parent's bbox accordingly.'''
+        '''Append an instance and update parent's bbox accordingly.'''
         if not bbox: return
         self._instances.append(bbox)
         if not self._parent is None: # Note: `if self._parent` does not work here
@@ -50,6 +50,7 @@ class Collection:
 
 
     def extend(self, bboxes:list):
+        '''Append a list of instances.'''
         for bbox in bboxes:
             self.append(bbox)
 
@@ -61,11 +62,13 @@ class Collection:
         if not self._parent is None:
             self._parent.union(bbox.bbox)
 
-    def reset(self, bboxes:list):
+    def reset(self, bboxes:list=[]):
+        '''Reset instances list.'''
         self._instances = []
         self.extend(bboxes)
         return self
 
 
     def store(self) -> list:
+        '''Store attributes in json format.'''
         return [ instance.store() for instance in self._instances]

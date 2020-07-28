@@ -8,6 +8,7 @@ from enum import Enum
 
 
 class BlockType(Enum):
+    '''Block types.'''
     UNDEFINED = -1
     TEXT = 0
     IMAGE = 1

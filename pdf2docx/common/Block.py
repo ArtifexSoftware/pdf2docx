@@ -56,9 +56,11 @@ class Block(BBox):
         self._type = BlockType.IMPLICIT_TABLE
 
     def is_horizontal_block(self):
+        '''Whether horizontally oriented block. True by default.'''
         return True
 
     def store(self):
+        '''Store attributes in json format.'''
         res = super().store()
         res.update({
             'type': self._type.value
@@ -74,7 +76,8 @@ class Block(BBox):
 
     def contains_discrete_lines(self, distance:float=25, threshold:int=3):
         ''' Check whether lines in block are discrete, False by default. 
-            Rewrite it if necessary, e.g. in TextBlock'''
+            Rewrite it if necessary, e.g. in TextBlock.
+        '''
         return False
 
 
