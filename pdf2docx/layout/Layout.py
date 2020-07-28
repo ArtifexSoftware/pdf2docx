@@ -40,14 +40,15 @@ from ..common.utils import (debug_plot, new_page_with_margin)
 from ..common.docx import reset_paragraph_format
 
 
-
 class Layout:
     ''' Object representing the whole page, e.g. margins, blocks, shapes, spacing.'''
 
     def __init__(self, raw:dict) -> None:
         self.width = raw.get('width', 0.0)
         self.height = raw.get('height', 0.0)
-        self.blocks = Blocks(raw.get('blocks', []))
+
+        # initialize blocks
+        self.blocks = Blocks().from_dicts(raw.get('blocks', []))
 
         # introduced attributes
         self._margin = None

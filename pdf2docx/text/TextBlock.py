@@ -37,7 +37,9 @@ class TextBlock(Block):
     '''Text block.'''
     def __init__(self, raw:dict={}) -> None:
         super(TextBlock, self).__init__(raw)
-        self.lines = Lines(raw.get('lines', []), self)
+
+        # collect lines
+        self.lines = Lines(None, self).from_dicts(raw.get('lines', []))
 
         # set type
         self.set_text_block()
@@ -53,6 +55,11 @@ class TextBlock(Block):
     def sub_bboxes(self) -> list:
         '''bbox of sub-region, i.e. Line.'''
         return [line.bbox for line in self.lines]
+
+    
+    def is_horizontal_block(self):
+        ''' Check whether each line is oriented horizontally.'''
+        return all(line.dir[0]==1.0 for line in self.lines)
 
 
     def store(self) -> dict:

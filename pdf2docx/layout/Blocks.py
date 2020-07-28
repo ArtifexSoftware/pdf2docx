@@ -6,6 +6,7 @@ A group of Text/Image or Table block.
 @author: train8808@gmail.com
 '''
 
+from ..common.Collection import Collection
 from ..common.base import BlockType
 from ..common import utils
 from ..common.Block import Block
@@ -14,69 +15,46 @@ from ..text.ImageBlock import ImageBlock
 from ..shape.Rectangle import Rectangle
 
 
-class Blocks:
-    '''Text block.'''
-    def __init__(self, raws:list=[]):
-        ''' Construct Text blocks (image blocks included) from a list of raw block dict.'''
-        # initialize blocks
-        self._blocks = [] # type: list [TextBlock or ImageBlock or TableBlock]
-        for raw in raws:
-            block = None
-            # image block
-            block_type = raw.get('type', -1) # type: int
+class Blocks(Collection):
+    '''Block collections.'''
+
+    def from_dicts(self, raws:list):
+        for raw_block in raws:
+            block_type = raw_block.get('type', -1) # type: int
+            
+            # image block            
             if block_type==BlockType.IMAGE.value:
-                block = ImageBlock(raw)
+                block = ImageBlock(raw_block)
+            
             # text block
             elif block_type == BlockType.TEXT.value:
-                block = TextBlock(raw)
+                block = TextBlock(raw_block)
+            
+            else:
+                block = None            
             
             # add to list
-            if block: self._blocks.append(block)
+            self.append(block)
+        
+        return self
 
-
-    def __getitem__(self, idx):
-        try:
-            blocks = self._blocks[idx]
-        except IndexError:
-            msg = f'Block index {idx} out of range'
-            raise IndexError(msg)
-        else:
-            return blocks
-
-    def __iter__(self):
-        return (block for block in self._blocks)
-
-    def __len__(self):
-        return len(self._blocks)
-
-    def reset(self, blocks:list):
-        self._blocks = blocks
-
-    def extend(self, blocks:list):
-        self._blocks.extend(blocks)
-
-    def append(self, block:Block):
-        if block: self._blocks.append(block)
-
-    def store(self):
-        return [ block.store() for block in self._blocks]
 
     def preprocessing(self):
         '''Preprocessing for blocks initialized from the raw layout.'''
 
         # remove negative blocks
-        self._blocks = list(filter(
-            lambda block: all(x>0 for x in block.bbox_raw), self._blocks))
+        self._instances = list(filter(
+            lambda block: all(x>0 for x in block.bbox_raw), self._instances))
 
         # remove blocks with transformed text: text direction is not (1, 0)
-        self._blocks = list(filter(
-            lambda block: block.is_image_block() or all(line.dir[0]==1.0 for line in block.lines), self._blocks))
+        self._instances = list(filter(
+            lambda block: block.is_horizontal_block(), self._instances))
 
         # remove overlap blocks: no floating elements are supported
         self.remove_floating_images()        
         
         # sort in reading direction: from up to down, from left to right
-        self._blocks.sort(
+        self._instances.sort(
             key=lambda block: (block.bbox.y0, block.bbox.x0))
             
         # merge inline images into text block
@@ -89,13 +67,13 @@ class Blocks:
         '''Add block lines to associated cells.'''
 
         # table blocks
-        tables = list(filter(lambda block: block.is_table_block(), self._blocks))
+        tables = list(filter(lambda block: block.is_table_block(), self._instances))
         if not tables: return False
 
         # collect blocks in table region        
         blocks_in_tables = [[] for _ in tables] # type: list[list[Block]]
         blocks = []   # type: list[Block]
-        for block in self._blocks:
+        for block in self._instances:
             # ignore table block
             if block.is_table_block(): continue
 
@@ -126,7 +104,7 @@ class Blocks:
         blocks.extend(tables)
         blocks.sort(key=lambda block: (block.bbox.y0, block.bbox.x0))
 
-        self._blocks = blocks
+        self._instances = blocks
 
         return True
 
@@ -143,11 +121,11 @@ class Blocks:
 
         table_lines = [] # type: list[Rect]
         new_line = True
-        num = len(self._blocks)
+        num = len(self._instances)
 
         for i in range(num):
-            block =self._blocks[i]
-            next_block =self._blocks[i+1] if i<num-1 else Block()
+            block =self._instances[i]
+            next_block =self._instances[i+1] if i<num-1 else Block()
 
             table_end = False
             
@@ -217,11 +195,11 @@ class Blocks:
             Args:
             - Y0: top border, i.e. start reference of all blocks
         '''
-        if not self._blocks: return
+        if not self._instances: return
 
-        ref_block = self._blocks[0]
+        ref_block = self._instances[0]
         ref_pos = Y0
-        for block in self._blocks:
+        for block in self._instances:
 
             dw = 0.0
 
@@ -269,9 +247,9 @@ class Blocks:
         '''
         # get text/image blocks seperately, and suppose no overlap between text blocks
         text_blocks = list(
-            filter( lambda block: block.is_text_block(),  self._blocks))
+            filter( lambda block: block.is_text_block(),  self._instances))
         image_blocks = list(
-            filter( lambda block: block.is_image_block(),  self._blocks))
+            filter( lambda block: block.is_image_block(),  self._instances))
 
         # check image block: no significant overlap with any text/image blocks
         res_image_blocks = []
@@ -302,9 +280,9 @@ class Blocks:
             res_image_blocks.append(image_block)
 
         # return all valid blocks
-        self._blocks = []
-        self._blocks.extend(text_blocks)
-        self._blocks.extend(res_image_blocks)
+        self._instances = []
+        self._instances.extend(text_blocks)
+        self._instances.extend(res_image_blocks)
 
 
     def merge_inline_images(self):
@@ -316,14 +294,14 @@ class Blocks:
         '''    
         # get all images blocks with index
         f = lambda item: item[1].is_image_block()
-        index_images = list(filter(f, enumerate(self._blocks)))
+        index_images = list(filter(f, enumerate(self._instances)))
         if not index_images: return False
 
         # get index of inline images: intersected with text block
         # assumption: an inline image intersects with only one text block
         index_inline = []
         num = len(index_images)
-        for block in self._blocks:
+        for block in self._instances:
 
             # suppose no overlap between two images
             if block.is_image_block(): continue
@@ -353,7 +331,7 @@ class Blocks:
         # the index of element in original list changes when any elements are removed
         # so try to delete item in reverse order
         for i in index_inline[::-1]:
-            self._blocks.pop(i)
+            self._instances.pop(i)
 
         # anything changed in this step?
         return True if index_inline else False
@@ -362,7 +340,7 @@ class Blocks:
     def merge(self):
         '''Merge blocks aligned horizontally.'''
         res = [] # type: list[TextBlock]
-        for block in self._blocks:
+        for block in self._instances:
             # convert to text block if image block
             if block.is_image_block():
                 text_block = block.to_text_block() # type: TextBlock
@@ -381,7 +359,7 @@ class Blocks:
         for block in res:
             block.lines.sort()
         
-        self._blocks = res
+        self._instances = res
 
 
     def parse_text_format(self, rects):
@@ -393,7 +371,7 @@ class Blocks:
             NOTE: `parse_text_format` must be implemented by TextBlock, ImageBlock and TableBlock.
         '''
         flag = False
-        for block in self._blocks:
+        for block in self._instances:
             if block.parse_text_format(rects):
                 flag = True        
         return flag
@@ -411,11 +389,11 @@ class Blocks:
               - height: page height
         '''
         # return normal page margin if no blocks exist
-        if not self._blocks:
+        if not self._instances:
             return (utils.ITP, ) * 4 # 1 Inch = 72 pt
 
         # check candidates for left margin:
-        list_bbox = list(map(lambda x: x.bbox, self._blocks))
+        list_bbox = list(map(lambda x: x.bbox, self._instances))
 
         # left margin 
         left = min(map(lambda x: x.x0, list_bbox))

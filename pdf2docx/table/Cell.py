@@ -24,7 +24,9 @@ class Cell(BBox):
         self.border_color = raw.get('border_color', None) # type: tuple [int]
         self.border_width = raw.get('border_width', None) # type: tuple [float]
         self.merged_cells = raw.get('merged_cells', (1,1)) # type: tuple [int]
-        self.blocks = Blocks(raw.get('blocks', []))
+
+        # collect blocks
+        self.blocks = Blocks(None, self).from_dicts(raw.get('blocks', []))
 
 
     @property

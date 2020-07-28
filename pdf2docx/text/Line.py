@@ -17,9 +17,9 @@ Data structure of line in text block:
 https://pymupdf.readthedocs.io/en/latest/textpage.html
 '''
 
-
 from ..common.BBox import BBox
 from .Spans import Spans
+from .TextSpan import TextSpan
 
 
 class Line(BBox):
@@ -28,7 +28,9 @@ class Line(BBox):
         super(Line, self).__init__(raw)
         self.wmode = raw.get('wmode', 0) # writing mode
         self.dir = raw.get('dir', [1, 0]) # writing direction
-        self.spans = Spans(raw.get('spans', []), self)
+
+        # collect spans
+        self.spans = Spans(None, self).from_dicts(raw.get('spans', []))
 
     def store(self) -> dict:
         res = super().store()

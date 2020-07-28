@@ -1,23 +1,395 @@
 # -*- coding: utf-8 -*-
 
 '''
-Object representing a group of Rectangle instances, and focuses on table parsing process.
+A group of Rectangle instances focusing on table parsing process.
 
 @created: 2020-07-22
 @author: train8808@gmail.com
 '''
 
 
-
+import copy
+from . import functions
 from .Rectangle import Rectangle
-from .BaseRects import BaseRects
 from ..common.base import RectType
 from ..common.BBox import BBox
+from ..common.Collection import Collection
 from ..common import utils
 from ..table.TableBlock import TableBlock
 from ..table.Cell import Cell
 
-class Rectangles(BaseRects):
+class Rectangles(Collection):
+
+    def from_annotations(self, annotations: list): # type: BaseRects
+        ''' Get rectangle shapes from annotations(comment shapes) in PDF page.
+            Note: consider highlight, underline, strike-through-line only. 
+            ---
+            Args:
+              - annotations: a list of PyMuPDF Annot objects        
+        '''
+        # map rect type from PyMuPDF
+        # Annotation types:
+        # https://pymupdf.readthedocs.io/en/latest/vars.html#annotation-types   
+        # PDF_ANNOT_HIGHLIGHT 8
+        # PDF_ANNOT_UNDERLINE 9
+        # PDF_ANNOT_SQUIGGLY 10
+        # PDF_ANNOT_STRIKEOUT 11
+        type_map = { 
+            8 : RectType.HIGHLIGHT, 
+            9 : RectType.UNDERLINE, 
+            11: RectType.STRIKE
+        }
+
+        for annot in annotations:
+
+            # consider highlight, underline, strike-through-line only.
+            # e.g. annot.type = (8, 'Highlight')
+            key = annot.type[0]
+            if not key in (8,9,11): 
+                continue
+            
+            # color, e.g. {'stroke': [1.0, 1.0, 0.0], 'fill': []}
+            c = annot.colors.get('stroke', (0,0,0)) # black by default
+
+            # convert rect coordinates
+            rect = annot.rect
+
+            raw = {
+                'bbox': (rect.x0, rect.y0, rect.x1, rect.y1),
+                'color': utils.RGB_value(c)
+            }
+            rect = Rectangle(raw)
+            rect.type = type_map[key]
+
+            self._instances.append(rect)
+
+        return self
+
+
+    def from_stream(self, xref_stream: str, height: float): # type: BaseRects
+        ''' Get rectangle shapes by parsing page cross reference stream.
+
+            Note: these shapes are generally converted from pdf source, e.g. highlight, underline, 
+            which are different from PDF comments shape.
+
+            ---
+            Args:
+              - xref_streams: doc._getXrefStream(xref).decode()        
+              - height: page height for coordinate system conversion from pdf CS to fitz CS 
+
+            --------            
+            References:
+              - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdf_reference_archive/pdf_reference_1-7.pdf
+                - Appendix A for associated operators
+                - Section 8.5 Path Construction and Painting
+              - https://github.com/pymupdf/PyMuPDF/issues/263
+
+            typical mark of rectangle in xref stream:
+                /P<</MCID 0>> BDC
+                ...
+                1 0 0 1 90.0240021 590.380005 cm
+                ...
+                1 1 0 rg # or 0 g
+                ...
+                285.17 500.11 193.97 13.44 re f*
+                ...
+                214 320 m
+                249 322 l
+                ...
+                EMC
+
+            where,
+              - `MCID` indicates a Marked content, where rectangles exist
+              - `cm` specify a coordinate system transformation, 
+            here (0,0) translates to (90.0240021 590.380005)
+              - `q`/`Q` save/restores graphic status
+              - `rg` / `g` specify color mode: rgb / grey
+              - `re`, `f` or `f*`: fill rectangle path with pre-defined color. If no `f`/`f*` coming after
+            `re`, it's a rectangle with borders only (no filling).
+            in this case,
+                - fill color is yellow (1,1,0)
+                - lower left corner: (285.17 500.11)
+                - width: 193.97
+                - height: 13.44
+              - `m`, `l`: draw line from `m` (move to) to `l` (line to)
+
+            Note: coordinates system transformation should be considered if text format
+                is set from PDF file with edit mode. 
+        '''
+        # Graphic States:
+        # - working CS is coincident with the absolute origin (0, 0)
+        # consider scale and translation only
+        ACS = [1.0, 1.0, 0.0, 0.0] # scale_x, scale_y, translate_x, tranlate_y
+        WCS = [1.0, 1.0, 0.0, 0.0]
+
+        # - graphics color: 
+        #   - stroking color
+        Acs = utils.RGB_value((0.0, 0.0, 0.0)) # stored value
+        Wcs = Acs                              # working value
+        #   - filling color
+        Acf = utils.RGB_value((0.0, 0.0, 0.0))
+        Wcf = Acf
+
+        # - stroke width
+        Ad = 0.0
+        Wd = 0.0
+
+        # In addition to lines, rectangles are also processed with border path
+        paths = [] # a list of path, each path is a list of points
+
+        # check xref stream word by word (line always changes)    
+        begin_text_setting = False    
+        lines = xref_stream.split()
+
+        for (i, line) in enumerate(lines):
+
+            # skip any lines between `BT` and `ET`, 
+            # since text setting has no effects on shape        
+            if line=='BT':  # begin text
+                begin_text_setting = True
+        
+            elif line=='ET': # end text
+                begin_text_setting = False
+
+            if begin_text_setting:
+                continue        
+
+            # CS transformation: a b c d e f cm, e.g.
+            # 0.05 0 0 -0.05 0 792 cm
+            # refer to PDF Reference 4.2.2 Common Transformations for detail
+            if line=='cm':
+                # update working CS
+                sx = float(lines[i-6])
+                sy = float(lines[i-3])
+                tx = float(lines[i-2])
+                ty = float(lines[i-1])
+                WCS = [WCS[0]*sx, WCS[1]*sy, WCS[2]+tx, WCS[3]+ty]
+
+            # painting color
+            # - reset color space
+            elif line.upper()=='CS':
+                Wcs = utils.RGB_value((0.0, 0.0, 0.0))
+                Wcf = utils.RGB_value((0.0, 0.0, 0.0))
+
+            # - gray mode
+            elif line.upper()=='G':  # 0 g
+                g = float(lines[i-1])
+                # nonstroking color, i.e. filling color here
+                if line=='g':
+                    Wcf = utils.RGB_value((g, g, g))
+                # stroking color
+                else:
+                    Wcs = utils.RGB_value((g, g, g))
+
+            # - RGB mode
+            elif line.upper()=='RG': # 1 1 0 rg
+                r, g, b = map(float, lines[i-3:i])
+
+                #  nonstroking color
+                if line=='rg':
+                    Wcf = utils.RGB_value((r, g, b))
+                # stroking color
+                else:
+                    Wcs = utils.RGB_value((r, g, b))
+
+            # - CMYK mode
+            elif line.upper()=='K': # c m y k K
+                c, m, y, k = map(float, lines[i-4:i])
+                #  nonstroking color
+                if line=='k':
+                    Wcf = utils.CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)
+                # stroking color
+                else:
+                    Wcs = utils.CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)
+
+            # - set color: either gray, or RGB or CMYK mode
+            elif line.upper()=='SC': # c1 c2 ... cn SC
+                c = functions.RGB_from_color_components(lines[i-4:i])
+                #  nonstroking color
+                if line=='sc':
+                    Wcf = c
+                # stroking color
+                else:
+                    Wcs = c
+
+            # - set color: either gray, or RGB or CMYK mode
+            elif line.upper()=='SCN': # c1 c2 ... cn [name] SC
+                if utils.is_number(lines[i-1]):
+                    c = functions.RGB_from_color_components(lines[i-4:i])
+                else:
+                    c = functions.RGB_from_color_components(lines[i-5:i-1])
+
+                #  nonstroking color
+                if line=='scn':
+                    Wcf = c
+                # stroking color
+                else:
+                    Wcs = c
+
+            # stroke width
+            elif line=='w':
+                Wd = float(lines[i-1])
+
+            # save or restore graphics state:
+            # only consider transformation and color here
+            elif line=='q': # save
+                ACS = copy.copy(WCS)
+                Acf = Wcf
+                Acs = Wcs
+                Ad = Wd
+                
+            elif line=='Q': # restore
+                WCS = copy.copy(ACS)
+                Wcf = Acf
+                Wcs = Acs
+                Wd = Ad
+
+            # rectangle block:
+            # x y w h re is equivalent to
+            # x   y   m
+            # x+w y   l
+            # x+w y+h l
+            # x   y+h l
+            # h          # close the path
+            elif line=='re': 
+                # ATTENTION: 
+                # top/bottom, left/right is relative to the positive direction of CS, 
+                # while a reverse direction may be performed, so be careful when calculating
+                # the corner points. 
+                # Coordinates in the transformed PDF CS:
+                #   y1 +----------+
+                #      |          | h
+                #   y0 +----w-----+
+                #      x0        x1
+                # 
+
+                # (x, y, w, h) before this line            
+                x0, y0, w, h = map(float, lines[i-4:i])
+                path = []
+                path.append((x0, y0))
+                path.append((x0+w, y0))
+                path.append((x0+w, y0+h))
+                path.append((x0, y0+h))
+                path.append((x0, y0))
+
+                paths.append(path)
+
+            # lines: m -> move to point to start a path
+            elif line=='m':
+                x0, y0 = map(float, lines[i-2:i])
+                paths.append([(x0, y0)])
+            
+            # lines: l -> straight line to point
+            elif line=='l':
+                x0, y0 = map(float, lines[i-2:i])
+                paths[-1].append((x0, y0))
+
+            # close the path
+            elif line=='h': 
+                for path in paths:
+                    functions.close_path(path)
+
+            # close and stroke the path
+            elif line.upper()=='S':
+                # close
+                if line=='s':
+                    for path in paths:
+                        functions.close_path(path)
+
+                # stroke path
+                for path in paths:
+                    rects = functions.stroke_path(path, WCS, Wcs, Wd, height)
+                    self._instances.extend(rects)
+
+                # reset path
+                paths = []
+
+            # fill the path
+            elif line in ('f', 'F', 'f*'):            
+                for path in paths: 
+                    # close the path implicitly
+                    functions.close_path(path)
+                
+                    # fill path
+                    rect = functions.fill_rect_path(path, WCS, Wcf, height)
+                    if rect: self._instances.append(rect)
+
+                # reset path
+                paths = []
+
+            # close, fill and stroke the path
+            elif line.upper() in ('B', 'B*'): 
+                for path in paths: 
+                    # close path
+                    functions.close_path(path)
+                    
+                    # fill path
+                    rect = functions.fill_rect_path(path, WCS, Wcf, height)
+                    if rect: self._instances.append(rect)
+
+                    # stroke path
+                    rects = functions.stroke_path(path, WCS, Wcs, Wd, height)
+                    self._instances.extend(rects)
+
+                # reset path
+                paths = []
+
+            # TODO: clip the path
+            elif line in ('W', 'W*'):
+                pass
+
+            # end the path without stroking or filling
+            elif line=='n':
+                paths = []
+
+        return self
+
+
+    def clean(self):
+        '''Clean rectangles:
+            - delete rectangles fully contained in another one (beside, they have same bg-color)
+            - join intersected and horizontally aligned rectangles with same height and bg-color
+            - join intersected and vertically aligned rectangles with same width and bg-color
+        '''
+        # sort in reading order
+        self._instances.sort(key=lambda rect: (rect.bbox.y0, rect.bbox.x0, rect.bbox.x1))
+
+        # skip rectangles with both of the following two conditions satisfied:
+        #  - fully or almost contained in another rectangle
+        #  - same filling color with the containing rectangle
+        rects_unique = [] # type: list [Rectangle]
+        rect_changed = False
+        for rect in self._instances:
+            for ref_rect in rects_unique:
+                # Do nothing if these two rects in different bg-color
+                if ref_rect.color!=rect.color: continue     
+
+                # combine two rects in a same row if any intersection exists
+                # ideally the aligning threshold should be 1.0, but use 0.98 here to consider tolerance
+                if utils.is_horizontal_aligned(rect.bbox, ref_rect.bbox, True, 0.98): 
+                    main_bbox = utils.get_main_bbox(rect.bbox, ref_rect.bbox, 0.0)
+
+                # combine two rects in a same column if any intersection exists
+                elif utils.is_vertical_aligned(rect.bbox, ref_rect.bbox, True, 0.98):
+                    main_bbox = utils.get_main_bbox(rect.bbox, ref_rect.bbox, 0.0)
+
+                # combine two rects if they have a large intersection
+                else:
+                    main_bbox = utils.get_main_bbox(rect.bbox, ref_rect.bbox, 0.5)
+
+                if main_bbox:
+                    rect_changed = True
+                    ref_rect.update(main_bbox)
+                    break            
+            else:
+                rects_unique.append(rect)
+                
+        # update layout
+        if rect_changed:
+            self._instances = rects_unique
+
+        return rect_changed
+
 
     def group(self):
         '''Split rects into groups, to be further checked if it's a table group.        
@@ -25,14 +397,14 @@ class Rectangles(BaseRects):
         groups = [] # type: list[Rectangles]
         counted_index = set() # type: set[int]
 
-        for i in range(len(self._rects)):
+        for i in range(len(self._instances)):
 
             # do nothing if current rect has been considered already
             if i in counted_index:
                 continue
 
             # start a new group
-            rect = self._rects[i]
+            rect = self._instances[i]
             group = { i }
 
             # get intersected rects
@@ -42,7 +414,7 @@ class Rectangles(BaseRects):
             counted_index = counted_index | group
 
             # add rect to groups
-            group_rects = [self._rects[x] for x in group]
+            group_rects = [self._instances[x] for x in group]
             rects = Rectangles(group_rects)
             groups.append(rects)
 
@@ -183,9 +555,9 @@ class Rectangles(BaseRects):
         # boundary box (considering margin) of all line box
         margin = 2.0
         x0 = X0 - margin
-        y0 = min([rect.bbox.y0 for rect in self._rects]) - margin
+        y0 = min([rect.bbox.y0 for rect in self._instances]) - margin
         x1 = X1 + margin
-        y1 = max([rect.bbox.y1 for rect in self._rects]) + margin    
+        y1 = max([rect.bbox.y1 for rect in self._instances]) + margin    
         border_bbox = (x0, y0, x1, y1)
 
         # centerline of outer borders
@@ -233,7 +605,7 @@ class Rectangles(BaseRects):
         '''
         # Get all rects with on condition: size < 6 Pt
         thin_rects = [] # type: list[Rectangle]
-        for rect in self._rects:
+        for rect in self._instances:
             x0, y0, x1, y1 = rect.bbox_raw
             if min(x1-x0, y1-y0) <= width_threshold:
                 thin_rects.append(rect)
@@ -264,7 +636,7 @@ class Rectangles(BaseRects):
 
     def _unset_table_border(self):
         '''Unset table border type.'''
-        for rect in self._rects:
+        for rect in self._instances:
             if rect.type==RectType.BORDER:
                 rect.type = RectType.UNDEFINED
 
@@ -272,7 +644,7 @@ class Rectangles(BaseRects):
     def _collect_explicit_borders(self):
         ''' Collect explicit borders in horizontal and vertical groups respectively.'''
         borders = list(filter(
-            lambda rect: rect.type==RectType.BORDER, self._rects))
+            lambda rect: rect.type==RectType.BORDER, self._instances))
 
         h_borders = {} # type: dict [float, Rectangles]
         v_borders = {} # type: dict [float, Rectangles]
@@ -368,13 +740,13 @@ class Rectangles(BaseRects):
               - group: set[int], a set() of index of intersected rect
         '''
 
-        for i in range(len(self._rects)):
+        for i in range(len(self._instances)):
 
             # ignore rect already processed
             if i in group: continue
 
             # if intersected, check rects further
-            target = self._rects[i]
+            target = self._instances[i]
             if rect.bbox & target.bbox:
                 group.add(i)
                 self._get_intersected_rects(target, group)
@@ -397,12 +769,12 @@ class Rectangles(BaseRects):
         
         if direction=='h':
             # centerline of source borders
-            source = round((self._rects[0].bbox.y0 + self._rects[0].bbox.y1) / 2.0, 1)
+            source = round((self._instances[0].bbox.y0 + self._instances[0].bbox.y1) / 2.0, 1)
             # max width of source borders
-            width = max(map(lambda rect: rect.bbox.y1-rect.bbox.y0, self._rects))
+            width = max(map(lambda rect: rect.bbox.y1-rect.bbox.y0, self._instances))
         else:
-            source = round((self._rects[0].bbox.x0 + self._rects[0].bbox.x1) / 2.0, 1)
-            width = max(map(lambda rect: rect.bbox.x1-rect.bbox.x0, self._rects))
+            source = round((self._instances[0].bbox.x0 + self._instances[0].bbox.x1) / 2.0, 1)
+            width = max(map(lambda rect: rect.bbox.x1-rect.bbox.x0, self._instances))
 
         target = round(target, 1)
         width = round(width, 1)
@@ -464,7 +836,7 @@ class Rectangles(BaseRects):
             Args:
               - target: target bbox
         '''
-        for rect in self._rects:
+        for rect in self._instances:
             intersection = target.bbox & rect.bbox
             if intersection.getArea() / target.bbox.getArea() >= threshold:
                 res = rect
@@ -534,7 +906,7 @@ class Rectangles(BaseRects):
     def _column_borders_from_bboxes(self):
         ''' split bbox-es into column groups and add border for adjacent two columns.'''
         # sort bbox-ex in column first mode: from left to right, from top to bottom
-        self._rects.sort(key=lambda rect: (rect.bbox.x0, rect.bbox.y0, rect.bbox.x1))
+        self._instances.sort(key=lambda rect: (rect.bbox.x0, rect.bbox.y0, rect.bbox.x1))
         
         #  bboxes list in each column
         cols_rects = [] # type: list[Rectangles]
@@ -543,7 +915,7 @@ class Rectangles(BaseRects):
         cols_rect = [] # type: list[Rectangle]
 
         # collect bbox-es column by column
-        for rect in self._rects:
+        for rect in self._instances:
             col_rect = cols_rect[-1] if cols_rect else Rectangle()
 
             # same column group if vertically aligned
@@ -562,7 +934,7 @@ class Rectangles(BaseRects):
     def _row_borders_from_bboxes(self):
         ''' split bbox-es into row groups and add border for adjacent two rows.'''
         # sort bbox-ex in row first mode: from top to bottom, from left to right
-        self._rects.sort(key=lambda rect: (rect.bbox.y0, rect.bbox.x0, rect.bbox.y1))
+        self._instances.sort(key=lambda rect: (rect.bbox.y0, rect.bbox.x0, rect.bbox.y1))
 
         #  bboxes list in each row
         rows_rects = [] # type: list[Rectangles]
@@ -571,7 +943,7 @@ class Rectangles(BaseRects):
         rows_rect = [] # type: list[Rectangle]
 
         # collect bbox-es row by row
-        for rect in self._rects:
+        for rect in self._instances:
             row_rect = rows_rect[-1] if rows_rect else Rectangle()
 
             # same row group if horizontally aligned

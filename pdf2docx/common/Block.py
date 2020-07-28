@@ -55,6 +55,9 @@ class Block(BBox):
     def set_implicit_table_block(self):
         self._type = BlockType.IMPLICIT_TABLE
 
+    def is_horizontal_block(self):
+        return True
+
     def store(self):
         res = super().store()
         res.update({
@@ -75,19 +78,16 @@ class Block(BBox):
         return False
 
 
-    def plot(self, page):
-        '''Plot block bbox in PDF page.
-           ---
-            Args: 
-              - page: fitz.Page object
-        '''
+    def plot(self, *args, **kwargs):
+        '''Plot block bbox in PDF page.'''
         raise NotImplementedError
 
 
-    def parse_text_format(self, rects):
-        '''Parse text format with style represented by rectangles.
-            ---
-            Args:
-              - rects: Rectangles, format styles are represented by these rectangles.
-        '''
+    def parse_text_format(self, *args, **kwargs):
+        '''Parse text format.'''
+        raise NotImplementedError
+
+
+    def make_docx(self, *args, **kwargs):
+        '''Create associated docx element, e.g. TextBlock/ImageBlock -> paragraph.'''
         raise NotImplementedError
