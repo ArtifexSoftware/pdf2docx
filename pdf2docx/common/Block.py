@@ -18,9 +18,9 @@ class Block(BBox):
         self._type = BlockType.UNDEFINED
 
         # spacing attributes
-        self.before_space = 0.0
-        self.after_space = 0.0
-        self.line_space = 0.0
+        self.before_space = raw.get('before_space', 0.0)
+        self.after_space = raw.get('after_space', 0.0)
+        self.line_space = raw.get('line_space', 0.0)
 
 
     @property
@@ -58,6 +58,31 @@ class Block(BBox):
     def is_horizontal_block(self):
         '''Whether horizontally oriented block. True by default.'''
         return True
+
+    def compare(self, block, threshold:float=0.9):
+        '''whether has same bbox and vertical spacing with given block.
+            ---
+            Args:
+              - block: instance to compare
+              - threshold: two bboxes are considered same if the overlap area exceeds threshold.
+
+            NOTE: the vertical spacing has most important impacts on the layout of converted docx.
+        '''
+        res, msg = super().compare(block, threshold)
+        if not res:
+            return res, msg
+        
+        if self.before_space != block.before_space:
+            return False, f'Inconsistent before space: {self.before_space} v.s. {block.before_space}'
+
+        if self.after_space != block.after_space:
+            return False, f'Inconsistent after space: {self.after_space} v.s. {block.after_space}'
+
+        if self.line_space != block.line_space:
+            return False, f'Inconsistent line space: {self.line_space} v.s. {block.line_space}'
+
+        return True, ''
+        
 
     def store(self):
         '''Store attributes in json format.'''

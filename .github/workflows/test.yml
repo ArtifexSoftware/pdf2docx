@@ -44,14 +44,8 @@ jobs:
           pip install -r requirements.txt
           python setup.py develop
 
-      # Run unit test, and upload debug files
+      # Run unit test
       - name: Run unit test
         run: |
           cd test
           python -m unittest test.py
-
-      - name: Archive debug files
-        uses: actions/upload-artifact@v2
-        with:
-          name: test
-          path: ./test/outputs

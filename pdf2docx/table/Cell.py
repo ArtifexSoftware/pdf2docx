@@ -13,12 +13,13 @@ from ..text.TextBlock import TextBlock
 from ..common.BBox import BBox
 from ..common.utils import RGB_component
 from ..common.docx import set_cell_border, set_cell_shading
-from ..layout.Blocks import Blocks
+from ..layout import Blocks # avoid conflict
 
 
 class Cell(BBox):
     ''' Cell object.'''
     def __init__(self, raw:dict={}):
+        if raw is None: raw = {}
         super(Cell, self).__init__(raw)
         self.bg_color = raw.get('bg_color', None) # type: int
         self.border_color = raw.get('border_color', None) # type: tuple [int]
@@ -28,7 +29,7 @@ class Cell(BBox):
         # collect blocks
         # NOTE: The cell bbox is determined first, and then find blocks contained in this bbox.
         # so, don't update cell bbox when appending blocks, i.e. set parent=None.
-        self.blocks = Blocks(None, parent=None).from_dicts(raw.get('blocks', []))
+        self.blocks = Blocks.Blocks(None, parent=None).from_dicts(raw.get('blocks', []))
 
 
     @property

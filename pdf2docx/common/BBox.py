@@ -6,7 +6,7 @@ Object with a boundary box, e.g. Block, Line, Span.
 
 import copy
 import fitz
-
+from .utils import get_main_bbox
 
 class BBox:
     '''Boundary box with attribute in fitz.Rect type.'''
@@ -51,6 +51,17 @@ class BBox:
         '''
         fitz_rect = self.bbox | fitz.Rect(rect)
         return self.update(fitz_rect)
+
+
+    def compare(self, bbox, threshold=0.9):
+        '''Whether has same type and bbox.'''
+        if not isinstance(bbox, self.__class__):
+            return False, f'Inconsistent type: {self.__class__} v.s. {bbox.__class__}'
+        
+        if not get_main_bbox(self.bbox, bbox.bbox, threshold):
+            return False, f'Inconsistent bbox: ({self.bbox_raw}) v.s. ({bbox.bbox_raw})'
+        
+        return True, ''
 
     def store(self):
         '''Store in json format.'''
