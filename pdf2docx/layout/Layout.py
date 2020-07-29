@@ -36,6 +36,7 @@ from docx.enum.section import WD_SECTION
 
 from .Blocks import Blocks
 from ..shape.Rectangles import Rectangles
+from ..common.base import PlotControl
 from ..common.utils import (debug_plot, new_page_with_margin)
 from ..common.docx import reset_paragraph_format
 
@@ -76,7 +77,7 @@ class Layout:
             f.write(json.dumps(self.store(), indent=4))
 
 
-    def plot(self, doc, title:str, key:str='layout'):
+    def plot(self, doc, title:str, key:PlotControl=PlotControl.LAYOUT):
         '''Plot specified type of blocks layout with PyMuPDF.
             ---
             Args:
@@ -84,19 +85,19 @@ class Layout:
         '''
         # get objects to plot
         #  - all blocks
-        if key == 'layout': 
+        if key == PlotControl.LAYOUT: 
             objects = list(self.blocks)
         
         #  - explicit table structure only
-        elif key == 'table': 
+        elif key == PlotControl.TABLE: 
             objects = self.blocks.explicit_table_blocks
         
         #  - implicit table structure only
-        elif key == 'implicit_table': 
+        elif key == PlotControl.IMPLICIT_TABLE: 
             objects = self.blocks.implicit_table_blocks
         
         #  - rectangle shapes
-        elif key == 'shape': 
+        elif key == PlotControl.SHAPE: 
             objects = list(self.rects)
 
         else:
@@ -109,12 +110,12 @@ class Layout:
         page = new_page_with_margin(doc, self.width, self.height, self.margin, title)
 
         # plot styled table but no text blocks in cell
-        if key=='table': 
+        if key==PlotControl.TABLE: 
             for item in objects:
                 item.plot(page, content=False, style=True)
         
         # plot non-styled table and no text blocks in cell
-        elif key=='implicit_table': 
+        elif key==PlotControl.IMPLICIT_TABLE: 
             for item in objects:
                 item.plot(page, content=False, style=False)
         
@@ -136,20 +137,14 @@ class Layout:
         '''
 
         # preprocessing, e.g. change block order, clean negative block
-        self.preprocessing(**kwargs)
-
-        # calculate page margin based on preprocessed layout
-        self._margin = self.blocks.page_margin(self.width, self.height)
+        self.clean(**kwargs)        
     
         # parse table blocks: 
         #  - table structure/format recognized from rectangles
-        self.clean(**kwargs) # clean rects
-        self.parse_table_structure_from_rects(**kwargs)
-        self.parse_table_content(**kwargs) # cell contents
+        self.parse_table_structure_from_rects(**kwargs).parse_table_content(**kwargs)
         
         #  - cell contents extracted from text blocks
-        self.parse_table_structure_from_blocks(**kwargs)
-        self.parse_table_content(**kwargs) # cell contents
+        self.parse_table_structure_from_blocks(**kwargs).parse_table_content(**kwargs)
 
         # parse text format, e.g. highlight, underline
         self.parse_text_format(**kwargs)
@@ -161,12 +156,7 @@ class Layout:
     def extract_tables(self):
         '''Extract content from explicit tables.'''
         # parsing explicit table
-        self.preprocessing()
-        
-        # parse explicit tables
-        self.clean() # clean rects
-        self.parse_table_structure_from_rects()
-        self.parse_table_content() # cell contents
+        self.clean().parse_table_structure_from_rects().parse_table_content()
 
         # check table
         tables = [] # type: list[ list[list[str]] ]
@@ -176,23 +166,19 @@ class Layout:
         return tables
 
 
-    @debug_plot('Preprocessing', plot=False)
-    def preprocessing(self, **kwargs):
-        '''Preprocessing for blocks initialized from the raw layout.'''
-        return self.blocks.preprocessing()
-
-
-    @debug_plot('Cleaned Rectangle Shapes', plot=True, category='shape')
+    @debug_plot('Preprocessing', plot=True, category=PlotControl.SHAPE)
     def clean(self, **kwargs):
-        '''Clean rectangles:
-            - delete rectangles fully contained in another one (beside, they have same bg-color)
-            - join intersected and horizontally aligned rectangles with same height and bg-color
-            - join intersected and vertically aligned rectangles with same width and bg-color
-        '''
-        return self.rects.clean()
+        '''Clean blocks and rectangles, e.g. remove negative blocks, duplicated rects.'''
+        clean_blocks = self.blocks.clean()
+        clean_rects  = self.rects.clean()
+        
+        # calculate page margin based on clean layout
+        self._margin = self.blocks.page_margin(self.width, self.height)
+
+        return clean_blocks and clean_rects
 
 
-    @debug_plot('Explicit Table Structure', plot=True, category='table')
+    @debug_plot('Explicit Table Structure', plot=True, category=PlotControl.TABLE)
     def parse_table_structure_from_rects(self, **kwargs) -> bool:
         '''parse table structure from rectangle shapes'''
         # group rects: each group may be a potential table
@@ -213,7 +199,7 @@ class Layout:
         return flag
 
 
-    @debug_plot('Implicit Table Structure', plot=True, category='implicit_table')
+    @debug_plot('Implicit Table Structure', plot=True, category=PlotControl.IMPLICIT_TABLE)
     def parse_table_structure_from_blocks(self, **kwargs):
         ''' Parse table structure based on the layout of text/image blocks.
 
@@ -249,13 +235,13 @@ class Layout:
         return flag
 
 
-    @debug_plot('Parsed Table', plot=False, category='layout')
+    @debug_plot('Parsed Table', plot=False, category=PlotControl.LAYOUT)
     def parse_table_content(self, **kwargs):
         '''Add block lines to associated cells.'''
         return self.blocks.parse_table_content()
 
 
-    @debug_plot('Parsed Text Blocks', plot=True)
+    @debug_plot('Parsed Text Blocks', plot=True, category=PlotControl.LAYOUT)
     def parse_text_format(self, **kwargs):
         '''Parse text format in both page and table context.'''
         return self.blocks.parse_text_format(self.rects)

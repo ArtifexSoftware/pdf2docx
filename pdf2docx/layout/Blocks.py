@@ -55,7 +55,7 @@ class Blocks(Collection):
     def explicit_table_blocks(self):
         '''Get explicit table blocks contained in this Collection.'''
         return list(filter(
-            lambda block: block.is_explicit_table(), self._instances))
+            lambda block: block.is_explicit_table_block(), self._instances))
 
     @property
     def implicit_table_blocks(self):
@@ -70,7 +70,7 @@ class Blocks(Collection):
             lambda block: block.is_table_block(), self._instances))
 
 
-    def preprocessing(self):
+    def clean(self):
         '''Preprocessing for blocks initialized from the raw layout.'''
 
         # remove negative blocks

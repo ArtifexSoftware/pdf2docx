@@ -4,7 +4,7 @@ import random
 
 import fitz
 from fitz.utils import getColorList, getColorInfoList
-
+from .base import PlotControl
 
 # border margin
 DM = 1.0
@@ -197,7 +197,7 @@ def new_page_with_margin(doc:fitz.Document, width:float, height:float, margin:tu
     return page
 
 
-def debug_plot(title:str, plot:bool=True, category:str='layout'):
+def debug_plot(title:str, plot:bool=True, category:PlotControl=PlotControl.LAYOUT):
     ''' Plot layout / shapes for debug mode when the following conditions are all satisfied:
           - plot=True
           - layout has been changed: the return value of `func` is True
@@ -207,11 +207,7 @@ def debug_plot(title:str, plot:bool=True, category:str='layout'):
         Args:
           - title: page title
           - plot: plot layout/shape if true
-          - category: 
-            - 'layout': plot all blocks
-            - 'table' : plot explicit table blocks only
-            - 'implicit_table' : plot implicit table blocks only
-            - 'shape' : plot rectangle shapes
+          - category: PlotControl, what to plot
     '''
     def wrapper(func):
         def inner(*args, **kwargs):
@@ -221,8 +217,9 @@ def debug_plot(title:str, plot:bool=True, category:str='layout'):
             # check if plot layout
             debug = kwargs.get('debug', False)
             doc = kwargs.get('doc', None)
-            if plot and res and debug and doc is not None:
-                layout = args[0] # assert Layout object
+            layout = args[0] # assert Layout object
+            if plot and res and debug and doc is not None:                
                 layout.plot(doc, title, category)
+            return layout
         return inner
     return wrapper
