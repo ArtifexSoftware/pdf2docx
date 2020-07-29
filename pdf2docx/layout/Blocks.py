@@ -12,8 +12,8 @@ from ..common import utils
 from ..common.Block import Block
 from ..text.TextBlock import TextBlock
 from ..text.ImageBlock import ImageBlock
+from ..table.TableBlock import TableBlock
 from ..shape.Rectangle import Rectangle
-
 
 
 class Blocks(Collection):
@@ -30,6 +30,10 @@ class Blocks(Collection):
             # text block
             elif block_type == BlockType.TEXT.value:
                 block = TextBlock(raw_block)
+
+            # table block
+            elif block_type in (BlockType.EXPLICIT_TABLE.value, BlockType.IMPLICIT_TABLE.value):
+                block = TableBlock(raw_block)
             
             else:
                 block = None            
@@ -39,18 +43,57 @@ class Blocks(Collection):
         
         return self
 
-    @property
-    def text_blocks(self):
-        '''Get text blocks contained in this Collection.'''
-        return list(filter(
+
+    def text_blocks(self, level=0):
+        '''Get text blocks contained in this Collection.
+            ---
+            Args:
+              - level: 
+                - 0: text blocks in top level only
+                - 1: text blocks deep to table level
+        '''
+        # top level
+        blocks = list(filter(
             lambda block: block.is_text_block(), self._instances))
+        
+        # table cell level
+        if level>0:
+            for table in self.table_blocks:
+                for row in table:
+                    for cell in row:
+                        blocks.extend(cell.blocks.text_blocks(level))
+        return blocks
     
-    @property
-    def image_blocks(self):
-        '''Get image blocks contained in this Collection.'''
-        return list(filter(
+
+    def image_blocks(self, level=0):
+        '''Get image blocks contained in this Collection.
+            ---
+            Args:
+              - level: 
+                - 0: image blocks in top level only
+                - 1: image span deep to top text blocks level
+                - 2: image blocks/span deep to table blocks level
+        '''
+        # top image block
+        blocks = list(filter(
             lambda block: block.is_image_block(), self._instances))
-    
+        
+        # image span in top text block
+        if level>0:
+            for block in self.text_blocks(level=0):
+                for line in block.lines:
+                    blocks.extend(line.image_spans)
+        
+        # image block/span in table block level
+        if level>1:
+            for table in self.table_blocks:
+                for row in table:
+                    for cell in row:
+                        blocks.extend(cell.blocks.image_blocks(level))
+        
+        return blocks
+
+
     @property
     def explicit_table_blocks(self):
         '''Get explicit table blocks contained in this Collection.'''
@@ -365,8 +408,8 @@ class Blocks(Collection):
             floating elements are not supported in python-docx when re-create the document.
         '''
         # get text/image blocks seperately, and suppose no overlap between text blocks
-        text_blocks = self.text_blocks
-        image_blocks = self.image_blocks
+        text_blocks = self.text_blocks()
+        image_blocks = self.image_blocks()
 
         # check image block: no significant overlap with any text/image blocks
         res_image_blocks = []

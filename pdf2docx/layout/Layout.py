@@ -166,7 +166,63 @@ class Layout:
         return tables
 
 
-    @debug_plot('Preprocessing', plot=True, category=PlotControl.SHAPE)
+    def make_page(self, doc):
+        ''' Create page based on layout data. 
+
+            To avoid incorrect page break from original document, a new page section
+            is created for each page.
+
+            Support general document style only:
+              - writing mode: from left to right, top to bottom
+              - text direction: horizontal
+
+            The vertical postion of paragraph/table is defined by space_before or 
+            space_after property of a paragraph.
+        '''
+        # new page section
+        # a default section is created when initialize the document,
+        # so we do not have to add section for the first time.
+        if not doc.paragraphs:
+            section = doc.sections[0]
+        else:
+            section = doc.add_section(WD_SECTION.NEW_PAGE)
+
+        section.page_width  = Pt(self.width)
+        section.page_height = Pt(self.height)
+
+        # set page margin
+        left,right,top,bottom = self.margin
+        section.left_margin = Pt(left)
+        section.right_margin = Pt(right)
+        section.top_margin = Pt(top)
+        section.bottom_margin = Pt(bottom)
+
+        # add paragraph or table according to parsed block
+        for block in self.blocks:
+            # make paragraphs
+            if block.is_text_block() or block.is_image_block():
+                # new paragraph
+                p = doc.add_paragraph()
+                block.make_docx(p, left)
+            
+            # make table
+            elif block.is_table_block():
+                # new table            
+                table = doc.add_table(rows=block.num_rows, cols=block.num_cols)
+                table.autofit = False
+                table.allow_autofit  = False
+                block.make_docx(table, self.margin)
+                
+                # NOTE: If this table is at the end of a page, a new paragraph is automatically 
+                # added by the rending engine, e.g. MS Word, which resulting in an unexpected
+                # page break. The solution is to never put a table at the end of a page, so add
+                # an empty paragraph and reset its format, particularly line spacing, when a table
+                # is created.
+                p = doc.add_paragraph()
+                reset_paragraph_format(p, Pt(1.0))
+
+
+    @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.SHAPE)
     def clean(self, **kwargs):
         '''Clean blocks and rectangles, e.g. remove negative blocks, duplicated rects.'''
         clean_blocks = self.blocks.clean()
@@ -252,59 +308,3 @@ class Layout:
             or table context. It'll used as paragraph spacing and line spacing when creating paragraph.
         '''
         self.blocks.parse_vertical_spacing(self.margin[2])
-
-
-    def make_page(self, doc):
-        ''' Create page based on layout data. 
-
-            To avoid incorrect page break from original document, a new page section
-            is created for each page.
-
-            Support general document style only:
-              - writing mode: from left to right, top to bottom
-              - text direction: horizontal
-
-            The vertical postion of paragraph/table is defined by space_before or 
-            space_after property of a paragraph.
-        '''
-        # new page section
-        # a default section is created when initialize the document,
-        # so we do not have to add section for the first time.
-        if not doc.paragraphs:
-            section = doc.sections[0]
-        else:
-            section = doc.add_section(WD_SECTION.NEW_PAGE)
-
-        section.page_width  = Pt(self.width)
-        section.page_height = Pt(self.height)
-
-        # set page margin
-        left,right,top,bottom = self.margin
-        section.left_margin = Pt(left)
-        section.right_margin = Pt(right)
-        section.top_margin = Pt(top)
-        section.bottom_margin = Pt(bottom)
-
-        # add paragraph or table according to parsed block
-        for block in self.blocks:
-            # make paragraphs
-            if block.is_text_block() or block.is_image_block():
-                # new paragraph
-                p = doc.add_paragraph()
-                block.make_docx(p, left)
-            
-            # make table
-            elif block.is_table_block():
-                # new table            
-                table = doc.add_table(rows=block.num_rows, cols=block.num_cols)
-                table.autofit = False
-                table.allow_autofit  = False
-                block.make_docx(table, self.margin)
-                
-                # NOTE: If this table is at the end of a page, a new paragraph is automatically 
-                # added by the rending engine, e.g. MS Word, which resulting in an unexpected
-                # page break. The solution is to never put a table at the end of a page, so add
-                # an empty paragraph and reset its format, particularly line spacing, when a table
-                # is created.
-                p = doc.add_paragraph()
-                reset_paragraph_format(p, Pt(1.0))

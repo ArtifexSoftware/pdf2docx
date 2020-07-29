@@ -19,7 +19,7 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
 
 from ..common.BBox import BBox
 from .Spans import Spans
-from .TextSpan import TextSpan
+from .ImageSpan import ImageSpan
 
 
 class Line(BBox):
@@ -32,6 +32,14 @@ class Line(BBox):
         # collect spans
         self.spans = Spans(None, self).from_dicts(raw.get('spans', []))
 
+    @property
+    def image_spans(self):
+        '''Get image spans in this Line.'''
+        return list(filter(
+            lambda span: isinstance(span, ImageSpan), self.spans
+        ))
+
+
     def store(self) -> dict:
         res = super().store()
         res.update({
@@ -43,6 +51,7 @@ class Line(BBox):
         })
 
         return res
+
 
     def plot(self, page, color:int):
         '''Plot line border in red.
