@@ -37,6 +37,32 @@ class Cell(BBox):
         '''Text contained in this cell.'''
         return '\n'.join([block.text for block in self.blocks]) if bool(self) else None
 
+    
+    def compare(self, cell, threshold:float=0.9):
+        '''whether has same structure with given Cell.
+            ---
+            Args:
+              - cell: Cell instance to compare
+              - threshold: two bboxes are considered same if the overlap area exceeds threshold.
+        '''
+        res, msg = super().compare(cell, threshold)
+        if not res:
+            return res, msg
+        
+        if self.bg_color != cell.bg_color:
+            return False, f'Inconsistent background color @ Cell {self.bbox_raw}:\n{self.bg_color} v.s. {cell.bg_color}'
+
+        if tuple(self.border_color) != tuple(cell.border_color):
+            return False, f'Inconsistent border color @ Cell {self.bbox_raw}:\n{self.border_color} v.s. {cell.border_color}'
+
+        if tuple(self.border_width) != tuple(cell.border_width):
+            return False, f'Inconsistent border width @ Cell {self.bbox_raw}:\n{self.border_width} v.s. {cell.border_width}'
+
+        if tuple(self.merged_cells) != tuple(cell.merged_cells):
+            return False, f'Inconsistent count of merged cells @ Cell {self.bbox_raw}:\n{self.merged_cells} v.s. {cell.merged_cells}'
+
+        return True, ''
+
 
     def store(self):
         if bool(self):

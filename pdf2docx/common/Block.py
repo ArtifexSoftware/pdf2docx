@@ -73,13 +73,13 @@ class Block(BBox):
             return res, msg
         
         if self.before_space != block.before_space:
-            return False, f'Inconsistent before space: {self.before_space} v.s. {block.before_space}'
+            return False, f'Inconsistent before space @ {self.bbox_raw}:\n{self.before_space} v.s. {block.before_space}'
 
         if self.after_space != block.after_space:
-            return False, f'Inconsistent after space: {self.after_space} v.s. {block.after_space}'
+            return False, f'Inconsistent after space @ {self.bbox_raw}:\n{self.after_space} v.s. {block.after_space}'
 
         if self.line_space != block.line_space:
-            return False, f'Inconsistent line space: {self.line_space} v.s. {block.line_space}'
+            return False, f'Inconsistent line space @ {self.bbox_raw}:\n{self.line_space} v.s. {block.line_space}'
 
         return True, ''
         
