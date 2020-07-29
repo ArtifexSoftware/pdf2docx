@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
     script_path = os.path.abspath(__file__) # current script path
     output = os.path.join(os.path.dirname(script_path), 'samples')
-    filename = 'demo-image'
+    filename = 'demo-table'
     pdf_file = os.path.join(output, f'{filename}.pdf')
     docx_file = os.path.join(output, f'{filename}.docx')
 
@@ -30,9 +30,9 @@ if __name__ == '__main__':
     
     cv.close() # close pdf
 
-    # # convert the docx file back to pdf manually, 
-    # # and compare results by checking bbox of each word
-    # docx_pdf_file = os.path.join(output, f'docx_2_pdf.pdf')
-    # output_file = os.path.join(output, f'comparison.pdf')
-    # if compare_layput(pdf_file, docx_pdf_file, output_file, threshold=0.7):
-    #     print('Fully matched.')
+    # convert the docx file back to pdf manually, 
+    # and compare results by checking bbox of each word
+    docx_pdf_file = os.path.join(output, f'docx2pdf.pdf')
+    output_file = os.path.join(output, f'comparison.pdf')
+    if compare_layput(pdf_file, docx_pdf_file, output_file, threshold=0.7):
+        print('Fully matched.')

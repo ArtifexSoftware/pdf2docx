@@ -1,16 +1,14 @@
-# temp files
-more/
+# files
 *.pyc
 *.jp*g
 *.txt
-
-# test files
-outputs/
-debug_*.pdf
-layout.json
 *.docx
+layout.json
 
-# building files
+*.pdf
+!demo-*.pdf
+
+# building dir
 build/
 dist/
 *egg-info/

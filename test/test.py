@@ -27,7 +27,7 @@ import json
 
 from pdf2docx.converter import Converter
 from pdf2docx.layout.Layout import Layout
-from pdf2docx.text.ImageSpan import ImageSpan
+from pdf2docx.text.TextSpan import TextSpan
 
 
 script_path = os.path.abspath(__file__) # current script path
@@ -61,102 +61,94 @@ class TestUtility(unittest.TestCase):
         self.test = cv.parse(cv[0]).layout # type: Layout
         cv.close()
 
-    @staticmethod
-    def get_text_image_blocks(layout:Layout):
-        ''' get text blocks from both page and table level'''
-        # text block in page level
-        blocks = list(filter(
-            lambda block: block.is_text_block() or block.is_image_block(), 
-            layout.blocks))
+        return self
 
-        # blocks in table cell level
-        tables = list(filter(
-            lambda block: block.is_table_block(), 
-            layout.blocks))
-        for table in tables:
-            for row in table.cells:
-                for cell in row:
-                    if not cell: continue
-                    blocks.extend(list(cell.blocks))
 
-        return blocks
+    def verify_layout(self, threshold=0.95):
+        ''' Check layout between benchmark and parsed one.'''
+        self._check_text_layout(threshold)
+        self._check_image_layout(threshold)
+        self._check_table_layout(threshold)
 
-    def extract_text_style(self, layout:Layout):
-        '''Extract span text and style from layout.'''
-        # text or image blocks
-        blocks = self.get_text_image_blocks(layout)
 
-        # check text format from text blocks
-        res = []
-        for block in blocks:
-            if block.is_image_block(): continue
-            for line in block.lines:
-                for span in line.spans:
-                    if not span.style: continue
-                    res.append({
-                        'text': span.text,
-                        'style': [ t['type'] for t in span.style]
-                    })
-        return res
-
-    def extract_image(self, layout):
-        ''' extract image bbox from layout'''
-        # text or image blocks
-        blocks = self.get_text_image_blocks(layout)
-
-        # extract images
-        res = []
-        for block in blocks:
-            if block.is_image_block():
-                res.append(block.bbox_raw)
-            elif block.is_text_block():
-                for line in block.lines:
-                    for span in line.spans:
-                        if isinstance(span, ImageSpan):
-                            res.append(span.bbox_raw)
-        return res
-
-    def verify_layout(self, threshold=0.9):
-        ''' Compare layouts. 
-            The most important attributes affecting layout of generated docx is vertical spacing.
+    def _check_table_layout(self, threshold):
+        '''Check table layout.
+             - table contents are covered by text layout checking
+             - check table structure
         '''
-        for sample, test in zip(self.sample.blocks, self.test.blocks):
+        sample_tables = self.sample.blocks.table_blocks
+        test_tables = self.test.blocks.table_blocks
+
+        # count of tables
+        m, n = len(sample_tables), len(test_tables)
+        self.assertEqual(m, n, msg=f"\nThe count of parsed tables '{n}' is inconsistent with sample '{m}'")
+
+        # check structures table by table
+        for sample_table, test_table in zip(sample_tables, test_tables):
+            for sample_row, test_row in zip(sample_table, test_table):
+                for sample_cell, test_cell in zip(sample_row, test_row):
+                    if not sample_cell: continue
+                    matched, msg = sample_cell.compare(test_cell, threshold)
+                    self.assertTrue(matched, msg=f'\n{msg}')
+
+
+    def _check_image_layout(self, threshold):
+        '''Check image layout: bbox and vertical spacing.'''
+        sample_image_blocks = self.sample.blocks.image_blocks(level=2)
+        test_image_blocks = self.test.blocks.image_blocks(level=2)
+
+        # count of images
+        m, n = len(sample_image_blocks), len(test_image_blocks)
+        self.assertEqual(m, n, msg=f"\nThe count of image blocks '{n}' is inconsistent with sample '{m}'")
+
+        # check each image
+        for sample, test in zip(sample_image_blocks, test_image_blocks):
             matched, msg = sample.compare(test, threshold)
-            self.assertTrue(matched, msg=msg)
+            self.assertTrue(matched, msg=f'\n{msg}')
+
+
+    def _check_text_layout(self, threshold):
+        ''' Compare text layout and format. 
+             - text layout is determined by vertical spacing
+             - text format is defined in style attribute of TextSpan
+        '''
+        sample_text_blocks = self.sample.blocks.text_blocks(level=1)
+        test_text_blocks = self.test.blocks.text_blocks(level=1)
+
+        # count of blocks
+        m, n = len(sample_text_blocks), len(test_text_blocks)
+        self.assertEqual(m, n, msg=f"\nThe count of text blocks '{n}' is inconsistent with sample '{m}'")
+        
+        # check layout of each block
+        for sample, test in zip(sample_text_blocks, test_text_blocks):
+
+            # text bbox and vertical spacing
+            matched, msg = sample.compare(test, threshold)
+            self.assertTrue(matched, msg=f'\n{msg}')
+
+            # text style
+            for sample_line, test_line in zip(sample.lines, test.lines):
+                for sample_span, test_span in zip(sample_line.spans, test_line.spans):
+                    if not isinstance(sample_span, TextSpan): continue
+                    a, b = sample_span.text, test_span.text
+                    self.assertEqual(a, b, msg=f"\nApplied text '{b}' is inconsistent with sample '{a}'")
+                    for sample_style, test_style in zip(sample_span.style, test_span.style):
+                        a, b = sample_style.style, test_style.style
+                        self.assertEqual(a, b, msg=f"\nApplied text format '{b}' is inconsistent with sample '{a}'")
+        
 
 
 class MainTest(TestUtility):
-    ''' convert sample pdf files to docx, then verify the layout between 
-        sample pdf and docx (saved as pdf file).
-    '''
+    '''Main text class.'''
 
     def test_text_format(self):
         '''sample file focusing on text format'''
-        # init pdf
-        self.init_test('demo-text')
-
-        # check text layout
-        self.verify_layout()
-
-        # check text style page by page
-        pass
+        self.init_test('demo-text').verify_layout(threshold=0.95)
 
     def test_image(self):
         '''sample file focusing on image, inline-image considered'''
-        # init pdf
-        self.init_test('demo-image')
-
-        # check text layout
-        self.verify_layout()
-
-        # check images page by page
-        pass
+        self.init_test('demo-image').verify_layout(threshold=0.95)
 
     def test_table_format(self):
         '''sample file focusing on table format'''
-        # init pdf
-        self.init_test('demo-table')
-
-        # check text layout
-        # if table is parsed successfully, all re-created text blocks should be same with sample file.
-        self.verify_layout()
+        self.init_test('demo-table').verify_layout(threshold=0.95)
