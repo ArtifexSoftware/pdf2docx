@@ -1,12 +1,14 @@
-outputs/
-build/
-dist/
-*egg-info/
-
-*.docx
+# files
 *.pyc
 *.jp*g
 *.txt
-
-debug_*.pdf
+*.docx
 layout.json
+
+*.pdf
+!demo-*.pdf
+
+# building dir
+build/
+dist/
+*egg-info/

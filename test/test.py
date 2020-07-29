@@ -1,269 +1,154 @@
 # -*- coding: utf-8 -*-
 
 '''
-Testing the layouts between sample pdf and the converted docx:
-  - convert sample pdf to docx
-  - convert docx to pdf for comparison
-  - compare layouts between sample pdf and comparing pdf
+Testing the layouts between sample pdf and the converted docx.
 
 NOTE: pdf2docx should be installed in advance.
+
+The docx is created from parsed layout, so an equivalent but efficient way is to 
+compare parsed layout with banchmark one.
+
+The benchmark layout is also created from parsed layout, but proved to be able to
+create docx with good enough quality.
+
+Obsoleted method (real-time testing method):
+  - convert sample pdf to docx with this module
+  - convert docx back to pdf (`OfficeToPDF` or online `pylovepdf`, see more link)
+  - compare layouts between sample pdf and comparing pdf
+
+more link:
+  - https://github.com/cognidox/OfficeToPDF/releases
+  - https://github.com/AndyCyberSec/pylovepdf
 '''
 
 import os
-import shutil
 import unittest
-import fitz
+import json
 
-from utils import Utility
 from pdf2docx.converter import Converter
 from pdf2docx.layout.Layout import Layout
-from pdf2docx.text.ImageSpan import ImageSpan
+from pdf2docx.text.TextSpan import TextSpan
 
 
-class TestUtility(Utility, unittest.TestCase):
+script_path = os.path.abspath(__file__) # current script path
+
+class TestUtility(unittest.TestCase):
     '''utilities related directly to the test case'''
 
-    PREFIX_SAMPLE = 'sample'
-    PREFIX_COMPARING = 'comparing'
+    @property
+    def test_dir(self):
+        return os.path.dirname(script_path)
 
-    TEST_FILE = ''
-    SAMPLE_PDF = None
-    TEST_PDF = None
+    @property
+    def layout_dir(self):
+        return os.path.join(self.test_dir, 'layouts')
 
-    STATUS = False
+    @property
+    def sample_dir(self):
+        return os.path.join(self.test_dir, 'samples')
 
     def init_test(self, filename):
-        ''' Create pdf objects and set default class properties
-            - create sample pdf Reader object
-            - convert sample pdf to docx
-            - create comparing pdf from docx
+        ''' Initialize parsed layout and benchmark layout.'''
+        # restore sample layout
+        layout_file = os.path.join(self.layout_dir, f'{filename}.json')
+        with open(layout_file, 'r') as f:
+            raw_dict = json.load(f)
+        self.sample = Layout(raw_dict)
+
+        # parsed layout: first page only
+        pdf_file = os.path.join(self.sample_dir, f'{filename}.pdf')
+        cv = Converter(pdf_file)        
+        self.test = cv.parse(cv[0]).layout # type: Layout
+        cv.close()
+
+        return self
+
+
+    def verify_layout(self, threshold=0.95):
+        ''' Check layout between benchmark and parsed one.'''
+        self._check_text_layout(threshold)
+        self._check_image_layout(threshold)
+        self._check_table_layout(threshold)
+
+
+    def _check_table_layout(self, threshold):
+        '''Check table layout.
+             - table contents are covered by text layout checking
+             - check table structure
         '''
-        # sample pdf
-        sample_pdf_file = os.path.join(self.output_dir, f'{self.PREFIX_SAMPLE}-{filename}')
-        docx_file = os.path.join(self.output_dir, f'{filename[0:-3]}docx')
-        sample_pdf = Converter(sample_pdf_file, docx_file)
+        sample_tables = self.sample.blocks.table_blocks
+        test_tables = self.test.blocks.table_blocks
 
-        # convert pdf to docx, besides, 
-        # convert docx back to pdf for comparison next
-        comparing_pdf_file = os.path.join(self.output_dir, f'{self.PREFIX_COMPARING}-{filename}')
-        layouts = self.pdf2docx(sample_pdf, comparing_pdf_file)
-        self.assertIsNotNone(layouts, msg='Converting PDF to Docx failed.')
+        # count of tables
+        m, n = len(sample_tables), len(test_tables)
+        self.assertEqual(m, n, msg=f"\nThe count of parsed tables '{n}' is inconsistent with sample '{m}'")
 
-        # testing pdf
-        test_pdf_file = os.path.join(self.output_dir, comparing_pdf_file)
-        test_pdf = Converter(test_pdf_file)
+        # check structures table by table
+        for sample_table, test_table in zip(sample_tables, test_tables):
+            for sample_row, test_row in zip(sample_table, test_table):
+                for sample_cell, test_cell in zip(sample_row, test_row):
+                    if not sample_cell: continue
+                    matched, msg = sample_cell.compare(test_cell, threshold)
+                    self.assertTrue(matched, msg=f'\n{msg}')
 
-        # set default properties
-        self.TEST_FILE = filename
-        self.SAMPLE_PDF = sample_pdf
-        self.TEST_PDF = test_pdf
 
-        return layouts
+    def _check_image_layout(self, threshold):
+        '''Check image layout: bbox and vertical spacing.'''
+        sample_image_blocks = self.sample.blocks.image_blocks(level=2)
+        test_image_blocks = self.test.blocks.image_blocks(level=2)
 
-    def pdf2docx(self, pdf:Converter, comparing_pdf_file:str):
-        ''' test target: converting pdf to docx'''        
-        layouts = [] # type: list[Layout]
-        for page in pdf:
-            # parse layout
-            pdf.parse(page).make_page()
-            layouts.append(pdf.layout)
+        # count of images
+        m, n = len(sample_image_blocks), len(test_image_blocks)
+        self.assertEqual(m, n, msg=f"\nThe count of image blocks '{n}' is inconsistent with sample '{m}'")
+
+        # check each image
+        for sample, test in zip(sample_image_blocks, test_image_blocks):
+            matched, msg = sample.compare(test, threshold)
+            self.assertTrue(matched, msg=f'\n{msg}')
+
+
+    def _check_text_layout(self, threshold):
+        ''' Compare text layout and format. 
+             - text layout is determined by vertical spacing
+             - text format is defined in style attribute of TextSpan
+        '''
+        sample_text_blocks = self.sample.blocks.text_blocks(level=1)
+        test_text_blocks = self.test.blocks.text_blocks(level=1)
+
+        # count of blocks
+        m, n = len(sample_text_blocks), len(test_text_blocks)
+        self.assertEqual(m, n, msg=f"\nThe count of text blocks '{n}' is inconsistent with sample '{m}'")
         
-        # convert to pdf for comparison
-        if self.docx2pdf(pdf.filename_docx, comparing_pdf_file):
-            return layouts
-        else:
-            return None   
+        # check layout of each block
+        for sample, test in zip(sample_text_blocks, test_text_blocks):
 
-    def check_bbox(self, sample_bbox, test_bbox, page, threshold):
-        ''' If the intersection of two bbox-es exceeds a threshold, they're considered same,
-            otherwise, mark both box-es in the associated page.
+            # text bbox and vertical spacing
+            matched, msg = sample.compare(test, threshold)
+            self.assertTrue(matched, msg=f'\n{msg}')
 
-            page: pdf page where these box-es come from, used for illustration if check failed
-        '''
-        b1, b2 = fitz.Rect(sample_bbox), fitz.Rect(test_bbox)
-
-        # ignore small bbox, e.g. single letter bbox
-        if b1.width < 20:
-            return True
-            
-        b = b1 & b2
-        area = b.getArea()
-        matched = area/b1.getArea()>=threshold and area/b2.getArea()>=threshold
-
-        if not matched:
-            # right position in sample file
-            page.drawRect(sample_bbox, color=(1,1,0), overlay=False)
-            # mismatched postion in red box
-            page.drawRect(test_bbox, color=(1,0,0), overlay=False)
-            # save file
-            result_file = self.SAMPLE_PDF.filename.replace(f'{self.PREFIX_SAMPLE}-', '')
-            self.SAMPLE_PDF.core.save(result_file)
-
-        return matched
-
-    @staticmethod
-    def get_text_image_blocks(layout:Layout):
-        ''' get text blocks from both page and table level'''
-        # text block in page level
-        blocks = list(filter(
-            lambda block: block.is_text_block() or block.is_image_block(), 
-            layout.blocks))
-
-        # blocks in table cell level
-        tables = list(filter(
-            lambda block: block.is_table_block(), 
-            layout.blocks))
-        for table in tables:
-            for row in table.cells:
-                for cell in row:
-                    if not cell: continue
-                    blocks.extend(list(cell.blocks))
-
-        return blocks
-
-    def extract_text_style(self, layout:Layout):
-        '''Extract span text and style from layout.'''
-        # text or image blocks
-        blocks = self.get_text_image_blocks(layout)
-
-        # check text format from text blocks
-        res = []
-        for block in blocks:
-            if block.is_image_block(): continue
-            for line in block.lines:
-                for span in line.spans:
-                    if not span.style: continue
-                    res.append({
-                        'text': span.text,
-                        'style': [ t['type'] for t in span.style]
-                    })
-        return res
-
-    def extract_image(self, layout):
-        ''' extract image bbox from layout'''
-        # text or image blocks
-        blocks = self.get_text_image_blocks(layout)
-
-        # extract images
-        res = []
-        for block in blocks:
-            if block.is_image_block():
-                res.append(block.bbox_raw)
-            elif block.is_text_block():
-                for line in block.lines:
-                    for span in line.spans:
-                        if isinstance(span, ImageSpan):
-                            res.append(span.bbox_raw)
-        return res
-
-    def verify_layout(self, threshold=0.7):
-        ''' compare layout of two pdf files:
-            It's difficult to have an exactly same layout of blocks, but ensure they
-            look like each other. So, with `extractWORDS()`, all words with bbox 
-            information are compared.
-            (x0, y0, x1, y1, "word", block_no, line_no, word_no)
-        '''
-        # check count of pages
-        self.assertEqual(len(self.SAMPLE_PDF), len(self.TEST_PDF), 
-            msg='Page count is inconsistent with sample file.')
-
-        # check position of each word
-        for sample_page, test_page in zip(self.SAMPLE_PDF, self.TEST_PDF):
-            sample_words = sample_page.getText('words')
-            test_words = test_page.getText('words')
-
-            # sort by word
-            sample_words.sort(key=lambda item: (item[4], item[-3], item[-2], item[-1]))
-            test_words.sort(key=lambda item: (item[4], item[-3], item[-2], item[-1]))
-
-            # check each word and bbox
-            for sample, test in zip(sample_words, test_words):
-                sample_bbox, test_bbox = sample[0:4], test[0:4]
-
-                # check bbox word by word
-                matched = self.check_bbox(sample_bbox, test_bbox, sample_page, threshold)
-                self.assertTrue(matched,
-                    msg=f'bbox for word "{sample[4]}": {test_bbox} is inconsistent with sample {sample_bbox}.')
+            # text style
+            for sample_line, test_line in zip(sample.lines, test.lines):
+                for sample_span, test_span in zip(sample_line.spans, test_line.spans):
+                    if not isinstance(sample_span, TextSpan): continue
+                    a, b = sample_span.text, test_span.text
+                    self.assertEqual(a, b, msg=f"\nApplied text '{b}' is inconsistent with sample '{a}'")
+                    for sample_style, test_style in zip(sample_span.style, test_span.style):
+                        a, b = sample_style.style, test_style.style
+                        self.assertEqual(a, b, msg=f"\nApplied text format '{b}' is inconsistent with sample '{a}'")
+        
 
 
 class MainTest(TestUtility):
-    ''' convert sample pdf files to docx, then verify the layout between 
-        sample pdf and docx (saved as pdf file).
-    '''
-
-    def setUp(self):
-        # create output path if not exist
-        if not os.path.exists(self.output_dir):
-            os.mkdir(self.output_dir)
-        
-        # copy sample pdf
-        for filename in os.listdir(self.sample_dir):
-            if filename.endswith('pdf'):
-                shutil.copy(os.path.join(self.sample_dir, filename), 
-                    os.path.join(self.output_dir, f'{self.PREFIX_SAMPLE}-{filename}'))
-
-
-    def tearDown(self):
-        # close pdf object
-        if self.SAMPLE_PDF: self.SAMPLE_PDF.close()
-        if self.TEST_PDF: self.TEST_PDF.close()
-
-        # delete pdf files generated for comparison purpose
-        for filename in os.listdir(self.output_dir):
-            if filename.startswith(self.PREFIX_SAMPLE) or filename.startswith(self.PREFIX_COMPARING):
-                os.remove(os.path.join(self.output_dir, filename))
-
+    '''Main text class.'''
 
     def test_text_format(self):
         '''sample file focusing on text format'''
-        # init pdf
-        layouts = self.init_test('demo-text.pdf')
-
-        # check text layout
-        self.verify_layout()
-
-        # check text style page by page
-        for layout, page in zip(layouts, self.TEST_PDF):
-            sample_style = self.extract_text_style(layout)
-            test_style = self.extract_text_style(self.TEST_PDF.parse(page).layout)
-
-            self.assertEqual(len(sample_style), len(test_style), 
-                msg=f'The count of extracted style format {len(test_style)} is inconsistent with sample file {len(sample_style)}.')
-
-            for s, t in zip(sample_style, test_style):
-                self.assertEqual(s['text'], t['text'], 
-                    msg=f"Applied text {t['text']} is inconsistent with sample {s['text']}")
-                self.assertEqual(s['style'], t['style'], 
-                    msg=f"Applied text format {t['style']} is inconsistent with sample {s['style']}")
-        
+        self.init_test('demo-text').verify_layout(threshold=0.95)
 
     def test_image(self):
         '''sample file focusing on image, inline-image considered'''
-        # init pdf
-        layouts = self.init_test('demo-image.pdf')
-
-        # check text layout
-        self.verify_layout()
-
-        # check images page by page
-        for i, (layout, page) in enumerate(zip(layouts, self.TEST_PDF)):
-            sample_images = self.extract_image(layout)
-            test_images = self.extract_image(self.TEST_PDF.parse(page).layout)
-
-            self.assertEqual(len(sample_images), len(test_images), 
-                msg=f'The count of images {len(test_images)} is inconsistent with sample file {len(sample_images)}.')
-
-            for s, t in zip(sample_images, test_images):
-                matched = self.check_bbox(s, t, self.SAMPLE_PDF[i], 0.7)
-                self.assertTrue(matched,
-                    msg=f"Applied image bbox {t} is inconsistent with sample {s}.")
-
+        self.init_test('demo-image').verify_layout(threshold=0.95)
 
     def test_table_format(self):
         '''sample file focusing on table format'''
-        # init pdf
-        self.init_test('demo-table.pdf')
-
-        # check text layout
-        # if table is parsed successfully, all re-created text blocks should be same with sample file.
-        self.verify_layout()
+        self.init_test('demo-table').verify_layout(threshold=0.95)

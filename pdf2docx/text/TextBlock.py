@@ -37,7 +37,9 @@ class TextBlock(Block):
     '''Text block.'''
     def __init__(self, raw:dict={}) -> None:
         super(TextBlock, self).__init__(raw)
-        self.lines = Lines(raw.get('lines', []), self)
+
+        # collect lines
+        self.lines = Lines(None, self).from_dicts(raw.get('lines', []))
 
         # set type
         self.set_text_block()
@@ -53,6 +55,11 @@ class TextBlock(Block):
     def sub_bboxes(self) -> list:
         '''bbox of sub-region, i.e. Line.'''
         return [line.bbox for line in self.lines]
+
+    
+    def is_horizontal_block(self):
+        ''' Check whether each line is oriented horizontally.'''
+        return all(line.dir[0]==1.0 for line in self.lines)
 
 
     def store(self) -> dict:
@@ -218,13 +225,10 @@ class TextBlock(Block):
             line_space = block_height        
         self.line_space = line_space
 
-        # if only one line exists, don't have to set line spacing, use default setting,
-        # i.e. single line instead
-        if count > 1:
-            # since the line height setting in docx may affect the original bbox in pdf, 
-            # it's necessary to update the before spacing:
-            # taking bottom left corner of first line as the reference point                
-            self.before_space = self.before_space + first_line_height - line_space
+        # since the line height setting in docx may affect the original bbox in pdf, 
+        # it's necessary to update the before spacing:
+        # taking bottom left corner of first line as the reference point                
+        self.before_space += first_line_height - line_space
 
 
     def make_docx(self, p, X0:float):

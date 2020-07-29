@@ -13,24 +13,55 @@ from ..text.TextBlock import TextBlock
 from ..common.BBox import BBox
 from ..common.utils import RGB_component
 from ..common.docx import set_cell_border, set_cell_shading
-from ..layout.Blocks import Blocks
+from ..layout import Blocks # avoid conflict
 
 
 class Cell(BBox):
     ''' Cell object.'''
     def __init__(self, raw:dict={}):
+        if raw is None: raw = {}
         super(Cell, self).__init__(raw)
         self.bg_color = raw.get('bg_color', None) # type: int
         self.border_color = raw.get('border_color', None) # type: tuple [int]
         self.border_width = raw.get('border_width', None) # type: tuple [float]
         self.merged_cells = raw.get('merged_cells', (1,1)) # type: tuple [int]
-        self.blocks = Blocks(raw.get('blocks', []))
+
+        # collect blocks
+        # NOTE: The cell bbox is determined first, and then find blocks contained in this bbox.
+        # so, don't update cell bbox when appending blocks, i.e. set parent=None.
+        self.blocks = Blocks.Blocks(None, parent=None).from_dicts(raw.get('blocks', []))
 
 
     @property
     def text(self) -> str:
         '''Text contained in this cell.'''
         return '\n'.join([block.text for block in self.blocks]) if bool(self) else None
+
+    
+    def compare(self, cell, threshold:float=0.9):
+        '''whether has same structure with given Cell.
+            ---
+            Args:
+              - cell: Cell instance to compare
+              - threshold: two bboxes are considered same if the overlap area exceeds threshold.
+        '''
+        res, msg = super().compare(cell, threshold)
+        if not res:
+            return res, msg
+        
+        if self.bg_color != cell.bg_color:
+            return False, f'Inconsistent background color @ Cell {self.bbox_raw}:\n{self.bg_color} v.s. {cell.bg_color}'
+
+        if tuple(self.border_color) != tuple(cell.border_color):
+            return False, f'Inconsistent border color @ Cell {self.bbox_raw}:\n{self.border_color} v.s. {cell.border_color}'
+
+        if tuple(self.border_width) != tuple(cell.border_width):
+            return False, f'Inconsistent border width @ Cell {self.bbox_raw}:\n{self.border_width} v.s. {cell.border_width}'
+
+        if tuple(self.merged_cells) != tuple(cell.merged_cells):
+            return False, f'Inconsistent count of merged cells @ Cell {self.bbox_raw}:\n{self.merged_cells} v.s. {cell.merged_cells}'
+
+        return True, ''
 
 
     def store(self):

@@ -4,7 +4,7 @@ import random
 
 import fitz
 from fitz.utils import getColorList, getColorInfoList
-
+from .base import PlotControl
 
 # border margin
 DM = 1.0
@@ -197,7 +197,7 @@ def new_page_with_margin(doc:fitz.Document, width:float, height:float, margin:tu
     return page
 
 
-def debug_plot(title:str, plot:bool=True, category:str='layout'):
+def debug_plot(title:str, plot:bool=True, category:PlotControl=PlotControl.LAYOUT):
     ''' Plot layout / shapes for debug mode when the following conditions are all satisfied:
           - plot=True
           - layout has been changed: the return value of `func` is True
@@ -207,11 +207,7 @@ def debug_plot(title:str, plot:bool=True, category:str='layout'):
         Args:
           - title: page title
           - plot: plot layout/shape if true
-          - category: 
-            - 'layout': plot all blocks
-            - 'table' : plot explicit table blocks only
-            - 'implicit_table' : plot implicit table blocks only
-            - 'shape' : plot rectangle shapes
+          - category: PlotControl, what to plot
     '''
     def wrapper(func):
         def inner(*args, **kwargs):
@@ -221,8 +217,65 @@ def debug_plot(title:str, plot:bool=True, category:str='layout'):
             # check if plot layout
             debug = kwargs.get('debug', False)
             doc = kwargs.get('doc', None)
-            if plot and res and debug and doc is not None:
-                layout = args[0] # assert Layout object
+            layout = args[0] # assert Layout object
+            if plot and res and debug and doc is not None:                
                 layout.plot(doc, title, category)
+            return layout
         return inner
     return wrapper
+
+
+def compare_layput(filename_source, filename_target, filename_output, threshold=0.7):
+    ''' Compare layout of two pdf files:
+        It's difficult to have an exactly same layout of blocks, but ensure they
+        look like each other. So, with `extractWORDS()`, all words with bbox 
+        information are compared.
+
+        ```
+        (x0, y0, x1, y1, "word", block_no, line_no, word_no)
+        ```
+    '''
+    # fitz document
+    source = fitz.open(filename_source) # type: fitz.Document
+    target = fitz.open(filename_target) # type: fitz.Document
+
+    # check count of pages
+    if len(source) != len(target):
+        msg='Page count is inconsistent with source file.'
+        print(msg)
+        return False
+
+    # check position of each word
+    flag = True
+    errs = []
+    for source_page, target_page in zip(source, target):
+        source_words = source_page.getText('words')
+        target_words = target_page.getText('words')
+
+        # sort by word
+        source_words.sort(key=lambda item: (item[4], item[-3], item[-2], item[-1]))
+        target_words.sort(key=lambda item: (item[4], item[-3], item[-2], item[-1]))
+
+        # check each word and bbox
+        for sample, test in zip(source_words, target_words):
+            source_rect, target_rect = fitz.Rect(sample[0:4]), fitz.Rect(test[0:4])
+
+            # draw bbox based on source layout
+            source_page.drawRect(source_rect, color=(1,1,0), overlay=False) # source position
+            source_page.drawRect(target_rect, color=(1,0,0), overlay=False) # current position
+
+            # check bbox word by word: ignore small bbox, e.g. single letter bbox
+            if source_rect.width > 20 and not get_main_bbox(source_rect, target_rect, threshold):
+                flag = False
+                errs.append((sample[4], target_rect, source_rect))
+
+        # save and close
+        source.save(filename_output)
+        target.close()
+        source.close()
+
+        # outputs
+        for word, target_rect, source_rect in errs:
+            print(f'Word "{word}": \nsample bbox: {source_rect}\ncurrent bbox: {target_rect}\n')
+
+        return flag
