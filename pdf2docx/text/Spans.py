@@ -16,7 +16,7 @@ class Spans(Collection):
 
     def from_dicts(self, raws:list):
         for raw_span in raws:
-            span = TextSpan(raw_span)
+            span = ImageSpan(raw_span) if 'image' in raw_span else TextSpan(raw_span)
             self.append(span)
         return self
 
