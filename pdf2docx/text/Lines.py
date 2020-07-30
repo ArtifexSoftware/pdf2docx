@@ -30,10 +30,7 @@ class Lines(Collection):
 
     
     def merge(self):
-        ''' Merge lines aligned horizontally in a block.
-
-            Generally, it is performed when inline image is added into block line.
-        '''
+        ''' Merge lines aligned horizontally in a block. Lines must be sorted in advance.'''
         new_lines = [] # type: list[Line]
         for line in self._instances:        
             # add line directly if not aligned horizontally with previous line

@@ -140,8 +140,9 @@ class Blocks(Collection):
         self._instances.sort(
             key=lambda block: (block.bbox.y0, block.bbox.x0))
             
-        # remove overlap blocks: no floating elements are supported
-        self.merge_overlap()
+        # merge blocks horizontally, e.g. remove overlap blocks,
+        # since no floating elements are supported
+        self.merge_horizontally()
 
         return True
 
@@ -348,7 +349,15 @@ class Blocks(Collection):
                 groups[-1].append(block)
         
         # merge blocks in group
-        self._merge_groups(groups)
+        blocks = []
+        for blocks_collection in groups:
+            if len(blocks_collection) > 1:
+                block = blocks_collection._merge_all()
+                blocks.append(block)
+            else:
+                blocks.append(blocks_collection[0])
+
+        self.reset(blocks)
 
 
     def parse_text_format(self, rects):
@@ -409,23 +418,6 @@ class Blocks(Collection):
             min(utils.ITP, top), 
             min(utils.ITP, bottom)
             )
-
-
-    def _merge_groups(self, groups:list):
-        '''Merge blocks in each group.
-            ---
-            Args:
-              - groups: list[Blocks], a list of blocks
-        '''
-        blocks = []
-        for blocks_collection in groups:
-            if len(blocks_collection) > 1:
-                block = blocks_collection._merge_all()
-                blocks.append(block)
-            else:
-                blocks.append(blocks_collection[0])
-
-        self.reset(blocks)
 
 
     def _merge_all(self):
