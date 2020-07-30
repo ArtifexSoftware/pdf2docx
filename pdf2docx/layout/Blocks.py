@@ -19,16 +19,26 @@ from ..shape.Rectangle import Rectangle
 class Blocks(Collection):
     '''Block collections.'''
     def __init__(self, instances:list=[], parent=None) -> None:
-        '''A collection of TextBlock and TableBlock instances. ImageBlock is converted to TextBlock.'''
-        super().__init__(instances, parent)
-        # convert all image blocks to test blocks
-        self._convert_images_to_text_blocks()
+        ''' A collection of TextBlock and TableBlock instances. 
+            ImageBlock is converted to ImageSpan contained in TextBlock.'''
+        self._parent = parent # type: Block
+        self._instances = []  # type: list[TextBlock or TableBlock]
+    
+        # Convert all original image blocks to text blocks, i.e. ImageSpan,
+        # So we can focus on single TextBlock later on; TableBlock is also combination of TextBlocks.
+        for block in instances:
+            if isinstance(block, ImageBlock):
+                text_block = block.to_text_block()
+                self._instances.append(text_block)
+            else:
+                self._instances.append(block)
+
 
     def from_dicts(self, raws:list):
         for raw_block in raws:
             block_type = raw_block.get('type', -1) # type: int
             
-            # image block            
+            # image block -> text block
             if block_type==BlockType.IMAGE.value:
                 block = ImageBlock(raw_block).to_text_block()
             
@@ -127,14 +137,14 @@ class Blocks(Collection):
             lambda block: block.is_horizontal_block(), self._instances))
 
         # remove overlap blocks: no floating elements are supported
-        self._remove_floating_images()        
+        # self._remove_floating_blocks()
         
         # sort in reading direction: from up to down, from left to right
         self._instances.sort(
             key=lambda block: (block.bbox.y0, block.bbox.x0))
             
         # merge inline images into text block
-        self._merge_inline_images()
+        # self._merge_inline_images()
 
         return True
 
@@ -323,19 +333,16 @@ class Blocks(Collection):
         '''Merge blocks aligned horizontally.'''
         res = [] # type: list[TextBlock]
         for block in self._instances:
-            # convert to text block if image block
-            if block.is_image_block():
-                text_block = block.to_text_block() # type: TextBlock
-            else:
-                text_block = block # type: TextBlock
+
+            if not block.is_text_block(): continue
 
             # add block directly if not aligned horizontally with previous block
-            if not res or not utils.is_horizontal_aligned(text_block.bbox, res[-1].bbox):
-                res.append(text_block)
+            if not res or not utils.is_horizontal_aligned(block.bbox, res[-1].bbox):
+                res.append(block)
 
             # otherwise, append to previous block as lines
             else:
-                res[-1].lines.extend(list(text_block.lines))
+                res[-1].lines.extend(list(block.lines))
         
         # sort lines in block
         for block in res:
@@ -404,29 +411,10 @@ class Blocks(Collection):
             )
 
 
-    def _convert_images_to_text_blocks(self):
-        '''Convert contained ImageBlock instance to TextBlock instance, i.e. image is represented
-            by ImageSpan.
+    def _remove_floating_blocks(self):
+        ''' Remove floating blocks since floating elements are not supported in python-docx.
         '''
-        blocks = []
-        for block in self._instances:
-            if isinstance(block, ImageBlock):
-                text_block = block.to_text_block()
-                blocks.append(text_block)
-            else:
-                blocks.append(block)
-        
-        self.reset(blocks)
-
-
-    def _remove_floating_images(self):
-        ''' Remove floating blocks, especially images. When a text block is floating behind 
-            an image block, the background image block will be deleted, considering that 
-            floating elements are not supported in python-docx when re-create the document.
-        '''
-        # get text/image blocks seperately, and suppose no overlap between text blocks
-        text_blocks = self.text_blocks()
-        image_blocks = self.image_blocks()
+        blocks = self.text_blocks(level=0)
 
         # check image block: no significant overlap with any text/image blocks
         res_image_blocks = []

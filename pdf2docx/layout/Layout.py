@@ -200,7 +200,7 @@ class Layout:
         # add paragraph or table according to parsed block
         for block in self.blocks:
             # make paragraphs
-            if block.is_text_block() or block.is_image_block():
+            if block.is_text_block():
                 # new paragraph
                 p = doc.add_paragraph()
                 block.make_docx(p, left)
