@@ -222,7 +222,7 @@ class Layout:
                 reset_paragraph_format(p, Pt(1.0))
 
 
-    @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.SHAPE)
+    @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.LAYOUT)
     def clean(self, **kwargs):
         '''Clean blocks and rectangles, e.g. remove negative blocks, duplicated rects.'''
         clean_blocks = self.blocks.clean()

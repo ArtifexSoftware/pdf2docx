@@ -51,7 +51,9 @@ class Lines(Collection):
             new_lines[-1].add(list(line.spans))
 
         # update lines in block
-        self._instances = new_lines
+        self.reset(new_lines)
+
+        return self
 
     
     def sort(self):
@@ -70,7 +72,7 @@ class Lines(Collection):
               - sort lines in row: from left to right
         '''
         # sort in reading order
-        self._instances.sort(key=lambda line: (line.bbox.y0, line.bbox.x0))
+        self.sort_in_reading_order()
 
         # split lines in separate row
         lines_in_rows = [] # type: list[list[Line]]
@@ -90,3 +92,5 @@ class Lines(Collection):
         for row in lines_in_rows:
             row.sort(key=lambda line: line.bbox.x0)
             self._instances.extend(row)
+
+        return self

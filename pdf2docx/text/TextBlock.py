@@ -124,33 +124,6 @@ class TextBlock(Block):
         return cnt >= threshold
 
     
-    def merge_image(self, image:Block):
-        '''Insert inline image to associated text block as a span.
-            ---
-            Args:
-              - image: ImageBlock, target image block
-        '''
-        # get the inserting position
-        for i,line in enumerate(self.lines):
-            if image.bbox.x0 < line.bbox.x0:
-                break
-        else:
-            i = 0
-
-        # Step 1: insert image as a line in block
-        # image span
-        span = ImageSpan()
-        span.from_image_block(image)
-
-        # add span to line
-        line = Line()
-        line.add(span)
-        self.lines.insert(i, line)
-
-        # Step 2: merge image into span in line, especially overlap exists
-        self.lines.merge()
-
-
     def parse_text_format(self, rects) -> bool:
         '''parse text format with style represented by rectangles.
             ---
