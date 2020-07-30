@@ -397,36 +397,6 @@ class Rectangles(Collection):
         return rect_changed
 
 
-    def group(self):
-        '''Split rects into groups, to be further checked if it's a table group.        
-        '''
-        groups = [] # type: list[Rectangles]
-        counted_index = set() # type: set[int]
-
-        for i in range(len(self._instances)):
-
-            # do nothing if current rect has been considered already
-            if i in counted_index:
-                continue
-
-            # start a new group
-            rect = self._instances[i]
-            group = { i }
-
-            # get intersected rects
-            self._get_intersected_rects(rect, group)
-
-            # update counted rects
-            counted_index = counted_index | group
-
-            # add rect to groups
-            group_rects = [self._instances[x] for x in group]
-            rects = Rectangles(group_rects)
-            groups.append(rects)
-
-        return groups
-
-
     def parse_table_structure(self) -> TableBlock:
         ''' Parse table structure from rects in table border/shading type.'''
 
@@ -735,25 +705,6 @@ class Rectangles(Collection):
                 })])
 
         return h_borders, v_borders
-
-
-    def _get_intersected_rects(self, rect:Rectangle, group:set):
-        ''' Get intersected rects from `rects` and store in `group`.
-            ---
-            Args:
-              - group: set[int], a set() of index of intersected rect
-        '''
-
-        for i in range(len(self._instances)):
-
-            # ignore rect already processed
-            if i in group: continue
-
-            # if intersected, check rects further
-            target = self._instances[i]
-            if rect.bbox & target.bbox:
-                group.add(i)
-                self._get_intersected_rects(target, group)
 
 
     def _exist_outer_border(self, target:float, direction:str='h') -> bool:
