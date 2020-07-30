@@ -18,14 +18,29 @@ from ..shape.Rectangle import Rectangle
 
 class Blocks(Collection):
     '''Block collections.'''
+    def __init__(self, instances:list=[], parent=None) -> None:
+        ''' A collection of TextBlock and TableBlock instances. 
+            ImageBlock is converted to ImageSpan contained in TextBlock.'''
+        self._parent = parent # type: Block
+        self._instances = []  # type: list[TextBlock or TableBlock]
+    
+        # Convert all original image blocks to text blocks, i.e. ImageSpan,
+        # So we can focus on single TextBlock later on; TableBlock is also combination of TextBlocks.
+        for block in instances:
+            if isinstance(block, ImageBlock):
+                text_block = block.to_text_block()
+                self._instances.append(text_block)
+            else:
+                self._instances.append(block)
+
 
     def from_dicts(self, raws:list):
         for raw_block in raws:
             block_type = raw_block.get('type', -1) # type: int
             
-            # image block            
+            # image block -> text block
             if block_type==BlockType.IMAGE.value:
-                block = ImageBlock(raw_block)
+                block = ImageBlock(raw_block).to_text_block()
             
             # text block
             elif block_type == BlockType.TEXT.value:
@@ -65,33 +80,30 @@ class Blocks(Collection):
         return blocks
     
 
-    def image_blocks(self, level=0):
-        '''Get image blocks contained in this Collection.
+    def image_spans(self, level=0):
+        '''Get ImageSpan contained in this Collection.             
             ---
             Args:
               - level: 
-                - 0: image blocks in top level only
-                - 1: image span deep to top text blocks level
-                - 2: image blocks/span deep to table blocks level
+                - 0: image span contained in top level text blocks
+                - 1: image span deep to table blocks level
+
+            NOTE:
+            No ImageBlock exists in this collection since it's already converted to text block.
         '''
-        # top image block
-        blocks = list(filter(
-            lambda block: block.is_image_block(), self._instances))
         
         # image span in top text block
-        if level>0:
-            for block in self.text_blocks(level=0):
-                for line in block.lines:
-                    blocks.extend(line.image_spans)
+        spans = []
+        for block in self.text_blocks(level=0):
+            spans.extend(block.lines.image_spans)
         
-        # image block/span in table block level
-        if level>1:
+        # image span in table block level
+        if level>0:
             for table in self.table_blocks:
                 for row in table:
                     for cell in row:
-                        blocks.extend(cell.blocks.image_blocks(level))
-        
-        return blocks
+                        spans.extend(cell.blocks.image_spans(level))        
+        return spans
 
 
     @property
@@ -123,16 +135,14 @@ class Blocks(Collection):
         # remove blocks with transformed text: text direction is not (1, 0)
         self._instances = list(filter(
             lambda block: block.is_horizontal_block(), self._instances))
-
-        # remove overlap blocks: no floating elements are supported
-        self._remove_floating_images()        
         
         # sort in reading direction: from up to down, from left to right
         self._instances.sort(
             key=lambda block: (block.bbox.y0, block.bbox.x0))
             
-        # merge inline images into text block
-        self._merge_inline_images()
+        # merge blocks horizontally, e.g. remove overlap blocks,
+        # since no floating elements are supported
+        self.merge_horizontally()
 
         return True
 
@@ -171,7 +181,7 @@ class Blocks(Collection):
                         cell.add(block)
 
                     # merge blocks if contained blocks found
-                    cell.blocks.merge()
+                    cell.blocks.merge_horizontally()
 
         # sort in natural reading order and update layout blocks
         blocks.extend(tables)
@@ -317,29 +327,37 @@ class Blocks(Collection):
             ref_pos = ref_block.bbox.y1 + dw # assume same bottom border with top one
 
 
-    def merge(self):
+    def merge_overlap(self):
+        '''Merge blocks when overlap exists.'''
+        self._merge_groups(self.group())
+
+
+    def merge_horizontally(self):
         '''Merge blocks aligned horizontally.'''
-        res = [] # type: list[TextBlock]
+        # group blocks
+        groups = [] # type: list[Blocks]
         for block in self._instances:
-            # convert to text block if image block
-            if block.is_image_block():
-                text_block = block.to_text_block() # type: TextBlock
-            else:
-                text_block = block # type: TextBlock
+            
+            if not block.is_text_block(): continue
 
             # add block directly if not aligned horizontally with previous block
-            if not res or not utils.is_horizontal_aligned(text_block.bbox, res[-1].bbox):
-                res.append(text_block)
+            if not groups or not utils.is_horizontal_aligned(block.bbox, groups[-1][-1].bbox):
+                groups.append(Blocks([block]))
 
             # otherwise, append to previous block as lines
             else:
-                res[-1].lines.extend(list(text_block.lines))
+                groups[-1].append(block)
         
-        # sort lines in block
-        for block in res:
-            block.lines.sort()
-        
-        self.reset(res)
+        # merge blocks in group
+        blocks = []
+        for blocks_collection in groups:
+            if len(blocks_collection) > 1:
+                block = blocks_collection._merge_all()
+                blocks.append(block)
+            else:
+                blocks.append(blocks_collection[0])
+
+        self.reset(blocks)
 
 
     def parse_text_format(self, rects):
@@ -402,94 +420,17 @@ class Blocks(Collection):
             )
 
 
-    def _remove_floating_images(self):
-        ''' Remove floating blocks, especially images. When a text block is floating behind 
-            an image block, the background image block will be deleted, considering that 
-            floating elements are not supported in python-docx when re-create the document.
-        '''
-        # get text/image blocks seperately, and suppose no overlap between text blocks
-        text_blocks = self.text_blocks()
-        image_blocks = self.image_blocks()
-
-        # check image block: no significant overlap with any text/image blocks
-        res_image_blocks = []
-        for image_block in image_blocks:
-            # 1. overlap with any text block?
-            for text_block in text_blocks:            
-                if utils.get_main_bbox(image_block.bbox, text_block.bbox, 0.75):
-                    overlap = True
-                    break
-            else:
-                overlap = False
-
-            # yes, then this is an invalid image block
-            if overlap: continue
-
-            # 2. overlap with any valid image blocks?
-            for valid_image in res_image_blocks:
-                if utils.get_main_bbox(image_block.bbox, valid_image.bbox, 0.75):
-                    overlap = True
-                    break
-            else:
-                overlap = False
-            
-            # yes, then this is an invalid image block
-            if overlap: continue
-
-            # finally, add this image block
-            res_image_blocks.append(image_block)
-
-        # return all valid blocks
-        self.reset(text_blocks).extend(res_image_blocks)
-
-
-    def _merge_inline_images(self):
-        '''Merge inline image blocks into text block: a block line or a line span.
-
-           From docx aspect, inline image and text are in same paragraph; while they are not in pdf block level.
-           Instead, there's overlap between these image block and text block, so have to merge image block into text block
-           to avoid floating blocks.
-        '''    
-        # get all images blocks with index
-        f = lambda item: item[1].is_image_block()
-        index_images = list(filter(f, enumerate(self._instances)))
-        if not index_images: return False
-
-        # get index of inline images: intersected with text block
-        # assumption: an inline image intersects with only one text block
-        index_inline = []
-        num = len(index_images)
+    def _merge_all(self):
+        '''Merge all text blocks into one text block.'''
+        # combine all lines into a TextBlock
+        final_block = TextBlock()
         for block in self._instances:
+            if not block.is_text_block(): continue
+            for line in block.lines:
+                final_block.add(line)
 
-            # suppose no overlap between two images
-            if block.is_image_block(): continue
+        # merge lines/spans contained in this textBlock
+        final_block.lines.sort().merge()
 
-            # innore table block
-            if block.is_table_block(): continue
+        return final_block
 
-            # all images found their block, then quit
-            if len(index_inline)==num: break
-
-            # check all images for current block
-            for i, image in index_images:
-                # an inline image belongs to only one block
-                if i in index_inline: continue
-
-                # horizontally aligned with current text block?
-                # no, pass
-                if not utils.is_horizontal_aligned(block.bbox, image.bbox):
-                    continue
-
-                # yes, inline image: set as a line span in block
-                index_inline.append(i)
-                block.merge_image(image)
-
-
-        # remove inline images from top layout
-        # the index of element in original list changes when any elements are removed
-        # so try to delete item in reverse order
-        for i in index_inline[::-1]:
-            self._instances.pop(i)
-
-        # anything changed in this step?
-        return True if index_inline else False

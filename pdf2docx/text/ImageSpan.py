@@ -32,6 +32,7 @@ class ImageSpan(BBox):
         self.height = image.height
         self.image = image.image
         self.update(image.bbox)
+        return self
 
 
     def store(self) -> dict:

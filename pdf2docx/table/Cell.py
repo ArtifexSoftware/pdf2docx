@@ -29,7 +29,7 @@ class Cell(BBox):
         # collect blocks
         # NOTE: The cell bbox is determined first, and then find blocks contained in this bbox.
         # so, don't update cell bbox when appending blocks, i.e. set parent=None.
-        self.blocks = Blocks.Blocks(None, parent=None).from_dicts(raw.get('blocks', []))
+        self.blocks = Blocks.Blocks().from_dicts(raw.get('blocks', []))
 
 
     @property

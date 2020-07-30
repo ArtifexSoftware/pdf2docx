@@ -19,12 +19,18 @@ class Lines(Collection):
             line = Line(raw)
             self.append(line)
         return self
+
+    @property
+    def image_spans(self):
+        '''Get all ImageSpan instances.'''
+        spans = []
+        for line in self._instances:
+            spans.extend(line.image_spans)
+        return spans
+
     
     def merge(self):
-        ''' Merge lines aligned horizontally in a block.
-
-            Generally, it is performed when inline image is added into block line.
-        '''
+        ''' Merge lines aligned horizontally in a block. Lines must be sorted in advance.'''
         new_lines = [] # type: list[Line]
         for line in self._instances:        
             # add line directly if not aligned horizontally with previous line
@@ -42,7 +48,9 @@ class Lines(Collection):
             new_lines[-1].add(list(line.spans))
 
         # update lines in block
-        self._instances = new_lines
+        self.reset(new_lines)
+
+        return self
 
     
     def sort(self):
@@ -61,7 +69,7 @@ class Lines(Collection):
               - sort lines in row: from left to right
         '''
         # sort in reading order
-        self._instances.sort(key=lambda line: (line.bbox.y0, line.bbox.x0))
+        self.sort_in_reading_order()
 
         # split lines in separate row
         lines_in_rows = [] # type: list[list[Line]]
@@ -81,3 +89,5 @@ class Lines(Collection):
         for row in lines_in_rows:
             row.sort(key=lambda line: line.bbox.x0)
             self._instances.extend(row)
+
+        return self

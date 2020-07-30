@@ -28,6 +28,7 @@ from .Line import Line
 from .ImageSpan import ImageSpan
 from .TextBlock import TextBlock
 from ..common import utils
+from ..common import docx
 from ..common.Block import Block
 
 
@@ -72,8 +73,7 @@ class ImageBlock(Block):
     def to_text_block(self) -> TextBlock:
         '''convert image block to text block: a span'''
         # image span
-        span = ImageSpan()
-        span.from_image_block(self)
+        span = ImageSpan().from_image_block(self)
 
         # add span to line
         image_line = Line()
@@ -104,7 +104,7 @@ class ImageBlock(Block):
         # indent and space setting
         before_spacing = max(round(self.before_space, 1), 0.0)
         after_spacing = max(round(self.after_space, 1), 0.0)
-        pf = utils.reset_paragraph_format(p)
+        pf = docx.reset_paragraph_format(p)
         pf.space_before = Pt(before_spacing)
         pf.space_after = Pt(after_spacing)
         
@@ -114,9 +114,9 @@ class ImageBlock(Block):
         # left indent implemented with tab
         pos = round(self.bbox.x0-X0, 2)
         pf.tab_stops.add_tab_stop(Pt(pos))
-        utils.add_stop(p, Pt(pos), Pt(0.0))
+        docx.add_stop(p, Pt(pos), Pt(0.0))
 
         # create image
-        utils.add_image(p, self.image, self.bbox.x1-self.bbox.x0)
+        docx.add_image(p, self.image, self.bbox.x1-self.bbox.x0)
 
         return p

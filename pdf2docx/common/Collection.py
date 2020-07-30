@@ -62,6 +62,12 @@ class Collection:
         if not self._parent is None:
             self._parent.union(bbox.bbox)
 
+
+    def sort_in_reading_order(self):
+        '''Sort collection instances in reading order: from top to bottom, from left to right.'''
+        self._instances.sort(key=lambda instance: (instance.bbox.y0, instance.bbox.x0))
+
+
     def reset(self, bboxes:list=[]):
         '''Reset instances list.'''
         self._instances = []
@@ -72,3 +78,51 @@ class Collection:
     def store(self) -> list:
         '''Store attributes in json format.'''
         return [ instance.store() for instance in self._instances]
+
+
+    def group(self):
+        '''Collect instances intersected with each other as groups.'''
+        groups = [] # type: list[Collection]
+        counted_index = set() # type: set[int]
+
+        for i in range(len(self._instances)):
+
+            # do nothing if current rect has been considered already
+            if i in counted_index:
+                continue
+
+            # start a new group
+            instance = self._instances[i]
+            group = { i }
+
+            # get intersected instances
+            self._get_intersected_instances(instance, group)
+
+            # update counted instances
+            counted_index = counted_index | group
+
+            # add rect to groups
+            group_instances = [self._instances[x] for x in group]
+            instances = self.__class__(group_instances)
+            groups.append(instances)
+
+        return groups
+
+
+    def _get_intersected_instances(self, bbox:BBox, group:set):
+        ''' Get intersected instances and store in `group`.
+            ---
+            Args:
+              - group: set[int], a set() of index of intersected instances
+        '''
+
+        for i in range(len(self._instances)):
+
+            # ignore bbox already processed
+            if i in group: continue
+
+            # if intersected, check bboxs further
+            target = self._instances[i]
+            if bbox.bbox & target.bbox:
+                group.add(i)
+                self._get_intersected_instances(target, group)

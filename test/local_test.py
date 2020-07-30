@@ -30,8 +30,9 @@ if __name__ == '__main__':
     
     cv.close() # close pdf
 
-    # convert the docx file back to pdf manually, 
-    # and compare results by checking bbox of each word
+    # convert the docx file back to pdf manually, e.g. docx2pdf.pdf,
+    # and compare results by checking bbox of each word.
+    # The comparison result is stored in pdf file, e.g. comparison.pdf
     docx_pdf_file = os.path.join(output, f'docx2pdf.pdf')
     output_file = os.path.join(output, f'comparison.pdf')
     if compare_layput(pdf_file, docx_pdf_file, output_file, threshold=0.7):

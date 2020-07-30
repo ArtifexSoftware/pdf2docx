@@ -94,15 +94,15 @@ class TestUtility(unittest.TestCase):
 
     def _check_image_layout(self, threshold):
         '''Check image layout: bbox and vertical spacing.'''
-        sample_image_blocks = self.sample.blocks.image_blocks(level=2)
-        test_image_blocks = self.test.blocks.image_blocks(level=2)
+        sample_image_spans = self.sample.blocks.image_spans(level=1)
+        test_image_spans = self.test.blocks.image_spans(level=1)
 
         # count of images
-        m, n = len(sample_image_blocks), len(test_image_blocks)
-        self.assertEqual(m, n, msg=f"\nThe count of image blocks '{n}' is inconsistent with sample '{m}'")
+        m, n = len(sample_image_spans), len(test_image_spans)
+        self.assertEqual(m, n, msg=f"\nThe count of image blocks {n} is inconsistent with sample {m}")
 
         # check each image
-        for sample, test in zip(sample_image_blocks, test_image_blocks):
+        for sample, test in zip(sample_image_spans, test_image_spans):
             matched, msg = sample.compare(test, threshold)
             self.assertTrue(matched, msg=f'\n{msg}')
 
@@ -117,7 +117,7 @@ class TestUtility(unittest.TestCase):
 
         # count of blocks
         m, n = len(sample_text_blocks), len(test_text_blocks)
-        self.assertEqual(m, n, msg=f"\nThe count of text blocks '{n}' is inconsistent with sample '{m}'")
+        self.assertEqual(m, n, msg=f"\nThe count of text blocks {n} is inconsistent with sample {m}")
         
         # check layout of each block
         for sample, test in zip(sample_text_blocks, test_text_blocks):

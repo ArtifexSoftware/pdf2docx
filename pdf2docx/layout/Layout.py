@@ -200,7 +200,7 @@ class Layout:
         # add paragraph or table according to parsed block
         for block in self.blocks:
             # make paragraphs
-            if block.is_text_block() or block.is_image_block():
+            if block.is_text_block():
                 # new paragraph
                 p = doc.add_paragraph()
                 block.make_docx(p, left)
@@ -222,7 +222,7 @@ class Layout:
                 reset_paragraph_format(p, Pt(1.0))
 
 
-    @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.SHAPE)
+    @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.LAYOUT)
     def clean(self, **kwargs):
         '''Clean blocks and rectangles, e.g. remove negative blocks, duplicated rects.'''
         clean_blocks = self.blocks.clean()

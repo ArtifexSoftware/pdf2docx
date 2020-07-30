@@ -5,6 +5,7 @@ import fitz
 from docx import Document
 
 from .layout.Layout import Layout
+from .common.base import PlotControl
 from .common import utils
 
 
@@ -104,8 +105,8 @@ class Converter:
             utils.new_page_section(self._doc_debug, self._layout.width, self._layout.height, f'Page {page.number}')
 
             # initial layout
-            self._layout.plot(self._doc_debug, 'Original Text Blocks', key='layout')
-            self._layout.plot(self._doc_debug, 'Original Rectangle Shapes', key='shape')
+            self._layout.plot(self._doc_debug, 'Original Text Blocks', key=PlotControl.LAYOUT)
+            self._layout.plot(self._doc_debug, 'Original Rectangle Shapes', key=PlotControl.SHAPE)
 
         return self._layout
 
