@@ -73,8 +73,7 @@ class ImageBlock(Block):
     def to_text_block(self) -> TextBlock:
         '''convert image block to text block: a span'''
         # image span
-        span = ImageSpan()
-        span.from_image_block(self)
+        span = ImageSpan().from_image_block(self)
 
         # add span to line
         image_line = Line()

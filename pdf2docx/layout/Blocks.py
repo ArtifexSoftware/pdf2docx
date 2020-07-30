@@ -18,6 +18,11 @@ from ..shape.Rectangle import Rectangle
 
 class Blocks(Collection):
     '''Block collections.'''
+    def __init__(self, instances:list=[], parent=None) -> None:
+        '''A collection of TextBlock and TableBlock instances. ImageBlock is converted to TextBlock.'''
+        super().__init__(instances, parent)
+        # convert all image blocks to test blocks
+        self._convert_images_to_text_blocks()
 
     def from_dicts(self, raws:list):
         for raw_block in raws:
@@ -25,7 +30,7 @@ class Blocks(Collection):
             
             # image block            
             if block_type==BlockType.IMAGE.value:
-                block = ImageBlock(raw_block)
+                block = ImageBlock(raw_block).to_text_block()
             
             # text block
             elif block_type == BlockType.TEXT.value:
@@ -65,33 +70,30 @@ class Blocks(Collection):
         return blocks
     
 
-    def image_blocks(self, level=0):
-        '''Get image blocks contained in this Collection.
+    def image_spans(self, level=0):
+        '''Get ImageSpan contained in this Collection.             
             ---
             Args:
               - level: 
-                - 0: image blocks in top level only
-                - 1: image span deep to top text blocks level
-                - 2: image blocks/span deep to table blocks level
+                - 0: image span contained in top level text blocks
+                - 1: image span deep to table blocks level
+
+            NOTE:
+            No ImageBlock exists in this collection since it's already converted to text block.
         '''
-        # top image block
-        blocks = list(filter(
-            lambda block: block.is_image_block(), self._instances))
         
         # image span in top text block
-        if level>0:
-            for block in self.text_blocks(level=0):
-                for line in block.lines:
-                    blocks.extend(line.image_spans)
+        spans = []
+        for block in self.text_blocks(level=0):
+            spans.extend(block.lines.image_spans)
         
-        # image block/span in table block level
-        if level>1:
+        # image span in table block level
+        if level>0:
             for table in self.table_blocks:
                 for row in table:
                     for cell in row:
-                        blocks.extend(cell.blocks.image_blocks(level))
-        
-        return blocks
+                        spans.extend(cell.blocks.image_spans(level))        
+        return spans
 
 
     @property
@@ -400,6 +402,21 @@ class Blocks(Collection):
             min(utils.ITP, top), 
             min(utils.ITP, bottom)
             )
+
+
+    def _convert_images_to_text_blocks(self):
+        '''Convert contained ImageBlock instance to TextBlock instance, i.e. image is represented
+            by ImageSpan.
+        '''
+        blocks = []
+        for block in self._instances:
+            if isinstance(block, ImageBlock):
+                text_block = block.to_text_block()
+                blocks.append(text_block)
+            else:
+                blocks.append(block)
+        
+        self.reset(blocks)
 
 
     def _remove_floating_images(self):

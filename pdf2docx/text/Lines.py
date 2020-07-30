@@ -19,6 +19,15 @@ class Lines(Collection):
             line = Line(raw)
             self.append(line)
         return self
+
+    @property
+    def image_spans(self):
+        '''Get all ImageSpan instances.'''
+        spans = []
+        for line in self._instances:
+            spans.extend(line.image_spans)
+        return spans
+
     
     def merge(self):
         ''' Merge lines aligned horizontally in a block.
