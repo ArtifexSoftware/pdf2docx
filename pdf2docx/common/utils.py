@@ -240,15 +240,18 @@ def compare_layput(filename_source, filename_target, filename_output, threshold=
     target = fitz.open(filename_target) # type: fitz.Document
 
     # check count of pages
+    # --------------------------
     if len(source) != len(target):
         msg='Page count is inconsistent with source file.'
         print(msg)
         return False
-
-    # check position of each word
+    
     flag = True
     errs = []
-    for source_page, target_page in zip(source, target):
+    for i, (source_page, target_page) in enumerate(zip(source, target)):
+
+        # check position of each word
+        # ---------------------------
         source_words = source_page.getText('words')
         target_words = target_page.getText('words')
 
@@ -261,21 +264,21 @@ def compare_layput(filename_source, filename_target, filename_output, threshold=
             source_rect, target_rect = fitz.Rect(sample[0:4]), fitz.Rect(test[0:4])
 
             # draw bbox based on source layout
-            source_page.drawRect(source_rect, color=(1,1,0), overlay=False) # source position
-            source_page.drawRect(target_rect, color=(1,0,0), overlay=False) # current position
+            source_page.drawRect(source_rect, color=(1,1,0), overlay=True) # source position
+            source_page.drawRect(target_rect, color=(1,0,0), overlay=True) # current position
 
             # check bbox word by word: ignore small bbox, e.g. single letter bbox
             if source_rect.width > 20 and not get_main_bbox(source_rect, target_rect, threshold):
                 flag = False
                 errs.append((sample[4], target_rect, source_rect))
+        
+    # save and close
+    source.save(filename_output)
+    target.close()
+    source.close()
 
-        # save and close
-        source.save(filename_output)
-        target.close()
-        source.close()
+    # outputs
+    for word, target_rect, source_rect in errs:
+        print(f'Word "{word}": \nsample bbox: {source_rect}\ncurrent bbox: {target_rect}\n')
 
-        # outputs
-        for word, target_rect, source_rect in errs:
-            print(f'Word "{word}": \nsample bbox: {source_rect}\ncurrent bbox: {target_rect}\n')
-
-        return flag
+    return flag
