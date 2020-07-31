@@ -31,11 +31,20 @@ class Lines(Collection):
         return spans
 
 
-    def intersects(self, bbox:BBox):
-        ''' Whether intersection exists between any line and given bbox.'''
-        for line in self._instances:
-            if utils.get_main_bbox(line.bbox, bbox.bbox, threshold=0.05):
+    def intersects(self, line:Line):
+        ''' Whether intersection exists between any line and given line.'''
+        is_image_line = bool(line.image_spans)
+        for instance in self._instances:
+
+            # for image line, no any intersection is allowed
+            if instance.image_spans or is_image_line:
+                if instance.bbox.intersects(line.bbox):
+                    return True
+            
+            # otherwise, the overlap tolerance is larger
+            elif utils.get_main_bbox(instance.bbox, line.bbox, threshold=0.5):
                 return True
+        
         return False
 
     
