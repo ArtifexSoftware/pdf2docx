@@ -791,9 +791,12 @@ class Rectangles(Collection):
             Args:
               - target: target bbox
         '''
+        s = target.bbox.getArea()
+        if not s: return None
+
         for rect in self._instances:
             intersection = target.bbox & rect.bbox
-            if intersection.getArea() / target.bbox.getArea() >= threshold:
+            if intersection.getArea() / s >= threshold:
                 res = rect
                 break
         else:

@@ -138,7 +138,7 @@ class Blocks(Collection):
            
         # merge blocks horizontally, e.g. remove overlap blocks,
         # since no floating elements are supported
-        self.merge_horizontally()
+        self.merge()
 
         return True
 
@@ -177,7 +177,7 @@ class Blocks(Collection):
                         cell.add(block)
 
                     # merge blocks if contained blocks found
-                    cell.blocks.merge_horizontally()
+                    cell.blocks.merge()
 
         # sort in natural reading order and update layout blocks
         blocks.extend(tables)
@@ -321,13 +321,8 @@ class Blocks(Collection):
             ref_pos = ref_block.bbox.y1 + dw # assume same bottom border with top one
 
 
-    def merge_overlap(self):
-        '''Merge blocks when overlap exists.'''
-        self._merge_groups(self.group())
-
-
-    def merge_horizontally(self):
-        '''Merge blocks aligned horizontally.'''
+    def merge(self):
+        '''Merge blocks aligned horizontally group by group.'''
         fun = lambda a,b: utils.is_horizontal_aligned(a,b)
         groups = self.group(fun)
         
@@ -335,7 +330,7 @@ class Blocks(Collection):
         blocks = []
         for blocks_collection in groups:
             if len(blocks_collection) > 1:
-                block = blocks_collection._merge_all()
+                block = blocks_collection._merge()
                 blocks.append(block)
             else:
                 blocks.append(blocks_collection[0])
@@ -403,7 +398,7 @@ class Blocks(Collection):
             )
 
 
-    def _merge_all(self):
+    def _merge(self):
         '''Merge all text blocks into one text block.'''
         # combine all lines into a TextBlock
         final_block = TextBlock()

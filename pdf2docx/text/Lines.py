@@ -7,7 +7,9 @@ A group of Line objects.
 @author: train8808@gmail.com
 '''
 
+
 from .Line import Line
+from ..common.BBox import BBox
 from ..common import utils
 from ..common.Collection import Collection
 
@@ -28,30 +30,47 @@ class Lines(Collection):
             spans.extend(line.image_spans)
         return spans
 
+
+    def intersects(self, bbox:BBox):
+        ''' Whether intersection exists between any line and given bbox.'''
+        for line in self._instances:
+            if utils.get_main_bbox(line.bbox, bbox.bbox, threshold=0.05):
+                return True
+        return False
+
     
     def merge(self):
         ''' Merge lines aligned horizontally in a block.'''
+        # skip if empty
+        if not self._instances: return self
+    
         # sort lines
         self._sort()
-        
-        new_lines = [] # type: list[Line]
-        for line in self._instances:        
+
+        # check each line
+        lines = Lines([self._instances[0]])
+        for line in self._instances:
+            
+            # skip if intersection exists
+            if lines.intersects(line):
+                continue
+
             # add line directly if not aligned horizontally with previous line
-            if not new_lines or not utils.is_horizontal_aligned(line.bbox, new_lines[-1].bbox):
-                new_lines.append(line)
+            if not utils.is_horizontal_aligned(line.bbox, lines[-1].bbox):
+                lines.append(line)
                 continue
 
             # if it exists x-distance obviously to previous line,
             # take it as a separate line as it is
-            if abs(line.bbox.x0-new_lines[-1].bbox.x1) > utils.DM:
-                new_lines.append(line)
+            if abs(line.bbox.x0-lines[-1].bbox.x1) > utils.DM:
+                lines.append(line)
                 continue
 
             # now, this line will be append to previous line as a span
-            new_lines[-1].add(list(line.spans))
+            lines[-1].add(list(line.spans))
 
         # update lines in block
-        self.reset(new_lines)
+        self.reset(list(lines))
 
         return self
 
