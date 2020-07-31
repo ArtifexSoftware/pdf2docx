@@ -88,6 +88,10 @@ def add_image(p, byte_image, width):
         docx_span.add_picture(BytesIO(byte_image), width=Pt(width))
     except UnrecognizedImageError:
         print('TODO: Unrecognized Image.')
+        return
+    
+    # exactly line spacing will destroy image display, so set single line spacing instead
+    p.paragraph_format.line_spacing = 1.00
 
 
 def indent_table(table, indent:float):

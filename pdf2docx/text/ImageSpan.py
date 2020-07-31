@@ -77,6 +77,3 @@ class ImageSpan(BBox):
         '''Add image span to a docx paragraph.'''
         # add image
         docx.add_image(paragraph, self.image, self.bbox.x1-self.bbox.x0)
-
-        # exactly line spacing will destroy image display, so set single line spacing instead
-        paragraph.paragraph_format.line_spacing = 1.05
