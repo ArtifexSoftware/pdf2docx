@@ -512,7 +512,7 @@ class Rectangles(Collection):
                     
             # one row finished
             # check table: the first cell in first row MUST NOT be None
-            if i==0 and cells_in_row[0]==None:
+            if i==0 and not cells_in_row[0]:
                 # reset borders because it's a invalid table
                 self._unset_table_border()
                 return None
