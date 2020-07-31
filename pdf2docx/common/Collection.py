@@ -65,7 +65,11 @@ class Collection:
 
     def sort_in_reading_order(self):
         '''Sort collection instances in reading order: from top to bottom, from left to right.'''
-        self._instances.sort(key=lambda instance: (instance.bbox.y0, instance.bbox.x0))
+        self._instances.sort(key=lambda instance: (instance.bbox.y0, instance.bbox.x0, instance.bbox.x1))
+
+    def sort_in_line_order(self):
+        '''Sort collection instances: from left to right.'''
+        self._instances.sort(key=lambda instance: (instance.bbox.x0, instance.bbox.y0, instance.bbox.x1))
 
 
     def reset(self, bboxes:list=[]):
@@ -77,14 +81,30 @@ class Collection:
 
     def store(self) -> list:
         '''Store attributes in json format.'''
-        return [ instance.store() for instance in self._instances]
+        return [ instance.store() for instance in self._instances ]
 
 
-    def group(self):
-        '''Collect instances intersected with each other as groups.'''
+    def group(self, fun):
+        '''group instances according to user defined criterion.
+            ---
+            Args:
+              - fun: function with 2 parameters (BBox) representing 2 instances, and return bool
+            
+            Examples:
+            ```
+            # group instances intersected with each other
+            fun = lambda a,b: a & b
+            # group instances aligned horizontally
+            fun = lambda a,b: utils.is_horizontal_aligned(a,b)
+            ```
+        '''
         groups = [] # type: list[Collection]
         counted_index = set() # type: set[int]
 
+        # sort in reading order
+        self.sort_in_reading_order()
+
+        # check each instance to the others
         for i in range(len(self._instances)):
 
             # do nothing if current rect has been considered already
@@ -96,7 +116,7 @@ class Collection:
             group = { i }
 
             # get intersected instances
-            self._get_intersected_instances(instance, group)
+            self._group_instances(instance, group, fun)
 
             # update counted instances
             counted_index = counted_index | group
@@ -109,11 +129,13 @@ class Collection:
         return groups
 
 
-    def _get_intersected_instances(self, bbox:BBox, group:set):
-        ''' Get intersected instances and store in `group`.
+    def _group_instances(self, bbox:BBox, group:set, fun):
+        ''' Get instances related to given bbox.
             ---
             Args:
+              - bbox: reference bbox
               - group: set[int], a set() of index of intersected instances
+              - fun: define the relationship with reference bbox
         '''
 
         for i in range(len(self._instances)):
@@ -121,8 +143,13 @@ class Collection:
             # ignore bbox already processed
             if i in group: continue
 
-            # if intersected, check bboxs further
+            # if satisfying given relationship, check bboxs further
             target = self._instances[i]
-            if bbox.bbox & target.bbox:
+            if fun(bbox.bbox, target.bbox):
                 group.add(i)
-                self._get_intersected_instances(target, group)
+                self._group_instances(target, group, fun)
+
+            # it's sorted already, so no relationship exists if not intersected in vertical direction 
+            else:
+                if target.bbox.y0 > bbox.bbox.y1:
+                    break

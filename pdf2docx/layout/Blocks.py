@@ -130,16 +130,12 @@ class Blocks(Collection):
 
         # remove negative blocks
         self._instances = list(filter(
-            lambda block: all(x>0 for x in block.bbox_raw), self._instances))
+            lambda block: all(x>=0 for x in block.bbox_raw), self._instances))
 
         # remove blocks with transformed text: text direction is not (1, 0)
         self._instances = list(filter(
             lambda block: block.is_horizontal_block(), self._instances))
-        
-        # sort in reading direction: from up to down, from left to right
-        self._instances.sort(
-            key=lambda block: (block.bbox.y0, block.bbox.x0))
-            
+           
         # merge blocks horizontally, e.g. remove overlap blocks,
         # since no floating elements are supported
         self.merge_horizontally()
@@ -185,9 +181,7 @@ class Blocks(Collection):
 
         # sort in natural reading order and update layout blocks
         blocks.extend(tables)
-        blocks.sort(key=lambda block: (block.bbox.y0, block.bbox.x0))
-
-        self._instances = blocks
+        self.reset(blocks).sort_in_reading_order()
 
         return True
 
@@ -334,19 +328,8 @@ class Blocks(Collection):
 
     def merge_horizontally(self):
         '''Merge blocks aligned horizontally.'''
-        # group blocks
-        groups = [] # type: list[Blocks]
-        for block in self._instances:
-            
-            if not block.is_text_block(): continue
-
-            # add block directly if not aligned horizontally with previous block
-            if not groups or not utils.is_horizontal_aligned(block.bbox, groups[-1][-1].bbox):
-                groups.append(Blocks([block]))
-
-            # otherwise, append to previous block as lines
-            else:
-                groups[-1].append(block)
+        fun = lambda a,b: utils.is_horizontal_aligned(a,b)
+        groups = self.group(fun)
         
         # merge blocks in group
         blocks = []
@@ -430,7 +413,7 @@ class Blocks(Collection):
                 final_block.add(line)
 
         # merge lines/spans contained in this textBlock
-        final_block.lines.sort().merge()
+        final_block.lines.merge()
 
         return final_block
 

@@ -30,7 +30,10 @@ class Lines(Collection):
 
     
     def merge(self):
-        ''' Merge lines aligned horizontally in a block. Lines must be sorted in advance.'''
+        ''' Merge lines aligned horizontally in a block.'''
+        # sort lines
+        self._sort()
+        
         new_lines = [] # type: list[Line]
         for line in self._instances:        
             # add line directly if not aligned horizontally with previous line
@@ -53,8 +56,8 @@ class Lines(Collection):
         return self
 
     
-    def sort(self):
-        ''' Sort lines in a text block.        
+    def _sort(self):
+        ''' Sort lines: reading order for rows, from left to right for lines in row.
 
             In the following example, A should come before B.
             ```

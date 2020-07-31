@@ -231,14 +231,15 @@ class Layout:
         # calculate page margin based on clean layout
         self._margin = self.blocks.page_margin(self.width, self.height)
 
-        return clean_blocks and clean_rects
+        return clean_blocks or clean_rects
 
 
     @debug_plot('Explicit Table Structure', plot=True, category=PlotControl.TABLE)
     def parse_table_structure_from_rects(self, **kwargs) -> bool:
         '''parse table structure from rectangle shapes'''
         # group rects: each group may be a potential table
-        groups = self.rects.group()
+        fun = lambda a,b: a & b
+        groups = self.rects.group(fun)
 
         # check each group
         flag = False

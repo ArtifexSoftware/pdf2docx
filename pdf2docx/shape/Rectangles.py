@@ -358,7 +358,7 @@ class Rectangles(Collection):
             - join intersected and vertically aligned rectangles with same width and bg-color
         '''
         # sort in reading order
-        self._instances.sort(key=lambda rect: (rect.bbox.y0, rect.bbox.x0, rect.bbox.x1))
+        self.sort_in_reading_order()
 
         # skip rectangles with both of the following two conditions satisfied:
         #  - fully or almost contained in another rectangle
@@ -861,7 +861,7 @@ class Rectangles(Collection):
     def _column_borders_from_bboxes(self):
         ''' split bbox-es into column groups and add border for adjacent two columns.'''
         # sort bbox-ex in column first mode: from left to right, from top to bottom
-        self._instances.sort(key=lambda rect: (rect.bbox.x0, rect.bbox.y0, rect.bbox.x1))
+        self.sort_in_line_order()
         
         #  bboxes list in each column
         cols_rects = [] # type: list[Rectangles]
@@ -889,7 +889,7 @@ class Rectangles(Collection):
     def _row_borders_from_bboxes(self):
         ''' split bbox-es into row groups and add border for adjacent two rows.'''
         # sort bbox-ex in row first mode: from top to bottom, from left to right
-        self._instances.sort(key=lambda rect: (rect.bbox.y0, rect.bbox.x0, rect.bbox.y1))
+        self.sort_in_reading_order()
 
         #  bboxes list in each row
         rows_rects = [] # type: list[Rectangles]

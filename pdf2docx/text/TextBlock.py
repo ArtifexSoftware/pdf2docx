@@ -100,10 +100,15 @@ class TextBlock(Block):
 
     def contains_discrete_lines(self, distance:float=25, threshold:int=3) -> bool:
         ''' Check whether lines in block are discrete: 
-            the count of lines with a distance larger than `distance` is greater then `threshold`.
+              - the count of lines with a distance larger than `distance` is greater then `threshold`.
+              - ImageSpan exists
         '''
         num = len(self.lines)
         if num==1: return False
+
+        # check image spans
+        if self.lines.image_spans:
+            return True
 
         # check the count of discrete lines
         cnt = 1
