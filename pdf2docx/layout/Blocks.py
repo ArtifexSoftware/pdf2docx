@@ -308,9 +308,11 @@ class Blocks(Collection):
             elif ref_block.is_text_block() or ref_block.is_image_block():
                 ref_block.after_space = para_space
 
-            # situation with very low probability, e.g. table to table
+            # situation with very low probability, e.g. ref (table) to current (table)
+            # we can't set before space for table in docx, but the tricky way is to
+            # create a empty paragraph and set paragraph line spacing and before space
             else:
-                pass
+                block.before_space = para_space
 
             # update reference block        
             ref_block = block

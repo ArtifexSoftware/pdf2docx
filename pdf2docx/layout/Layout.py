@@ -198,7 +198,8 @@ class Layout:
         section.bottom_margin = Pt(bottom)
 
         # add paragraph or table according to parsed block
-        for block in self.blocks:
+        for block in self.blocks:           
+
             # make paragraphs
             if block.is_text_block():
                 # new paragraph
@@ -207,19 +208,32 @@ class Layout:
             
             # make table
             elif block.is_table_block():
+
+                # create dummy paragraph if table before space is set
+                # line spacing: table before_space/2.0
+                # before space: table before space / 2.0
+                if block.before_space:
+                    h = round(block.before_space/2.0, 1)
+                    p = doc.add_paragraph()
+                    pf = reset_paragraph_format(p)
+                    pf.space_before = Pt(max(h, 0.0))
+                    pf.space_after = Pt(0)
+                    pf.line_spacing = Pt(h)
+
                 # new table            
                 table = doc.add_table(rows=block.num_rows, cols=block.num_cols)
                 table.autofit = False
                 table.allow_autofit  = False
                 block.make_docx(table, self.margin)
                 
-                # NOTE: If this table is at the end of a page, a new paragraph is automatically 
-                # added by the rending engine, e.g. MS Word, which resulting in an unexpected
-                # page break. The solution is to never put a table at the end of a page, so add
-                # an empty paragraph and reset its format, particularly line spacing, when a table
-                # is created.
-                p = doc.add_paragraph()
-                reset_paragraph_format(p, Pt(1.0))
+        # NOTE: If a table is at the end of a page, a new paragraph will be automatically 
+        # added by the rending engine, e.g. MS Word, which resulting in an unexpected
+        # page break. The solution is to never put a table at the end of a page, so add
+        # an empty paragraph and reset its format, particularly line spacing, when a table
+        # is created.
+        if self.blocks[-1].is_table_block():
+            p = doc.add_paragraph()
+            reset_paragraph_format(p, Pt(1.0)) # a small line height: 1 Pt
 
 
     @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.LAYOUT)
