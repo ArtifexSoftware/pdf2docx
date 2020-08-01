@@ -529,7 +529,7 @@ class Rectangles(Collection):
               - X0, X1: default left and right outer borders
         '''
         # boundary box (considering margin) of all line box
-        margin = 2.0
+        margin = 1
         x0 = X0 - margin
         y0 = min([rect.bbox.y0 for rect in self._instances]) - margin
         x1 = X1 + margin
@@ -553,7 +553,7 @@ class Rectangles(Collection):
         color = utils.RGB_value((1,1,1))
         for border in borders: 
             # set an non-zero width for border check; won't draw border in docx for implicit table
-            bbox = utils.expand_centerline(border[0:2], border[2:], width=0.1) 
+            bbox = utils.expand_centerline(border[0:2], border[2:], width=0.2) 
             if not bbox: continue
 
             # create Rectangle object and set border style
@@ -599,7 +599,7 @@ class Rectangles(Collection):
                 if rect.bbox & other_rect.bbox: 
                     borders.append(rect)
                     break
-        
+
         # at least two inner borders exist for a normal table
         if len(borders)>=2:
             # set table border type

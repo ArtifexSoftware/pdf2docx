@@ -14,7 +14,7 @@ from ..text.TextBlock import TextBlock
 from ..text.ImageBlock import ImageBlock
 from ..table.TableBlock import TableBlock
 from ..shape.Rectangle import Rectangle
-
+from ..shape import Rectangles # avoid conflits:
 
 class Blocks(Collection):
     '''Block collections.'''
@@ -192,12 +192,9 @@ class Blocks(Collection):
             Table may exist on the following conditions:
              - (a) lines in blocks are not connected sequently -> determined by current block only
              - (b) multi-blocks are in a same row (horizontally aligned) -> determined by two adjacent blocks
-        '''
-        # lazy import to avoid conflits: 
-        # Blocks -> Rectangles -> TableBlock -> Cell -> Blocks
-        from ..shape.Rectangles import Rectangles
+        '''      
 
-        res = [] # type: list[Rectangles]
+        res = [] # type: list[Rectangles.Rectangles]
 
         table_lines = [] # type: list[Rect]
         new_line = True
@@ -214,7 +211,6 @@ class Blocks(Collection):
             # yes, counted as table lines
             if new_line and block.contains_discrete_lines(): 
                 table_lines.extend(block.sub_bboxes)                
-                
                 # update line status
                 new_line = False            
 
@@ -250,7 +246,7 @@ class Blocks(Collection):
             if table_lines and table_end: 
                 # from fitz.Rect to Rectangle type
                 rects = [Rectangle().update(line) for line in table_lines]
-                res.append(Rectangles(rects))
+                res.append(Rectangles.Rectangles(rects))
 
                 # reset table_blocks
                 table_lines = []
