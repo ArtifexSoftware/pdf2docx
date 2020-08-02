@@ -9,6 +9,7 @@ A group of instances, e.g. instances, Spans, Rectangles.
 
 from .BBox import BBox
 from .Block import Block
+from .base import TextDirection
 
 class Collection:
     '''Collection of specific instances.'''
@@ -36,6 +37,16 @@ class Collection:
         return len(self._instances)
 
     
+    @property
+    def text_direction(self):
+        '''Get text direction. All instances must have same text direction.''' 
+        if self._instances and hasattr(self._instances[0], 'text_direction'):
+            res = set(instance.text_direction for instance in self._instances)
+            return list(res)[0] if len(res)==1 else TextDirection.IGNORE
+        else:
+            return TextDirection.LEFT_RIGHT # normal direction by default
+
+
     def from_dicts(self, *args, **kwargs):
         '''Construct Collection from a list of dict.'''
         raise NotImplementedError
@@ -64,12 +75,23 @@ class Collection:
 
 
     def sort_in_reading_order(self):
-        '''Sort collection instances in reading order: from top to bottom, from left to right.'''
-        self._instances.sort(key=lambda instance: (instance.bbox.y0, instance.bbox.x0, instance.bbox.x1))
+        '''Sort collection instances in reading order (considering text direction), e.g.
+            for normal reading direction: from top to bottom, from left to right.
+        '''
+        if self.text_direction==TextDirection.BOTTOM_TOP:
+            self._instances.sort(key=lambda instance: (instance.bbox.x0, instance.bbox.y1, instance.bbox.y0))
+        else:
+            self._instances.sort(key=lambda instance: (instance.bbox.y0, instance.bbox.x0, instance.bbox.x1))
+
 
     def sort_in_line_order(self):
-        '''Sort collection instances: from left to right.'''
-        self._instances.sort(key=lambda instance: (instance.bbox.x0, instance.bbox.y0, instance.bbox.x1))
+        '''Sort collection instances in a physical with text direction considered, e.g.
+            for normal reading direction: from left to right.
+        '''
+        if self.text_direction==TextDirection.BOTTOM_TOP:
+            self._instances.sort(key=lambda instance: (instance.bbox.y1, instance.bbox.x0, instance.bbox.y0))
+        else:
+            self._instances.sort(key=lambda instance: (instance.bbox.x0, instance.bbox.y0, instance.bbox.x1))
 
 
     def reset(self, bboxes:list=[]):

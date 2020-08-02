@@ -9,9 +9,10 @@ A group of Line objects.
 
 
 from .Line import Line
-from ..common.BBox import BBox
 from ..common import utils
 from ..common.Collection import Collection
+from ..common.base import TextDirection
+
 
 class Lines(Collection):
     '''Text line list.'''
@@ -85,7 +86,9 @@ class Lines(Collection):
 
     
     def _sort(self):
-        ''' Sort lines: reading order for rows, from left to right for lines in row.
+        ''' Sort lines considering text direction.
+            Taking natural reading direction for example:
+            reading order for rows, from left to right for lines in row.
 
             In the following example, A should come before B.
             ```
@@ -108,17 +111,18 @@ class Lines(Collection):
         for line in self._instances:
 
             # add lines to a row group if not in same row with previous line
-            if not lines_in_rows or not utils.in_same_row(line.bbox, lines_in_rows[-1][-1].bbox):
+            if not lines_in_rows or not line.in_same_row(lines_in_rows[-1][-1]):
                 lines_in_rows.append([line])
             
             # otherwise, append current row group
             else:
                 lines_in_rows[-1].append(line)
         
-        # sort lines in each row
+        # sort lines in each row: consider text direction
+        idx = 3 if self.text_direction==TextDirection.BOTTOM_TOP else 0
         self._instances = []
         for row in lines_in_rows:
-            row.sort(key=lambda line: line.bbox.x0)
+            row.sort(key=lambda line: line.bbox_raw[idx])
             self._instances.extend(row)
 
         return self

@@ -7,7 +7,7 @@ Base class for text/image/table blocks.
 @author: train8808@gmail.com
 '''
 
-from .base import BlockType
+from .base import BlockType, TextDirection
 from .BBox import BBox
 
 
@@ -55,9 +55,10 @@ class Block(BBox):
     def set_implicit_table_block(self):
         self._type = BlockType.IMPLICIT_TABLE
 
-    def is_horizontal_block(self):
-        '''Whether horizontally oriented block. True by default.'''
-        return True
+    @property
+    def text_direction(self):
+        '''Return text direction. From left to right by default.'''
+        return TextDirection.LEFT_RIGHT
 
     def compare(self, block, threshold:float=0.9):
         '''whether has same bbox and vertical spacing with given block.
