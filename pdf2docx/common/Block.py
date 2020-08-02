@@ -89,14 +89,10 @@ class Block(BBox):
         '''Store attributes in json format.'''
         res = super().store()
         res.update({
-            'type': self._type.value
-        })
-        # set spacing attributes for text and image block
-        if not self.is_table_block():
-            res.update({
-                'before_space': self.before_space,
-                'after_space': self.after_space,
-                'line_space': self.line_space
+            'type': self._type.value,
+            'before_space': self.before_space,
+            'after_space': self.after_space,
+            'line_space': self.line_space
             })
         return res
 

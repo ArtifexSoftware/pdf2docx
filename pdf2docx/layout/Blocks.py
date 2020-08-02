@@ -274,15 +274,10 @@ class Blocks(Collection):
         if not self._instances: return
 
         # check text direction
-        # for normal reading direction, e.g. from left to right, 
-        # the reference boundary is top border, i.e. bbox[1]
-        if self.text_direction==TextDirection.LEFT_RIGHT:
-            idx = 1        
-        # left border, e.g. bbox[0] is the reference for blocks with text from bottom to top
-        elif self.text_direction==TextDirection.BOTTOM_TOP:
-            idx = 0        
-        else:
-            return
+        # normal reading direction by default, i.e. from left to right, 
+        # the reference boundary is top border, i.e. bbox[1].
+        # regarding vertical text direction, e.g. from bottom to top, left border bbox[0] is the reference
+        idx = 0 if self.text_direction==TextDirection.BOTTOM_TOP else 1
 
         ref_block = self._instances[0]
         ref_pos = bbox[idx]
@@ -300,7 +295,7 @@ class Blocks(Collection):
                 dw = 0.0
 
             start_pos = block.bbox_raw[idx] - dw
-            para_space = start_pos-ref_pos
+            para_space = max(start_pos-ref_pos, 0.0) # ignore negative value
 
             # ref to current (paragraph): set before-space for paragraph
             if block.is_text_block():
@@ -327,7 +322,7 @@ class Blocks(Collection):
 
             # update reference block        
             ref_block = block
-            ref_pos = ref_block.bbox_raw[idx] + dw # assume same bottom border with top one
+            ref_pos = ref_block.bbox_raw[idx+2] + dw # assume same bottom border with top one
 
 
     def merge(self):

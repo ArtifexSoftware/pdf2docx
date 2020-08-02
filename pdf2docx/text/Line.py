@@ -125,10 +125,8 @@ class Line(BBox):
         if not line or self.text_direction != line.text_direction:
             return False
 
-        if self.text_direction==TextDirection.BOTTOM_TOP:
-            idx = 0
-        else:
-            idx = 1 # normal reading direction by default
+        # normal reading direction by default
+        idx = 0 if self.text_direction==TextDirection.BOTTOM_TOP else 1 
 
         c1 = (self.bbox_raw[idx] + self.bbox_raw[idx+2]) / 2.0
         c2 = (line.bbox_raw[idx] + line.bbox_raw[idx+2]) / 2.0
