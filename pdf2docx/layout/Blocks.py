@@ -7,7 +7,7 @@ A group of Text/Image or Table block.
 '''
 
 from ..common.Collection import Collection
-from ..common.base import BlockType
+from ..common.base import BlockType, TextDirection
 from ..common import utils
 from ..common.Block import Block
 from ..text.TextBlock import TextBlock
@@ -132,9 +132,9 @@ class Blocks(Collection):
         self._instances = list(filter(
             lambda block: all(x>=0 for x in block.bbox_raw), self._instances))
 
-        # remove blocks with transformed text: text direction is not (1, 0)
+        # remove blocks with transformed text: text direction is not (1, 0) or (0, -1)
         self._instances = list(filter(
-            lambda block: block.is_horizontal_block(), self._instances))
+            lambda block: block.text_direction!=TextDirection.IGNORE, self._instances))
            
         # merge blocks horizontally, e.g. remove overlap blocks,
         # since no floating elements are supported
@@ -254,7 +254,7 @@ class Blocks(Collection):
         return res
 
 
-    def parse_vertical_spacing(self, Y0:float):
+    def parse_vertical_spacing(self, bbox:tuple):
         ''' Calculate external and internal vertical space for text blocks.
         
             - paragraph spacing is determined by the vertical distance to previous block. 
@@ -269,12 +269,23 @@ class Blocks(Collection):
 
             ---
             Args:
-            - Y0: top border, i.e. start reference of all blocks
+            - bbox: reference boundary of all the blocks
         '''
         if not self._instances: return
 
+        # check text direction
+        # for normal reading direction, e.g. from left to right, 
+        # the reference boundary is top border, i.e. bbox[1]
+        if self.text_direction==TextDirection.LEFT_RIGHT:
+            idx = 1        
+        # left border, e.g. bbox[0] is the reference for blocks with text from bottom to top
+        elif self.text_direction==TextDirection.BOTTOM_TOP:
+            idx = 0        
+        else:
+            return
+
         ref_block = self._instances[0]
-        ref_pos = Y0
+        ref_pos = bbox[idx]
 
         for block in self._instances:
             # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
@@ -288,8 +299,8 @@ class Blocks(Collection):
             else:
                 dw = 0.0
 
-            start_pos = block.bbox.y0 - dw
-            para_space = start_pos - ref_pos
+            start_pos = block.bbox_raw[idx] - dw
+            para_space = start_pos-ref_pos
 
             # ref to current (paragraph): set before-space for paragraph
             if block.is_text_block():
@@ -316,7 +327,7 @@ class Blocks(Collection):
 
             # update reference block        
             ref_block = block
-            ref_pos = ref_block.bbox.y1 + dw # assume same bottom border with top one
+            ref_pos = ref_block.bbox_raw[idx] + dw # assume same bottom border with top one
 
 
     def merge(self):

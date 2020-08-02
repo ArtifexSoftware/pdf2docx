@@ -204,7 +204,7 @@ class Layout:
             if block.is_text_block():
                 # new paragraph
                 p = doc.add_paragraph()
-                block.make_docx(p, left)
+                block.make_docx(p, self.margin)
             
             # make table
             elif block.is_table_block():
@@ -322,4 +322,6 @@ class Layout:
         ''' Calculate external and internal vertical space for paragraph blocks under page context 
             or table context. It'll used as paragraph spacing and line spacing when creating paragraph.
         '''
-        self.blocks.parse_vertical_spacing(self.margin[2])
+        left, right, top, bottom = self.margin
+        bbox = (left, top, self.width-right, self.height-bottom)
+        self.blocks.parse_vertical_spacing(bbox)
