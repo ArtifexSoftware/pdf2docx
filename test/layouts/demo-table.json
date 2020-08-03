@@ -488,6 +488,9 @@
                 289.1
             ],
             "type": 3,
+            "before_space": 0.0,
+            "after_space": 0.0,
+            "line_space": 0.0,
             "cells": [
                 [
                     {
@@ -5886,6 +5889,9 @@
                 546.2
             ],
             "type": 2,
+            "before_space": 0.0,
+            "after_space": 0.0,
+            "line_space": 0.0,
             "cells": [
                 [
                     {
@@ -10466,6 +10472,9 @@
                 686.2
             ],
             "type": 2,
+            "before_space": 0.0,
+            "after_space": 0.0,
+            "line_space": 0.0,
             "cells": [
                 [
                     {
@@ -10501,7 +10510,7 @@
                                     588.9
                                 ],
                                 "type": 0,
-                                "before_space": -0.3000000000000682,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.600000000000023,
                                 "lines": [
@@ -10658,7 +10667,7 @@
                                     604.9
                                 ],
                                 "type": 0,
-                                "before_space": -0.10000000000002274,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 15.100000000000023,
                                 "lines": [
@@ -10912,7 +10921,7 @@
                                     604.8
                                 ],
                                 "type": 0,
-                                "before_space": -0.10000000000002274,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 15.0,
                                 "lines": [
@@ -11023,7 +11032,7 @@
                                     605.2
                                 ],
                                 "type": 0,
-                                "before_space": -0.6999999999999318,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -11036,8 +11045,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -11173,7 +11182,7 @@
                                     605.2
                                 ],
                                 "type": 0,
-                                "before_space": -0.6999999999999318,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -11186,8 +11195,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -11323,7 +11332,7 @@
                                     605.2
                                 ],
                                 "type": 0,
-                                "before_space": -0.6999999999999318,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -11336,8 +11345,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -11473,7 +11482,7 @@
                                     605.2
                                 ],
                                 "type": 0,
-                                "before_space": -0.6999999999999318,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -11486,8 +11495,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -11625,7 +11634,7 @@
                                     621.0
                                 ],
                                 "type": 0,
-                                "before_space": -0.14999999999997726,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 15.100000000000023,
                                 "lines": [
@@ -11879,7 +11888,7 @@
                                     620.9
                                 ],
                                 "type": 0,
-                                "before_space": -0.14999999999997726,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 15.0,
                                 "lines": [
@@ -12016,7 +12025,7 @@
                                     621.5
                                 ],
                                 "type": 0,
-                                "before_space": -0.5499999999999545,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -12029,8 +12038,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -12153,7 +12162,7 @@
                                     621.5
                                 ],
                                 "type": 0,
-                                "before_space": -0.5499999999999545,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -12166,8 +12175,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -12290,7 +12299,7 @@
                                     621.5
                                 ],
                                 "type": 0,
-                                "before_space": -0.5499999999999545,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -12303,8 +12312,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -12440,7 +12449,7 @@
                                     621.5
                                 ],
                                 "type": 0,
-                                "before_space": -0.5499999999999545,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -12453,8 +12462,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -12592,7 +12601,7 @@
                                     637.2
                                 ],
                                 "type": 0,
-                                "before_space": -0.049999999999954525,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 15.100000000000023,
                                 "lines": [
@@ -12846,7 +12855,7 @@
                                     637.1
                                 ],
                                 "type": 0,
-                                "before_space": -0.049999999999954525,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 15.0,
                                 "lines": [
@@ -12983,7 +12992,7 @@
                                     637.6
                                 ],
                                 "type": 0,
-                                "before_space": -0.6499999999999773,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.100000000000023,
                                 "lines": [
@@ -12996,8 +13005,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -13120,7 +13129,7 @@
                                     637.6
                                 ],
                                 "type": 0,
-                                "before_space": -0.6499999999999773,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.100000000000023,
                                 "lines": [
@@ -13133,8 +13142,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -13257,7 +13266,7 @@
                                     637.6
                                 ],
                                 "type": 0,
-                                "before_space": -0.6499999999999773,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.100000000000023,
                                 "lines": [
@@ -13270,8 +13279,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -13394,7 +13403,7 @@
                                     637.6
                                 ],
                                 "type": 0,
-                                "before_space": -0.6499999999999773,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.100000000000023,
                                 "lines": [
@@ -13407,8 +13416,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -13898,7 +13907,7 @@
                                     653.6
                                 ],
                                 "type": 0,
-                                "before_space": -0.4999999999998863,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -13911,8 +13920,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -14035,7 +14044,7 @@
                                     653.6
                                 ],
                                 "type": 0,
-                                "before_space": -0.4999999999998863,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -14048,8 +14057,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -14172,7 +14181,7 @@
                                     653.6
                                 ],
                                 "type": 0,
-                                "before_space": -0.4999999999998863,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -14185,8 +14194,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -14309,7 +14318,7 @@
                                     653.6
                                 ],
                                 "type": 0,
-                                "before_space": -0.4999999999998863,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -14322,8 +14331,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -14448,7 +14457,7 @@
                                     669.4
                                 ],
                                 "type": 0,
-                                "before_space": -0.049999999999954525,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 15.199999999999932,
                                 "lines": [
@@ -14839,7 +14848,7 @@
                                     669.7
                                 ],
                                 "type": 0,
-                                "before_space": -0.5499999999999545,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -14852,8 +14861,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -14981,7 +14990,7 @@
                                     685.5
                                 ],
                                 "type": 0,
-                                "before_space": -0.05000000000006821,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 15.200000000000045,
                                 "lines": [
@@ -15372,7 +15381,7 @@
                                     685.8
                                 ],
                                 "type": 0,
-                                "before_space": -0.5500000000000682,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -15385,8 +15394,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -15509,7 +15518,7 @@
                                     685.8
                                 ],
                                 "type": 0,
-                                "before_space": -0.5500000000000682,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -15522,8 +15531,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -15646,7 +15655,7 @@
                                     685.8
                                 ],
                                 "type": 0,
-                                "before_space": -0.5500000000000682,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -15659,8 +15668,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {
@@ -15783,7 +15792,7 @@
                                     685.8
                                 ],
                                 "type": 0,
-                                "before_space": -0.5500000000000682,
+                                "before_space": 0.0,
                                 "after_space": 0.0,
                                 "line_space": 16.0,
                                 "lines": [
@@ -15796,8 +15805,8 @@
                                         ],
                                         "wmode": 0,
                                         "dir": [
-                                            1,
-                                            0
+                                            1.0,
+                                            0.0
                                         ],
                                         "spans": [
                                             {

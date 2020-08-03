@@ -124,25 +124,6 @@ def is_horizontal_aligned(bbox1:fitz.Rect, bbox2:fitz.Rect, horizontal:bool=True
     return is_vertical_aligned(bbox1, bbox2, not horizontal, factor)
 
 
-def in_same_row(bbox1:fitz.Rect, bbox2:fitz.Rect):
-    ''' Check whether two boxes are in same row/line:
-        - yes: the bottom edge of each box is lower than the centerline of the other one;
-        - otherwise, not in same row.
-
-        Note the difference with `is_horizontal_aligned`. They may not in same line, though
-        aligned horizontally.
-    '''
-    if not bbox1 or not bbox2:
-        return False
-
-    c1 = (bbox1.y0 + bbox1.y1) / 2.0
-    c2 = (bbox2.y0 + bbox2.y1) / 2.0
-
-    # Note y direction under PyMuPDF context
-    res = c1<bbox2.y1 and c2<bbox1.y1 # type: bool
-    return res
-
-
 def expand_centerline(start: list, end: list, width:float=2.0):
     ''' convert centerline to rectangle shape.
         centerline is represented with start/end points: (x0, y0), (x1, y1).

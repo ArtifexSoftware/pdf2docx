@@ -104,6 +104,7 @@ class TextBlock(Block):
         ''' Check whether lines in block are discrete: 
               - the count of lines with a distance larger than `distance` is greater then `threshold`.
               - ImageSpan exists
+              - vertical text exists
         '''
         num = len(self.lines)
         if num==1: return False
@@ -112,20 +113,24 @@ class TextBlock(Block):
         if self.lines.image_spans:
             return True
 
+        # check text direction
+        if self.text_direction==TextDirection.BOTTOM_TOP:
+            return True
+
         # check the count of discrete lines
         cnt = 1
         for i in range(num-1):
-            bbox = self.lines[i].bbox
-            next_bbox = self.lines[i+1].bbox
+            line = self.lines[i]
+            next_line = self.lines[i+1]
 
-            if utils.is_horizontal_aligned(bbox, next_bbox):
+            if utils.is_horizontal_aligned(line.bbox, next_line.bbox):
                 # horizontally aligned but not in a same row -> discrete block
-                if not utils.in_same_row(bbox, next_bbox):
+                if not line.in_same_row(next_line):
                     return True
                 
                 # otherwise, check the distance only
                 else:
-                    if abs(bbox.x1-next_bbox.x0) > distance:
+                    if abs(line.bbox.x1-next_line.bbox.x0) > distance:
                         cnt += 1
 
         return cnt >= threshold
