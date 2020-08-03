@@ -160,6 +160,8 @@ class Collection(IText):
               - fun: define the relationship with reference bbox
         '''
 
+        idx = 1 if self.is_horizontal else 0
+
         for i in range(len(self._instances)):
 
             # ignore bbox already processed
@@ -173,5 +175,5 @@ class Collection(IText):
 
             # it's sorted already, so no relationship exists if not intersected in vertical direction 
             else:
-                if target.bbox.y0 > bbox.bbox.y1:
+                if target.bbox_raw[idx] > bbox.bbox_raw[idx+2]:
                     break

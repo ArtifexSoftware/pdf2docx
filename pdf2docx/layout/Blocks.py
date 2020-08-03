@@ -136,9 +136,9 @@ class Blocks(Collection):
         self._instances = list(filter(
             lambda block: block.is_horizontal or block.is_vertical, self._instances))
            
-        # merge blocks horizontally, e.g. remove overlap blocks,
-        # since no floating elements are supported
-        self.merge()
+        # merge blocks horizontally, e.g. remove overlap blocks, since no floating elements are supported
+        # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
+        self.merge(text_direction=False)
 
         return True
 
@@ -325,19 +325,22 @@ class Blocks(Collection):
             ref_pos = ref_block.bbox_raw[idx+2] + dw # assume same bottom border with top one
 
 
-    def merge(self):
-        '''Merge blocks aligned horizontally group by group.'''
-        fun = lambda a,b: a.horizontally_align_with(b)
+    def merge(self, text_direction=True):
+        '''Merge blocks aligned horizontally group by group.
+            ---
+            Args:
+              - text_direction: whether consider text direction.
+                if True, detect text direction based on line direction;
+                if False, use default direction: from left to right.
+        '''
+        fun = lambda a,b: a.horizontally_align_with(b, factor=0.0, text_direction=text_direction)
         groups = self.group(fun)
         
         # merge blocks in group
         blocks = []
         for blocks_collection in groups:
-            if len(blocks_collection) > 1:
-                block = blocks_collection._merge()
-                blocks.append(block)
-            else:
-                blocks.append(blocks_collection[0])
+            block = blocks_collection._merge()
+            blocks.append(block)
 
         self.reset(blocks)
 
