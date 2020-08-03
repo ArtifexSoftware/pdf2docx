@@ -61,7 +61,13 @@ class TextBlock(Block):
     def text_direction(self):
         '''All lines contained in text block must have same text direction. Otherwise, set normal direction'''            
         res = set(line.text_direction for line in self.lines)
-        return list(res)[0] if len(res)==1 else TextDirection.LEFT_RIGHT
+        # consider two text direction only:  left-right, bottom-top
+        if TextDirection.IGNORE in res:
+            return TextDirection.IGNORE
+        elif len(res)==1:
+            return list(res)[0]
+        else:
+            return TextDirection.LEFT_RIGHT
 
 
     def store(self) -> dict:

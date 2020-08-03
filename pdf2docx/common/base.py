@@ -67,4 +67,4 @@ class IText:
 
     @property
     def is_vertical(self):
-        return not self.is_horizontal
+        return self.text_direction == TextDirection.BOTTOM_TOP

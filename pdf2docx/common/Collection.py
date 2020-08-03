@@ -127,14 +127,13 @@ class Collection(IText):
         self.sort_in_reading_order()
 
         # check each instance to the others
-        for i in range(len(self._instances)):
+        for i,instance in enumerate(self._instances):
 
             # do nothing if current rect has been considered already
             if i in counted_index:
                 continue
 
             # start a new group
-            instance = self._instances[i]
             group = { i }
 
             # get intersected instances
@@ -157,18 +156,22 @@ class Collection(IText):
             Args:
               - bbox: reference bbox
               - group: set[int], a set() of index of intersected instances
-              - fun: define the relationship with reference bbox
+              - fun: define the relationship with reference bbox. 
+                    2 parameters: instance 1 and instance 2, return bool.
         '''
 
         idx = 1 if self.is_horizontal else 0
 
-        for i in range(len(self._instances)):
+        for i, target in enumerate(self._instances):
 
             # ignore bbox already processed
             if i in group: continue
 
+            # # ignore instances with different text direction
+            # if self.text_direction != bbox.text_direction:
+            #     continue
+
             # if satisfying given relationship, check bboxs further
-            target = self._instances[i]
             if fun(bbox, target):
                 group.add(i)
                 self._group_instances(target, group, fun)
