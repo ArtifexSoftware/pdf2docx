@@ -59,9 +59,9 @@ class TextBlock(Block):
     
     @property
     def text_direction(self):
-        '''All lines contained in text block must have same text direction.'''            
+        '''All lines contained in text block must have same text direction. Otherwise, set normal direction'''            
         res = set(line.text_direction for line in self.lines)
-        return list(res)[0] if len(res)==1 else TextDirection.IGNORE
+        return list(res)[0] if len(res)==1 else TextDirection.LEFT_RIGHT
 
 
     def store(self) -> dict:
@@ -114,7 +114,7 @@ class TextBlock(Block):
             return True
 
         # check text direction
-        if self.text_direction==TextDirection.BOTTOM_TOP:
+        if self.is_vertical:
             return True
 
         # check the count of discrete lines
@@ -123,7 +123,7 @@ class TextBlock(Block):
             line = self.lines[i]
             next_line = self.lines[i+1]
 
-            if utils.is_horizontal_aligned(line.bbox, next_line.bbox):
+            if line.horizontally_align_with(next_line):
                 # horizontally aligned but not in a same row -> discrete block
                 if not line.in_same_row(next_line):
                     return True
@@ -190,10 +190,7 @@ class TextBlock(Block):
         '''
 
         # check text direction
-        if self.text_direction==TextDirection.BOTTOM_TOP:
-            idx = 0        
-        else:
-            idx = 1 # normal direction by default
+        idx = 1 if self.is_horizontal else 0
 
         ref_line = None
         count = 0
@@ -243,12 +240,9 @@ class TextBlock(Block):
             https://python-docx.readthedocs.io/en/latest/user/text.html            
         '''
         # check text direction
-        # from bottom to top, taking bottom border as a reference
-        if self.text_direction==TextDirection.BOTTOM_TOP:
-            idx = 3
         # normal direction by default, taking left border as a reference
-        else:
-            idx = 0
+        # when from bottom to top, taking bottom border as a reference
+        idx = 0 if self.is_horizontal else 3
 
         # indent and space setting
         before_spacing = max(round(self.before_space, 1), 0.0)

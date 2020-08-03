@@ -119,14 +119,14 @@ class Line(BBox):
             - yes: the bottom edge of each box is lower than the centerline of the other one;
             - otherwise, not in same row.
 
-            Note the difference with `is_horizontal_aligned`. They may not in same line, though
+            Note the difference with method `horizontally_align_with`. They may not in same line, though
             aligned horizontally.
         '''
         if not line or self.text_direction != line.text_direction:
             return False
 
         # normal reading direction by default
-        idx = 0 if self.text_direction==TextDirection.BOTTOM_TOP else 1 
+        idx = 1 if self.is_horizontal else 0
 
         c1 = (self.bbox_raw[idx] + self.bbox_raw[idx+2]) / 2.0
         c2 = (line.bbox_raw[idx] + line.bbox_raw[idx+2]) / 2.0

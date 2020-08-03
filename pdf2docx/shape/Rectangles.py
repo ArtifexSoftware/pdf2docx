@@ -372,11 +372,11 @@ class Rectangles(Collection):
 
                 # combine two rects in a same row if any intersection exists
                 # ideally the aligning threshold should be 1.0, but use 0.98 here to consider tolerance
-                if utils.is_horizontal_aligned(rect.bbox, ref_rect.bbox, True, 0.98): 
+                if rect.horizontally_align_with(ref_rect, 0.98): 
                     main_bbox = utils.get_main_bbox(rect.bbox, ref_rect.bbox, 0.0)
 
                 # combine two rects in a same column if any intersection exists
-                elif utils.is_vertical_aligned(rect.bbox, ref_rect.bbox, True, 0.98):
+                elif rect.vertically_align_with(ref_rect, 0.98):
                     main_bbox = utils.get_main_bbox(rect.bbox, ref_rect.bbox, 0.0)
 
                 # combine two rects if they have a large intersection
@@ -877,7 +877,7 @@ class Rectangles(Collection):
             col_rect = cols_rect[-1] if cols_rect else Rectangle()
 
             # same column group if vertically aligned
-            if utils.is_vertical_aligned(col_rect.bbox, rect.bbox):
+            if col_rect.vertically_align_with(rect):
                 cols_rects[-1].append(rect)
                 cols_rect[-1].union(rect.bbox)
             
@@ -905,7 +905,7 @@ class Rectangles(Collection):
             row_rect = rows_rect[-1] if rows_rect else Rectangle()
 
             # same row group if horizontally aligned
-            if utils.is_horizontal_aligned(row_rect.bbox, rect.bbox):
+            if row_rect.horizontally_align_with(rect):
                 rows_rects[-1].append(rect)
                 rows_rect[-1].union(rect.bbox)
             

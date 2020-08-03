@@ -66,7 +66,7 @@ class Lines(Collection):
                 continue
 
             # add line directly if not aligned horizontally with previous line
-            if not utils.is_horizontal_aligned(line.bbox, lines[-1].bbox):
+            if not line.horizontally_align_with(lines[-1]):
                 lines.append(line)
                 continue
 
@@ -119,7 +119,7 @@ class Lines(Collection):
                 lines_in_rows[-1].append(line)
         
         # sort lines in each row: consider text direction
-        idx = 3 if self.text_direction==TextDirection.BOTTOM_TOP else 0
+        idx = 0 if self.is_horizontal else 3
         self._instances = []
         for row in lines_in_rows:
             row.sort(key=lambda line: line.bbox_raw[idx])

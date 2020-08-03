@@ -35,7 +35,6 @@ Table block object parsed from raw image and text blocks.
 from .Cell import Cell
 from ..common.Block import Block
 from ..common import docx
-from ..common.base import TextDirection
 
 
 class TableBlock(Block):
@@ -177,7 +176,7 @@ class TableBlock(Block):
                 docx.set_cell_margins(cell, start=0, end=0)
 
                 # set vertical direction if contained text blocks are in vertical direction
-                if block_cell.blocks.text_direction==TextDirection.BOTTOM_TOP:
+                if block_cell.blocks.is_vertical:
                     docx.set_vertical_cell_direction(cell)
 
                 # insert text            

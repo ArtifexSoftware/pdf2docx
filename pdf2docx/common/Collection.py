@@ -9,9 +9,9 @@ A group of instances, e.g. instances, Spans, Rectangles.
 
 from .BBox import BBox
 from .Block import Block
-from .base import TextDirection
+from .base import IText, TextDirection
 
-class Collection:
+class Collection(IText):
     '''Collection of specific instances.'''
     def __init__(self, instances:list=[], parent=None) -> None:
         ''' Construct text line from a list of raw line dict.'''
@@ -36,15 +36,17 @@ class Collection:
     def __len__(self):
         return len(self._instances)
 
-    
+
     @property
     def text_direction(self):
         '''Get text direction. All instances must have same text direction.''' 
         if self._instances and hasattr(self._instances[0], 'text_direction'):
             res = set(instance.text_direction for instance in self._instances)
-            return list(res)[0] if len(res)==1 else TextDirection.IGNORE
-        else:
-            return TextDirection.LEFT_RIGHT # normal direction by default
+            if len(res)==1:
+                return list(res)[0]
+
+        # normal direction by default
+        return TextDirection.LEFT_RIGHT 
 
 
     def from_dicts(self, *args, **kwargs):
@@ -78,21 +80,19 @@ class Collection:
         '''Sort collection instances in reading order (considering text direction), e.g.
             for normal reading direction: from top to bottom, from left to right.
         '''
-        if self.text_direction==TextDirection.BOTTOM_TOP:
-            self._instances.sort(key=lambda instance: (instance.bbox.x0, instance.bbox.y1, instance.bbox.y0))
-        else:
+        if self.is_horizontal:
             self._instances.sort(key=lambda instance: (instance.bbox.y0, instance.bbox.x0, instance.bbox.x1))
-
+        else:
+            self._instances.sort(key=lambda instance: (instance.bbox.x0, instance.bbox.y1, instance.bbox.y0))
 
     def sort_in_line_order(self):
         '''Sort collection instances in a physical with text direction considered, e.g.
             for normal reading direction: from left to right.
         '''
-        if self.text_direction==TextDirection.BOTTOM_TOP:
-            self._instances.sort(key=lambda instance: (instance.bbox.y1, instance.bbox.x0, instance.bbox.y0))
-        else:
+        if self.is_horizontal:
             self._instances.sort(key=lambda instance: (instance.bbox.x0, instance.bbox.y0, instance.bbox.x1))
-
+        else:
+            self._instances.sort(key=lambda instance: (instance.bbox.y1, instance.bbox.x0, instance.bbox.y0))
 
     def reset(self, bboxes:list=[]):
         '''Reset instances list.'''
@@ -117,7 +117,7 @@ class Collection:
             # group instances intersected with each other
             fun = lambda a,b: a & b
             # group instances aligned horizontally
-            fun = lambda a,b: utils.is_horizontal_aligned(a,b)
+            fun = lambda a,b: a.horizontally_aligned_with(b)
             ```
         '''
         groups = [] # type: list[Collection]
@@ -167,7 +167,7 @@ class Collection:
 
             # if satisfying given relationship, check bboxs further
             target = self._instances[i]
-            if fun(bbox.bbox, target.bbox):
+            if fun(bbox, target):
                 group.add(i)
                 self._group_instances(target, group, fun)
 

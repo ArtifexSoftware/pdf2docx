@@ -252,7 +252,7 @@ class Layout:
     def parse_table_structure_from_rects(self, **kwargs) -> bool:
         '''parse table structure from rectangle shapes'''
         # group rects: each group may be a potential table
-        fun = lambda a,b: a & b
+        fun = lambda a,b: a.bbox & b.bbox
         groups = self.rects.group(fun)
 
         # check each group

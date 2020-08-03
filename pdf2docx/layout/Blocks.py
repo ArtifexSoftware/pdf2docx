@@ -7,7 +7,7 @@ A group of Text/Image or Table block.
 '''
 
 from ..common.Collection import Collection
-from ..common.base import BlockType, TextDirection
+from ..common.base import BlockType
 from ..common import utils
 from ..common.Block import Block
 from ..text.TextBlock import TextBlock
@@ -134,7 +134,7 @@ class Blocks(Collection):
 
         # remove blocks with transformed text: text direction is not (1, 0) or (0, -1)
         self._instances = list(filter(
-            lambda block: block.text_direction!=TextDirection.IGNORE, self._instances))
+            lambda block: block.is_horizontal or block.is_vertical, self._instances))
            
         # merge blocks horizontally, e.g. remove overlap blocks,
         # since no floating elements are supported
@@ -216,7 +216,7 @@ class Blocks(Collection):
 
             # (b) multi-blocks are in a same row: check layout with next block?
             # yes, add both current and next blocks
-            if utils.is_horizontal_aligned(block.bbox, next_block.bbox):
+            if block.horizontally_align_with(next_block):
                 # if it's start of new table row: add the first block
                 if new_line: 
                     table_lines.extend(block.sub_bboxes)
@@ -277,7 +277,7 @@ class Blocks(Collection):
         # normal reading direction by default, i.e. from left to right, 
         # the reference boundary is top border, i.e. bbox[1].
         # regarding vertical text direction, e.g. from bottom to top, left border bbox[0] is the reference
-        idx = 0 if self.text_direction==TextDirection.BOTTOM_TOP else 1
+        idx = 1 if self.is_horizontal else 0
 
         ref_block = self._instances[0]
         ref_pos = bbox[idx]
@@ -327,7 +327,7 @@ class Blocks(Collection):
 
     def merge(self):
         '''Merge blocks aligned horizontally group by group.'''
-        fun = lambda a,b: utils.is_horizontal_aligned(a,b)
+        fun = lambda a,b: a.horizontally_align_with(b)
         groups = self.group(fun)
         
         # merge blocks in group
