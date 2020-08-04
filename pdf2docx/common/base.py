@@ -33,6 +33,13 @@ class RectType(Enum):
     SHADING = 11
 
 
+class TextDirection(Enum):
+    '''Block types.'''
+    IGNORE     = -1
+    LEFT_RIGHT = 0 # from left to right within a line, and lines go from top to bottom
+    BOTTOM_TOP = 1 # from bottom to top within a line, and lines go from left to right
+
+
 class PlotControl(Enum):
     ''' Control what to show when plotting blocks.
         - layout         : plot all blocks
@@ -44,3 +51,20 @@ class PlotControl(Enum):
     TABLE = 1
     IMPLICIT_TABLE = 2
     SHAPE = 3
+
+
+class IText:
+    '''Text related interface considering text direction.'''
+    @property
+    def text_direction(self):
+        '''Default text direction: from left to right.'''
+        return TextDirection.LEFT_RIGHT
+
+    @property
+    def is_horizontal(self):
+        '''Check whether text direction is from left to right.'''
+        return self.text_direction == TextDirection.LEFT_RIGHT
+
+    @property
+    def is_vertical(self):
+        return self.text_direction == TextDirection.BOTTOM_TOP

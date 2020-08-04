@@ -12,6 +12,7 @@ from docx.oxml import parse_xml
 from docx.oxml.ns import nsdecls
 from docx.enum.text import WD_COLOR_INDEX
 from docx.image.exceptions import UnrecognizedImageError
+from docx.table import _Cell
 
 from .utils import RGB_value, DM
 
@@ -88,6 +89,10 @@ def add_image(p, byte_image, width):
         docx_span.add_picture(BytesIO(byte_image), width=Pt(width))
     except UnrecognizedImageError:
         print('TODO: Unrecognized Image.')
+        return
+    
+    # exactly line spacing will destroy image display, so set single line spacing instead
+    p.paragraph_format.line_spacing = 1.00
 
 
 def indent_table(table, indent:float):
@@ -105,7 +110,7 @@ def indent_table(table, indent:float):
         tbl_pr[0].append(e)
 
 
-def set_cell_margins(cell, **kwargs):
+def set_cell_margins(cell:_Cell, **kwargs):
     ''' Set cell margins. Provided values are in twentieths of a point (1/1440 of an inch).
         ---
         Args:
@@ -133,7 +138,7 @@ def set_cell_margins(cell, **kwargs):
     tcPr.append(tcMar)
 
 
-def set_cell_shading(cell, RGB_value):
+def set_cell_shading(cell:_Cell, RGB_value):
     ''' set cell background-color.
         ---
         Args:
@@ -145,7 +150,7 @@ def set_cell_shading(cell, RGB_value):
     cell._tc.get_or_add_tcPr().append(parse_xml(r'<w:shd {} w:fill="{}"/>'.format(nsdecls('w'), c)))
 
 
-def set_cell_border(cell, **kwargs):
+def set_cell_border(cell:_Cell, **kwargs):
     '''
     Set cell`s border.
     
@@ -189,3 +194,18 @@ def set_cell_border(cell, **kwargs):
             for key in ["sz", "val", "color", "space", "shadow"]:
                 if key in edge_data:
                     element.set(qn('w:{}'.format(key)), str(edge_data[key]))
+
+
+def set_vertical_cell_direction(cell:_Cell, direction:str='btLr'):
+    '''Set vertical text direction for cell.
+        ---
+        Args:
+          - direction: tbRl -- top to bottom, btLr -- bottom to top
+        
+        https://stackoverflow.com/questions/47738013/how-to-rotate-text-in-table-cells
+    '''
+    tc = cell._tc
+    tcPr = tc.get_or_add_tcPr()
+    textDirection = OxmlElement('w:textDirection')
+    textDirection.set(qn('w:val'), direction)  # btLr tbRl
+    tcPr.append(textDirection)

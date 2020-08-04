@@ -55,10 +55,6 @@ class Block(BBox):
     def set_implicit_table_block(self):
         self._type = BlockType.IMPLICIT_TABLE
 
-    def is_horizontal_block(self):
-        '''Whether horizontally oriented block. True by default.'''
-        return True
-
     def compare(self, block, threshold:float=0.9):
         '''whether has same bbox and vertical spacing with given block.
             ---
@@ -88,14 +84,10 @@ class Block(BBox):
         '''Store attributes in json format.'''
         res = super().store()
         res.update({
-            'type': self._type.value
-        })
-        # set spacing attributes for text and image block
-        if not self.is_table_block():
-            res.update({
-                'before_space': self.before_space,
-                'after_space': self.after_space,
-                'line_space': self.line_space
+            'type': self._type.value,
+            'before_space': self.before_space,
+            'after_space': self.after_space,
+            'line_space': self.line_space
             })
         return res
 

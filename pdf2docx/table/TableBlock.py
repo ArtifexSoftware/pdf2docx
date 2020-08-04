@@ -37,7 +37,6 @@ from ..common.Block import Block
 from ..common import docx
 
 
-
 class TableBlock(Block):
     '''Text block.'''
     def __init__(self, raw:dict={}) -> None:
@@ -137,9 +136,12 @@ class TableBlock(Block):
         for row in self._cells:
             for cell in row:
                 if not cell: continue
-                y0 = cell.bbox.y0
-                w_top = cell.border_width[0]
-                cell.blocks.parse_vertical_spacing(y0+w_top/2.0)
+
+                # reference for vertical spacing is dependent on text direction
+                x0,y0,x1,y1 = cell.bbox_raw
+                w_top, w_right, w_bottom, w_left = cell.border_width
+                bbox = (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
+                cell.blocks.parse_vertical_spacing(bbox)
 
 
     def make_docx(self, table, page_margin:tuple):
@@ -173,13 +175,16 @@ class TableBlock(Block):
                 cell = table.cell(i, j)
                 docx.set_cell_margins(cell, start=0, end=0)
 
+                # set vertical direction if contained text blocks are in vertical direction
+                if block_cell.blocks.is_vertical:
+                    docx.set_vertical_cell_direction(cell)
+
                 # insert text            
                 first = True
-                x0, _, x1, _ = block_cell.bbox_raw
                 for block in block_cell.blocks:
                     if first:
                         p = cell.paragraphs[0]
                         first = False
                     else:
                         p = cell.add_paragraph()
-                    block.make_docx(p, x0)
+                    block.make_docx(p, block_cell.bbox_raw)

@@ -47,6 +47,10 @@ class TestUtility(unittest.TestCase):
     def sample_dir(self):
         return os.path.join(self.test_dir, 'samples')
 
+    @property
+    def output_dir(self):
+        return os.path.join(self.test_dir, 'outputs')
+
     def init_test(self, filename):
         ''' Initialize parsed layout and benchmark layout.'''
         # restore sample layout
@@ -57,8 +61,10 @@ class TestUtility(unittest.TestCase):
 
         # parsed layout: first page only
         pdf_file = os.path.join(self.sample_dir, f'{filename}.pdf')
-        cv = Converter(pdf_file)        
-        self.test = cv.parse(cv[0]).layout # type: Layout
+        docx_file = os.path.join(self.output_dir, f'{filename}.docx')
+        cv = Converter(pdf_file, docx_file)        
+        cv.parse(cv[0]).make_page()
+        self.test = cv.layout # type: Layout
         cv.close()
 
         return self
@@ -140,6 +146,11 @@ class TestUtility(unittest.TestCase):
 
 class MainTest(TestUtility):
     '''Main text class.'''
+
+    def setUp(self):
+        # create output path if not exist
+        if not os.path.exists(self.output_dir):
+            os.mkdir(self.output_dir)
 
     def test_text_format(self):
         '''sample file focusing on text format'''

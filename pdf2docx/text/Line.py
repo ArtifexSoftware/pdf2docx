@@ -18,6 +18,7 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
 '''
 
 from ..common.BBox import BBox
+from ..common.base import TextDirection
 from .Spans import Spans
 from .ImageSpan import ImageSpan
 
@@ -39,6 +40,14 @@ class Line(BBox):
             lambda span: isinstance(span, ImageSpan), self.spans
         ))
 
+    @property
+    def text_direction(self):
+        if self.dir[0] == 1.0:
+            return TextDirection.LEFT_RIGHT
+        elif self.dir[1] == -1.0:
+            return TextDirection.BOTTOM_TOP
+        else:
+            return TextDirection.IGNORE
 
     def store(self) -> dict:
         res = super().store()
@@ -92,10 +101,37 @@ class Line(BBox):
             return self.copy()
 
         # further check spans in line
-        line = Line()
+        # new line with same text attributes
+        line = Line({
+            'wmode': self.wmode,
+            'dir': self.dir
+        })
         for span in self.spans:
             contained_span = span.intersect(rect)
             line.add(contained_span)
 
         return line
-        
+
+    def in_same_row(self, line):
+        ''' Check whether in same row/line with specified line. Note text direction.
+
+            taking horizontal text as an example:
+            - yes: the bottom edge of each box is lower than the centerline of the other one;
+            - otherwise, not in same row.
+
+            Note the difference with method `horizontally_align_with`. They may not in same line, though
+            aligned horizontally.
+        '''
+        if not line or self.text_direction != line.text_direction:
+            return False
+
+        # normal reading direction by default
+        idx = 1 if self.is_horizontal else 0
+
+        c1 = (self.bbox_raw[idx] + self.bbox_raw[idx+2]) / 2.0
+        c2 = (line.bbox_raw[idx] + line.bbox_raw[idx+2]) / 2.0
+
+        # Note y direction under PyMuPDF context
+        res = c1<=line.bbox_raw[idx+2] and c2<=self.bbox_raw[idx+2]
+        return res
+            

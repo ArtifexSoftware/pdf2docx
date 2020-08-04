@@ -6,9 +6,10 @@ Object with a boundary box, e.g. Block, Line, Span.
 
 import copy
 import fitz
+from .base import IText
 from .utils import get_main_bbox
 
-class BBox:
+class BBox(IText):
     '''Boundary box with attribute in fitz.Rect type.'''
     def __init__(self, raw:dict={}):
         bbox = raw.get('bbox', (0,0,0,0))
@@ -27,6 +28,77 @@ class BBox:
     def bbox(self):
         '''bbox in fitz.Rect type.'''
         return fitz.Rect(self._bbox) if self._bbox else fitz.rect()
+    
+   
+    def vertically_align_with(self, bbox, factor:float=0.0, text_direction:bool=True):
+        ''' Check whether two boxes have enough intersection in vertical direction, i.e. perpendicular to reading direction.
+            ---
+            Args:
+              - bbox: BBox to check with
+              - factor: threshold of overlap ratio, the larger it is, the higher probability the two bbox-es are aligned.
+              - text_direction: consider text direction or not. True by default, from left to right if False.
+
+            ```
+            +--------------+
+            |              |
+            +--------------+ 
+                    L1
+                    +-------------------+
+                    |                   |
+                    +-------------------+
+                            L2
+            ```
+            
+            An enough intersection is defined based on the minimum width of two boxes:
+            ```
+            L1+L2-L>factor*min(L1,L2)
+            ```
+        '''
+        if not bbox: return False
+
+        # text direction
+        is_horizontal = self.is_horizontal if text_direction else True
+        idx = 0 if is_horizontal else 1
+
+        L1 = self.bbox_raw[idx+2]-self.bbox_raw[idx]
+        L2 = bbox.bbox_raw[idx+2]-bbox.bbox_raw[idx]
+        L = max(self.bbox_raw[idx+2], bbox.bbox_raw[idx+2]) - min(self.bbox_raw[idx], bbox.bbox_raw[idx])
+
+        return L1+L2-L>=factor*max(L1,L2)
+
+
+    def horizontally_align_with(self, bbox, factor:float=0.0, text_direction:bool=True):
+        ''' Check whether two boxes have enough intersection in horizontal direction, i.e. along the reading direction.
+            ---
+            Args:
+              - bbox: BBox to check with
+              - factor: threshold of overlap ratio, the larger it is, the higher probability the two bbox-es are aligned.
+              - text_direction: consider text direction or not. True by default, from left to right if False.
+
+            ```
+            +--------------+
+            |              | L1  +--------------------+
+            +--------------+     |                    | L2
+                                 +--------------------+
+            ```
+            
+            An enough intersection is defined based on the minimum width of two boxes:
+            ```
+            L1+L2-L>factor*min(L1,L2)
+            ```
+        '''
+        if not bbox: return False
+
+        # text direction
+        is_horizontal = self.is_horizontal if text_direction else True
+        idx = 1 if is_horizontal else 0
+        
+        L1 = self.bbox_raw[idx+2]-self.bbox_raw[idx]
+        L2 = bbox.bbox_raw[idx+2]-bbox.bbox_raw[idx]
+        L = max(self.bbox_raw[idx+2], bbox.bbox_raw[idx+2]) - min(self.bbox_raw[idx], bbox.bbox_raw[idx])
+
+        return L1+L2-L>=factor*max(L1,L2)
+
 
     def copy(self):
         '''make a deep copy.'''

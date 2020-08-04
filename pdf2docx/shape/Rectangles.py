@@ -358,7 +358,7 @@ class Rectangles(Collection):
             - join intersected and vertically aligned rectangles with same width and bg-color
         '''
         # sort in reading order
-        self._instances.sort(key=lambda rect: (rect.bbox.y0, rect.bbox.x0, rect.bbox.x1))
+        self.sort_in_reading_order()
 
         # skip rectangles with both of the following two conditions satisfied:
         #  - fully or almost contained in another rectangle
@@ -372,11 +372,11 @@ class Rectangles(Collection):
 
                 # combine two rects in a same row if any intersection exists
                 # ideally the aligning threshold should be 1.0, but use 0.98 here to consider tolerance
-                if utils.is_horizontal_aligned(rect.bbox, ref_rect.bbox, True, 0.98): 
+                if rect.horizontally_align_with(ref_rect, 0.98): 
                     main_bbox = utils.get_main_bbox(rect.bbox, ref_rect.bbox, 0.0)
 
                 # combine two rects in a same column if any intersection exists
-                elif utils.is_vertical_aligned(rect.bbox, ref_rect.bbox, True, 0.98):
+                elif rect.vertically_align_with(ref_rect, 0.98):
                     main_bbox = utils.get_main_bbox(rect.bbox, ref_rect.bbox, 0.0)
 
                 # combine two rects if they have a large intersection
@@ -512,7 +512,7 @@ class Rectangles(Collection):
                     
             # one row finished
             # check table: the first cell in first row MUST NOT be None
-            if i==0 and cells_in_row[0]==None:
+            if i==0 and not cells_in_row[0]:
                 # reset borders because it's a invalid table
                 self._unset_table_border()
                 return None
@@ -529,7 +529,7 @@ class Rectangles(Collection):
               - X0, X1: default left and right outer borders
         '''
         # boundary box (considering margin) of all line box
-        margin = 2.0
+        margin = 1
         x0 = X0 - margin
         y0 = min([rect.bbox.y0 for rect in self._instances]) - margin
         x1 = X1 + margin
@@ -553,7 +553,7 @@ class Rectangles(Collection):
         color = utils.RGB_value((1,1,1))
         for border in borders: 
             # set an non-zero width for border check; won't draw border in docx for implicit table
-            bbox = utils.expand_centerline(border[0:2], border[2:], width=0.1) 
+            bbox = utils.expand_centerline(border[0:2], border[2:], width=0.2) 
             if not bbox: continue
 
             # create Rectangle object and set border style
@@ -599,7 +599,7 @@ class Rectangles(Collection):
                 if rect.bbox & other_rect.bbox: 
                     borders.append(rect)
                     break
-        
+
         # at least two inner borders exist for a normal table
         if len(borders)>=2:
             # set table border type
@@ -791,9 +791,12 @@ class Rectangles(Collection):
             Args:
               - target: target bbox
         '''
+        s = target.bbox.getArea()
+        if not s: return None
+
         for rect in self._instances:
             intersection = target.bbox & rect.bbox
-            if intersection.getArea() / target.bbox.getArea() >= threshold:
+            if intersection.getArea() / s >= threshold:
                 res = rect
                 break
         else:
@@ -861,7 +864,7 @@ class Rectangles(Collection):
     def _column_borders_from_bboxes(self):
         ''' split bbox-es into column groups and add border for adjacent two columns.'''
         # sort bbox-ex in column first mode: from left to right, from top to bottom
-        self._instances.sort(key=lambda rect: (rect.bbox.x0, rect.bbox.y0, rect.bbox.x1))
+        self.sort_in_line_order()
         
         #  bboxes list in each column
         cols_rects = [] # type: list[Rectangles]
@@ -874,7 +877,7 @@ class Rectangles(Collection):
             col_rect = cols_rect[-1] if cols_rect else Rectangle()
 
             # same column group if vertically aligned
-            if utils.is_vertical_aligned(col_rect.bbox, rect.bbox):
+            if col_rect.vertically_align_with(rect):
                 cols_rects[-1].append(rect)
                 cols_rect[-1].union(rect.bbox)
             
@@ -889,7 +892,7 @@ class Rectangles(Collection):
     def _row_borders_from_bboxes(self):
         ''' split bbox-es into row groups and add border for adjacent two rows.'''
         # sort bbox-ex in row first mode: from top to bottom, from left to right
-        self._instances.sort(key=lambda rect: (rect.bbox.y0, rect.bbox.x0, rect.bbox.y1))
+        self.sort_in_reading_order()
 
         #  bboxes list in each row
         rows_rects = [] # type: list[Rectangles]
@@ -902,7 +905,7 @@ class Rectangles(Collection):
             row_rect = rows_rect[-1] if rows_rect else Rectangle()
 
             # same row group if horizontally aligned
-            if utils.is_horizontal_aligned(row_rect.bbox, rect.bbox):
+            if row_rect.horizontally_align_with(rect):
                 rows_rects[-1].append(rect)
                 rows_rect[-1].union(rect.bbox)
             

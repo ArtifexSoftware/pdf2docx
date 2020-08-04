@@ -81,68 +81,6 @@ def get_main_bbox(bbox_1:fitz.Rect, bbox_2:fitz.Rect, threshold:float=0.95):
         return fitz.Rect()
 
 
-def is_vertical_aligned(bbox1:fitz.Rect, bbox2:fitz.Rect, horizontal:bool=True, factor:float=0.0):
-    ''' Check whether two boxes have enough intersection in vertical direction, i.e. perpendicular to reading direction.
-        An enough intersection is defined based on the minimum width of two boxes:
-        L1+L2-L>factor*min(L1,L2)
-        ---
-        Args:
-        - bbox1, bbox2: bbox region in fitz.Rect type.
-        - horizontal  : is reading direction from left to right? True by default.
-        - factor      : threshold of overlap ratio, the larger it is, the higher probability the two bbox-es are aligned.
-
-        
-    '''
-    if not bbox1 or not bbox2:
-        return False
-
-    if horizontal: # reading direction: x
-        L1 = bbox1.x1-bbox1.x0
-        L2 = bbox2.x1-bbox2.x0
-        L = max(bbox1.x1, bbox2.x1) - min(bbox1.x0, bbox2.x0)
-    else:
-        L1 = bbox1.y1-bbox1.y0
-        L2 = bbox2.y1-bbox2.y0
-        L = max(bbox1.y1, bbox2.y1) - min(bbox1.y0, bbox2.y0)
-
-    res = L1+L2-L>=factor*max(L1,L2) # type: bool
-
-    return res
-
-
-def is_horizontal_aligned(bbox1:fitz.Rect, bbox2:fitz.Rect, horizontal:bool=True, factor:float=0.0):
-    ''' Check whether two boxes have enough intersection in horizontal direction, i.e. the reading direction.
-        An enough intersection is defined based on the minimum width of two boxes:
-        L1+L2-L>factor*min(L1,L2)
-        ---
-        Args:
-        - bbox1, bbox2: bbox region in fitz.Rect type.
-        - horizontal  : is reading direction from left to right? True by default.
-        - factor      : threshold of overlap ratio, the larger it is, the higher probability the two bbox-es are aligned.
-    '''
-    # it is opposite to vertical align situation
-    return is_vertical_aligned(bbox1, bbox2, not horizontal, factor)
-
-
-def in_same_row(bbox1:fitz.Rect, bbox2:fitz.Rect):
-    ''' Check whether two boxes are in same row/line:
-        - yes: the bottom edge of each box is lower than the centerline of the other one;
-        - otherwise, not in same row.
-
-        Note the difference with `is_horizontal_aligned`. They may not in same line, though
-        aligned horizontally.
-    '''
-    if not bbox1 or not bbox2:
-        return False
-
-    c1 = (bbox1.y0 + bbox1.y1) / 2.0
-    c2 = (bbox2.y0 + bbox2.y1) / 2.0
-
-    # Note y direction under PyMuPDF context
-    res = c1<bbox2.y1 and c2<bbox1.y1 # type: bool
-    return res
-
-
 def expand_centerline(start: list, end: list, width:float=2.0):
     ''' convert centerline to rectangle shape.
         centerline is represented with start/end points: (x0, y0), (x1, y1).
@@ -256,8 +194,8 @@ def compare_layput(filename_source, filename_target, filename_output, threshold=
         target_words = target_page.getText('words')
 
         # sort by word
-        source_words.sort(key=lambda item: (item[4], item[-3], item[-2], item[-1]))
-        target_words.sort(key=lambda item: (item[4], item[-3], item[-2], item[-1]))
+        source_words.sort(key=lambda item: (item[4], item[1], item[0]))
+        target_words.sort(key=lambda item: (item[4], item[1], item[0]))
 
         # check each word and bbox
         for sample, test in zip(source_words, target_words):
@@ -268,7 +206,7 @@ def compare_layput(filename_source, filename_target, filename_output, threshold=
             source_page.drawRect(target_rect, color=(1,0,0), overlay=True) # current position
 
             # check bbox word by word: ignore small bbox, e.g. single letter bbox
-            if source_rect.width > 20 and not get_main_bbox(source_rect, target_rect, threshold):
+            if not get_main_bbox(source_rect, target_rect, threshold):
                 flag = False
                 errs.append((sample[4], target_rect, source_rect))
         

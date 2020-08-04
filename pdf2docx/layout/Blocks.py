@@ -14,7 +14,7 @@ from ..text.TextBlock import TextBlock
 from ..text.ImageBlock import ImageBlock
 from ..table.TableBlock import TableBlock
 from ..shape.Rectangle import Rectangle
-
+from ..shape import Rectangles # avoid conflits:
 
 class Blocks(Collection):
     '''Block collections.'''
@@ -130,19 +130,15 @@ class Blocks(Collection):
 
         # remove negative blocks
         self._instances = list(filter(
-            lambda block: all(x>0 for x in block.bbox_raw), self._instances))
+            lambda block: all(x>=0 for x in block.bbox_raw), self._instances))
 
-        # remove blocks with transformed text: text direction is not (1, 0)
+        # remove blocks with transformed text: text direction is not (1, 0) or (0, -1)
         self._instances = list(filter(
-            lambda block: block.is_horizontal_block(), self._instances))
-        
-        # sort in reading direction: from up to down, from left to right
-        self._instances.sort(
-            key=lambda block: (block.bbox.y0, block.bbox.x0))
-            
-        # merge blocks horizontally, e.g. remove overlap blocks,
-        # since no floating elements are supported
-        self.merge_horizontally()
+            lambda block: block.is_horizontal or block.is_vertical, self._instances))
+           
+        # merge blocks horizontally, e.g. remove overlap blocks, since no floating elements are supported
+        # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
+        self.merge_horizontally(text_direction=False)
 
         return True
 
@@ -181,13 +177,11 @@ class Blocks(Collection):
                         cell.add(block)
 
                     # merge blocks if contained blocks found
-                    cell.blocks.merge_horizontally()
+                    cell.blocks.merge_horizontally().split_vertically()
 
         # sort in natural reading order and update layout blocks
         blocks.extend(tables)
-        blocks.sort(key=lambda block: (block.bbox.y0, block.bbox.x0))
-
-        self._instances = blocks
+        self.reset(blocks).sort_in_reading_order()
 
         return True
 
@@ -198,12 +192,9 @@ class Blocks(Collection):
             Table may exist on the following conditions:
              - (a) lines in blocks are not connected sequently -> determined by current block only
              - (b) multi-blocks are in a same row (horizontally aligned) -> determined by two adjacent blocks
-        '''
-        # lazy import to avoid conflits: 
-        # Blocks -> Rectangles -> TableBlock -> Cell -> Blocks
-        from ..shape.Rectangles import Rectangles
+        '''      
 
-        res = [] # type: list[Rectangles]
+        res = [] # type: list[Rectangles.Rectangles]
 
         table_lines = [] # type: list[Rect]
         new_line = True
@@ -220,13 +211,12 @@ class Blocks(Collection):
             # yes, counted as table lines
             if new_line and block.contains_discrete_lines(): 
                 table_lines.extend(block.sub_bboxes)                
-                
                 # update line status
                 new_line = False            
 
             # (b) multi-blocks are in a same row: check layout with next block?
             # yes, add both current and next blocks
-            if utils.is_horizontal_aligned(block.bbox, next_block.bbox):
+            if block.horizontally_align_with(next_block):
                 # if it's start of new table row: add the first block
                 if new_line: 
                     table_lines.extend(block.sub_bboxes)
@@ -256,7 +246,7 @@ class Blocks(Collection):
             if table_lines and table_end: 
                 # from fitz.Rect to Rectangle type
                 rects = [Rectangle().update(line) for line in table_lines]
-                res.append(Rectangles(rects))
+                res.append(Rectangles.Rectangles(rects))
 
                 # reset table_blocks
                 table_lines = []
@@ -264,7 +254,7 @@ class Blocks(Collection):
         return res
 
 
-    def parse_vertical_spacing(self, Y0:float):
+    def parse_vertical_spacing(self, bbox:tuple):
         ''' Calculate external and internal vertical space for text blocks.
         
             - paragraph spacing is determined by the vertical distance to previous block. 
@@ -279,12 +269,18 @@ class Blocks(Collection):
 
             ---
             Args:
-            - Y0: top border, i.e. start reference of all blocks
+            - bbox: reference boundary of all the blocks
         '''
         if not self._instances: return
 
+        # check text direction
+        # normal reading direction by default, i.e. from left to right, 
+        # the reference boundary is top border, i.e. bbox[1].
+        # regarding vertical text direction, e.g. from bottom to top, left border bbox[0] is the reference
+        idx = 1 if self.is_horizontal else 0
+
         ref_block = self._instances[0]
-        ref_pos = Y0
+        ref_pos = bbox[idx]
 
         for block in self._instances:
             # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
@@ -298,8 +294,8 @@ class Blocks(Collection):
             else:
                 dw = 0.0
 
-            start_pos = block.bbox.y0 - dw
-            para_space = start_pos - ref_pos
+            start_pos = block.bbox_raw[idx] - dw
+            para_space = max(start_pos-ref_pos, 0.0) # ignore negative value
 
             # ref to current (paragraph): set before-space for paragraph
             if block.is_text_block():
@@ -318,46 +314,49 @@ class Blocks(Collection):
             elif ref_block.is_text_block() or ref_block.is_image_block():
                 ref_block.after_space = para_space
 
-            # situation with very low probability, e.g. table to table
+            # situation with very low probability, e.g. ref (table) to current (table)
+            # we can't set before space for table in docx, but the tricky way is to
+            # create a empty paragraph and set paragraph line spacing and before space
             else:
-                pass
+                block.before_space = para_space
 
             # update reference block        
             ref_block = block
-            ref_pos = ref_block.bbox.y1 + dw # assume same bottom border with top one
+            ref_pos = ref_block.bbox_raw[idx+2] + dw # assume same bottom border with top one
 
 
-    def merge_overlap(self):
-        '''Merge blocks when overlap exists.'''
-        self._merge_groups(self.group())
-
-
-    def merge_horizontally(self):
-        '''Merge blocks aligned horizontally.'''
-        # group blocks
-        groups = [] # type: list[Blocks]
-        for block in self._instances:
-            
-            if not block.is_text_block(): continue
-
-            # add block directly if not aligned horizontally with previous block
-            if not groups or not utils.is_horizontal_aligned(block.bbox, groups[-1][-1].bbox):
-                groups.append(Blocks([block]))
-
-            # otherwise, append to previous block as lines
-            else:
-                groups[-1].append(block)
+    def merge_horizontally(self, text_direction=True):
+        '''Merge blocks aligned horizontally group by group.
+            ---
+            Args:
+              - text_direction: whether consider text direction.
+                if True, detect text direction based on line direction;
+                if False, use default direction: from left to right.
+        '''
+        # get horizontally aligned blocks group by group
+        fun = lambda a,b: a.horizontally_align_with(b, factor=0.0, text_direction=text_direction)
+        groups = self.group(fun)
         
-        # merge blocks in group
+        # merge blocks in each group
         blocks = []
         for blocks_collection in groups:
-            if len(blocks_collection) > 1:
-                block = blocks_collection._merge_all()
-                blocks.append(block)
-            else:
-                blocks.append(blocks_collection[0])
+            block = blocks_collection._merge_one()
+            blocks.append(block)
 
         self.reset(blocks)
+
+        return self
+
+
+    def split_vertically(self):
+        '''Split block lines in vertical direction.'''
+        blocks = [] # type: list[TextBlock]
+        for block in self._instances:
+            blocks.extend(block.split())
+        
+        self.reset(blocks)
+
+        return self
 
 
     def parse_text_format(self, rects):
@@ -420,8 +419,16 @@ class Blocks(Collection):
             )
 
 
-    def _merge_all(self):
-        '''Merge all text blocks into one text block.'''
+    def _merge_one(self):
+        ''' Merge all text blocks into one text block.
+            
+            NOTE:            
+            Lines in text block must have same property, e.g. height, vertical distance, 
+            because average line height is used when create docx. However, the contained lines 
+            may be not reasonable after this step. So, this is just a pre-processing step focusing 
+            on processing lines in horizontal direction, e.g. merging inline image to its text line.
+            A further step, e.g. split lines vertically, must be applied before final making docx.
+        '''
         # combine all lines into a TextBlock
         final_block = TextBlock()
         for block in self._instances:
@@ -430,7 +437,7 @@ class Blocks(Collection):
                 final_block.add(line)
 
         # merge lines/spans contained in this textBlock
-        final_block.lines.sort().merge()
+        final_block.lines.merge()
 
         return final_block
 

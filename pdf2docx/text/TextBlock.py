@@ -27,7 +27,7 @@ from docx.shared import Pt
 from .Line import Line
 from .Lines import Lines
 from .ImageSpan import ImageSpan
-from ..common.base import RectType
+from ..common.base import RectType, TextDirection
 from ..common.Block import Block
 from ..common import utils
 from ..common import docx
@@ -57,9 +57,17 @@ class TextBlock(Block):
         return [line.bbox for line in self.lines]
 
     
-    def is_horizontal_block(self):
-        ''' Check whether each line is oriented horizontally.'''
-        return all(line.dir[0]==1.0 for line in self.lines)
+    @property
+    def text_direction(self):
+        '''All lines contained in text block must have same text direction. Otherwise, set normal direction'''            
+        res = set(line.text_direction for line in self.lines)
+        # consider two text direction only:  left-right, bottom-top
+        if TextDirection.IGNORE in res:
+            return TextDirection.IGNORE
+        elif len(res)==1:
+            return list(res)[0]
+        else:
+            return TextDirection.LEFT_RIGHT
 
 
     def store(self) -> dict:
@@ -74,6 +82,22 @@ class TextBlock(Block):
         '''Add line to TextBlock.'''
         if isinstance(line, Line):
             self.lines.append(line)
+
+
+    def merge(self):
+        '''Merge contained lines horizontally.'''
+        self.lines.merge()
+
+
+    def split(self):
+        ''' Split contained lines vertically and create associated text blocks.'''
+        blocks = [] # type: list[TextBlock]
+        for lines in self.lines.split():
+            text_block = TextBlock()
+            text_block.lines.reset(list(lines))
+            blocks.append(text_block)
+        
+        return blocks
 
 
     def plot(self, page):
@@ -100,25 +124,35 @@ class TextBlock(Block):
 
     def contains_discrete_lines(self, distance:float=25, threshold:int=3) -> bool:
         ''' Check whether lines in block are discrete: 
-            the count of lines with a distance larger than `distance` is greater then `threshold`.
+              - the count of lines with a distance larger than `distance` is greater then `threshold`.
+              - ImageSpan exists
+              - vertical text exists
         '''
         num = len(self.lines)
         if num==1: return False
 
+        # check image spans
+        if self.lines.image_spans:
+            return True
+
+        # check text direction
+        if self.is_vertical:
+            return True
+
         # check the count of discrete lines
         cnt = 1
         for i in range(num-1):
-            bbox = self.lines[i].bbox
-            next_bbox = self.lines[i+1].bbox
+            line = self.lines[i]
+            next_line = self.lines[i+1]
 
-            if utils.is_horizontal_aligned(bbox, next_bbox):
+            if line.horizontally_align_with(next_line):
                 # horizontally aligned but not in a same row -> discrete block
-                if not utils.in_same_row(bbox, next_bbox):
+                if not line.in_same_row(next_line):
                     return True
                 
                 # otherwise, check the distance only
                 else:
-                    if abs(bbox.x1-next_bbox.x0) > distance:
+                    if abs(line.bbox.x1-next_line.bbox.x0) > distance:
                         cnt += 1
 
         return cnt >= threshold
@@ -158,7 +192,7 @@ class TextBlock(Block):
 
                     # split text span with the format rectangle: span-intersection-span
                     else:
-                        spans = span.split(rect)
+                        spans = span.split(rect, line.is_horizontal)
                         split_spans.extend(spans)
                         flag = True
                                                 
@@ -176,20 +210,24 @@ class TextBlock(Block):
 
             Then, the height of first line can be adjusted by updating paragraph before-spacing.
         '''
-        ref_bbox = None
+
+        # check text direction
+        idx = 1 if self.is_horizontal else 0
+
+        ref_line = None
         count = 0
 
         for line in self.lines:
             # count of lines
-            if not utils.in_same_row(line.bbox, ref_bbox):
+            if not line.in_same_row(ref_line):
                 count += 1
 
             # update reference line
-            ref_bbox = line.bbox            
+            ref_line = line            
         
-        _, y0, _, y1 = self.lines[0].bbox_raw   # first line
-        first_line_height = y1 - y0
-        block_height = self.bbox.y1-self.bbox.y0
+        bbox = self.lines[0].bbox_raw   # first line
+        first_line_height = bbox[idx+2] - bbox[idx]
+        block_height = self.bbox_raw[idx+2]-self.bbox_raw[idx]
         
         # average line spacing
         if count > 1:
@@ -204,12 +242,12 @@ class TextBlock(Block):
         self.before_space += first_line_height - line_space
 
 
-    def make_docx(self, p, X0:float):
+    def make_docx(self, p, bbox:tuple):
         ''' Create paragraph for a text block. Join line sets with TAB and set position according to bbox.
             ---
             Args:
               - p: docx paragraph instance
-              - X0: left border of paragraph
+              - bbox: boundary box of paragraph
 
             Generally, a pdf block is a docx paragraph, with block|line as line in paragraph.
             But without the context, it's not able to recognize a block line as word wrap, or a 
@@ -223,6 +261,11 @@ class TextBlock(Block):
             Refer to python-docx doc for details on text format:
             https://python-docx.readthedocs.io/en/latest/user/text.html            
         '''
+        # check text direction
+        # normal direction by default, taking left border as a reference
+        # when from bottom to top, taking bottom border as a reference
+        idx = 0 if self.is_horizontal else 3
+
         # indent and space setting
         before_spacing = max(round(self.before_space, 1), 0.0)
         after_spacing = max(round(self.after_space, 1), 0.0)
@@ -239,7 +282,7 @@ class TextBlock(Block):
 
         # set all tab stops
         all_pos = set([
-            round(line.bbox.x0-X0, 2) for line in self.lines if line.bbox.x0>=X0+utils.DM
+            round(abs(line.bbox_raw[idx]-bbox[idx]), 2) for line in self.lines
             ])
         for pos in all_pos:
             pf.tab_stops.add_tab_stop(Pt(pos))
@@ -248,7 +291,7 @@ class TextBlock(Block):
         for i, line in enumerate(self.lines):
 
             # left indent implemented with tab
-            pos = round(line.bbox.x0-X0, 2)
+            pos = round(abs(line.bbox_raw[idx]-bbox[idx]), 2)
             docx.add_stop(p, Pt(pos), Pt(current_pos))
 
             # add line
@@ -263,13 +306,13 @@ class TextBlock(Block):
                 line_break = False            
             
             # do not break line if they're indeed in same line
-            elif utils.in_same_row(self.lines[i+1].bbox, line.bbox):
+            elif line.in_same_row(self.lines[i+1]):
                 line_break = False
             
             if line_break:
                 p.add_run('\n')
                 current_pos = 0
             else:
-                current_pos = round(line.bbox.x1-X0, 2)
+                current_pos = round(abs(line.bbox_raw[(idx+2)%4]-bbox[idx]), 2)
 
         return p
