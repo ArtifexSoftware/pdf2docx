@@ -194,8 +194,8 @@ def compare_layput(filename_source, filename_target, filename_output, threshold=
         target_words = target_page.getText('words')
 
         # sort by word
-        source_words.sort(key=lambda item: (item[4], item[-3], item[-2], item[-1]))
-        target_words.sort(key=lambda item: (item[4], item[-3], item[-2], item[-1]))
+        source_words.sort(key=lambda item: (item[4], item[1], item[0]))
+        target_words.sort(key=lambda item: (item[4], item[1], item[0]))
 
         # check each word and bbox
         for sample, test in zip(source_words, target_words):
@@ -206,7 +206,7 @@ def compare_layput(filename_source, filename_target, filename_output, threshold=
             source_page.drawRect(target_rect, color=(1,0,0), overlay=True) # current position
 
             # check bbox word by word: ignore small bbox, e.g. single letter bbox
-            if source_rect.width > 20 and not get_main_bbox(source_rect, target_rect, threshold):
+            if not get_main_bbox(source_rect, target_rect, threshold):
                 flag = False
                 errs.append((sample[4], target_rect, source_rect))
         
