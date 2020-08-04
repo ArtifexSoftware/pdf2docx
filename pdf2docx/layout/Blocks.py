@@ -138,7 +138,7 @@ class Blocks(Collection):
            
         # merge blocks horizontally, e.g. remove overlap blocks, since no floating elements are supported
         # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
-        self.merge(text_direction=False)
+        self.merge_horizontally(text_direction=False)
 
         return True
 
@@ -177,7 +177,7 @@ class Blocks(Collection):
                         cell.add(block)
 
                     # merge blocks if contained blocks found
-                    cell.blocks.merge()
+                    cell.blocks.merge_horizontally().split_vertically()
 
         # sort in natural reading order and update layout blocks
         blocks.extend(tables)
@@ -325,7 +325,7 @@ class Blocks(Collection):
             ref_pos = ref_block.bbox_raw[idx+2] + dw # assume same bottom border with top one
 
 
-    def merge(self, text_direction=True):
+    def merge_horizontally(self, text_direction=True):
         '''Merge blocks aligned horizontally group by group.
             ---
             Args:
@@ -333,16 +333,30 @@ class Blocks(Collection):
                 if True, detect text direction based on line direction;
                 if False, use default direction: from left to right.
         '''
+        # get horizontally aligned blocks group by group
         fun = lambda a,b: a.horizontally_align_with(b, factor=0.0, text_direction=text_direction)
         groups = self.group(fun)
         
-        # merge blocks in group
+        # merge blocks in each group
         blocks = []
         for blocks_collection in groups:
-            block = blocks_collection._merge()
+            block = blocks_collection._merge_one()
             blocks.append(block)
 
         self.reset(blocks)
+
+        return self
+
+
+    def split_vertically(self):
+        '''Split block lines in vertical direction.'''
+        blocks = [] # type: list[TextBlock]
+        for block in self._instances:
+            blocks.extend(block.split())
+        
+        self.reset(blocks)
+
+        return self
 
 
     def parse_text_format(self, rects):
@@ -405,8 +419,16 @@ class Blocks(Collection):
             )
 
 
-    def _merge(self):
-        '''Merge all text blocks into one text block.'''
+    def _merge_one(self):
+        ''' Merge all text blocks into one text block.
+            
+            NOTE:            
+            Lines in text block must have same property, e.g. height, vertical distance, 
+            because average line height is used when create docx. However, the contained lines 
+            may be not reasonable after this step. So, this is just a pre-processing step focusing 
+            on processing lines in horizontal direction, e.g. merging inline image to its text line.
+            A further step, e.g. split lines vertically, must be applied before final making docx.
+        '''
         # combine all lines into a TextBlock
         final_block = TextBlock()
         for block in self._instances:

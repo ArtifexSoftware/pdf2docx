@@ -84,6 +84,22 @@ class TextBlock(Block):
             self.lines.append(line)
 
 
+    def merge(self):
+        '''Merge contained lines horizontally.'''
+        self.lines.merge()
+
+
+    def split(self):
+        ''' Split contained lines vertically and create associated text blocks.'''
+        blocks = [] # type: list[TextBlock]
+        for lines in self.lines.split():
+            text_block = TextBlock()
+            text_block.lines.reset(list(lines))
+            blocks.append(text_block)
+        
+        return blocks
+
+
     def plot(self, page):
         '''Plot block/line/span area, in PDF page.
            ---

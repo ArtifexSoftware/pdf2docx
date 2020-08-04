@@ -11,7 +11,6 @@ A group of Line objects.
 from .Line import Line
 from ..common import utils
 from ..common.Collection import Collection
-from ..common.base import TextDirection
 
 
 class Lines(Collection):
@@ -50,12 +49,15 @@ class Lines(Collection):
 
     
     def merge(self):
-        ''' Merge lines aligned horizontally in a block.'''
+        ''' Merge lines aligned horizontally in a block. The main purposes:
+            - remove overlapped lines, e.g. floating images
+            - make inline image as a span in text line logically
+        '''
         # skip if empty
         if not self._instances: return self
     
         # sort lines
-        self._sort()
+        self.sort()
 
         # check each line
         lines = Lines([self._instances[0]])
@@ -82,10 +84,16 @@ class Lines(Collection):
         # update lines in block
         self.reset(list(lines))
 
-        return self
 
-    
-    def _sort(self):
+    def split(self):
+        ''' Split vertical lines.'''
+        # get horizontally aligned lines group by group
+        fun = lambda a,b: a.horizontally_align_with(b, factor=0.0)
+        groups = self.group(fun)
+        return groups
+
+
+    def sort(self):
         ''' Sort lines considering text direction.
             Taking natural reading direction for example:
             reading order for rows, from left to right for lines in row.
@@ -124,5 +132,3 @@ class Lines(Collection):
         for row in lines_in_rows:
             row.sort(key=lambda line: line.bbox_raw[idx])
             self._instances.extend(row)
-
-        return self
