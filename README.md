@@ -18,9 +18,12 @@
     - [x] border style, e.g. width, color
     - [x] shading style, i.e. background color
     - [x] merged cells
+    - [x] 
 - [x] Rebuild page layout in docx
-	- [x] paragraph layout: horizontal and vertical spacing
+	- [x] text in horizontal direction: from left to right
+	- [x] text in vertical direction: from bottom to top
 	- [x] in-line image
+    - [x] paragraph layout: horizontal and vertical spacing
 
 *It can also be used as a tool to extract table contents since both table content and format/style is parsed.*
 
@@ -28,7 +31,7 @@
 
 - Text-based PDF file only
 - Normal reading direction only
-    - horizontal paragraph/line/word
+    - horizontal/vertical paragraph/line/word
     - no word transformation, e.g. rotation
 - No floating images
 - Full borders table only
@@ -146,4 +149,4 @@ for table in tables:
 
 ## 4 Sample
 
-![sample_compare.png](https://s1.ax1x.com/2020/07/13/UJfeMt.png)
+![sample_compare.png](https://s1.ax1x.com/2020/08/04/aDryx1.png)
