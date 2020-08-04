@@ -107,7 +107,7 @@ class TextSpan(BBox):
         page.drawRect(self.bbox, color=color, fill=color, width=0, overlay=False)
 
 
-    def split(self, rect:Rectangle): # type: TextSpan
+    def split(self, rect:Rectangle, horizontal:bool=True):
         '''Split span with the intersection: span-intersection-span.'''
         # any intersection in this span?
         intsec = rect.bbox & self.bbox
@@ -123,12 +123,16 @@ class TextSpan(BBox):
         # expand the intersection area, e.g. for strike through line,
         # the intersection is a `line`, i.e. a rectangle with very small height,
         # so expand the height direction to span height
-        intsec.y0 = self.bbox.y0
-        intsec.y1 = self.bbox.y1
+        if horizontal:
+            intsec.y0 = self.bbox.y0
+            intsec.y1 = self.bbox.y1
+        else:
+            intsec.x0 = self.bbox.x0
+            intsec.x1 = self.bbox.x1
 
         # calculate chars in the format rectangle
         # combine an index with enumerate(), so the second element is the char
-        f = lambda items: items[1].contained_in_rect(rect)
+        f = lambda items: items[1].contained_in_rect(rect, horizontal)
         index_chars = list(filter(f, enumerate(self.chars)))
 
         # then we get target chars in a sequence
@@ -140,47 +144,56 @@ class TextSpan(BBox):
         # 
         # left part if exists
         if pos > 0:
-            split_span = self.copy()
-            split_span.update((self.bbox.x0, self.bbox.y0, intsec.x0, self.bbox.y1))
+            if horizontal:
+                bbox = (self.bbox.x0, self.bbox.y0, intsec.x0, self.bbox.y1)
+            else:
+                bbox = (self.bbox.x0, intsec.y1, self.bbox.x1, self.bbox.y1)
+            split_span = self.copy().update(bbox)
             split_span.chars = self.chars[0:pos]
             split_spans.append(split_span)
 
         # middle intersection part if exists
         if length > 0:
-            split_span = self.copy()
-            split_span.update((intsec.x0, intsec.y0, intsec.x1, intsec.y1))
+            bbox = (intsec.x0, intsec.y0, intsec.x1, intsec.y1)
+            split_span = self.copy().update(bbox)
             split_span.chars = self.chars[pos:pos_end]            
-            split_span.parse_text_style(rect)  # update style
-            split_spans.append(split_span)                
+            split_span.parse_text_style(rect, horizontal)  # update style
+            split_spans.append(split_span)
 
         # right part if exists
         if pos_end < len(self.chars):
-            split_span = self.copy()
-            split_span.update((intsec.x1, self.bbox.y0, self.bbox.x1, self.bbox.y1))
+            if horizontal:
+                bbox = (intsec.x1, self.bbox.y0, self.bbox.x1, self.bbox.y1)
+            else:
+                bbox = (self.bbox.x0, self.bbox.y0, self.bbox.x1, intsec.y0)
+            split_span = self.copy().update(bbox)
             split_span.chars = self.chars[pos_end:]
             split_spans.append(split_span)
 
         return split_spans
 
 
-    def parse_text_style(self, rect: Rectangle) -> bool:
+    def parse_text_style(self, rect: Rectangle, horizontal:bool=True):
         '''Parse text style based on the position to a span bbox.'''
 
         # consider text format type only
         if rect.type==RectType.BORDER or rect.type==RectType.SHADING:
             return False
 
+        # considering text direction
+        idx = 1 if horizontal else 0
+
         # recognize text format based on rect and the span it applying to
         # region height
-        h_rect = rect.bbox.y1 - rect.bbox.y0
-        h_span = self.bbox.y1 - self.bbox.y0
+        h_rect = rect.bbox_raw[idx+2] - rect.bbox_raw[idx]
+        h_span = self.bbox_raw[idx+2] - self.bbox_raw[idx]
 
         # distance to span bottom border
-        d = self.bbox.y1 - rect.bbox.y0
+        d = self.bbox_raw[idx+2] - rect.bbox_raw[idx]
 
         # the height of rect is large enough?
         # yes, it's highlight
-        if h_rect > 0.75*h_span:
+        if h_rect >= 0.75*h_span:
             # In general, highlight color isn't white
             if rect.color != utils.RGB_value((1,1,1)): 
                 rect.type = RectType.HIGHLIGHT
@@ -188,7 +201,7 @@ class TextSpan(BBox):
                 rect.type = RectType.UNDEFINED
 
         # near to bottom of span? yes, underline
-        elif d < 0.25*h_span:
+        elif d <= 0.25*h_span:
             rect.type = RectType.UNDERLINE
 
         # near to center of span? yes, strike-through-line

@@ -192,7 +192,7 @@ class TextBlock(Block):
 
                     # split text span with the format rectangle: span-intersection-span
                     else:
-                        spans = span.split(rect)
+                        spans = span.split(rect, line.is_horizontal)
                         split_spans.extend(spans)
                         flag = True
                                                 

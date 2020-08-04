@@ -30,7 +30,7 @@ class Char(BBox):
         self.origin = raw.get('origin', None)       
 
 
-    def contained_in_rect(self, rect:Rectangle) -> bool:
+    def contained_in_rect(self, rect:Rectangle, horizontal:bool=True):
         ''' Detect whether locates in a rect, or has an intersection 
             larger than half of the char bbox.
         '''
@@ -41,7 +41,11 @@ class Char(BBox):
         # intersection?
         else:
             intsec = self.bbox & rect.bbox
-            return intsec.width > 0.5*self.bbox.width
+            if horizontal:
+                return intsec.width > 0.5*self.bbox.width
+            else:
+                return intsec.height > 0.5*self.bbox.height
+
 
     def store(self) -> dict:
         res = super().store()
