@@ -18,7 +18,7 @@
     - [x] border style, e.g. width, color
     - [x] shading style, i.e. background color
     - [x] merged cells
-    - [x] 
+    - [x] vertical direction cell
 - [x] Rebuild page layout in docx
 	- [x] text in horizontal direction: from left to right
 	- [x] text in vertical direction: from bottom to top
