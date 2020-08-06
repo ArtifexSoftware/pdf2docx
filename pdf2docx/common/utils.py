@@ -24,6 +24,29 @@ def is_number(str_number):
     else:
         return True
 
+def transformation_multiply(M1, M2):
+    '''Matrices multiply between transformation matrices M1, M2.
+        ---
+        Args: 
+          - M1,M2: six main elements of transformation matrix
+
+        [a,b,c,d,e,f] x [a',b',c',d',e',f'] = 
+
+        | a b 0 |   | a' b' 0 |
+        | c d 0 | x | c' d' 0 |
+        | e f 1 |   | e' f' 1 |
+    '''
+    a1,b1,c1,d1,e1,f1 = M1
+    a2,b2,c2,d2,e2,f2 = M2
+    return [
+        a1*a2+b1*c2,
+        a1*b2+b1*d2,
+        c1*a2+d1*c2,
+        c1*b2+d1*d2,
+        e1*a2+f1*c2+e2,
+        e1*b2+f1*d2+f2
+    ]
+
 
 def RGB_component_from_name(name:str=''):
     '''Get a named RGB color (or random color) from fitz predefined colors, e.g. 'red' -> (1.0,0.0,0.0).'''

@@ -14,15 +14,21 @@ def transform_path(path: list, WCS: list, height: float):
         ---
         Args:
             - path: a list of (x,y) point
-            - WCS: transformation matrix
+            - WCS: transformation matrix represented by six elements
             - height: page height for converting CS from pdf to fitz
+
+        ```
+                              | a b 0 |
+        [x' y' 1] = [x y 1] x | c d 0 |
+                              | e f 1 |
+        ```
     '''
     res = []
-    sx, sy, tx, ty = WCS
+    a, b, c, d, e, f = WCS
     for (x0, y0) in path:
         # transformate to original PDF CS                    
-        x = sx*x0 + tx
-        y = sy*y0 + ty
+        x = a*x0 + c*y0 + e
+        y = b*x0 + d*y0 + f
 
         # pdf to PyMuPDF CS
         y = height-y

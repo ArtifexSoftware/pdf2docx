@@ -200,9 +200,12 @@ class Rectangles(Collection):
         '''
         # Graphic States:
         # - working CS is coincident with the absolute origin (0, 0)
-        # consider scale and translation only
-        ACS = [1.0, 1.0, 0.0, 0.0] # scale_x, scale_y, translate_x, tranlate_y
-        WCS = [1.0, 1.0, 0.0, 0.0]
+        # Refer to PDF reference v1.7 4.2.3 Transformation Metrices
+        #                        | a b 0 |
+        # [a, b, c, d, e, f] =>  | c b 0 |
+        #                        | e f 1 |
+        ACS = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0]
+        WCS = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0]
 
         # - graphics color: 
         #   - stroking color
@@ -228,11 +231,8 @@ class Rectangles(Collection):
             # refer to PDF Reference 4.2.2 Common Transformations for detail
             if line=='cm':
                 # update working CS
-                sx = float(lines[i-6])
-                sy = float(lines[i-3])
-                tx = float(lines[i-2])
-                ty = float(lines[i-1])
-                WCS = [WCS[0]*sx, WCS[1]*sy, WCS[2]+tx, WCS[3]+ty]
+                Mt = map(float, lines[i-6:i])
+                WCS = utils.transformation_multiply(Mt, WCS) # M' = Mt x M
 
             # painting color
             # - reset color space
