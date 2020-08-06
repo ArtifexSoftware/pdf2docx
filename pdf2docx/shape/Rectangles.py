@@ -144,21 +144,8 @@ class Rectangles(Collection):
         paths = [] # a list of path, each path is a list of points
 
         # check xref stream word by word (line always changes)    
-        begin_text_setting = False    
         lines = xref_stream.split()
-
         for (i, line) in enumerate(lines):
-
-            # skip any lines between `BT` and `ET`, 
-            # since text setting has no effects on shape        
-            if line=='BT':  # begin text
-                begin_text_setting = True
-        
-            elif line=='ET': # end text
-                begin_text_setting = False
-
-            if begin_text_setting:
-                continue        
 
             # CS transformation: a b c d e f cm, e.g.
             # 0.05 0 0 -0.05 0 792 cm
@@ -630,8 +617,12 @@ class Rectangles(Collection):
             if rect.bbox.width > rect.bbox.height:
                 # row centerline
                 y = round((rect.bbox.y0 + rect.bbox.y1) / 2.0, 1)
-                if y in h_borders:
-                    h_borders[y].append(rect)
+
+                # ignore minor error resulting from different border width
+                for y_ in h_borders:
+                    if abs(y-y_)<utils.DM:
+                        h_borders[y_].append(rect)
+                        break
                 else:
                     h_borders[y] = Rectangles([rect])
                 
@@ -642,8 +633,12 @@ class Rectangles(Collection):
             else:
                 # column centerline
                 x = round((rect.bbox.x0 + rect.bbox.x1) / 2.0, 1)
-                if x in v_borders:
-                    v_borders[x].append(rect)
+                
+                # ignore minor error resulting from different border width
+                for x_ in v_borders:
+                    if abs(x-x_)<utils.DM:
+                        v_borders[x_].append(rect)
+                        break
                 else:
                     v_borders[x] = Rectangles([rect])
                 
