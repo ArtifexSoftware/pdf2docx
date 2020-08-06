@@ -28,7 +28,11 @@ from ..common.base import RectType
 from ..common.utils import RGB_component
 
 class Rectangle(BBox):
-    ''' Rectangle or line shapes.'''
+    ''' Rectangle shapes. 
+
+        NOTE: any paths in PDF are converted to rectangles for this module. For instances,
+        a rectangle path with stroke only in pdf is converted to four rectangles representing each border.
+    '''
     def __init__(self, raw:dict={}):
         super(Rectangle, self).__init__(raw)
         self._type = RectType.UNDEFINED # no type by default

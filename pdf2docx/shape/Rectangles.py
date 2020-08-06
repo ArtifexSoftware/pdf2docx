@@ -27,47 +27,123 @@ class Rectangles(Collection):
             lambda rect: rect.type==RectType.BORDER, self._instances))
 
     def from_annotations(self, annotations: list): # type: BaseRects
-        ''' Get rectangle shapes from annotations(comment shapes) in PDF page.
-            Note: consider highlight, underline, strike-through-line only. 
+        ''' Get shapes, e.g. Line, Square, Highlight, from annotations(comment shapes) in PDF page.
             ---
             Args:
-              - annotations: a list of PyMuPDF Annot objects        
-        '''
-        # map rect type from PyMuPDF
-        # Annotation types:
-        # https://pymupdf.readthedocs.io/en/latest/vars.html#annotation-types   
-        # PDF_ANNOT_HIGHLIGHT 8
-        # PDF_ANNOT_UNDERLINE 9
-        # PDF_ANNOT_SQUIGGLY 10
-        # PDF_ANNOT_STRIKEOUT 11
-        type_map = { 
-            8 : RectType.HIGHLIGHT, 
-            9 : RectType.UNDERLINE, 
-            11: RectType.STRIKE
-        }
+              - annotations: a list of PyMuPDF Annot objects, refering to link below
+            
+            There are stroke and fill properties for each shape, representing border and filling area respectively.
+            So, a square annotation with both stroke and fill will be converted to five rectangles here:
+            four borders and one filling area.
 
+            read more:
+              - https://pymupdf.readthedocs.io/en/latest/annot.html
+              - https://pymupdf.readthedocs.io/en/latest/vars.html#annotation-types
+        '''
         for annot in annotations:
 
-            # consider highlight, underline, strike-through-line only.
-            # e.g. annot.type = (8, 'Highlight')
+            # annot type, e.g. (8, 'Highlight')
             key = annot.type[0]
-            if not key in (8,9,11): 
-                continue
-            
-            # color, e.g. {'stroke': [1.0, 1.0, 0.0], 'fill': []}
-            c = annot.colors.get('stroke', (0,0,0)) # black by default
 
-            # convert rect coordinates
+            # color, e.g. {'stroke': [1.0, 1.0, 0.0], 'fill': []}
+            c = annot.colors
+            sc = utils.RGB_value(c['stroke']) if c['stroke'] else None
+            fc = utils.RGB_value(c['fill']) if c['fill'] else None
+
+            # width
+            w = annot.border.get('width', 1.0) # width=-1 if not set
+            w = 1.0 if w==-1 else w # 1.0 by default            
+
+            # bbox
             rect = annot.rect
 
-            raw = {
-                'bbox': (rect.x0, rect.y0, rect.x1, rect.y1),
-                'color': utils.RGB_value(c)
-            }
-            rect = Rectangle(raw)
-            rect.type = type_map[key]
+            # considering the contributions to text format and table borders, 
+            # only the following types are processed.
+            # PDF_ANNOT_LINE 3
+            # PDF_ANNOT_SQUARE 4
+            # PDF_ANNOT_HIGHLIGHT 8
+            # PDF_ANNOT_UNDERLINE 9
+            # PDF_ANNOT_STRIKEOUT 11
+            stroke_bboxes, fill_bboxes = [], []
 
-            self._instances.append(rect)
+            # Line: a space of 1.5*w around each border
+            # 
+            # +----------------------------+
+            # |         space              |
+            # |     +--------------+       |
+            # |     |   border     | 1.5w  |
+            # |     +--------------+       |
+            # |         1.5w               |
+            # +----------------------------+
+            # 
+            if key==3: 
+                stroke_bboxes.append((
+                    rect.x0+1.5*w,
+                    rect.y0+1.5*w,
+                    rect.x1-1.5*w,
+                    rect.y1-1.5*w
+                ))
+
+            # Square: a space of 0.5*w around eah border
+            # border rects and filling rects are to be extracted from original square
+            # 
+            # +------------------------------------------+
+            # |                space                     |
+            # |      +----------------------------+      |
+            # |      |         border             |      |
+            # |      |     +--------------+       |      |
+            # |            |     fill     |  w    | 0.5w |
+            # |      |     +--------------+       |      |
+            # |      |            w               |      |
+            # |      +----------------------------+      |
+            # |                  0.5w                    |
+            # +------------------------------------------+
+            # 
+            elif key==4:
+                # stroke rectangles
+                if not sc is None:
+                    x0, y0, x1, y1 = (
+                        rect.x0+0.5*w,
+                        rect.y0+0.5*w,
+                        rect.x1-0.5*w,
+                        rect.y1-0.5*w
+                    )
+                    stroke_bboxes.extend([
+                        (x0, y0, x1, y0+w), # top
+                        (x0, y1-w, x1, y1), # bottom
+                        (x0, y0, x0+w, y1), # left
+                        (x1-w, y0, x1, y1)  # right
+                    ])
+
+                # fill rectangle
+                if not fc is None:
+                    fill_bboxes.append((
+                        rect.x0+1.5*w,
+                        rect.y0+1.5*w,
+                        rect.x1-1.5*w,
+                        rect.y1-1.5*w
+                    ))
+            
+            # highlight, underline, strikethrough: on space
+            elif key in (8,9,11):
+                stroke_bboxes.append((rect.x0, rect.y0, rect.x1, rect.y1))            
+
+            # create Rectangle            
+            for bbox in stroke_bboxes:
+                self._instances.append(
+                    Rectangle({
+                        'bbox': bbox,
+                        'color': sc
+                    })
+                )
+
+            for bbox in fill_bboxes:
+                self._instances.append(
+                    Rectangle({
+                        'bbox': bbox,
+                        'color': fc
+                    })
+                )
 
         return self
 
