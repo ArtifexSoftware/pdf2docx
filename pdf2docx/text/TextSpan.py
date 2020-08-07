@@ -191,9 +191,8 @@ class TextSpan(BBox):
         # distance to span bottom border
         d = self.bbox_raw[idx+2] - rect.bbox_raw[idx]
 
-        # the height of rect is large enough?
-        # yes, it's highlight
-        if h_rect >= 0.75*h_span:
+        # highlight: both the rect height and overlap must be large enough
+        if h_rect >= 0.75*h_span and d>0.5*h_span:
             # In general, highlight color isn't white
             if rect.color != utils.RGB_value((1,1,1)): 
                 rect.type = RectType.HIGHLIGHT
