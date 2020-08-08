@@ -13,7 +13,7 @@ from docx.oxml.ns import nsdecls
 from docx.enum.text import WD_COLOR_INDEX
 from docx.image.exceptions import UnrecognizedImageError
 from docx.table import _Cell
-
+from PIL import Image
 from .utils import RGB_value, DM
 
 
@@ -88,12 +88,21 @@ def add_image(p, byte_image, width):
     try:
         docx_span.add_picture(BytesIO(byte_image), width=Pt(width))
     except UnrecognizedImageError:
-        print('TODO: Unrecognized Image.')
+        print('Handling Unrecognized Image Error.')
+        byte_image = handle_unrecognized_image_error(byte_image)
+        add_image(p, byte_image, width)
         return
     
     # exactly line spacing will destroy image display, so set single line spacing instead
     p.paragraph_format.line_spacing = 1.00
 
+def handle_unrecognized_image_error(byte_image):
+    byte_stream = BytesIO(byte_image)
+    image = Image.open(byte_stream).convert("RGBA")
+    imgByteArr = BytesIO()
+    image.save(imgByteArr, format='PNG')
+    imgByteArr = imgByteArr.getvalue()
+    return imgByteArr
 
 def indent_table(table, indent:float):
     ''' indent table.
