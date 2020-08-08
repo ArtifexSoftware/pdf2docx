@@ -8,42 +8,17 @@ Image Span based on same raw data structure with image block.
 '''
 
 from ..common import docx
-from ..common.BBox import BBox
+from .Image import Image
 
 
-class ImageSpan(BBox):
-    '''Text block.'''
-    def __init__(self, raw:dict={}) -> None:
+class ImageSpan(Image):
+    '''Image span.'''
+    def __init__(self, raw:dict={}):
         super(ImageSpan, self).__init__(raw)
-        self.ext = raw.get('ext', 'png')
-        self.width = raw.get('width', 0.0)
-        self.height = raw.get('height', 0.0)
-        self.image = raw.get('image', b'')
 
 
-    def from_image_block(self, image):
-        '''Update with image block.
-            ---
-            Args:
-              - image: ImageBlock, target image block
-        '''
-        self.ext = image.ext
-        self.width = image.width
-        self.height = image.height
-        self.image = image.image
-        self.update(image.bbox)
-        return self
-
-
-    def store(self) -> dict:
-        res = super().store()
-        res.update({
-            'ext': self.ext,
-            'width': self.width,
-            'height': self.height,
-            'image': '<image>' # drop real content to reduce size
-        })
-        return res
+    def store(self):
+        return super(ImageSpan, self).store_image()
 
 
     def plot(self, page, color:tuple):

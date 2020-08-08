@@ -83,7 +83,6 @@ def add_image(p, byte_image, width):
           - byte_image: bytes for image source
           - width: image width
     '''
-    # TODO: docx.image.exceptions.UnrecognizedImageError
     docx_span = p.add_run()
     try:
         docx_span.add_picture(BytesIO(byte_image), width=Pt(width))
