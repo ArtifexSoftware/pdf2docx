@@ -37,7 +37,8 @@ from docx.enum.section import WD_SECTION
 from .Blocks import Blocks
 from ..shape.Rectangles import Rectangles
 from ..common.base import PlotControl
-from ..common.utils import (debug_plot, new_page_with_margin)
+from ..common.utils import debug_plot
+from ..common.pdf import new_page_with_margin
 from ..common.docx import reset_paragraph_format
 
 
