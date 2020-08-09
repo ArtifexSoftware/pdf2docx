@@ -111,7 +111,7 @@ class Rectangles(Collection):
         return rect_changed
 
 
-    def parse_table_structure(self) -> TableBlock:
+    def parse_table_structure(self):
         ''' Parse table structure from rects in table border/shading type.'''
 
         # --------------------------------------------------
@@ -444,14 +444,13 @@ class Rectangles(Collection):
         if not bool(self):
             return False
         
-        if direction=='h':
-            # centerline of source borders
-            source = round((self._instances[0].bbox.y0 + self._instances[0].bbox.y1) / 2.0, 1)
-            # max width of source borders
-            width = max(map(lambda rect: rect.bbox.y1-rect.bbox.y0, self._instances))
-        else:
-            source = round((self._instances[0].bbox.x0 + self._instances[0].bbox.x1) / 2.0, 1)
-            width = max(map(lambda rect: rect.bbox.x1-rect.bbox.x0, self._instances))
+        # considering direction
+        idx = 1 if direction=='h' else 0
+        
+        # centerline of source borders
+        source = round((self._instances[0].bbox_raw[idx+2] + self._instances[0].bbox_raw[idx]) / 2.0, 1)
+        # max width of source borders
+        width = max(map(lambda rect: rect.bbox_raw[idx+2]-rect.bbox_raw[idx], self._instances))
 
         target = round(target, 1)
         width = round(width, 1)
