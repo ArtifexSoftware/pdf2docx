@@ -17,7 +17,11 @@ class Image(BBox):
         self.height = raw.get('height', 0.0)
         self._image = raw.get('image', b'')    # source image bytes
 
-    
+    @property
+    def text(self):
+        '''Return an image placeholder: "<image>".'''
+        return '<image>'
+
     @property
     def image(self):
         '''Get the image bytes converted by PyMuPDF.

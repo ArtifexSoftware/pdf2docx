@@ -175,16 +175,16 @@ class Blocks(Collection):
                 
                 # deep into line level
                 else:
-                    table_block = TextBlock()
+                    text_block = TextBlock()
                     rest_lines = []
                     for line in lines:
                         if table.bbox.intersects(line.bbox):
-                            table_block.add(line)
+                            text_block.add(line)
                         else:
                             rest_lines.append(line)
                     
                     # summary
-                    blocks_in_table.append(table_block)
+                    blocks_in_table.append(text_block)
                     if rest_lines:
                         lines = rest_lines # for forther check
                     else:

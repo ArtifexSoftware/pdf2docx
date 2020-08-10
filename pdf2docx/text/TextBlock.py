@@ -47,8 +47,8 @@ class TextBlock(Block):
     @property
     def text(self) -> str:
         '''Get text content in block, joning each line with `\n`.'''
-        lines = [line.spans.text for line in self.lines]
-        return '\n'.join(lines)
+        lines_text = [line.text for line in self.lines]
+        return '\n'.join(lines_text)
 
 
     @property

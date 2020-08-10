@@ -33,6 +33,14 @@ class Line(BBox):
         # collect spans
         self.spans = Spans(None, self).from_dicts(raw.get('spans', []))
 
+    
+    @property
+    def text(self):
+        '''Joining span text.'''
+        spans_text = [span.text for span in self.spans]        
+        return ''.join(spans_text)
+
+
     @property
     def image_spans(self):
         '''Get image spans in this Line.'''

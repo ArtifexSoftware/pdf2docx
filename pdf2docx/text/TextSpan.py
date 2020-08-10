@@ -55,7 +55,6 @@ class TextSpan(BBox):
         self.chars = [ Char(c) for c in raw.get('chars', []) ] # type: list[Char]
 
         # introduced attributes
-        self._text = None
         self.style = [] # a list of dict: { 'type': int, 'color': int }
 
     @property
@@ -69,11 +68,8 @@ class TextSpan(BBox):
     @property
     def text(self):
         '''Joining chars in text span'''
-        if self._text is None:
-            chars = [char.c for char in self.chars]
-            self._text = ''.join(chars)
-        
-        return self._text
+        chars = [char.c for char in self.chars]        
+        return ''.join(chars)
 
 
     def add(self, char:Char):
