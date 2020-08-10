@@ -59,9 +59,17 @@ class TextSpan(BBox):
 
     @property
     def font(self):
-        '''Parse raw font name, e.g. BCDGEE+Calibri-Bold, BCDGEE+Calibri.'''
+        '''Parse raw font name, e.g. 
+            - BCDGEE+Calibri-Bold, BCDGEE+Calibri -> Calibri
+            - ArialNarrow -> Arial Narrow.
+        '''
+        # process on '+' and '-'
         font_name = self._font.split('+')[-1]
         font_name = font_name.split('-')[0]
+
+        # split with upper case letters
+        blank = ' '
+        font_name = ''.join(f'{blank}{x}' if x.isupper() else x for x in font_name).strip(blank)
         return font_name
 
 
@@ -247,8 +255,19 @@ class TextSpan(BBox):
 
 
     def make_docx(self, paragraph):
-        '''Add text span to a docx paragraph.'''
+        '''Add text span to a docx paragraph.'''        
         docx_span = paragraph.add_run(self.text)
+
+        # from docx.oxml.ns import qn
+        # from docx.oxml import OxmlElement
+        # rpr = docx_span._element.xpath('w:rPr')[0]
+        # w = rpr.xpath('w:w')
+        # if w:
+        #     x = w[0]
+        # else:
+        #     x = OxmlElement('w:w')
+        #     rpr.append(x)
+        # x.set(qn('w:val'), 200)
 
         # style setting
         # https://python-docx.readthedocs.io/en/latest/api/text.html#docx.text.run.Font
