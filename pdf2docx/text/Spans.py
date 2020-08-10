@@ -33,8 +33,3 @@ class Spans(Collection):
             lambda span: isinstance(span, ImageSpan), self._instances
         ))
         return Spans(spans)
-    
-    @property
-    def text(self) -> str:
-        '''Join span text.'''
-        return ''.join([span.text for span in self.text_spans])

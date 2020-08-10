@@ -6,7 +6,7 @@ from docx import Document
 
 from .layout.Layout import Layout
 from .common.base import PlotControl
-from .common import utils
+from .common.pdf import new_page_section
 
 
 class Converter:
@@ -90,6 +90,7 @@ class Converter:
         # get rectangle shapes from page source:
         # these shapes are generally converted from docx, e.g. highlight, underline,
         # which are different from PDF comments like highlight, rectangle.
+        page._cleanContents()
         for xref in page._getContents():            
             page_content = self._doc_pdf._getXrefStream(xref).decode(encoding="ISO-8859-1")
             self._layout.rects.from_stream(page_content, self._layout.height)
@@ -102,7 +103,7 @@ class Converter:
         # plot raw layout
         if self.debug_mode:
             # new section for current pdf page
-            utils.new_page_section(self._doc_debug, self._layout.width, self._layout.height, f'Page {page.number}')
+            new_page_section(self._doc_debug, self._layout.width, self._layout.height, f'Page {page.number}')
 
             # initial layout
             self._layout.plot(self._doc_debug, 'Original Text Blocks', key=PlotControl.LAYOUT)

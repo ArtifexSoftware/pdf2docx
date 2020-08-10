@@ -128,13 +128,14 @@ class Blocks(Collection):
     def clean(self):
         '''Preprocessing for blocks initialized from the raw layout.'''
 
-        # remove negative blocks
-        self._instances = list(filter(
-            lambda block: all(x>=0 for x in block.bbox_raw), self._instances))
-
-        # remove blocks with transformed text: text direction is not (1, 0) or (0, -1)
-        self._instances = list(filter(
-            lambda block: block.is_horizontal or block.is_vertical, self._instances))
+        # filter function:
+        # - remove negative blocks
+        # - remove transformed text: text direction is not (1, 0) or (0, -1)
+        # - remove empty blocks
+        f = lambda block:   block.is_valid and \
+                            block.text.strip() and (
+                            block.is_horizontal or block.is_vertical)
+        self._instances = list(filter(f, self._instances))
            
         # merge blocks horizontally, e.g. remove overlap blocks, since no floating elements are supported
         # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
@@ -156,15 +157,45 @@ class Blocks(Collection):
             # ignore table block
             if block.is_table_block(): continue
 
+            # lines in block for further check if necessary
+            lines = block.lines
+
             # collect blocks contained in table region
-            for table, blocks_in_table in zip(tables, blocks_in_tables):
-                if table.bbox.intersects(block.bbox):
+            # NOTE: there is a probability that only a part of a text block is contained in table region, 
+            # while the rest is in normal block region.
+            for table, blocks_in_table in zip(tables, blocks_in_tables):        
+                # fully contained in one table
+                if table.bbox.contains(block.bbox):
                     blocks_in_table.append(block)
                     break
+                
+                # not possible in current table
+                elif not table.bbox.intersects(block.bbox):
+                    continue
+                
+                # deep into line level
+                else:
+                    text_block = TextBlock()
+                    rest_lines = []
+                    for line in lines:
+                        if table.bbox.intersects(line.bbox):
+                            text_block.add(line)
+                        else:
+                            rest_lines.append(line)
+                    
+                    # summary
+                    blocks_in_table.append(text_block)
+                    if rest_lines:
+                        lines = rest_lines # for forther check
+                    else:
+                        break # no more lines
             
             # normal blocks
             else:
-                blocks.append(block)
+                text_block = TextBlock()
+                for line in lines:
+                    text_block.add(line)
+                blocks.append(text_block)
 
         # assign blocks to associated cells
         # ATTENTION: no nested table is considered

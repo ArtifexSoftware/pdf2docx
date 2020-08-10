@@ -24,7 +24,6 @@ def is_number(str_number):
     else:
         return True
 
-
 def RGB_component_from_name(name:str=''):
     '''Get a named RGB color (or random color) from fitz predefined colors, e.g. 'red' -> (1.0,0.0,0.0).'''
     # get color index
@@ -96,43 +95,6 @@ def expand_centerline(start: list, end: list, width:float=2.0):
         res = None
 
     return res
-
-
-def new_page_section(doc:fitz.Document, width:float, height:float, title):
-    '''New page with title shown in page center.'''
-    # insert a new page
-    page = doc.newPage(width=width, height=height)
-
-    # plot title in page center
-    gray = RGB_component_from_name('gray')
-    f = 10.0
-    page.insertText((width/4.0, (height+height/f)/2.0), title, color=gray, fontsize=height/f)
-    return page
-
-
-def new_page_with_margin(doc:fitz.Document, width:float, height:float, margin:tuple, title:str):
-    '''Insert a new page and plot margin borders.'''
-    # insert a new page
-    page = doc.newPage(width=width, height=height)
-    
-    # plot borders if page margin is provided
-    if margin:
-        blue = RGB_component_from_name('blue')
-        args = {
-            'color': blue,
-            'width': 0.5
-        }
-        dL, dR, dT, dB = margin
-        page.drawLine((dL, 0), (dL, height), **args) # left border
-        page.drawLine((width-dR, 0), (width-dR, height), **args) # right border
-        page.drawLine((0, dT), (width, dT), **args) # top
-        page.drawLine((0, height-dB), (width, height-dB), **args) # bottom
-
-    # plot title at the top-left corner
-    gray = RGB_component_from_name('gray')
-    page.insertText((5, 16), title, color=gray, fontsize=15)
-    
-    return page
 
 
 def debug_plot(title:str, plot:bool=True, category:PlotControl=PlotControl.LAYOUT):

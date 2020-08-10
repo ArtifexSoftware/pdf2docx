@@ -25,6 +25,7 @@ Note: the raw image block will be merged into text block: Text > Line > Span.
 
 from docx.shared import Pt
 from .Line import Line
+from .Image import Image
 from .ImageSpan import ImageSpan
 from .TextBlock import TextBlock
 from ..common import utils
@@ -32,27 +33,20 @@ from ..common import docx
 from ..common.Block import Block
 
 
-class ImageBlock(Block):
+class ImageBlock(Block, Image):
     '''Image block.'''
-    def __init__(self, raw: dict) -> None:
+    def __init__(self, raw: dict):
         super(ImageBlock, self).__init__(raw)
-        self.ext = raw.get('ext', 'png')
-        self.width = raw.get('width', 0.0)
-        self.height = raw.get('height', 0.0)
-        self.image = raw.get('image', b'')
 
         # set type
         self.set_image_block()
 
 
-    def store(self) -> dict:
-        res = super().store()
-        res.update({
-            'ext': self.ext,
-            'width': self.width,
-            'height': self.height,
-            'image': '<image>' # drop real content to reduce size
-        })
+    def store(self):
+        res = super(ImageBlock, self).store()
+        res.update(
+            super(ImageBlock, self).store_image()
+        )
         return res
 
 
@@ -70,10 +64,10 @@ class ImageBlock(Block):
         page.drawRect(self.bbox, color=color, fill=None, overlay=False)
 
 
-    def to_text_block(self) -> TextBlock:
+    def to_text_block(self):
         '''convert image block to text block: a span'''
         # image span
-        span = ImageSpan().from_image_block(self)
+        span = ImageSpan().from_image(self)
 
         # add span to line
         image_line = Line()
@@ -89,7 +83,7 @@ class ImageBlock(Block):
         return block
         
 
-    def parse_text_format(self, rects) -> bool:
+    def parse_text_format(self, rects):
         '''parse text format with style represented by rectangles. Not necessary for image block.'''
         return False
 

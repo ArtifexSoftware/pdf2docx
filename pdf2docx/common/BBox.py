@@ -28,6 +28,12 @@ class BBox(IText):
     def bbox(self):
         '''bbox in fitz.Rect type.'''
         return fitz.Rect(self._bbox) if self._bbox else fitz.rect()
+
+    
+    @property
+    def is_valid(self):
+        '''Ensure bbox can be shown in page, i.e. all coordinates are positive.'''
+        return all(x>=0 for x in self.bbox_raw)
     
    
     def vertically_align_with(self, bbox, factor:float=0.0, text_direction:bool=True):

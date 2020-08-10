@@ -33,14 +33,12 @@ data structure for Span
     }
 '''
 
-from docx.shared import Pt
-from docx.shared import RGBColor
+from docx.shared import Pt, RGBColor
 
 from .Char import Char
 from ..common.BBox import BBox
 from ..common.base import RectType
-from ..common import utils
-from ..common import docx
+from ..common import utils, docx
 from ..shape.Rectangle import Rectangle
 
 
@@ -55,25 +53,29 @@ class TextSpan(BBox):
         self.chars = [ Char(c) for c in raw.get('chars', []) ] # type: list[Char]
 
         # introduced attributes
-        self._text = None
         self.style = [] # a list of dict: { 'type': int, 'color': int }
 
     @property
     def font(self):
-        '''Parse raw font name, e.g. BCDGEE+Calibri-Bold, BCDGEE+Calibri.'''
+        '''Parse raw font name, e.g. 
+            - BCDGEE+Calibri-Bold, BCDGEE+Calibri -> Calibri
+            - ArialNarrow -> Arial Narrow.
+        '''
+        # process on '+' and '-'
         font_name = self._font.split('+')[-1]
         font_name = font_name.split('-')[0]
+
+        # split with upper case letters
+        blank = ' '
+        font_name = ''.join(f'{blank}{x}' if x.isupper() else x for x in font_name).strip(blank)
         return font_name
 
 
     @property
     def text(self):
         '''Joining chars in text span'''
-        if self._text is None:
-            chars = [char.c for char in self.chars]
-            self._text = ''.join(chars)
-        
-        return self._text
+        chars = [char.c for char in self.chars]        
+        return ''.join(chars)
 
 
     def add(self, char:Char):
@@ -191,9 +193,8 @@ class TextSpan(BBox):
         # distance to span bottom border
         d = self.bbox_raw[idx+2] - rect.bbox_raw[idx]
 
-        # the height of rect is large enough?
-        # yes, it's highlight
-        if h_rect >= 0.75*h_span:
+        # highlight: both the rect height and overlap must be large enough
+        if h_rect >= 0.75*h_span and d>0.5*h_span:
             # In general, highlight color isn't white
             if rect.color != utils.RGB_value((1,1,1)): 
                 rect.type = RectType.HIGHLIGHT
@@ -253,9 +254,10 @@ class TextSpan(BBox):
 
     def make_docx(self, paragraph):
         '''Add text span to a docx paragraph.'''
-        docx_span = paragraph.add_run(self.text)
+        # set text
+        docx_span = paragraph.add_run(self.text)        
 
-        # style setting
+        # set style
         # https://python-docx.readthedocs.io/en/latest/api/text.html#docx.text.run.Font
 
         # basic font style
@@ -268,10 +270,20 @@ class TextSpan(BBox):
         docx_span.superscript = bool(self.flags & 2**0)
         docx_span.italic = bool(self.flags & 2**1)
         docx_span.bold = bool(self.flags & 2**4)
-        docx_span.font.name = self.font
-        docx_span.font.size = Pt(round(self.size*2)/2.0) # only x.0 and x.5 is accepted in docx
+        docx_span.font.name = self.font        
         docx_span.font.color.rgb = RGBColor(*utils.RGB_component(self.color))
 
+        # font size
+        # NOTE: only x.0 and x.5 is accepted in docx, so set character scaling accordingly
+        # if the font size doesn't meet this condition.
+        font_size = round(self.size*2)/2.0
+        docx_span.font.size = Pt(font_size)
+
+        # adjust by set scaling
+        scale = self.size / font_size
+        if abs(scale-1.0)>=0.01:
+            docx.set_character_scaling(docx_span, scale)
+        
         # font style parsed from PDF rectangles: 
         # e.g. highlight, underline, strike-through-line
         for style in self.style:
@@ -285,3 +297,5 @@ class TextSpan(BBox):
 
             elif t==RectType.STRIKE.value:
                 docx_span.font.strike = True
+
+        

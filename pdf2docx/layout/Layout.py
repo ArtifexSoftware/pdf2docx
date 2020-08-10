@@ -37,7 +37,8 @@ from docx.enum.section import WD_SECTION
 from .Blocks import Blocks
 from ..shape.Rectangles import Rectangles
 from ..common.base import PlotControl
-from ..common.utils import (debug_plot, new_page_with_margin)
+from ..common.utils import debug_plot
+from ..common.pdf import new_page_with_margin
 from ..common.docx import reset_paragraph_format
 
 
@@ -255,19 +256,31 @@ class Layout:
         fun = lambda a,b: a.bbox & b.bbox
         groups = self.rects.group(fun)
 
-        # check each group
-        flag = False
+        # parse table with each group
+        tables = Blocks()
         for group in groups:
             # parse table structure based on rects in border type
             table = group.parse_table_structure()
-            if not table: continue
+            tables.append(table)
 
-            # add parsed table to page level blocks
+        # check if any intersection with previously parsed tables
+        for group in tables.group(fun):
+            # single table
+            if len(group)==1:
+                table = group[0]
+            
+            # intersected tables: keep the table with the most cells only 
+            # since no floating elements are supported with python-docx
+            else:
+                sorted_group = sorted(group, 
+                            key=lambda table: table.num_rows*table.num_cols)
+                table = sorted_group[-1]                    
+
+            # add table to page level
             table.set_explicit_table_block()
             self.blocks.append(table)
-            flag = True
 
-        return flag
+        return bool(tables)
 
 
     @debug_plot('Implicit Table Structure', plot=True, category=PlotControl.IMPLICIT_TABLE)

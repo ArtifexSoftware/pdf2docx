@@ -153,13 +153,17 @@ class MainTest(TestUtility):
             os.mkdir(self.output_dir)
 
     def test_text_format(self):
-        '''sample file focusing on text format'''
+        '''sample file focusing on text format.'''
         self.init_test('demo-text').verify_layout(threshold=0.95)
 
     def test_image(self):
-        '''sample file focusing on image, inline-image considered'''
+        '''sample file focusing on inline-image.'''
         self.init_test('demo-image').verify_layout(threshold=0.95)
 
     def test_table_format(self):
-        '''sample file focusing on table format'''
+        '''sample file focusing on table format.'''
         self.init_test('demo-table').verify_layout(threshold=0.95)
+
+    def test_text_scaling_and_table(self):
+        '''sample file focusing on table format.'''
+        self.init_test('demo-text-scaling').verify_layout(threshold=0.95)
