@@ -6,10 +6,8 @@ docx operation methods based on python-docx.
 
 from io import BytesIO
 from docx.shared import Pt
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
-from docx.oxml import parse_xml
-from docx.oxml.ns import nsdecls
+from docx.oxml import OxmlElement, parse_xml
+from docx.oxml.ns import qn, nsdecls
 from docx.enum.text import WD_COLOR_INDEX
 from docx.image.exceptions import UnrecognizedImageError
 from docx.table import _Cell
@@ -87,11 +85,38 @@ def add_image(p, byte_image, width):
     try:
         docx_span.add_picture(BytesIO(byte_image), width=Pt(width))
     except UnrecognizedImageError:
-        print('TODO: Unrecognized Image.')
+        print('Unrecognized Image.')
         return
     
     # exactly line spacing will destroy image display, so set single line spacing instead
     p.paragraph_format.line_spacing = 1.00
+
+
+def set_character_scaling(p_run, scale:float=1.0):
+    ''' Set character spacing: scaling. Font | Advanced | Character Spacing | Scaling.
+        ---
+        Args:
+          - p_run: docx.text.run.Run, proxy object wrapping <w:r> element
+          - scale: scaling factor
+    '''
+    # get or create run properties
+    properties = p_run._element.xpath('w:rPr')
+    if not properties:
+        property = OxmlElement('w:rPr')
+        p_run._element.append(property)
+    else:
+        property = properties[0]
+    
+    # get or create character scaling under properties
+    ws = property.xpath('w:w')
+    if not ws:
+        w = OxmlElement('w:w')
+        property.append(w)
+    else:
+        w = ws[0]
+    
+    # set scaling: percentage
+    w.set(qn('w:val'), str(100*scale))
 
 
 def indent_table(table, indent:float):

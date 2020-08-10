@@ -33,14 +33,12 @@ data structure for Span
     }
 '''
 
-from docx.shared import Pt
-from docx.shared import RGBColor
+from docx.shared import Pt, RGBColor
 
 from .Char import Char
 from ..common.BBox import BBox
 from ..common.base import RectType
-from ..common import utils
-from ..common import docx
+from ..common import utils, docx
 from ..shape.Rectangle import Rectangle
 
 
@@ -255,21 +253,11 @@ class TextSpan(BBox):
 
 
     def make_docx(self, paragraph):
-        '''Add text span to a docx paragraph.'''        
-        docx_span = paragraph.add_run(self.text)
+        '''Add text span to a docx paragraph.'''
+        # set text
+        docx_span = paragraph.add_run(self.text)        
 
-        # from docx.oxml.ns import qn
-        # from docx.oxml import OxmlElement
-        # rpr = docx_span._element.xpath('w:rPr')[0]
-        # w = rpr.xpath('w:w')
-        # if w:
-        #     x = w[0]
-        # else:
-        #     x = OxmlElement('w:w')
-        #     rpr.append(x)
-        # x.set(qn('w:val'), 200)
-
-        # style setting
+        # set style
         # https://python-docx.readthedocs.io/en/latest/api/text.html#docx.text.run.Font
 
         # basic font style
@@ -282,10 +270,20 @@ class TextSpan(BBox):
         docx_span.superscript = bool(self.flags & 2**0)
         docx_span.italic = bool(self.flags & 2**1)
         docx_span.bold = bool(self.flags & 2**4)
-        docx_span.font.name = self.font
-        docx_span.font.size = Pt(round(self.size*2)/2.0) # only x.0 and x.5 is accepted in docx
+        docx_span.font.name = self.font        
         docx_span.font.color.rgb = RGBColor(*utils.RGB_component(self.color))
 
+        # font size
+        # NOTE: only x.0 and x.5 is accepted in docx, so set character scaling accordingly
+        # if the font size doesn't meet this condition.
+        font_size = round(self.size*2)/2.0
+        docx_span.font.size = Pt(font_size)
+
+        # adjust by set scaling
+        scale = self.size / font_size
+        if abs(scale-1.0)>=0.01:
+            docx.set_character_scaling(docx_span, scale)
+        
         # font style parsed from PDF rectangles: 
         # e.g. highlight, underline, strike-through-line
         for style in self.style:
@@ -299,3 +297,5 @@ class TextSpan(BBox):
 
             elif t==RectType.STRIKE.value:
                 docx_span.font.strike = True
+
+        
