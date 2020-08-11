@@ -332,9 +332,10 @@ class Blocks(Collection):
             if block.is_text_block():
 
                 # spacing before this paragraph
-                block.before_space = para_space
+                block.before_space = start_pos-ref_pos # keep negative value temperally
 
                 # calculate average line spacing in paragraph
+                # NOTE: adjust before space if negative value
                 block.parse_line_spacing()
 
             # if ref to current (image): set before-space for paragraph
@@ -437,8 +438,9 @@ class Blocks(Collection):
         bottom = height-max(map(lambda x: x.y1, list_bbox))
         bottom = max(bottom, 0.0)
 
-        # reduce calculated bottom margin -> more free space left,
-        # to avoid page content exceeding current page
+        # margin is calculated based on text block only, without considering shape, e.g. table border,
+        # so reduce calculated top/bottom margin to left some free space
+        top *= 0.5
         bottom *= 0.5
 
         # use normal margin if calculated margin is large enough
