@@ -156,8 +156,13 @@ def compare_layput(filename_source, filename_target, filename_output, threshold=
         target_words = target_page.getText('words')
 
         # sort by word
-        source_words.sort(key=lambda item: (item[4], item[1], item[0]))
-        target_words.sort(key=lambda item: (item[4], item[1], item[0]))
+        source_words.sort(key=lambda item: (item[4], round(item[1],1), round(item[0],1)))
+        target_words.sort(key=lambda item: (item[4], round(item[1],1), round(item[0],1)))
+
+        if len(source_words) != len(target_words):
+            msg='Words count is inconsistent with source file.'
+            print(msg)
+            return False
 
         # check each word and bbox
         for sample, test in zip(source_words, target_words):
@@ -170,7 +175,7 @@ def compare_layput(filename_source, filename_target, filename_output, threshold=
             # check bbox word by word: ignore small bbox, e.g. single letter bbox
             if not get_main_bbox(source_rect, target_rect, threshold):
                 flag = False
-                errs.append((sample[4], target_rect, source_rect))
+                errs.append((f'{sample[4]} ===> {test[4]}', target_rect, source_rect))
         
     # save and close
     source.save(filename_output)
