@@ -153,7 +153,7 @@ class MainTest(TestUtility):
             os.mkdir(self.output_dir)
 
     def test_text_format(self):
-        '''sample file focusing on text format.'''
+        '''sample file focusing on text format, e.g. highlight, underline, strike-through.'''
         self.init_test('demo-text').verify_layout(threshold=0.95)
 
     def test_image(self):
@@ -161,9 +161,22 @@ class MainTest(TestUtility):
         self.init_test('demo-image').verify_layout(threshold=0.95)
 
     def test_table_format(self):
-        '''sample file focusing on table format.'''
+        '''sample file focusing on table format, e.g. 
+            - border and shading style
+            - vertical cell
+            - merged cell
+            - text format in cell
+        '''
         self.init_test('demo-table').verify_layout(threshold=0.95)
 
-    def test_text_scaling_and_table(self):
-        '''sample file focusing on table format.'''
+    def test_text_scaling(self):
+        '''sample file focusing on font size.
+            In this case, the font size is set precisely with character scaling.
+        '''
         self.init_test('demo-text-scaling').verify_layout(threshold=0.95)
+
+    def test_path_transformation(self):
+        '''sample file focusing on path transformation.
+            In this case, the (0,0) origin is out of the page.
+        '''
+        self.init_test('demo-path-transformation').verify_layout(threshold=0.95)
