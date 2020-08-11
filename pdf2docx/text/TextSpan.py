@@ -245,7 +245,7 @@ class TextSpan(BBox):
         span.update((0.0,0.0,0.0,0.0))
 
         for char in self.chars:
-            if utils.get_main_bbox(char.bbox, rect, 0.2):
+            if utils.get_main_bbox(char.bbox, rect, 0.55): # contains at least a half part
                 span.chars.append(char)
                 span.union(char.bbox)
 
