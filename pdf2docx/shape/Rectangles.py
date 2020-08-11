@@ -24,7 +24,7 @@ class Rectangles(Collection):
         return list(filter(
             lambda rect: rect.type==RectType.BORDER, self._instances))
 
-    def from_annotations(self, annotations: list): # type: BaseRects
+    def from_annotations(self, annotations: list):
         ''' Get shapes, e.g. Line, Square, Highlight, from annotations(comment shapes) in PDF page.
             ---
             Args:
@@ -45,12 +45,12 @@ class Rectangles(Collection):
         return self
 
 
-    def from_stream(self, xref_stream: str, height: float): # type: BaseRects
+    def from_stream(self, xref_stream: str, M):
         ''' Get rectangle shapes by parsing page cross reference stream.
             ---
             Args:
               - xref_streams: page content from `doc._getXrefStream(xref).decode()`      
-              - height: page height for coordinate system conversion from pdf CS to fitz CS 
+              - M: transformation matrix for coordinate system conversion from pdf to fitz 
 
             read more:
               - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdf_reference_archive/pdf_reference_1-7.pdf
@@ -58,7 +58,7 @@ class Rectangles(Collection):
                 - Section 8.5 Path Construction and Painting
               - https://github.com/pymupdf/PyMuPDF/issues/263
         '''
-        rects = pdf.rects_from_stream(xref_stream, height)
+        rects = pdf.rects_from_stream(xref_stream, M)
         for rect in rects:
             self._instances.append(Rectangle(rect))
 

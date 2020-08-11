@@ -7,7 +7,7 @@ PDF operations, e.g. extract rectangles, based on PyMuPDF
 @author: train8808@gmail.com
 '''
 
-
+import fitz
 from . import utils
 
 
@@ -61,7 +61,7 @@ def new_page_with_margin(doc, width:float, height:float, margin:tuple, title:str
     return page
 
 
-def rects_from_annotations(annotations: list):
+def rects_from_annotations(annotations:list):
     ''' Get shapes, e.g. Line, Square, Highlight, from annotations(comment shapes) in PDF page.
         ---
         Args:
@@ -215,7 +215,7 @@ def rects_from_annotations(annotations: list):
     return rects
 
 
-def rects_from_stream(xref_stream: str, height: float): # type: BaseRects
+def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
     ''' Get rectangle shapes by parsing page cross reference stream.
 
         Note: these shapes are generally converted from pdf source, e.g. highlight, underline, 
@@ -224,7 +224,7 @@ def rects_from_stream(xref_stream: str, height: float): # type: BaseRects
         ---
         Args:
             - xref_streams: doc._getXrefStream(xref).decode()        
-            - height: page height for coordinate system conversion from pdf CS to fitz CS 
+            - matrix: transformation matrix for coordinate system conversion from pdf to fitz 
 
         --------            
         References:
@@ -271,8 +271,8 @@ def rects_from_stream(xref_stream: str, height: float): # type: BaseRects
     #                        | a b 0 |
     # [a, b, c, d, e, f] =>  | c b 0 |
     #                        | e f 1 |
-    ACS = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0]
-    WCS = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0]
+    ACS = fitz.Matrix(0.0) # identity matrix
+    WCS = fitz.Matrix(0.0)
 
     # - graphics color: 
     #   - stroking color
@@ -299,8 +299,9 @@ def rects_from_stream(xref_stream: str, height: float): # type: BaseRects
         # refer to PDF Reference 4.2.2 Common Transformations for detail
         if line=='cm':
             # update working CS
-            Mt = map(float, lines[i-6:i])
-            WCS = _transformation_multiply(Mt, WCS) # M' = Mt x M
+            components = list(map(float, lines[i-6:i]))
+            Mt = fitz.Matrix(*components)
+            WCS = Mt * WCS # M' = Mt x M
 
         # painting color
         # - reset color space
@@ -370,13 +371,13 @@ def rects_from_stream(xref_stream: str, height: float): # type: BaseRects
         # save or restore graphics state:
         # only consider transformation and color here
         elif line=='q': # save
-            ACS = WCS[:] # copy as new list
+            ACS = fitz.Matrix(WCS) # copy as new matrix
             Acf = Wcf
             Acs = Wcs
             Ad = Wd
             
         elif line=='Q': # restore
-            WCS = ACS[:] # copy as new list
+            WCS = fitz.Matrix(ACS) # copy as new matrix
             Wcf = Acf
             Wcs = Acs
             Wd = Ad
@@ -433,7 +434,7 @@ def rects_from_stream(xref_stream: str, height: float): # type: BaseRects
 
             # stroke path
             for path in paths:
-                rects_ = _stroke_path(path, WCS, Wcs, Wd, height)
+                rects_ = _stroke_path(path, WCS, Wcs, Wd, matrix)
                 rects.extend(rects_)
 
             # reset path
@@ -446,7 +447,7 @@ def rects_from_stream(xref_stream: str, height: float): # type: BaseRects
                 _close_path(path)
             
                 # fill path
-                rect = _fill_rect_path(path, WCS, Wcf, height)
+                rect = _fill_rect_path(path, WCS, Wcf, matrix)
                 if rect: rects.append(rect)
 
             # reset path
@@ -459,11 +460,11 @@ def rects_from_stream(xref_stream: str, height: float): # type: BaseRects
                 _close_path(path)
                 
                 # fill path
-                rect = _fill_rect_path(path, WCS, Wcf, height)
+                rect = _fill_rect_path(path, WCS, Wcf, matrix)
                 if rect: rects.append(rect)
 
                 # stroke path
-                rects_ = _stroke_path(path, WCS, Wcs, Wd, height)
+                rects_ = _stroke_path(path, WCS, Wcs, Wd, matrix)
                 rects.extend(rects_)
 
             # reset path
@@ -480,39 +481,13 @@ def rects_from_stream(xref_stream: str, height: float): # type: BaseRects
     return rects
 
 
-def _transformation_multiply(M1, M2):
-    '''Matrices multiply between transformation matrices M1, M2.
-        ---
-        Args: 
-          - M1,M2: six main elements of transformation matrix
-
-        ```
-        [a,b,c,d,e,f] x [a',b',c',d',e',f'] = 
-
-        | a b 0 |   | a' b' 0 |
-        | c d 0 | x | c' d' 0 |
-        | e f 1 |   | e' f' 1 |
-        ```
-    '''
-    a1,b1,c1,d1,e1,f1 = M1
-    a2,b2,c2,d2,e2,f2 = M2
-    return [
-        a1*a2+b1*c2,
-        a1*b2+b1*d2,
-        c1*a2+d1*c2,
-        c1*b2+d1*d2,
-        e1*a2+f1*c2+e2,
-        e1*b2+f1*d2+f2
-    ]
-
-
-def _transform_path(path: list, WCS: list, height: float):
+def _transform_path(path:list, WCS:fitz.Matrix, M0:fitz.Matrix):
     ''' Transform path to page coordinate system. 
         ---
         Args:
-            - path: a list of (x,y) point
-            - WCS: transformation matrix represented by six elements
-            - height: page height for converting CS from pdf to fitz
+        - path: a list of (x,y) point
+        - WCS: transformation matrix within pdf
+        - M0: tranformation matrix from pdf to fitz
 
         ```
                               | a b 0 |
@@ -520,17 +495,14 @@ def _transform_path(path: list, WCS: list, height: float):
                               | e f 1 |
         ```
     '''
+    # transformed PDF -> standard PDF -> PyMuPDF
+    M = WCS * M0
+    
+    # transforming
     res = []
-    a, b, c, d, e, f = WCS
     for (x0, y0) in path:
-        # transformate to original PDF CS                    
-        x = a*x0 + c*y0 + e
-        y = b*x0 + d*y0 + f
-
-        # pdf to PyMuPDF CS
-        y = height-y
-        
-        res.append((x, y))
+        P = fitz.Point(x0, y0) * M
+        res.append((P.x, P.y))
 
     return res
 
@@ -541,7 +513,7 @@ def _close_path(path:list):
         path.append(path[0])
 
 
-def _stroke_path(path: list, WCS: list, color: int, width: float, page_height: float):
+def _stroke_path(path:list, WCS:fitz.Matrix, color:int, width:float, page_height:float):
     ''' Stroke path with a given width. Only horizontal/vertical paths are considered.
     '''
     # CS transformation
@@ -569,7 +541,7 @@ def _stroke_path(path: list, WCS: list, color: int, width: float, page_height: f
     return rects
 
 
-def _fill_rect_path(path:list, WCS:list, color:int, page_height:float):
+def _fill_rect_path(path:list, WCS:fitz.Matrix, color:int, page_height:float):
     ''' Fill bbox of path with a given color. Only horizontal/vertical paths are considered.
     '''
     # CS transformation
