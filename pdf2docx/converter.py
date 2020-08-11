@@ -94,8 +94,7 @@ class Converter:
             page._wrapContents()
         
         # transformation matrix from PDF to PyMuPDF
-        # page.transformationMatrix for PyMuPDF>=1.17.0
-        M = page.getTransformation() # >=1.16.13
+        M = page.transformationMatrix # PyMuPDF>=1.17.0
         
         for xref in page.getContents():            
             page_content = self._doc_pdf._getXrefStream(xref).decode(encoding="ISO-8859-1")

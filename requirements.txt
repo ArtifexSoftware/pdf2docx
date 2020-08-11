@@ -1,3 +1,3 @@
-PyMuPDF>=1.16.16
+PyMuPDF>=1.17.0
 python-docx>=0.8.10
 fire>=0.3.0
