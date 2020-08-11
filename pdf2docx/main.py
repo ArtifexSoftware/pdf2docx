@@ -5,7 +5,7 @@
 from pdf2docx.converter import Converter
 
 
-def parse(pdf_file, docx_file, start=0, end=None, pages=[]):
+def parse(pdf_file, docx_file, start=0, end=None, pages=[], debug=False):
     ''' Run the pdf2docx parser.
     
         Args:
@@ -14,9 +14,10 @@ def parse(pdf_file, docx_file, start=0, end=None, pages=[]):
             start (int)    : first page to process, starting from zero
             end (int)      : last page to process, starting from zero
             pages (list)   : range of pages
+            debug          : create illustration pdf showing layouts if True, else do nothing
     '''
 
-    cv = Converter(pdf_file, docx_file)
+    cv = Converter(pdf_file, docx_file, debug)
 
     # parsing arguments
     pdf_len = len(cv)
