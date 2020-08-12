@@ -87,21 +87,14 @@ class Converter:
         raw_layout = page.getText('rawdict')
         self._layout = Layout(raw_layout)
         
-        # get rectangle shapes from page source:
-        # these shapes are generally converted from docx, e.g. highlight, underline,
-        # which are different from PDF comments like highlight, rectangle.
-        if not page._isWrapped:
-            page._wrapContents()
+        # get rectangle shapes from page source
+        # API available since PyMuPDF>=1.17.0
+        if not page._isWrapped: page._wrapContents()
+        page_content = page.readContents().decode(encoding="ISO-8859-1")
+        self._layout.rects.from_stream(page_content, page.transformationMatrix)
         
-        # transformation matrix from PDF to PyMuPDF
-        M = page.transformationMatrix # PyMuPDF>=1.17.0
-        
-        for xref in page.getContents():            
-            page_content = self._doc_pdf._getXrefStream(xref).decode(encoding="ISO-8859-1")
-            self._layout.rects.from_stream(page_content, M)
-        
-        # get annotations(comment shapes) from PDF page: consider highlight, underline, 
-        # strike-through-line only.
+        # get annotations(comment shapes) from PDF page, e.g. 
+        # highlight, underline and strike-through-line
         annots = page.annots()
         self._layout.rects.from_annotations(annots)
 

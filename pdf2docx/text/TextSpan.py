@@ -53,7 +53,8 @@ class TextSpan(BBox):
         self.chars = [ Char(c) for c in raw.get('chars', []) ] # type: list[Char]
 
         # introduced attributes
-        self.style = [] # a list of dict: { 'type': int, 'color': int }
+        # a list of dict: { 'type': int, 'color': int }
+        self.style = raw.get('style', []) 
 
     @property
     def font(self):
@@ -194,13 +195,11 @@ class TextSpan(BBox):
         d = self.bbox_raw[idx+2] - rect.bbox_raw[idx]
 
         # highlight: both the rect height and overlap must be large enough
-        if h_rect >= 0.75*h_span and d>0.5*h_span:
+        if h_rect >= 0.5*h_span:
             # In general, highlight color isn't white
-            if rect.color != utils.RGB_value((1,1,1)): 
+            if rect.color != utils.RGB_value((1,1,1)) and utils.get_main_bbox(self.bbox, rect.bbox, 0.75): 
                 rect.type = RectType.HIGHLIGHT
-            else:
-                rect.type = RectType.UNDEFINED
-
+    
         # near to bottom of span? yes, underline
         elif d <= 0.25*h_span:
             rect.type = RectType.UNDERLINE
@@ -225,7 +224,7 @@ class TextSpan(BBox):
         return True
 
 
-    def intersect(self, rect):
+    def intersects(self, rect):
         '''Create new TextSpan object with chars contained in given bbox.
             ---
             Args:
