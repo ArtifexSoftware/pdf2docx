@@ -125,7 +125,7 @@ class Rectangles(Collection):
         # mark table borders first
         # --------------------------------------------------
         # exit if no borders exist
-        if not self._set_table_borders(width_threshold=6.0):
+        if detect_border and not self._set_table_borders(width_threshold=6.0):
             return None
         
         # --------------------------------------------------
