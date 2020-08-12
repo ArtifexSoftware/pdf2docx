@@ -232,7 +232,7 @@ class Layout:
         # page break. The solution is to never put a table at the end of a page, so add
         # an empty paragraph and reset its format, particularly line spacing, when a table
         # is created.
-        if self.blocks[-1].is_table_block():
+        if len(self.blocks) and self.blocks[-1].is_table_block():
             p = doc.add_paragraph()
             reset_paragraph_format(p, Pt(1.0)) # a small line height: 1 Pt
 
