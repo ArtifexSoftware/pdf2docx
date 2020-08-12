@@ -84,6 +84,7 @@ class Collection(IText):
             self._instances.sort(key=lambda instance: (instance.bbox.y0, instance.bbox.x0, instance.bbox.x1))
         else:
             self._instances.sort(key=lambda instance: (instance.bbox.x0, instance.bbox.y1, instance.bbox.y0))
+        return self
 
     def sort_in_line_order(self):
         '''Sort collection instances in a physical with text direction considered, e.g.
@@ -93,6 +94,7 @@ class Collection(IText):
             self._instances.sort(key=lambda instance: (instance.bbox.x0, instance.bbox.y0, instance.bbox.x1))
         else:
             self._instances.sort(key=lambda instance: (instance.bbox.y1, instance.bbox.x0, instance.bbox.y0))
+        return self
 
     def reset(self, bboxes:list=[]):
         '''Reset instances list.'''
@@ -122,9 +124,6 @@ class Collection(IText):
         '''
         groups = [] # type: list[Collection]
         counted_index = set() # type: set[int]
-
-        # sort in reading order
-        self.sort_in_reading_order()
 
         # check each instance to the others
         for i,instance in enumerate(self._instances):

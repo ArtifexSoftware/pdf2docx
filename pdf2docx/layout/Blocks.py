@@ -139,7 +139,7 @@ class Blocks(Collection):
            
         # merge blocks horizontally, e.g. remove overlap blocks, since no floating elements are supported
         # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
-        self.merge_horizontally(text_direction=False)
+        self.sort_in_reading_order().merge_horizontally(text_direction=False)
 
         return True
 
