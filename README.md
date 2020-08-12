@@ -7,7 +7,7 @@
 - Parse text, table and layout from PDF file with `PyMuPDF`
 - Generate docx with `python-docx`
 
-## 1 Features
+## Features
 
 - [x] Parse and re-create text format
 	- [x] font style, e.g. font name, size, weight, italic and color
@@ -27,7 +27,7 @@
 
 *It can also be used as a tool to extract table contents since both table content and format/style is parsed.*
 
-### Limitations
+## Limitations
 
 - Text-based PDF file only
 - Normal reading direction only
@@ -37,7 +37,7 @@
 - Full borders table only
 
 
-## 2 Installation
+## Installation
 
 ### From Pypi
 
@@ -65,7 +65,7 @@ $ python setup.py develop
 $ pip uninstall pdf2docx
 ```
 
-## 3 Usage
+## Usage
 
 ### By range of pages
 
@@ -83,13 +83,13 @@ $ pdf2docx test.pdf test.docx --pages=5,7,9
 $ pdf2docx --help
 
 NAME
-    pdf2docx - Run the pdf2docx parser
+    pdf2docx - Run the pdf2docx parser.
 
 SYNOPSIS
     pdf2docx PDF_FILE DOCX_FILE <flags>
 
 DESCRIPTION
-    Run the pdf2docx parser
+    Run the pdf2docx parser.
 
 POSITIONAL ARGUMENTS
     PDF_FILE
@@ -104,6 +104,8 @@ FLAGS
         last page to process, starting from zero
     --pages=PAGES
         range of pages
+    --debug=DEBUG
+        create illustration pdf showing layouts if True, else do nothing
 
 NOTES
     You can also use flags syntax for POSITIONAL ARGUMENTS
@@ -147,6 +149,6 @@ for table in tables:
 ['Description F ', '1.00 ', '0.86 ', '0.37 ', '0.78 ', '0.01 ']]
 ```
 
-## 4 Sample
+## Sample
 
 ![sample_compare.png](https://s1.ax1x.com/2020/08/04/aDryx1.png)

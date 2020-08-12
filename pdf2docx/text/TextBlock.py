@@ -241,6 +241,11 @@ class TextBlock(Block):
         # taking bottom left corner of first line as the reference point                
         self.before_space += first_line_height - line_space
 
+        # if before spacing is negative, set to zero and adjust calculated line spacing accordingly
+        if self.before_space < 0:
+            self.line_space += self.before_space / count
+            self.before_space = 0.0
+
 
     def make_docx(self, p, bbox:tuple):
         ''' Create paragraph for a text block. Join line sets with TAB and set position according to bbox.
