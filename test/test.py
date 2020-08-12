@@ -136,12 +136,18 @@ class TestUtility(unittest.TestCase):
             for sample_line, test_line in zip(sample.lines, test.lines):
                 for sample_span, test_span in zip(sample_line.spans, test_line.spans):
                     if not isinstance(sample_span, TextSpan): continue
+                    
+                    # text
                     a, b = sample_span.text, test_span.text
                     self.assertEqual(a, b, msg=f"\nApplied text '{b}' is inconsistent with sample '{a}'")
-                    for sample_style, test_style in zip(sample_span.style, test_span.style):
-                        a, b = sample_style.style, test_style.style
-                        self.assertEqual(a, b, msg=f"\nApplied text format '{b}' is inconsistent with sample '{a}'")
-        
+
+                    # style
+                    m, n = len(sample_span.style), len(test_span.style)
+                    self.assertEqual(m, n, msg=f"\nThe count of applied text style {n} is inconsistent with sample {m}")
+
+                    for sample_dict, test_dict in zip(sample_span.style, test_span.style):
+                        a, b = sample_dict['type'], test_dict['type']
+                        self.assertEqual(a, b, msg=f"\nApplied text style '{b}' is inconsistent with sample '{a}'")
 
 
 class MainTest(TestUtility):
