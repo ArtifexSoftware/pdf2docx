@@ -147,15 +147,16 @@ class Blocks(Collection):
     def parse_table_content(self):
         '''Add Text/Image block lines to associated cells of Table blocks.'''
         # table blocks
+        # NOTE: some tables may be already parsed since explicit tables are parsed earlier than implicit tables.
+        # It's OK because no text blocks left for parsing such tables at this round.
         tables = self.table_blocks
+
         if not tables: return False
 
-        # collect blocks in table region        
+        # collect text blocks in table region        
         blocks_in_tables = [[] for _ in tables] # type: list[list[Block]]
         blocks = []   # type: list[Block]
-        for block in self._instances:
-            # ignore table block
-            if block.is_table_block(): continue
+        for block in self.text_blocks():
 
             # lines in block for further check if necessary
             lines = block.lines
@@ -163,7 +164,7 @@ class Blocks(Collection):
             # collect blocks contained in table region
             # NOTE: there is a probability that only a part of a text block is contained in table region, 
             # while the rest is in normal block region.
-            for table, blocks_in_table in zip(tables, blocks_in_tables):        
+            for table, blocks_in_table in zip(tables, blocks_in_tables):
                 # fully contained in one table
                 if table.bbox.contains(block.bbox):
                     blocks_in_table.append(block)
@@ -200,13 +201,14 @@ class Blocks(Collection):
         # assign blocks to associated cells
         # ATTENTION: no nested table is considered
         for table, blocks_in_table in zip(tables, blocks_in_tables):
+            # table is parsed already
+            if not blocks_in_table: continue
+            
             for row in table:
                 for cell in row:
                     if not cell: continue
                     # check candidate blocks
-                    for block in blocks_in_table:                        
-                        cell.add(block)
-
+                    for block in blocks_in_table: cell.add(block)
                     # merge blocks if contained blocks found
                     cell.blocks.merge_horizontally().split_vertically()
 
