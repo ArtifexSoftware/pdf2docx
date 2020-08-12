@@ -225,7 +225,7 @@ class TextSpan(BBox):
         return True
 
 
-    def intersect(self, rect):
+    def intersects(self, rect):
         '''Create new TextSpan object with chars contained in given bbox.
             ---
             Args:

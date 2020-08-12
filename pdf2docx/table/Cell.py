@@ -134,7 +134,7 @@ class Cell(BBox):
         # otherwise, further check lines in block
         split_block = TextBlock()
         for line in block.lines:
-            L = line.intersect(self.bbox)
+            L = line.intersects(self.bbox)
             split_block.add(L)
 
         self.blocks.append(split_block)
