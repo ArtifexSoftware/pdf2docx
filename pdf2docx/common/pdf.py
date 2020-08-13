@@ -289,8 +289,10 @@ def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
     # In addition to lines, rectangles are also processed with border path
     paths = [] # a list of path, each path is a list of points
 
-    # check xref stream word by word (line always changes)    
+    # check xref stream word by word (line always changes)
+    print(xref_stream)
     lines = xref_stream.split()
+    print(lines)
     rects = []
     for (i, line) in enumerate(lines):
 
@@ -332,7 +334,10 @@ def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
 
         # - CMYK mode
         elif line.upper()=='K': # c m y k K
-            c, m, y, k = map(float, lines[i-4:i])
+            try:
+                c, m, y, k = map(float, lines[i-4:i])
+            except ValueError:
+                continue
             #  nonstroking color
             if line=='k':
                 Wcf = utils.CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)
