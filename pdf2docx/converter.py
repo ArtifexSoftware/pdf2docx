@@ -88,15 +88,13 @@ class Converter:
         self._layout = Layout(raw_layout)
         
         # get rectangle shapes from page source
-        # API available since PyMuPDF>=1.17.0
-        if not page._isWrapped: page._wrapContents()
-        page_content = page.readContents().decode(encoding="ISO-8859-1")
-        self._layout.rects.from_stream(page_content, page.transformationMatrix)
+        if not page._isWrapped:
+            page.wrapContents()
+        self._layout.rects.from_stream(self.doc_pdf, page)
         
         # get annotations(comment shapes) from PDF page, e.g. 
-        # highlight, underline and strike-through-line
-        annots = page.annots()
-        self._layout.rects.from_annotations(annots)
+        # highlight, underline and strike-through-line        
+        self._layout.rects.from_annotations(page)
 
         # plot raw layout
         if self.debug_mode:

@@ -61,11 +61,11 @@ def new_page_with_margin(doc, width:float, height:float, margin:tuple, title:str
     return page
 
 
-def rects_from_annotations(annotations:list):
+def rects_from_annotations(page:fitz.Page):
     ''' Get shapes, e.g. Line, Square, Highlight, from annotations(comment shapes) in PDF page.
         ---
         Args:
-          - annotations: a list of PyMuPDF Annot objects, refering to link below
+        - page: fitz.Page, current page
         
         There are stroke and fill properties for each shape, representing border and filling area respectively.
         So, a square annotation with both stroke and fill will be converted to five rectangles here:
@@ -76,7 +76,7 @@ def rects_from_annotations(annotations:list):
             - https://pymupdf.readthedocs.io/en/latest/vars.html#annotation-types
     '''
     rects = []
-    for annot in annotations:
+    for annot in page.annots():
 
         # annot type, e.g. (8, 'Highlight')
         key = annot.type[0]
@@ -215,25 +215,15 @@ def rects_from_annotations(annotations:list):
     return rects
 
 
-def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
-    ''' Get rectangle shapes by parsing page cross reference stream.
-
-        Note: these shapes are generally converted from pdf source, e.g. highlight, underline, 
-        which are different from PDF comments shape.
-
+def rects_from_stream(doc:fitz.Document, page:fitz.Page):
+    ''' Get rectangle shapes, e.g. highlight, underline, table borders, from page source contents.
         ---
         Args:
-            - xref_streams: doc._getXrefStream(xref).decode()        
-            - matrix: transformation matrix for coordinate system conversion from pdf to fitz 
+        - doc: fitz.Document representing the pdf file
+        - page: fitz.Page, current page
 
-        --------            
-        References:
-            - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdf_reference_archive/pdf_reference_1-7.pdf
-            - Appendix A for associated operators
-            - Section 8.5 Path Construction and Painting
-            - https://github.com/pymupdf/PyMuPDF/issues/263
-
-        typical mark of rectangle in xref stream:
+        The page source is represented as contents of stream object. For example,
+        ```
             /P<</MCID 0>> BDC
             ...
             1 0 0 1 90.0240021 590.380005 cm
@@ -246,25 +236,38 @@ def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
             249 322 l
             ...
             EMC
-
+        ```
         where,
-            - `MCID` indicates a Marked content, where rectangles exist
-            - `cm` specify a coordinate system transformation, 
-        here (0,0) translates to (90.0240021 590.380005)
-            - `q`/`Q` save/restores graphic status
-            - `rg` / `g` specify color mode: rgb / grey
-            - `re`, `f` or `f*`: fill rectangle path with pre-defined color. If no `f`/`f*` coming after
-        `re`, it's a rectangle with borders only (no filling).
-        in this case,
+        - `cm` specify a coordinate system transformation, here (0,0) translates to (90.0240021 590.380005)
+        - `q`/`Q` save/restores graphic status
+        - `rg` / `g` specify color mode: rgb / grey
+        - `re`, `f` or `f*`: fill rectangle path with pre-defined color
+        - `m` (move to) and `l` (line to) defines a path
+        
+        In this case,
+        - a rectangle with:
             - fill color is yellow (1,1,0)
             - lower left corner: (285.17 500.11)
             - width: 193.97
             - height: 13.44
-            - `m`, `l`: draw line from `m` (move to) to `l` (line to)
+        - a line from (214, 320) to (249, 322)
 
-        Note: coordinates system transformation should be considered if text format
-            is set from PDF file with edit mode. 
+        Read more:        
+        - https://github.com/pymupdf/PyMuPDF/issues/263
+        - https://github.com/pymupdf/PyMuPDF/issues/225
+        - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdf_reference_archive/pdf_reference_1-7.pdf
     '''
+    # Each object in PDF has a cross-reference number (xref):
+    # - to get its source contents: `doc._getXrefString(xref)`; but for stream objects, only the non-stream part is returned
+    # - to get the stream data: `doc._getXrefStream(xref)`
+    # - the xref for a page object itself: `page.xref`
+    # - all stream xref contained in one page: `page.getContents()`
+    # - combine all stream object contents together: `page.readContents()` with PyMuPDF>=1.17.0
+    xref_stream = page.readContents().decode(encoding="ISO-8859-1") 
+
+    # transformation matrix for coordinate system conversion from pdf to fitz
+    matrix = page.transformationMatrix
+
     # Graphic States:
     # - working CS is coincident with the absolute origin (0, 0)
     # Refer to PDF reference v1.7 4.2.3 Transformation Metrices
@@ -293,19 +296,12 @@ def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
     lines = xref_stream.split()
     rects = []
     for (i, line) in enumerate(lines):
-
-        # CS transformation: a b c d e f cm, e.g.
-        # 0.05 0 0 -0.05 0 792 cm
-        # refer to PDF Reference 4.2.2 Common Transformations for detail
-        if line=='cm':
-            # update working CS
-            components = list(map(float, lines[i-6:i]))
-            Mt = fitz.Matrix(*components)
-            WCS = Mt * WCS # M' = Mt x M
-
-        # painting color
+        
+        # -----------------------------------------------
+        # Color Operators: PDF Reference Table 4.24
+        # -----------------------------------------------
         # - reset color space
-        elif line.upper()=='CS':
+        if line.upper()=='CS':
             Wcs = utils.RGB_value((0.0, 0.0, 0.0))
             Wcf = utils.RGB_value((0.0, 0.0, 0.0))
 
@@ -364,6 +360,18 @@ def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
             else:
                 Wcs = c
 
+        # -----------------------------------------------
+        # Graphics State Operators: PDF References Table 4.7
+        # -----------------------------------------------
+        # CS transformation: a b c d e f cm, e.g.
+        # 0.05 0 0 -0.05 0 792 cm
+        # refer to PDF Reference 4.2.2 Common Transformations for detail
+        elif line=='cm':
+            # update working CS
+            components = list(map(float, lines[i-6:i]))
+            Mt = fitz.Matrix(*components)
+            WCS = Mt * WCS # M' = Mt x M
+
         # stroke width
         elif line=='w':
             Wd = float(lines[i-1])
@@ -382,6 +390,9 @@ def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
             Wcs = Acs
             Wd = Ad
 
+        # -----------------------------------------------
+        # Path COnstruction Operators: PDF References Table 4.9
+        # -----------------------------------------------
         # rectangle block:
         # x y w h re is equivalent to
         # x   y   m
@@ -426,6 +437,9 @@ def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
         elif line=='h': 
             for path in paths: _close_path(path)
 
+        # -----------------------------------------------
+        # Path-painting Operatores: PDF Reference Table 4.10
+        # -----------------------------------------------
         # close and stroke the path
         elif line.upper()=='S':
             # close
