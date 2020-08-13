@@ -332,7 +332,10 @@ def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
 
         # - CMYK mode
         elif line.upper()=='K': # c m y k K
-            c, m, y, k = map(float, lines[i-4:i])
+            try:
+                c, m, y, k = map(float, lines[i-4:i])
+            except ValueError:
+                continue
             #  nonstroking color
             if line=='k':
                 Wcf = utils.CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)
