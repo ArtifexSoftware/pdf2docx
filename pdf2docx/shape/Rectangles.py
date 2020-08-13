@@ -111,14 +111,21 @@ class Rectangles(Collection):
         return rect_changed
 
 
-    def parse_table_structure(self):
-        ''' Parse table structure from rects in table border/shading type.'''
+    def parse_table_structure(self, detect_border=True):
+        ''' Parse table structure from rects, which may be border, shading or text style.
+            ---
+            Args:
+            - detect_border: to detect table border if True.
+
+            NOTE: for implicit table, table borders are determined from text blocks in advance,
+            so, it's safe to set `detect_border=False`.
+        '''
 
         # --------------------------------------------------
         # mark table borders first
         # --------------------------------------------------
         # exit if no borders exist
-        if not self._set_table_borders(width_threshold=6.0):
+        if detect_border and not self._set_table_borders(width_threshold=6.0):
             return None
         
         # --------------------------------------------------

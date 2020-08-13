@@ -98,7 +98,7 @@ class Line(BBox):
             self.spans.append(span)
 
 
-    def intersect(self, rect):
+    def intersects(self, rect):
         '''Create new Line object with spans contained in given bbox.
             ---
             Args:
@@ -115,7 +115,7 @@ class Line(BBox):
             'dir': self.dir
         })
         for span in self.spans:
-            contained_span = span.intersect(rect)
+            contained_span = span.intersects(rect)
             line.add(contained_span)
 
         return line

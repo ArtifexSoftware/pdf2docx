@@ -175,13 +175,19 @@ class TextBlock(Block):
 
             # any intersection with current block?
             if not self.bbox.intersects(rect.bbox):
+                # impossible to intersect with next rect if this block is behind current rect
+                # NOTE: rects are sorted in reading order in advance
+                if self.bbox.y1 < rect.bbox.y0: break
                 continue
 
             # yes, then go further to lines in block            
             for line in self.lines:
                 # any intersection in this line?
                 intsec = rect.bbox & ( line.bbox + utils.DR )
-                if not intsec: continue
+                
+                if not intsec: 
+                    if rect.bbox.y1 < line.bbox.y0: break # lines must be sorted in advance
+                    continue
 
                 # yes, then try to split the spans in this line
                 split_spans = []

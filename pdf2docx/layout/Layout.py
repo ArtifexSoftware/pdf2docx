@@ -232,7 +232,7 @@ class Layout:
         # page break. The solution is to never put a table at the end of a page, so add
         # an empty paragraph and reset its format, particularly line spacing, when a table
         # is created.
-        if self.blocks[-1].is_table_block():
+        if len(self.blocks) and self.blocks[-1].is_table_block():
             p = doc.add_paragraph()
             reset_paragraph_format(p, Pt(1.0)) # a small line height: 1 Pt
 
@@ -305,9 +305,16 @@ class Layout:
         # parse tables
         flag = False
         for table_bboxes in tables_bboxes:
-            # parse borders based on contents in cell,
-            # and parse table based on rect borders
-            table = table_bboxes.implicit_borders(X0, X1).parse_table_structure()
+            # parse borders based on contents in cell
+            table_rects = table_bboxes.implicit_borders(X0, X1)
+
+            # get potential cell shading
+            table_bbox = table_rects.bbox
+            table_rects.extend(filter(
+                lambda rect: table_bbox.intersects(rect.bbox), self.rects))
+
+            # parse table: don't have to detect borders since it's determined already
+            table = table_rects.parse_table_structure(detect_border=False)
 
             # add parsed table to page level blocks
             # in addition, ignore table if contains only one cell since it's unnecessary for implicit table

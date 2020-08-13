@@ -33,7 +33,7 @@ class ImageSpan(Image):
         page.drawRect(self.bbox, color=color, fill=None, overlay=False)
 
 
-    def intersect(self, rect):
+    def intersects(self, rect):
         '''Create new ImageSpan object with image contained in given bbox.
             ---
             Args:
