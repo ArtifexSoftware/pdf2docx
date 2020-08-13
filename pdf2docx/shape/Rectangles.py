@@ -380,7 +380,7 @@ class Rectangles(Collection):
                 h_outer.extend([rect.bbox.y0, rect.bbox.y1])
 
         # at least 2 inner borders exist
-        if len(h_borders)+len(v_borders)<2:
+        if not h_borders or not v_borders:
             return None, None
 
         # Note: add dummy borders if no outer borders exist
