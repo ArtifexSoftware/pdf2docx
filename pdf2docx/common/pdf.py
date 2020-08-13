@@ -258,8 +258,8 @@ def rects_from_stream(doc:fitz.Document, page:fitz.Page):
         - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdf_reference_archive/pdf_reference_1-7.pdf
     '''
     # Each object in PDF has a cross-reference number (xref):
-    # - to get its source contents: `doc._getXrefString(xref)`; but for stream objects, only the non-stream part is returned
-    # - to get the stream data: `doc._getXrefStream(xref)`
+    # - to get its source contents: `doc.xrefObject()` or low level API `doc._getXrefString()`; but for stream objects, only the non-stream part is returned
+    # - to get the stream data: `doc.xrefStream(xref)` or low level API `doc._getXrefStream(xref)`
     # - the xref for a page object itself: `page.xref`
     # - all stream xref contained in one page: `page.getContents()`
     # - combine all stream object contents together: `page.readContents()` with PyMuPDF>=1.17.0
