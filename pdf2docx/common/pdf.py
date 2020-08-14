@@ -600,12 +600,12 @@ def _RGB_from_color_components(components:list):
 
     # RGB mode
     elif num==3:
-        r, g, b = map(float, components[1:])
+        r, g, b = map(float, components)
         color = utils.RGB_value((r, g, b))
 
     # gray mode
     elif num==1:
-        g = float(components[-1])
+        g = float(components[0])
         color = utils.RGB_value((g,g,g))
 
     return color
