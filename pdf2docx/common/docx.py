@@ -15,20 +15,6 @@ from docx.table import _Cell
 from .utils import RGB_value, DM
 
 
-def to_Highlight_color(sRGB:int):
-    '''pre-defined color index for highlighting text with python-docx'''
-    # part of pre-defined colors
-    color_map = {        
-        RGB_value((1,0,0)): WD_COLOR_INDEX.RED,
-        RGB_value((0,1,0)): WD_COLOR_INDEX.BRIGHT_GREEN,
-        RGB_value((0,0,1)): WD_COLOR_INDEX.BLUE,
-        RGB_value((1,1,0)): WD_COLOR_INDEX.YELLOW,
-        RGB_value((1,0,1)): WD_COLOR_INDEX.PINK,
-        RGB_value((0,1,1)): WD_COLOR_INDEX.TURQUOISE
-    }
-    return color_map.get(sRGB, WD_COLOR_INDEX.YELLOW)
-
-
 def reset_paragraph_format(p, line_spacing:float=1.05):
     ''' Reset paragraph format, especially line spacing.
         ---
@@ -92,31 +78,56 @@ def add_image(p, byte_image, width):
     p.paragraph_format.line_spacing = 1.00
 
 
-def set_character_scaling(p_run, scale:float=1.0):
+def set_char_scaling(p_run, scale:float=1.0):
     ''' Set character spacing: scaling. Font | Advanced | Character Spacing | Scaling.
         ---
         Args:
           - p_run: docx.text.run.Run, proxy object wrapping <w:r> element
           - scale: scaling factor
     '''
-    # get or create run properties
-    properties = p_run._element.xpath('w:rPr')
-    if not properties:
-        property = OxmlElement('w:rPr')
-        p_run._element.append(property)
+    p_run._r.get_or_add_rPr().insert(0, parse_xml(r'<w:w {} w:val="{}"/>'.format(nsdecls('w'), 100*scale)))
+
+
+def set_char_shading(p_run, srgb:int):
+    '''Set character shading color, in case the color is out of highlight color scope.
+        ---
+        Args:
+        - p_run: docx.text.run.Run, proxy object wrapping <w:r> element
+        - srgb: int, color value
+
+        Read more:
+        - http://officeopenxml.com/WPtextShading.php
+    '''
+    # try to set highlight first using python-docx built-in method
+    # Here give 6/16 of the valid highlight colors
+    color_map = {        
+        RGB_value((1,0,0)): WD_COLOR_INDEX.RED,
+        RGB_value((0,1,0)): WD_COLOR_INDEX.BRIGHT_GREEN,
+        RGB_value((0,0,1)): WD_COLOR_INDEX.BLUE,
+        RGB_value((1,1,0)): WD_COLOR_INDEX.YELLOW,
+        RGB_value((1,0,1)): WD_COLOR_INDEX.PINK,
+        RGB_value((0,1,1)): WD_COLOR_INDEX.TURQUOISE
+    }
+    if srgb in color_map:
+        p_run.font.highlight_color = color_map[srgb]
+
+    # set char shading
     else:
-        property = properties[0]
-    
-    # get or create character scaling under properties
-    ws = property.xpath('w:w')
-    if not ws:
-        w = OxmlElement('w:w')
-        property.append(w)
-    else:
-        w = ws[0]
-    
-    # set scaling: percentage
-    w.set(qn('w:val'), str(100*scale))
+        c = hex(srgb)[2:].zfill(6)
+        xml = r'<w:shd {} w:val="clear" w:color="auto" w:fill="{}"/>'.format(nsdecls('w'), c)
+        p_run._r.get_or_add_rPr().insert(0, parse_xml(xml))
+
+
+def set_char_underline(p_run, srgb:int):
+    '''Set underline and color.
+        ---
+        Args:
+        - p_run: docx.text.run.Run, proxy object wrapping <w:r> element
+        - srgb: int, color value
+    '''
+    c = hex(srgb)[2:].zfill(6)
+    xml = r'<w:u {} w:val="single" w:color="{}"/>'.format(nsdecls('w'), c)
+    p_run._r.get_or_add_rPr().insert(0, parse_xml(xml))
 
 
 def indent_table(table, indent:float):
@@ -162,15 +173,16 @@ def set_cell_margins(cell:_Cell, **kwargs):
     tcPr.append(tcMar)
 
 
-def set_cell_shading(cell:_Cell, RGB_value):
+def set_cell_shading(cell:_Cell, srgb:int):
     ''' set cell background-color.
         ---
         Args:
-          - cell:  actual cell instance you want to modify
+        - cell: actual cell instance you want to modify
+        - srgb: RGB color value
 
         https://stackoverflow.com/questions/26752856/python-docx-set-table-cell-background-and-text-color
     '''
-    c = hex(RGB_value)[2:].zfill(6)
+    c = hex(srgb)[2:].zfill(6)
     cell._tc.get_or_add_tcPr().append(parse_xml(r'<w:shd {} w:fill="{}"/>'.format(nsdecls('w'), c)))
 
 
