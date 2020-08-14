@@ -282,6 +282,9 @@ def rects_from_stream(doc:fitz.Document, page:fitz.Page):
     WCS = fitz.Matrix(0.0)
 
     # - graphics color: 
+    #   - color space: PDF Reference Section 4.5 Color Spaces
+    #     consider device color space only like DeviceGray, DeviceRGB, DeviceCMYK
+    device_space = True
     #   - stroking color
     Acs = utils.RGB_value((0.0, 0.0, 0.0)) # stored value
     Wcs = Acs                              # working value
@@ -310,12 +313,46 @@ def rects_from_stream(doc:fitz.Document, page:fitz.Page):
         # -----------------------------------------------
         # Color Operators: PDF Reference Table 4.24
         # -----------------------------------------------
-        # - reset color space
+        # - set color space:
+        #   color_space_name cs  # specify color space
+        #   c1 c2 ... SC/SCN     # components under defined color space
         if op.upper()=='CS':
             Wcs = utils.RGB_value((0.0, 0.0, 0.0))
             Wcf = utils.RGB_value((0.0, 0.0, 0.0))
 
-        # - gray mode
+            # Consider normal device cs here, i.e. DeviceGray, DeviceRGB, DeviceCMYK
+            if words[0] in ('/DeviceGray', '/DeviceRGB', '/DeviceCMYK'):
+                device_space = True
+            else:
+                device_space = False
+
+        # - set color: color components under specified color space
+        elif op.upper()=='SC': # c1 c2 ... cn SC
+            c = _RGB_from_color_components(words[0:-1], device_space)
+            #  nonstroking color
+            if op=='sc':
+                Wcf = c
+            # stroking color
+            else:
+                Wcs = c
+
+        # - set color: color components under specified color space
+        elif op.upper()=='SCN': # c1 c2 ... cn [name] SC
+            if utils.is_number(words[-2]):
+                c = _RGB_from_color_components(words[0:-1], device_space)
+            else:
+                c = _RGB_from_color_components(words[0:-2], device_space)
+
+            #  nonstroking color
+            if op=='scn':
+                Wcf = c
+            # stroking color
+            else:
+                Wcs = c
+
+        # - DeviceGray space, equal to:
+        # /DeviceGray cs
+        # c sc
         elif op.upper()=='G':  # 0 g
             g = float(words[0])
             # nonstroking color, i.e. filling color here
@@ -325,7 +362,7 @@ def rects_from_stream(doc:fitz.Document, page:fitz.Page):
             else:
                 Wcs = utils.RGB_value((g, g, g))
 
-        # - RGB mode
+        # - DeviceRGB space
         elif op.upper()=='RG': # 1 1 0 rg
             r, g, b = map(float, words[0:-1])
 
@@ -336,7 +373,7 @@ def rects_from_stream(doc:fitz.Document, page:fitz.Page):
             else:
                 Wcs = utils.RGB_value((r, g, b))
 
-        # - CMYK mode
+        # - DeviceCMYK space
         elif op.upper()=='K': # c m y k K
             c, m, y, k = map(float, words[0:-1])
             #  nonstroking color
@@ -344,31 +381,7 @@ def rects_from_stream(doc:fitz.Document, page:fitz.Page):
                 Wcf = utils.CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)
             # stroking color
             else:
-                Wcs = utils.CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)
-
-        # - set color: either gray, or RGB or CMYK mode
-        elif op.upper()=='SC': # c1 c2 ... cn SC
-            c = _RGB_from_color_components(words[0:-1])
-            #  nonstroking color
-            if op=='sc':
-                Wcf = c
-            # stroking color
-            else:
-                Wcs = c
-
-        # - set color: either gray, or RGB or CMYK mode
-        elif op.upper()=='SCN': # c1 c2 ... cn [name] SC
-            if utils.is_number(words[-2]):
-                c = _RGB_from_color_components(words[0:-1])
-            else:
-                c = _RGB_from_color_components(words[0:-2])
-
-            #  nonstroking color
-            if op=='scn':
-                Wcf = c
-            # stroking color
-            else:
-                Wcs = c
+                Wcs = utils.CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)        
 
         # -----------------------------------------------
         # Graphics State Operators: PDF References Table 4.7
@@ -584,13 +597,21 @@ def _fill_rect_path(path:list, WCS:fitz.Matrix, color:int, page_height:float):
     }
 
 
-def _RGB_from_color_components(components:list):
-    ''' Detect color mode from given components and calculate the RGB value.
+def _RGB_from_color_components(components:list, device_cs:bool=True):
+    ''' Get color based on color components and color space.
         ---
         Args:
         - components: color components in various color space, e.g. grey, RGB, CMYK
+        - device_cs: whether this is under device color space
     '''
+    # black by default
     color = utils.RGB_value((0.0,0.0,0.0)) # type: int
+
+    # NOTE: COnsider only the device color space, i.e. Gray, RGB, CMYK.
+    if not device_cs:
+        return color
+
+    # if device cs, decide the cs with length of color components
     num = len(components)
 
     # CMYK mode
