@@ -88,8 +88,6 @@ class Converter:
         self._layout = Layout(raw_layout)
         
         # get rectangle shapes from page source
-        if not page._isWrapped:
-            page.wrapContents()
         self._layout.rects.from_stream(self.doc_pdf, page)
         
         # get annotations(comment shapes) from PDF page, e.g. 
