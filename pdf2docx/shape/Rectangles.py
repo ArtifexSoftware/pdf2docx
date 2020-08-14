@@ -24,41 +24,27 @@ class Rectangles(Collection):
         return list(filter(
             lambda rect: rect.type==RectType.BORDER, self._instances))
 
-    def from_annotations(self, annotations: list):
+    def from_annotations(self, page):
         ''' Get shapes, e.g. Line, Square, Highlight, from annotations(comment shapes) in PDF page.
             ---
             Args:
-              - annotations: a list of PyMuPDF Annot objects, refering to link below
-            
-            There are stroke and fill properties for each shape, representing border and filling area respectively.
-            So, a square annotation with both stroke and fill will be converted to five rectangles here:
-            four borders and one filling area.
-
-            read more:
-              - https://pymupdf.readthedocs.io/en/latest/annot.html
-              - https://pymupdf.readthedocs.io/en/latest/vars.html#annotation-types
+            - page: fitz.Page, current page
         '''
-        rects = pdf.rects_from_annotations(annotations)
+        rects = pdf.rects_from_annotations(page)
         for rect in rects:
             self._instances.append(Rectangle(rect))
 
         return self
 
 
-    def from_stream(self, xref_stream: str, M):
-        ''' Get rectangle shapes by parsing page cross reference stream.
+    def from_stream(self, doc, page):
+        ''' Get rectangle shapes, e.g. highlight, underline, table borders, from page source contents.
             ---
             Args:
-              - xref_streams: page content from `doc._getXrefStream(xref).decode()`      
-              - M: transformation matrix for coordinate system conversion from pdf to fitz 
-
-            read more:
-              - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdf_reference_archive/pdf_reference_1-7.pdf
-                - Appendix A for associated operators
-                - Section 8.5 Path Construction and Painting
-              - https://github.com/pymupdf/PyMuPDF/issues/263
+            - doc: fitz.Document representing the pdf file
+            - page: fitz.Page, current page
         '''
-        rects = pdf.rects_from_stream(xref_stream, M)
+        rects = pdf.rects_from_stream(doc, page)
         for rect in rects:
             self._instances.append(Rectangle(rect))
 
@@ -380,7 +366,7 @@ class Rectangles(Collection):
                 h_outer.extend([rect.bbox.y0, rect.bbox.y1])
 
         # at least 2 inner borders exist
-        if len(h_borders)+len(v_borders)<2:
+        if not h_borders or not v_borders:
             return None, None
 
         # Note: add dummy borders if no outer borders exist
