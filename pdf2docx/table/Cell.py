@@ -8,11 +8,10 @@ Table Cell object.
 '''
 
 from docx.shared import Pt
-from docx.enum.table import WD_ROW_HEIGHT
 from ..text.TextBlock import TextBlock
 from ..common.BBox import BBox
 from ..common.utils import RGB_component
-from ..common.docx import set_cell_border, set_cell_shading
+from ..common import docx
 from ..layout import Blocks # avoid conflict
 
 
@@ -140,7 +139,43 @@ class Cell(BBox):
         self.blocks.append(split_block)
 
 
-    def set_style(self, table, indexes, border_style=True):
+    def make_docx(self, table, indexes, border_style:bool):
+        '''Create docx table.
+            ---
+            Args:
+              - table: docx table instance
+              - indexes: (i, j), row and column indexes
+              - border_style: whether set border style
+        '''
+        # ignore merged cells
+        if not bool(self): return
+        
+        # set cell style
+        # no borders for implicit table
+        self._set_style(table, indexes, border_style)
+
+        # clear cell margin
+        # NOTE: the start position of a table is based on text in cell, rather than left border of table. 
+        # They're almost aligned if left-margin of cell is zero.
+        docx_cell = table.cell(*indexes)
+        docx.set_cell_margins(docx_cell, start=0, end=0)
+
+        # set vertical direction if contained text blocks are in vertical direction
+        if self.blocks.is_vertical:
+            docx.set_vertical_cell_direction(docx_cell)
+
+        # insert text            
+        first = True
+        for block in self.blocks:
+            if first:
+                p = docx_cell.paragraphs[0]
+                first = False
+            else:
+                p = docx_cell.add_paragraph()
+            block.make_docx(p, self.bbox_raw)
+
+
+    def _set_style(self, table, indexes, border_style=True):
         ''' Set python-docx cell style, e.g. border, shading, width, row height, 
             based on cell block parsed from PDF.
             ---
@@ -150,7 +185,7 @@ class Cell(BBox):
               - border_style: set border style or not
         '''
         i, j = indexes
-        cell = table.cell(i, j)
+        docx_cell = table.cell(i, j)
         n_row, n_col = self.merged_cells
 
         # ---------------------
@@ -169,37 +204,24 @@ class Cell(BBox):
             # merged cells are assumed to have same borders with the main cell        
             for m in range(i, i+n_row):
                 for n in range(j, j+n_col):
-                    set_cell_border(table.cell(m, n), **kwargs)
+                    docx.set_cell_border(table.cell(m, n), **kwargs)
 
         # ---------------------
         # merge cells
         # ---------------------        
         if n_row*n_col!=1:
             _cell = table.cell(i+n_row-1, j+n_col-1)
-            cell.merge(_cell)
+            docx_cell.merge(_cell)
 
         # ---------------------
-        # cell width/height
+        # cell width (cell height is set by row height)
         # ---------------------
-        x0, y0, x1, y1 = self.bbox_raw
-        
-        # set cell height by setting row height
-        # NOTE: consider separate rows (without cell merging) only since merged rows are determined accordingly.
-        if n_row==1:
-            row = table.rows[i]
-            # to control the layout precisely, set `exact` value, rather than `at least` value
-            # the associated steps in MS word: Table Properties -> Row -> Row height -> exactly
-            row.height_rule = WD_ROW_HEIGHT.EXACTLY
-            # NOTE: cell height is counted from center-line of top border to center line of bottom border,
-            # i.e. the height of cell bbox
-            row.height = Pt(y1-y0) # Note cell does not have height property.    
-        
-        # set cell width
         # experience: width of merged cells may change if not setting width for merged cells
-        cell.width = Pt(x1-x0)
+        x0, y0, x1, y1 = self.bbox_raw
+        docx_cell.width = Pt(x1-x0)
 
         # ---------------------
         # cell bg-color
         # ---------------------
         if self.bg_color!=None:
-            set_cell_shading(cell, self.bg_color)
+            docx.set_cell_shading(docx_cell, self.bg_color)

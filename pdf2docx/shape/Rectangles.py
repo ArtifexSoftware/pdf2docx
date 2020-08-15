@@ -14,6 +14,7 @@ from ..common.Collection import Collection
 from ..common import utils
 from ..common import pdf
 from ..table.TableBlock import TableBlock
+from ..table.Row import Row
 from ..table.Cell import Cell
 
 class Rectangles(Collection):
@@ -124,25 +125,25 @@ class Rectangles(Collection):
             return None
 
         # sort
-        rows = sorted(h_borders)
-        cols = sorted(v_borders)       
+        y_rows = sorted(h_borders)
+        x_cols = sorted(v_borders)       
             
         # --------------------------------------------------
         # parse table structure, especially the merged cells
         # -------------------------------------------------- 
         # check merged cells in each row
         merged_cells_rows = []  # type: list[list[int]]
-        for i, row in enumerate(rows[0:-1]):
-            ref_y = (row+rows[i+1])/2.0
-            ordered_v_borders = [v_borders[k] for k in cols]
+        for i, row in enumerate(y_rows[0:-1]):
+            ref_y = (row+y_rows[i+1])/2.0
+            ordered_v_borders = [v_borders[k] for k in x_cols]
             row_structure = self._check_merged_cells(ref_y, ordered_v_borders, 'row')
             merged_cells_rows.append(row_structure)
 
         # check merged cells in each column
         merged_cells_cols = []  # type: list[list[int]]
-        for i, col in enumerate(cols[0:-1]):
-            ref_x = (col+cols[i+1])/2.0
-            ordered_h_borders = [h_borders[k] for k in rows]
+        for i, col in enumerate(x_cols[0:-1]):
+            ref_x = (col+x_cols[i+1])/2.0
+            ordered_h_borders = [h_borders[k] for k in y_rows]
             col_structure = self._check_merged_cells(ref_x, ordered_h_borders, 'column')        
             merged_cells_cols.append(col_structure)
 
@@ -154,12 +155,15 @@ class Rectangles(Collection):
         n_cols = len(merged_cells_cols)
 
         for i in range(n_rows):
-            cells_in_row = []    # type: list[Cell]
+            # row object
+            row = Row()
+            row.height = y_rows[i+1]-y_rows[i]
+            
             for j in range(n_cols):
                 # if current cell is merged horizontally or vertically, set None.
                 # actually, it will be counted in the top-left cell of the merged range.
                 if merged_cells_rows[i][j]==0 or merged_cells_cols[j][i]==0:
-                    cells_in_row.append(Cell())
+                    row.append(Cell())
                     continue
 
                 # Now, this is the top-left cell of merged range.
@@ -182,10 +186,10 @@ class Rectangles(Collection):
                         break
 
                 # cell border rects: merged cells considered
-                top = h_borders[rows[i]][0]
-                bottom = h_borders[rows[i+n_row]][0]
-                left = v_borders[cols[j]][0]
-                right = v_borders[cols[j+n_col]][0]
+                top = h_borders[y_rows[i]][0]
+                bottom = h_borders[y_rows[i+n_row]][0]
+                left = v_borders[x_cols[j]][0]
+                right = v_borders[x_cols[j+n_col]][0]
 
                 w_top = top.bbox.y1-top.bbox.y0
                 w_right = right.bbox.x1-right.bbox.x0
@@ -193,7 +197,7 @@ class Rectangles(Collection):
                 w_left = left.bbox.x1-left.bbox.x0
 
                 # cell bbox
-                bbox = (cols[j], rows[i], cols[j+n_col], rows[i+n_row])
+                bbox = (x_cols[j], y_rows[i], x_cols[j+n_col], y_rows[i+n_row])
 
                 # shading rect in this cell
                 # modify the cell bbox from border center to inner region
@@ -214,17 +218,16 @@ class Rectangles(Collection):
                     'border_width': (w_top, w_right, w_bottom, w_left),
                     'merged_cells': (n_row, n_col),
                 }
-
-                cells_in_row.append(Cell(cell_dict))
+                row.append(Cell(cell_dict))
                     
             # one row finished
             # check table: the first cell in first row MUST NOT be None
-            if i==0 and not cells_in_row[0]:
+            if i==0 and not row[0]:
                 # reset borders because it's a invalid table
                 self._unset_table_border()
                 return None
 
-            table.append_row(cells_in_row)
+            table.append(row)
 
         return table
 
@@ -532,19 +535,19 @@ class Rectangles(Collection):
 
         # collect bbox-ex column by column
         X0, Y0, X1, Y1 = border_bbox
-        cols_rects, cols_rect = self._column_borders_from_bboxes()
+        cols_rects = self._column_borders_from_bboxes()
         col_num = len(cols_rects)
 
         for i in range(col_num):
             # add column border
-            x0 = X0 if i==0 else (cols_rect[i-1].bbox.x1 + cols_rect[i].bbox.x0) / 2.0
-            x1 = X1 if i==col_num-1 else (cols_rect[i].bbox.x1 + cols_rect[i+1].bbox.x0) / 2.0
+            x0 = X0 if i==0 else (cols_rects[i-1].bbox.x1 + cols_rects[i].bbox.x0) / 2.0
+            x1 = X1 if i==col_num-1 else (cols_rects[i].bbox.x1 + cols_rects[i+1].bbox.x0) / 2.0
 
             if i<col_num-1:
                 borders.append((x1, Y0, x1, Y1))
 
             # collect bboxes row by row        
-            rows_rects, rows_rect = cols_rects[i]._row_borders_from_bboxes()
+            rows_rects = cols_rects[i]._row_borders_from_bboxes()
 
             # NOTE: unnecessary to split row if the count of row is 1
             row_num = len(rows_rects)
@@ -552,12 +555,12 @@ class Rectangles(Collection):
         
             for j in range(row_num):
                 # add row border
-                y0 = Y0 if j==0 else (rows_rect[j-1].bbox.y1 + rows_rect[j].bbox.y0) / 2.0
-                y1 = Y1 if j==row_num-1 else (rows_rect[j].bbox.y1 + rows_rect[j+1].bbox.y0) / 2.0
+                y0 = Y0 if j==0 else (rows_rects[j-1].bbox.y1 + rows_rects[j].bbox.y0) / 2.0
+                y1 = Y1 if j==row_num-1 else (rows_rects[j].bbox.y1 + rows_rects[j+1].bbox.y0) / 2.0
                 
                 # it's Ok if single bbox in a line
-                if len(rows_rects[j])<2:
-                    continue
+                # if len(rows_rects[j])<2:
+                #     continue
 
                 # otherwise, add row border and check borders further
                 if j==0:
@@ -577,30 +580,27 @@ class Rectangles(Collection):
 
     def _column_borders_from_bboxes(self):
         ''' split bbox-es into column groups and add border for adjacent two columns.'''
-        # sort bbox-ex in column first mode: from left to right, from top to bottom
+        # sort bbox-ex in column first: from left to right, from top to bottom
         self.sort_in_line_order()
         
         #  bboxes list in each column
         cols_rects = [] # type: list[Rectangles]
-        
-        # bbox of each column
-        cols_rect = [] # type: list[Rectangle]
 
         # collect bbox-es column by column
+        col_rect = Rectangle()
         for rect in self._instances:
-            col_rect = cols_rect[-1] if cols_rect else Rectangle()
-
             # same column group if vertically aligned
             if col_rect.vertically_align_with(rect):
                 cols_rects[-1].append(rect)
-                cols_rect[-1].union(rect.bbox)
             
             # otherwise, start a new column group
             else:
                 cols_rects.append(Rectangles([rect]))
-                cols_rect.append(rect)    
+                col_rect = Rectangle() # reset
+                
+            col_rect.union(rect)
 
-        return cols_rects, cols_rect
+        return cols_rects
 
 
     def _row_borders_from_bboxes(self):
@@ -610,22 +610,19 @@ class Rectangles(Collection):
 
         #  bboxes list in each row
         rows_rects = [] # type: list[Rectangles]
-        
-        # bbox of each row
-        rows_rect = [] # type: list[Rectangle]
 
         # collect bbox-es row by row
+        row_rect = Rectangle()
         for rect in self._instances:
-            row_rect = rows_rect[-1] if rows_rect else Rectangle()
-
             # same row group if horizontally aligned
             if row_rect.horizontally_align_with(rect):
                 rows_rects[-1].append(rect)
-                rows_rect[-1].union(rect.bbox)
             
             # otherwise, start a new row group
             else:
                 rows_rects.append(Rectangles([rect]))
-                rows_rect.append(rect)
+                row_rect = Rectangle() # reset
 
-        return rows_rects, rows_rect
+            row_rect.union(rect)
+
+        return rows_rects

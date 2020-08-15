@@ -42,7 +42,7 @@ class Collection(IText):
         '''bbox of combined collection.'''
         Box = BBox()
         for instance in self._instances:
-            Box.union(instance.bbox)
+            Box.union(instance)
         return Box.bbox
 
 
@@ -68,7 +68,7 @@ class Collection(IText):
         if not bbox: return
         self._instances.append(bbox)
         if not self._parent is None: # Note: `if self._parent` does not work here
-            self._parent.union(bbox.bbox)
+            self._parent.union(bbox)
 
 
     def extend(self, bboxes:list):
@@ -82,7 +82,7 @@ class Collection(IText):
         if not bbox: return
         self._instances.insert(nth, bbox)
         if not self._parent is None:
-            self._parent.union(bbox.bbox)
+            self._parent.union(bbox)
 
 
     def sort_in_reading_order(self):
