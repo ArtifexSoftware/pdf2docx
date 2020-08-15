@@ -14,6 +14,7 @@ from ..common.Collection import Collection
 from ..common import utils
 from ..common import pdf
 from ..table.TableBlock import TableBlock
+from ..table.Row import Row
 from ..table.Cell import Cell
 
 class Rectangles(Collection):
@@ -124,25 +125,25 @@ class Rectangles(Collection):
             return None
 
         # sort
-        rows = sorted(h_borders)
-        cols = sorted(v_borders)       
+        y_rows = sorted(h_borders)
+        x_cols = sorted(v_borders)       
             
         # --------------------------------------------------
         # parse table structure, especially the merged cells
         # -------------------------------------------------- 
         # check merged cells in each row
         merged_cells_rows = []  # type: list[list[int]]
-        for i, row in enumerate(rows[0:-1]):
-            ref_y = (row+rows[i+1])/2.0
-            ordered_v_borders = [v_borders[k] for k in cols]
+        for i, row in enumerate(y_rows[0:-1]):
+            ref_y = (row+y_rows[i+1])/2.0
+            ordered_v_borders = [v_borders[k] for k in x_cols]
             row_structure = self._check_merged_cells(ref_y, ordered_v_borders, 'row')
             merged_cells_rows.append(row_structure)
 
         # check merged cells in each column
         merged_cells_cols = []  # type: list[list[int]]
-        for i, col in enumerate(cols[0:-1]):
-            ref_x = (col+cols[i+1])/2.0
-            ordered_h_borders = [h_borders[k] for k in rows]
+        for i, col in enumerate(x_cols[0:-1]):
+            ref_x = (col+x_cols[i+1])/2.0
+            ordered_h_borders = [h_borders[k] for k in y_rows]
             col_structure = self._check_merged_cells(ref_x, ordered_h_borders, 'column')        
             merged_cells_cols.append(col_structure)
 
@@ -154,12 +155,15 @@ class Rectangles(Collection):
         n_cols = len(merged_cells_cols)
 
         for i in range(n_rows):
-            cells_in_row = []    # type: list[Cell]
+            # row object
+            row = Row()
+            row.height = y_rows[i+1]-y_rows[i]
+            
             for j in range(n_cols):
                 # if current cell is merged horizontally or vertically, set None.
                 # actually, it will be counted in the top-left cell of the merged range.
                 if merged_cells_rows[i][j]==0 or merged_cells_cols[j][i]==0:
-                    cells_in_row.append(Cell())
+                    row.append(Cell())
                     continue
 
                 # Now, this is the top-left cell of merged range.
@@ -182,10 +186,10 @@ class Rectangles(Collection):
                         break
 
                 # cell border rects: merged cells considered
-                top = h_borders[rows[i]][0]
-                bottom = h_borders[rows[i+n_row]][0]
-                left = v_borders[cols[j]][0]
-                right = v_borders[cols[j+n_col]][0]
+                top = h_borders[y_rows[i]][0]
+                bottom = h_borders[y_rows[i+n_row]][0]
+                left = v_borders[x_cols[j]][0]
+                right = v_borders[x_cols[j+n_col]][0]
 
                 w_top = top.bbox.y1-top.bbox.y0
                 w_right = right.bbox.x1-right.bbox.x0
@@ -193,7 +197,7 @@ class Rectangles(Collection):
                 w_left = left.bbox.x1-left.bbox.x0
 
                 # cell bbox
-                bbox = (cols[j], rows[i], cols[j+n_col], rows[i+n_row])
+                bbox = (x_cols[j], y_rows[i], x_cols[j+n_col], y_rows[i+n_row])
 
                 # shading rect in this cell
                 # modify the cell bbox from border center to inner region
@@ -214,17 +218,16 @@ class Rectangles(Collection):
                     'border_width': (w_top, w_right, w_bottom, w_left),
                     'merged_cells': (n_row, n_col),
                 }
-
-                cells_in_row.append(Cell(cell_dict))
+                row.append(Cell(cell_dict))
                     
             # one row finished
             # check table: the first cell in first row MUST NOT be None
-            if i==0 and not cells_in_row[0]:
+            if i==0 and not row[0]:
                 # reset borders because it's a invalid table
                 self._unset_table_border()
                 return None
 
-            table.append_row(cells_in_row)
+            table.append(row)
 
         return table
 
@@ -556,8 +559,8 @@ class Rectangles(Collection):
                 y1 = Y1 if j==row_num-1 else (rows_rects[j].bbox.y1 + rows_rects[j+1].bbox.y0) / 2.0
                 
                 # it's Ok if single bbox in a line
-                if len(rows_rects[j])<2:
-                    continue
+                # if len(rows_rects[j])<2:
+                #     continue
 
                 # otherwise, add row border and check borders further
                 if j==0:
