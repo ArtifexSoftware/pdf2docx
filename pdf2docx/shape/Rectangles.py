@@ -532,19 +532,19 @@ class Rectangles(Collection):
 
         # collect bbox-ex column by column
         X0, Y0, X1, Y1 = border_bbox
-        cols_rects, cols_rect = self._column_borders_from_bboxes()
+        cols_rects = self._column_borders_from_bboxes()
         col_num = len(cols_rects)
 
         for i in range(col_num):
             # add column border
-            x0 = X0 if i==0 else (cols_rect[i-1].bbox.x1 + cols_rect[i].bbox.x0) / 2.0
-            x1 = X1 if i==col_num-1 else (cols_rect[i].bbox.x1 + cols_rect[i+1].bbox.x0) / 2.0
+            x0 = X0 if i==0 else (cols_rects[i-1].bbox.x1 + cols_rects[i].bbox.x0) / 2.0
+            x1 = X1 if i==col_num-1 else (cols_rects[i].bbox.x1 + cols_rects[i+1].bbox.x0) / 2.0
 
             if i<col_num-1:
                 borders.append((x1, Y0, x1, Y1))
 
             # collect bboxes row by row        
-            rows_rects, rows_rect = cols_rects[i]._row_borders_from_bboxes()
+            rows_rects = cols_rects[i]._row_borders_from_bboxes()
 
             # NOTE: unnecessary to split row if the count of row is 1
             row_num = len(rows_rects)
@@ -552,8 +552,8 @@ class Rectangles(Collection):
         
             for j in range(row_num):
                 # add row border
-                y0 = Y0 if j==0 else (rows_rect[j-1].bbox.y1 + rows_rect[j].bbox.y0) / 2.0
-                y1 = Y1 if j==row_num-1 else (rows_rect[j].bbox.y1 + rows_rect[j+1].bbox.y0) / 2.0
+                y0 = Y0 if j==0 else (rows_rects[j-1].bbox.y1 + rows_rects[j].bbox.y0) / 2.0
+                y1 = Y1 if j==row_num-1 else (rows_rects[j].bbox.y1 + rows_rects[j+1].bbox.y0) / 2.0
                 
                 # it's Ok if single bbox in a line
                 if len(rows_rects[j])<2:
@@ -577,30 +577,27 @@ class Rectangles(Collection):
 
     def _column_borders_from_bboxes(self):
         ''' split bbox-es into column groups and add border for adjacent two columns.'''
-        # sort bbox-ex in column first mode: from left to right, from top to bottom
+        # sort bbox-ex in column first: from left to right, from top to bottom
         self.sort_in_line_order()
         
         #  bboxes list in each column
         cols_rects = [] # type: list[Rectangles]
-        
-        # bbox of each column
-        cols_rect = [] # type: list[Rectangle]
 
         # collect bbox-es column by column
+        col_rect = Rectangle()
         for rect in self._instances:
-            col_rect = cols_rect[-1] if cols_rect else Rectangle()
-
             # same column group if vertically aligned
             if col_rect.vertically_align_with(rect):
                 cols_rects[-1].append(rect)
-                cols_rect[-1].union(rect.bbox)
             
             # otherwise, start a new column group
             else:
                 cols_rects.append(Rectangles([rect]))
-                cols_rect.append(rect)    
+                col_rect = Rectangle() # reset
+                
+            col_rect.union(rect.bbox)
 
-        return cols_rects, cols_rect
+        return cols_rects
 
 
     def _row_borders_from_bboxes(self):
@@ -610,22 +607,19 @@ class Rectangles(Collection):
 
         #  bboxes list in each row
         rows_rects = [] # type: list[Rectangles]
-        
-        # bbox of each row
-        rows_rect = [] # type: list[Rectangle]
 
         # collect bbox-es row by row
+        row_rect = Rectangle()
         for rect in self._instances:
-            row_rect = rows_rect[-1] if rows_rect else Rectangle()
-
             # same row group if horizontally aligned
             if row_rect.horizontally_align_with(rect):
                 rows_rects[-1].append(rect)
-                rows_rect[-1].union(rect.bbox)
             
             # otherwise, start a new row group
             else:
                 rows_rects.append(Rectangles([rect]))
-                rows_rect.append(rect)
+                row_rect = Rectangle() # reset
 
-        return rows_rects, rows_rect
+            row_rect.union(rect.bbox)
+
+        return rows_rects
