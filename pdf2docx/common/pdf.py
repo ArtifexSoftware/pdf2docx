@@ -272,8 +272,7 @@ def rects_from_stream(doc:fitz.Document, page:fitz.Page):
     # transformation matrix for coordinate system conversion from pdf to fitz
     matrix = page.transformationMatrix
 
-    # Graphic States:
-    # - working CS is coincident with the absolute origin (0, 0)
+    # Graphic States: working CS is coincident with the absolute origin (0, 0)
     # Refer to PDF reference v1.7 4.2.3 Transformation Metrices
     #                        | a b 0 |
     # [a, b, c, d, e, f] =>  | c b 0 |
@@ -281,18 +280,21 @@ def rects_from_stream(doc:fitz.Document, page:fitz.Page):
     ACS = fitz.Matrix(0.0) # identity matrix
     WCS = fitz.Matrix(0.0)
 
-    # - graphics color: 
-    #   - color space: PDF Reference Section 4.5 Color Spaces
-    #     consider device color space only like DeviceGray, DeviceRGB, DeviceCMYK
+    # Graphics color: 
+    # - color space: PDF Reference Section 4.5 Color Spaces
+    # NOTE: it should have to calculate color value under arbitrary color space, but it's really hard work for now.
+    # So, consider device color space only like DeviceGray, DeviceRGB, DeviceCMYK, and set black for all others.
     device_space = True
-    #   - stroking color
+    color_spaces = _check_device_cs(doc, page)
+
+    # - stroking color
     Acs = utils.RGB_value((0.0, 0.0, 0.0)) # stored value
     Wcs = Acs                              # working value
-    #   - filling color
+    # - filling color
     Acf = utils.RGB_value((0.0, 0.0, 0.0))
     Wcf = Acf
 
-    # - stroke width
+    # Stroke width
     Ad = 0.0
     Wd = 0.0
 
@@ -320,11 +322,8 @@ def rects_from_stream(doc:fitz.Document, page:fitz.Page):
             Wcs = utils.RGB_value((0.0, 0.0, 0.0))
             Wcf = utils.RGB_value((0.0, 0.0, 0.0))
 
-            # Consider normal device cs here, i.e. DeviceGray, DeviceRGB, DeviceCMYK
-            if words[0] in ('/DeviceGray', '/DeviceRGB', '/DeviceCMYK'):
-                device_space = True
-            else:
-                device_space = False
+            # Consider normal device cs only
+            device_space = color_spaces.get(words[0], False)
 
         # - set color: color components under specified color space
         elif op.upper()=='SC': # c1 c2 ... cn SC
@@ -518,6 +517,76 @@ def rects_from_stream(doc:fitz.Document, page:fitz.Page):
     return rects
 
 
+def _check_device_cs(doc:fitz.Document, page:fitz.Page):
+    '''Get all color space name used in current page and check if they're device based color space.'''
+    # default device based cs
+    cs = {
+        '/DeviceGray': True, 
+        '/DeviceRGB' : True, 
+        '/DeviceCMYK': True
+    }
+
+    # content of page object, e.g.
+    # <<
+    # ...
+    # /Resources <<
+    #     ...
+    #     /ColorSpace <<
+    #     /Cs6 14 0 R
+    #     >>
+    # >>
+    # /Rotate 0
+    # /Type /Page
+    # >>
+    obj_contents = doc.xrefObject(page.xref)
+
+    cs_found = False
+    for line_ in obj_contents.splitlines():
+        line = line_.strip()
+
+        # check start/end of color space block
+        if not cs_found and line.startswith('/ColorSpace'):
+            cs_found = True
+            continue
+
+        if not cs_found:
+            continue
+        elif line=='>>':
+            break
+
+        # now within cs block, e.g. /Cs6 14 0 R
+        cs_name, xref, *_ = line.split()
+        cs[cs_name] = _is_device_cs(int(xref), doc)
+
+    return cs
+
+
+def _is_device_cs(xref, doc:fitz.Document):
+    '''Check whether object xref is a device based color space.
+    '''
+    # cs definition
+    obj_contents = doc.xrefObject(xref)
+
+    # for now, just check /ICCBased CS:
+    # it's treated as a device based cs if /Device[Gray|RGB|CMYK] exists in /Alternate.
+    # 
+    # [ /ICCBased 15 0 R ]
+    # 
+    # <<
+    #   /Alternate /DeviceRGB
+    #   /Filter /FlateDecode
+    #   /Length 2597
+    #   /N 3
+    # >>
+    if '/ICCBased' in obj_contents:
+        name, x, *_ = obj_contents[1:-1].strip().split()
+        ICC_contents = doc.xrefObject(int(x))
+        return '/Alternate /Device' in ICC_contents
+
+    # ignore all other color spaces, may include if facing associated cases
+    return False
+
+
 def _transform_path(path:list, WCS:fitz.Matrix, M0:fitz.Matrix):
     ''' Transform path to page coordinate system. 
         ---
@@ -630,3 +699,6 @@ def _RGB_from_color_components(components:list, device_cs:bool=True):
         color = utils.RGB_value((g,g,g))
 
     return color
+
+
+        
