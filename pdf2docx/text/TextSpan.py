@@ -82,7 +82,7 @@ class TextSpan(BBox):
     def add(self, char:Char):
         '''Add char and update bbox accordingly.'''
         self.chars.append(char)
-        self.union(char.bbox)
+        self.union(char)
 
 
     def store(self) -> dict:
@@ -246,7 +246,7 @@ class TextSpan(BBox):
         for char in self.chars:
             if utils.get_main_bbox(char.bbox, rect, 0.55): # contains at least a half part
                 span.chars.append(char)
-                span.union(char.bbox)
+                span.union(char)
 
         return span
 

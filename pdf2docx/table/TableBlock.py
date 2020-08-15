@@ -87,7 +87,7 @@ class TableBlock(Block):
         '''
         self._cells.append(row)
         for cell in row:
-            self.union(cell.bbox)
+            self.union(cell)
 
 
     def store(self) -> dict:

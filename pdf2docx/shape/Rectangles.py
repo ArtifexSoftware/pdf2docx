@@ -595,7 +595,7 @@ class Rectangles(Collection):
                 cols_rects.append(Rectangles([rect]))
                 col_rect = Rectangle() # reset
                 
-            col_rect.union(rect.bbox)
+            col_rect.union(rect)
 
         return cols_rects
 
@@ -620,6 +620,6 @@ class Rectangles(Collection):
                 rows_rects.append(Rectangles([rect]))
                 row_rect = Rectangle() # reset
 
-            row_rect.union(rect.bbox)
+            row_rect.union(rect)
 
         return rows_rects
