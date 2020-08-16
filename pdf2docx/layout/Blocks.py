@@ -431,7 +431,7 @@ class Blocks(Collection):
 
         # right margin
         x_max = max(map(lambda x: x.x1, list_bbox))
-        right = width-x_max-utils.DM*2.0 # consider tolerance: leave more free space
+        right = width - x_max - utils.DM*10.0  # consider tolerance: leave more free space
         right = min(right, left)     # symmetry margin if necessary
         right = max(right, 0.0)      # avoid negative margin
 
