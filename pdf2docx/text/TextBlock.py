@@ -122,7 +122,7 @@ class TextBlock(Block):
                 span.plot(page, c)
 
 
-    def contains_discrete_lines(self, distance:float=25, threshold:int=3) -> bool:
+    def contains_discrete_lines(self, distance:float=25, threshold:int=2) -> bool:
         ''' Check whether lines in block are discrete: 
               - the count of lines with a distance larger than `distance` is greater then `threshold`.
               - ImageSpan exists
