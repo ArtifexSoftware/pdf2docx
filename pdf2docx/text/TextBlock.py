@@ -296,6 +296,7 @@ class TextBlock(Block):
             round(abs(line.bbox_raw[idx]-bbox[idx]), 2) for line in self.lines
             ])
         for pos in all_pos:
+            if not pos: continue # ignore pos==0
             pf.tab_stops.add_tab_stop(Pt(pos))
 
         # add line by line
