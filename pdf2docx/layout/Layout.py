@@ -36,6 +36,7 @@ from docx.enum.section import WD_SECTION
 
 from .Blocks import Blocks
 from ..shape.Rectangles import Rectangles
+from ..table.TablesConstructor import TablesConstructor
 from ..common.base import PlotControl
 from ..common.utils import debug_plot
 from ..common.pdf import new_page_with_margin
@@ -52,10 +53,14 @@ class Layout:
         # initialize blocks
         self.blocks = Blocks().from_dicts(raw.get('blocks', []))
 
-        # introduced attributes
-        self._margin = None
+        # initialize rects: to add rectangles later
         self.rects = Rectangles()
 
+        # table parser
+        self._tables_constructor = TablesConstructor(self.blocks, self.rects)
+
+        # page margin: to calculate after cleaning blocks
+        self._margin = None
 
     @property
     def margin(self):
@@ -142,10 +147,10 @@ class Layout:
     
         # parse table blocks: 
         #  - table structure/format recognized from rectangles
-        self.parse_table_structure_from_rects(**kwargs).parse_table_content(**kwargs)
+        self.parse_explicit_tables(**kwargs)
         
         #  - cell contents extracted from text blocks
-        self.parse_table_structure_from_blocks(**kwargs).parse_table_content(**kwargs)
+        self.parse_implicit_tables(**kwargs)
 
         # parse text format, e.g. highlight, underline
         self.parse_text_format(**kwargs)
@@ -156,8 +161,8 @@ class Layout:
 
     def extract_tables(self):
         '''Extract content from explicit tables.'''
-        # parsing explicit table
-        self.clean().parse_table_structure_from_rects().parse_table_content()
+        # parsing tables
+        self.clean().parse_explicit_tables()
 
         # check table
         tables = [] # type: list[ list[list[str]] ]
@@ -250,41 +255,14 @@ class Layout:
 
 
     @debug_plot('Explicit Table Structure', plot=True, category=PlotControl.TABLE)
-    def parse_table_structure_from_rects(self, **kwargs) -> bool:
+    def parse_explicit_tables(self, **kwargs) -> bool:
         '''parse table structure from rectangle shapes'''
-        # group rects: each group may be a potential table
-        fun = lambda a,b: a.bbox & b.bbox
-        groups = self.rects.group(fun)
-
-        # parse table with each group
-        tables = Blocks()
-        for group in groups:
-            # parse table structure based on rects in border type
-            table = group.parse_table_structure()
-            tables.append(table)
-
-        # check if any intersection with previously parsed tables
-        for group in tables.group(fun):
-            # single table
-            if len(group)==1:
-                table = group[0]
-            
-            # intersected tables: keep the table with the most cells only 
-            # since no floating elements are supported with python-docx
-            else:
-                sorted_group = sorted(group, 
-                            key=lambda table: table.num_rows*table.num_cols)
-                table = sorted_group[-1]                    
-
-            # add table to page level
-            table.set_explicit_table_block()
-            self.blocks.append(table)
-
+        tables = self._tables_constructor.explicit_tables()
         return bool(tables)
 
 
     @debug_plot('Implicit Table Structure', plot=True, category=PlotControl.IMPLICIT_TABLE)
-    def parse_table_structure_from_blocks(self, **kwargs):
+    def parse_implicit_tables(self, **kwargs):
         ''' Parse table structure based on the layout of text/image blocks.
 
             Since no cell borders exist in this case, there may be various probabilities of table structures. 
@@ -292,44 +270,13 @@ class Layout:
 
             Ensure no horizontally aligned blocks in each column, so that these blocks can be converted to
             paragraphs consequently in docx.
-        '''    
-        if len(self.blocks)<=1: return False
-        
+        '''
         # horizontal range of table
         left, right, *_ = self.margin
         X0, X1 = left, self.width - right
 
-        # potential bboxes
-        tables_bboxes = self.blocks.collect_table_content()
-
-        # parse tables
-        flag = False
-        for table_bboxes in tables_bboxes:
-            # parse borders based on contents in cell
-            table_rects = table_bboxes.implicit_borders(X0, X1)
-
-            # get potential cell shading
-            table_bbox = table_rects.bbox
-            table_rects.extend(filter(
-                lambda rect: table_bbox.intersects(rect.bbox), self.rects))
-
-            # parse table: don't have to detect borders since it's determined already
-            table = table_rects.parse_table_structure(detect_border=False)
-
-            # add parsed table to page level blocks
-            # in addition, ignore table if contains only one cell since it's unnecessary for implicit table
-            if table and (table.num_rows>1 or table.num_cols>1):
-                table.set_implicit_table_block()
-                self.blocks.append(table)
-                flag = True
-
-        return flag
-
-
-    @debug_plot('Parsed Table', plot=False, category=PlotControl.LAYOUT)
-    def parse_table_content(self, **kwargs):
-        '''Add block lines to associated cells.'''
-        return self.blocks.parse_table_content()
+        tables = self._tables_constructor.implicit_tables(X0, X1)
+        return bool(tables)
 
 
     @debug_plot('Parsed Text Blocks', plot=True, category=PlotControl.LAYOUT)
