@@ -15,6 +15,36 @@ ITP = 72.0
 # tolerant rectangle area
 DR = fitz.Rect(-DM, -DM, DM, DM) / 2.0
 
+# font name mapping
+DICT_FONTS = {
+    'SimSun': '宋体', 
+    'SimHei': '黑体', 
+    'Microsoft YaHei': '微软雅黑', 
+    'Microsoft JhengHei': '微软正黑体', 
+    'NSimSun': '新宋体', 
+    'PMingLiU': '新细明体', 
+    'MingLiU': '细明体', 
+    'DFKai-SB': '标楷体', 
+    'FangSong': '仿宋', 
+    'KaiTi': '楷体', 
+    'FangSong_GB2312': '仿宋_GB2312', 
+    'KaiTi_GB2312': '楷体_GB2312', 
+    'LiSu': '隶书',
+    'YouYuan': '幼圆',
+    'STXihei': '华文细黑',
+    'STKaiti': '华文楷体',
+    'STSong': '华文宋体',
+    'STZhongsong': '华文中宋',
+    'STFangsong': '华文仿宋',
+    'FZShuTi': '方正舒体',
+    'FZYaoti': '方正姚体',
+    'STCaiyun': '华文彩云',
+    'STHupo': '华文琥珀',
+    'STLiti': '华文隶书',
+    'STXingkai': '华文行楷',
+    'STXinwei': '华文新魏'
+}
+
 
 def is_number(str_number):
     try:
