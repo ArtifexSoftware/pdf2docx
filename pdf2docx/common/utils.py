@@ -16,33 +16,36 @@ ITP = 72.0
 DR = fitz.Rect(-DM, -DM, DM, DM) / 2.0
 
 # font name mapping
+# special process on the key:
+# - upper case
+# - delete blanks, '-', '_'
 DICT_FONTS = {
-    'SimSun': '宋体', 
-    'SimHei': '黑体', 
-    'MicrosoftYaHei': '微软雅黑', 
-    'MicrosoftJhengHei': '微软正黑体', 
-    'NSimSun': '新宋体', 
-    'PMingLiU': '新细明体', 
-    'MingLiU': '细明体', 
-    'DFKai-SB': '标楷体', 
-    'FangSong': '仿宋', 
-    'KaiTi': '楷体', 
-    'FangSong_GB2312': '仿宋_GB2312', 
-    'KaiTi_GB2312': '楷体_GB2312', 
-    'LiSu': '隶书',
-    'YouYuan': '幼圆',
-    'STXihei': '华文细黑',
-    'STKaiti': '华文楷体',
-    'STSong': '华文宋体',
-    'STZhongsong': '华文中宋',
-    'STFangsong': '华文仿宋',
-    'FZShuTi': '方正舒体',
-    'FZYaoti': '方正姚体',
-    'STCaiyun': '华文彩云',
-    'STHupo': '华文琥珀',
-    'STLiti': '华文隶书',
-    'STXingkai': '华文行楷',
-    'STXinwei': '华文新魏'
+    'SIMSUN': '宋体', 
+    'SIMHEI': '黑体', 
+    'MICROSOFTYAHEI': '微软雅黑', 
+    'MICROSOFTJHENGHEI': '微软正黑体', 
+    'NSIMSUN': '新宋体', 
+    'PMINGLIU': '新细明体', 
+    'MINGLIU': '细明体', 
+    'DFKAISB': '标楷体', # 'DFKAI-SB'
+    'FANGSONG': '仿宋', 
+    'KAITI': '楷体', 
+    'FANGSONGGB2312': '仿宋_GB2312', # FANGSONG_GB2312
+    'KAITIGB2312': '楷体_GB2312',   # KAITI_GB2312
+    'LISU': '隶书',
+    'YOUYUAN': '幼圆',
+    'STXIHEI': '华文细黑',
+    'STKAITI': '华文楷体',
+    'STSONG': '华文宋体',
+    'STZHONGSONG': '华文中宋',
+    'STFANGSONG': '华文仿宋',
+    'FZSHUTI': '方正舒体',
+    'FZYAOTI': '方正姚体',
+    'STCAIYUN': '华文彩云',
+    'STHUPO': '华文琥珀',
+    'STLITI': '华文隶书',
+    'STXINGKAI': '华文行楷',
+    'STXINWEI': '华文新魏'
 }
 
 
