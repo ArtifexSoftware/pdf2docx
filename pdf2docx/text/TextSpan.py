@@ -70,7 +70,8 @@ class TextSpan(BBox):
         font_name = font_name.split('-')[0]
 
         # mapping font name
-        font_name = utils.DICT_FONTS.get(font_name, font_name)
+        key = font_name.replace(' ', '') # remove blanks for mapping key
+        font_name = utils.DICT_FONTS.get(key, font_name)
 
         # split with upper case letters
         blank = ' '

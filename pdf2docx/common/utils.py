@@ -19,8 +19,8 @@ DR = fitz.Rect(-DM, -DM, DM, DM) / 2.0
 DICT_FONTS = {
     'SimSun': '宋体', 
     'SimHei': '黑体', 
-    'Microsoft YaHei': '微软雅黑', 
-    'Microsoft JhengHei': '微软正黑体', 
+    'MicrosoftYaHei': '微软雅黑', 
+    'MicrosoftJhengHei': '微软正黑体', 
     'NSimSun': '新宋体', 
     'PMingLiU': '新细明体', 
     'MingLiU': '细明体', 
