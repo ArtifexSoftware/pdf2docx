@@ -16,7 +16,21 @@ from ..common.Collection import Collection
 class Lines(Collection):
     '''Text line list.'''
 
+    def append(self, line:Line):
+        '''Rewrite. Append a line and update line pid and parent bbox.'''
+        if not line: return
+
+        # append line
+        self._instances.append(line)
+
+        # update parent bbox
+        if not self._parent is None:
+            self._parent.union(line)
+            line.pid = id(self._parent)
+
+
     def from_dicts(self, raws:list):
+        '''Construct lines from raw dicts list.'''
         for raw in raws:
             line = Line(raw)
             self.append(line)
@@ -86,10 +100,26 @@ class Lines(Collection):
 
 
     def split(self):
-        ''' Split vertical lines.'''
-        # get horizontally aligned lines group by group
+        ''' Split vertical lines and try to make lines in same original text block grouped together.
+
+            To the first priority considering docx recreation, horizontally aligned lines must be assigned to same group.
+            If only one line in each group, lines in same original text block can be group together again even though
+            they are in different physical lines.
+        '''
+        # split vertically
         fun = lambda a,b: a.horizontally_align_with(b, factor=0.0)
         groups = self.group(fun)
+
+        # check count of lines in each group
+        for group in groups:
+            if len(group) > 1: # first priority
+                break
+        
+        # now one line in each group -> docx recreation is fullfilled
+        else:
+            fun = lambda a,b: a.same_parent_with(b)
+            groups = self.group(fun)
+
         return groups
 
 
