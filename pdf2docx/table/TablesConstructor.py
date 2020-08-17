@@ -90,6 +90,7 @@ class TablesConstructor:
                 lambda rect: table_bbox.intersects(rect.bbox), self._rects))
 
             # parse table: don't have to detect borders since it's determined already
+            table_rects.sort_in_reading_order() # required
             table = self._parse_table_structure(table_rects, detect_border=False)
 
             # add parsed table to page level blocks
@@ -113,6 +114,9 @@ class TablesConstructor:
 
             NOTE: for implicit table, table borders are determined from text blocks in advance,
             so, it's safe to set `detect_border=False`.
+
+            NOTE: rects must be sorted in reading order in advance, which is required by checking 
+            merged cells.
         '''
 
         # --------------------------------------------------
@@ -434,6 +438,7 @@ class TablesConstructor:
         '''
         res = [] # type: list[int]
         for rects in borders[0:-1]:
+            # NOTE: rects MUST be sorted in reading order!!
             # multi-lines exist in a row/column
             for rect in rects:
 
@@ -513,6 +518,7 @@ class TablesConstructor:
         # all centerlines to rectangle shapes
         res = Rectangles()
         color = utils.RGB_value((1,1,1))
+
         for border in borders: 
             # set an non-zero width for border check; won't draw border in docx for implicit table
             bbox = utils.expand_centerline(border[0:2], border[2:], width=0.2) 
@@ -540,7 +546,7 @@ class TablesConstructor:
             - only one bbox is allowed in a line;
             - but multi-lines are allowed in a cell.
         '''
-        borders = []  # type: list[tuple[float]]
+        borders = set()  # type: set[tuple[float]]
 
         # collect bbox-ex column by column
         X0, Y0, X1, Y1 = border_bbox
@@ -552,8 +558,9 @@ class TablesConstructor:
             x0 = X0 if i==0 else (cols_rects[i-1].bbox.x1 + cols_rects[i].bbox.x0) / 2.0
             x1 = X1 if i==col_num-1 else (cols_rects[i].bbox.x1 + cols_rects[i+1].bbox.x0) / 2.0
 
+            # add right border of current column
             if i<col_num-1:
-                borders.append((x1, Y0, x1, Y1))
+                borders.add((x1, Y0, x1, Y1))
 
             # collect bboxes row by row        
             rows_rects = self._row_borders_from_bboxes(cols_rects[i])
@@ -571,18 +578,21 @@ class TablesConstructor:
                 # if len(rows_rects[j])<2:
                 #     continue
 
-                # otherwise, add row border and check borders further
+                # otherwise, add row borders
                 if j==0:
-                    borders.append((x0, y1, x1, y1))
+                    borders.add((x0, y1, x1, y1)) # bottom border for first row
                 elif j==row_num-1:
-                    borders.append((x0, y0, x1, y0))
+                    borders.add((x0, y0, x1, y0)) # top border for last row
                 else:
-                    borders.append((x0, y0, x1, y0))
-                    borders.append((x0, y1, x1, y1))
+                    # both top and bottom borders added, even though duplicates exist since
+                    # top border of current row may be considered already when process bottom border of previous row.
+                    # So, variable `borders` is a set here
+                    borders.add((x0, y0, x1, y0))
+                    borders.add((x0, y1, x1, y1))
 
-                # recursion
-                _borders = self._borders_from_bboxes(rows_rects[j], (x0, y0, x1, y1))
-                borders.extend(_borders)        
+                # recursion to check borders further
+                borders_ = self._borders_from_bboxes(rows_rects[j], (x0, y0, x1, y1))
+                borders = borders | borders_
 
         return borders
 
