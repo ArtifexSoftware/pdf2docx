@@ -545,38 +545,57 @@ class TablesConstructor:
             These borders construct table cells. Considering the re-building of cell content in docx, 
             - only one bbox is allowed in a line;
             - but multi-lines are allowed in a cell.
+        
+            Two purposes of parsing implicit table: 
+            - rebuild layout, e.g. text layout with two columns
+            - parsing real table without showing borders
+
+            It's controdictory that the former needn't to deep into row level, just 1 x N table convenient for layout recreation;
+            instead, the later should, M x N table for each cell precisely.
+            So, the principle determining implicit borders here:
+            - two columns: layout if the count of rows in each column is different; otherwise, it's a real table
+            - more columns: real table -> deep into rows
         '''
-        borders = set()  # type: set[tuple[float]]
-
-        # collect bbox-ex column by column
-        X0, Y0, X1, Y1 = border_bbox
+        # trying: deep into cells        
         cols_rects = self._column_borders_from_bboxes(rects)
-        col_num = len(cols_rects)
+        group_rects = [self._row_borders_from_bboxes(col_rects) for col_rects in cols_rects]
 
-        for i in range(col_num):
+        # real table or just text layout?
+        col_num = len(cols_rects)
+        real_table = True # table by default
+        if col_num==2 and len(group_rects[0])!=len(group_rects[1]):
+            real_table = False
+
+        # detect borders based on table/layout mode
+        borders = set()  # type: set[tuple[float]]        
+        X0, Y0, X1, Y1 = border_bbox 
+        
+        # collect bbox-ex column by column
+        for i in range(col_num): 
+
             # add column border
             x0 = X0 if i==0 else (cols_rects[i-1].bbox.x1 + cols_rects[i].bbox.x0) / 2.0
             x1 = X1 if i==col_num-1 else (cols_rects[i].bbox.x1 + cols_rects[i+1].bbox.x0) / 2.0
 
-            # add right border of current column
             if i<col_num-1:
-                borders.add((x1, Y0, x1, Y1))
+                borders.add((x1, Y0, x1, Y1)) # right border of current column
 
-            # collect bboxes row by row        
-            rows_rects = self._row_borders_from_bboxes(cols_rects[i])
-
+            
             # NOTE: unnecessary to split row if the count of row is 1
+            rows_rects = group_rects[i]
             row_num = len(rows_rects)
             if row_num==1: continue
         
-            for j in range(row_num):
+            # collect bboxes row by row 
+            for j in range(row_num): 
+
                 # add row border
                 y0 = Y0 if j==0 else (rows_rects[j-1].bbox.y1 + rows_rects[j].bbox.y0) / 2.0
                 y1 = Y1 if j==row_num-1 else (rows_rects[j].bbox.y1 + rows_rects[j+1].bbox.y0) / 2.0
                 
-                # it's Ok if single bbox in a line
-                # if len(rows_rects[j])<2:
-                #     continue
+                # needn't go to row level if layout mode
+                if not real_table and len(rows_rects[j])<2:
+                    continue
 
                 # otherwise, add row borders
                 if j==0:

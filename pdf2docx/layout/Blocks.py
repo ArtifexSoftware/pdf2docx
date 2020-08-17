@@ -219,6 +219,9 @@ class Blocks(Collection):
 
     def collect_table_contents(self):
         ''' Collect bbox, e.g. Line of TextBlock, which may contained in an implicit table region.
+
+            NOTE: PyMuPDF may group multi-lines in a row as a text block while each line belongs to different
+            cell. So, deep into line level here when collecting table contents regions.
             
             Table may exist on the following conditions:
              - (a) lines in blocks are not connected sequently -> determined by current block only
@@ -237,11 +240,11 @@ class Blocks(Collection):
 
             table_end = False
             
-            # there is gap between these two criteria, so consider condition (a) only if if it's the first block in new row
+            # there is gap between these two criteria, so consider condition (a) only if it's the first block in new row
             # (a) lines in current block are connected sequently?
             # yes, counted as table lines
             if new_line and block.contains_discrete_lines(): 
-                table_lines.extend(block.sub_bboxes)                
+                table_lines.extend(block.sub_bboxes)  # deep into line level
                 # update line status
                 new_line = False            
 
