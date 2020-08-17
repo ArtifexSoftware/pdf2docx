@@ -82,7 +82,7 @@ class TextSpan(BBox):
     def add(self, char:Char):
         '''Add char and update bbox accordingly.'''
         self.chars.append(char)
-        self.union(char.bbox)
+        self.union(char)
 
 
     def store(self) -> dict:
@@ -246,7 +246,7 @@ class TextSpan(BBox):
         for char in self.chars:
             if utils.get_main_bbox(char.bbox, rect, 0.55): # contains at least a half part
                 span.chars.append(char)
-                span.union(char.bbox)
+                span.union(char)
 
         return span
 
@@ -281,19 +281,27 @@ class TextSpan(BBox):
         # adjust by set scaling
         scale = self.size / font_size
         if abs(scale-1.0)>=0.01:
-            docx.set_character_scaling(docx_span, scale)
+            docx.set_char_scaling(docx_span, scale)
         
         # font style parsed from PDF rectangles: 
         # e.g. highlight, underline, strike-through-line
         for style in self.style:
             
             t = style['type']
+            # Built-in method is provided to set highlight in python-docx, but supports only limited colors;
+            # so, set character shading instead if out of highlight color scope
             if t==RectType.HIGHLIGHT.value:
-                docx_span.font.highlight_color = docx.to_Highlight_color(style['color'])
+                docx.set_char_shading(docx_span, style['color'])
 
+            # underline set with built-in method `font.underline` has a same color with text.
+            # so, try to set a different color with xml if necessary
             elif t==RectType.UNDERLINE.value:
-                docx_span.font.underline = True
-
+                if self.color==style['color']:
+                    docx_span.font.underline = True
+                else:
+                    docx.set_char_underline(docx_span, style['color'])
+            
+            # same color with text for strike line
             elif t==RectType.STRIKE.value:
                 docx_span.font.strike = True
 

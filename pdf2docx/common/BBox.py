@@ -121,14 +121,13 @@ class BBox(IText):
         self._bbox = tuple([round(x,1) for x in bbox])
         return self
 
-    def union(self, rect):
+    def union(self, bbox):
         '''Update current bbox to the union with specified `rect`.
             ---
             Args:
-              - rect: fitz.rect or raw bbox like (x0, y0, x1, y1)
+              - bbox: BBox, the target to get union
         '''
-        fitz_rect = self.bbox | fitz.Rect(rect)
-        return self.update(fitz_rect)
+        return self.update(self.bbox | bbox.bbox)
 
 
     def compare(self, bbox, threshold=0.9):

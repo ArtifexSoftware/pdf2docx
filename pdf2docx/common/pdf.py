@@ -61,11 +61,11 @@ def new_page_with_margin(doc, width:float, height:float, margin:tuple, title:str
     return page
 
 
-def rects_from_annotations(annotations:list):
+def rects_from_annotations(page:fitz.Page):
     ''' Get shapes, e.g. Line, Square, Highlight, from annotations(comment shapes) in PDF page.
         ---
         Args:
-          - annotations: a list of PyMuPDF Annot objects, refering to link below
+        - page: fitz.Page, current page
         
         There are stroke and fill properties for each shape, representing border and filling area respectively.
         So, a square annotation with both stroke and fill will be converted to five rectangles here:
@@ -76,7 +76,7 @@ def rects_from_annotations(annotations:list):
             - https://pymupdf.readthedocs.io/en/latest/vars.html#annotation-types
     '''
     rects = []
-    for annot in annotations:
+    for annot in page.annots():
 
         # annot type, e.g. (8, 'Highlight')
         key = annot.type[0]
@@ -215,25 +215,15 @@ def rects_from_annotations(annotations:list):
     return rects
 
 
-def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
-    ''' Get rectangle shapes by parsing page cross reference stream.
-
-        Note: these shapes are generally converted from pdf source, e.g. highlight, underline, 
-        which are different from PDF comments shape.
-
+def rects_from_stream(doc:fitz.Document, page:fitz.Page):
+    ''' Get rectangle shapes, e.g. highlight, underline, table borders, from page source contents.
         ---
         Args:
-            - xref_streams: doc._getXrefStream(xref).decode()        
-            - matrix: transformation matrix for coordinate system conversion from pdf to fitz 
+        - doc: fitz.Document representing the pdf file
+        - page: fitz.Page, current page
 
-        --------            
-        References:
-            - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdf_reference_archive/pdf_reference_1-7.pdf
-            - Appendix A for associated operators
-            - Section 8.5 Path Construction and Painting
-            - https://github.com/pymupdf/PyMuPDF/issues/263
-
-        typical mark of rectangle in xref stream:
+        The page source is represented as contents of stream object. For example,
+        ```
             /P<</MCID 0>> BDC
             ...
             1 0 0 1 90.0240021 590.380005 cm
@@ -246,27 +236,43 @@ def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
             249 322 l
             ...
             EMC
-
+        ```
         where,
-            - `MCID` indicates a Marked content, where rectangles exist
-            - `cm` specify a coordinate system transformation, 
-        here (0,0) translates to (90.0240021 590.380005)
-            - `q`/`Q` save/restores graphic status
-            - `rg` / `g` specify color mode: rgb / grey
-            - `re`, `f` or `f*`: fill rectangle path with pre-defined color. If no `f`/`f*` coming after
-        `re`, it's a rectangle with borders only (no filling).
-        in this case,
+        - `cm` specify a coordinate system transformation, here (0,0) translates to (90.0240021 590.380005)
+        - `q`/`Q` save/restores graphic status
+        - `rg` / `g` specify color mode: rgb / grey
+        - `re`, `f` or `f*`: fill rectangle path with pre-defined color
+        - `m` (move to) and `l` (line to) defines a path
+        
+        In this case,
+        - a rectangle with:
             - fill color is yellow (1,1,0)
             - lower left corner: (285.17 500.11)
             - width: 193.97
             - height: 13.44
-            - `m`, `l`: draw line from `m` (move to) to `l` (line to)
+        - a line from (214, 320) to (249, 322)
 
-        Note: coordinates system transformation should be considered if text format
-            is set from PDF file with edit mode. 
+        Read more:        
+        - https://github.com/pymupdf/PyMuPDF/issues/263
+        - https://github.com/pymupdf/PyMuPDF/issues/225
+        - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdf_reference_archive/pdf_reference_1-7.pdf
     '''
-    # Graphic States:
-    # - working CS is coincident with the absolute origin (0, 0)
+    # Each object in PDF has a cross-reference number (xref):
+    # - to get its source contents: `doc.xrefObject()` or low level API `doc._getXrefString()`; but for stream objects, only the non-stream part is returned
+    # - to get the stream data: `doc.xrefStream(xref)` or low level API `doc._getXrefStream(xref)`
+    # - the xref for a page object itself: `page.xref`
+    # - all stream xref contained in one page: `page.getContents()`
+    # - combine all stream object contents together: `page.readContents()` with PyMuPDF>=1.17.0
+    # 
+    # Clean contents first:
+    # syntactically correct, standardize and pretty print the contents stream
+    page.cleanContents()
+    xref_stream = page.readContents().decode(encoding="ISO-8859-1") 
+
+    # transformation matrix for coordinate system conversion from pdf to fitz
+    matrix = page.transformationMatrix
+
+    # Graphic States: working CS is coincident with the absolute origin (0, 0)
     # Refer to PDF reference v1.7 4.2.3 Transformation Metrices
     #                        | a b 0 |
     # [a, b, c, d, e, f] =>  | c b 0 |
@@ -274,119 +280,141 @@ def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
     ACS = fitz.Matrix(0.0) # identity matrix
     WCS = fitz.Matrix(0.0)
 
-    # - graphics color: 
-    #   - stroking color
+    # Graphics color: 
+    # - color space: PDF Reference Section 4.5 Color Spaces
+    # NOTE: it should have to calculate color value under arbitrary color space, but it's really hard work for now.
+    # So, consider device color space only like DeviceGray, DeviceRGB, DeviceCMYK, and set black for all others.
+    device_space = True
+    color_spaces = _check_device_cs(doc, page)
+
+    # - stroking color
     Acs = utils.RGB_value((0.0, 0.0, 0.0)) # stored value
     Wcs = Acs                              # working value
-    #   - filling color
+    # - filling color
     Acf = utils.RGB_value((0.0, 0.0, 0.0))
     Wcf = Acf
 
-    # - stroke width
+    # Stroke width
     Ad = 0.0
     Wd = 0.0
 
     # In addition to lines, rectangles are also processed with border path
     paths = [] # a list of path, each path is a list of points
 
-    # check xref stream word by word (line always changes)
-    print(xref_stream)
-    lines = xref_stream.split()
-    print(lines)
+    # Check line by line
+    # Cleaned by `page.cleanContents()`, operator and operand are aligned in a same line;
+    # otherwise, have to check stream contents word by word (line always changes)
+    lines = xref_stream.splitlines()
     rects = []
-    for (i, line) in enumerate(lines):
 
-        # CS transformation: a b c d e f cm, e.g.
-        # 0.05 0 0 -0.05 0 792 cm
-        # refer to PDF Reference 4.2.2 Common Transformations for detail
-        if line=='cm':
-            # update working CS
-            components = list(map(float, lines[i-6:i]))
-            Mt = fitz.Matrix(*components)
-            WCS = Mt * WCS # M' = Mt x M
+    for line in lines:
 
-        # painting color
-        # - reset color space
-        elif line.upper()=='CS':
+        words = line.split()
+        op = words[-1] # operator always at the end after page.cleanContents()
+
+        # -----------------------------------------------
+        # Color Operators: PDF Reference Table 4.24
+        # -----------------------------------------------
+        # - set color space:
+        #   color_space_name cs  # specify color space
+        #   c1 c2 ... SC/SCN     # components under defined color space
+        if op.upper()=='CS':
             Wcs = utils.RGB_value((0.0, 0.0, 0.0))
             Wcf = utils.RGB_value((0.0, 0.0, 0.0))
 
-        # - gray mode
-        elif line.upper()=='G':  # 0 g
-            g = float(lines[i-1])
+            # Consider normal device cs only
+            device_space = color_spaces.get(words[0], False)
+
+        # - set color: color components under specified color space
+        elif op.upper()=='SC': # c1 c2 ... cn SC
+            c = _RGB_from_color_components(words[0:-1], device_space)
+            #  nonstroking color
+            if op=='sc':
+                Wcf = c
+            # stroking color
+            else:
+                Wcs = c
+
+        # - set color: color components under specified color space
+        elif op.upper()=='SCN': # c1 c2 ... cn [name] SC
+            if utils.is_number(words[-2]):
+                c = _RGB_from_color_components(words[0:-1], device_space)
+            else:
+                c = _RGB_from_color_components(words[0:-2], device_space)
+
+            #  nonstroking color
+            if op=='scn':
+                Wcf = c
+            # stroking color
+            else:
+                Wcs = c
+
+        # - DeviceGray space, equal to:
+        # /DeviceGray cs
+        # c sc
+        elif op.upper()=='G':  # 0 g
+            g = float(words[0])
             # nonstroking color, i.e. filling color here
-            if line=='g':
+            if op=='g':
                 Wcf = utils.RGB_value((g, g, g))
             # stroking color
             else:
                 Wcs = utils.RGB_value((g, g, g))
 
-        # - RGB mode
-        elif line.upper()=='RG': # 1 1 0 rg
-            r, g, b = map(float, lines[i-3:i])
+        # - DeviceRGB space
+        elif op.upper()=='RG': # 1 1 0 rg
+            r, g, b = map(float, words[0:-1])
 
             #  nonstroking color
-            if line=='rg':
+            if op=='rg':
                 Wcf = utils.RGB_value((r, g, b))
             # stroking color
             else:
                 Wcs = utils.RGB_value((r, g, b))
 
-        # - CMYK mode
-        elif line.upper()=='K': # c m y k K
-            try:
-                c, m, y, k = map(float, lines[i-4:i])
-            except ValueError:
-                continue
+        # - DeviceCMYK space
+        elif op.upper()=='K': # c m y k K
+            c, m, y, k = map(float, words[0:-1])
             #  nonstroking color
-            if line=='k':
+            if op=='k':
                 Wcf = utils.CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)
             # stroking color
             else:
-                Wcs = utils.CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)
+                Wcs = utils.CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)        
 
-        # - set color: either gray, or RGB or CMYK mode
-        elif line.upper()=='SC': # c1 c2 ... cn SC
-            c = _RGB_from_color_components(lines[i-4:i])
-            #  nonstroking color
-            if line=='sc':
-                Wcf = c
-            # stroking color
-            else:
-                Wcs = c
-
-        # - set color: either gray, or RGB or CMYK mode
-        elif line.upper()=='SCN': # c1 c2 ... cn [name] SC
-            if utils.is_number(lines[i-1]):
-                c = _RGB_from_color_components(lines[i-4:i])
-            else:
-                c = _RGB_from_color_components(lines[i-5:i-1])
-
-            #  nonstroking color
-            if line=='scn':
-                Wcf = c
-            # stroking color
-            else:
-                Wcs = c
+        # -----------------------------------------------
+        # Graphics State Operators: PDF References Table 4.7
+        # -----------------------------------------------
+        # CS transformation: a b c d e f cm, e.g.
+        # 0.05 0 0 -0.05 0 792 cm
+        # refer to PDF Reference 4.2.2 Common Transformations for detail
+        elif op=='cm':
+            # update working CS
+            components = list(map(float, words[0:-1]))
+            Mt = fitz.Matrix(*components)
+            WCS = Mt * WCS # M' = Mt x M
 
         # stroke width
-        elif line=='w':
-            Wd = float(lines[i-1])
+        elif op=='w': # 0.5 w
+            Wd = float(words[0])
 
         # save or restore graphics state:
         # only consider transformation and color here
-        elif line=='q': # save
+        elif op=='q': # save
             ACS = fitz.Matrix(WCS) # copy as new matrix
             Acf = Wcf
             Acs = Wcs
             Ad = Wd
             
-        elif line=='Q': # restore
+        elif op=='Q': # restore
             WCS = fitz.Matrix(ACS) # copy as new matrix
             Wcf = Acf
             Wcs = Acs
             Wd = Ad
 
+        # -----------------------------------------------
+        # Path Construction Operators: PDF References Table 4.9
+        # -----------------------------------------------
         # rectangle block:
         # x y w h re is equivalent to
         # x   y   m
@@ -394,7 +422,7 @@ def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
         # x+w y+h l
         # x   y+h l
         # h          # close the path
-        elif line=='re': 
+        elif op=='re': 
             # ATTENTION: 
             # top/bottom, left/right is relative to the positive direction of CS, 
             # while a reverse direction may be performed, so be careful when calculating
@@ -407,7 +435,7 @@ def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
             # 
 
             # (x, y, w, h) before this line            
-            x0, y0, w, h = map(float, lines[i-4:i])
+            x0, y0, w, h = map(float, words[0:-1])
             path = []
             path.append((x0, y0))
             path.append((x0+w, y0))
@@ -417,24 +445,27 @@ def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
 
             paths.append(path)
 
-        # lines: m -> move to point to start a path
-        elif line=='m':
-            x0, y0 = map(float, lines[i-2:i])
+        # path: m -> move to point to start a path
+        elif op=='m': # x y m
+            x0, y0 = map(float, words[0:-1])
             paths.append([(x0, y0)])
         
-        # lines: l -> straight line to point
-        elif line=='l':
-            x0, y0 = map(float, lines[i-2:i])
+        # path: l -> straight line to point
+        elif op=='l': # x y l
+            x0, y0 = map(float, words[0:-1])
             paths[-1].append((x0, y0))
 
         # close the path
-        elif line=='h': 
+        elif op=='h': 
             for path in paths: _close_path(path)
 
+        # -----------------------------------------------
+        # Path-painting Operatores: PDF Reference Table 4.10
+        # -----------------------------------------------
         # close and stroke the path
-        elif line.upper()=='S':
+        elif op.upper()=='S':
             # close
-            if line=='s':
+            if op=='s':
                 for path in paths: _close_path(path)
 
             # stroke path
@@ -459,7 +490,7 @@ def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
             paths = []
 
         # close, fill and stroke the path
-        elif line.upper() in ('B', 'B*'): 
+        elif op.upper() in ('B', 'B*'): 
             for path in paths: 
                 # close path
                 _close_path(path)
@@ -480,10 +511,80 @@ def rects_from_stream(xref_stream:str, matrix:fitz.Matrix):
             pass
 
         # end the path without stroking or filling
-        elif line=='n':
+        elif op=='n':
             paths = []
 
     return rects
+
+
+def _check_device_cs(doc:fitz.Document, page:fitz.Page):
+    '''Get all color space name used in current page and check if they're device based color space.'''
+    # default device based cs
+    cs = {
+        '/DeviceGray': True, 
+        '/DeviceRGB' : True, 
+        '/DeviceCMYK': True
+    }
+
+    # content of page object, e.g.
+    # <<
+    # ...
+    # /Resources <<
+    #     ...
+    #     /ColorSpace <<
+    #     /Cs6 14 0 R
+    #     >>
+    # >>
+    # /Rotate 0
+    # /Type /Page
+    # >>
+    obj_contents = doc.xrefObject(page.xref)
+
+    cs_found = False
+    for line_ in obj_contents.splitlines():
+        line = line_.strip()
+
+        # check start/end of color space block
+        if not cs_found and line.startswith('/ColorSpace'):
+            cs_found = True
+            continue
+
+        if not cs_found:
+            continue
+        elif line=='>>':
+            break
+
+        # now within cs block, e.g. /Cs6 14 0 R
+        cs_name, xref, *_ = line.split()
+        cs[cs_name] = _is_device_cs(int(xref), doc)
+
+    return cs
+
+
+def _is_device_cs(xref, doc:fitz.Document):
+    '''Check whether object xref is a device based color space.
+    '''
+    # cs definition
+    obj_contents = doc.xrefObject(xref)
+
+    # for now, just check /ICCBased CS:
+    # it's treated as a device based cs if /Device[Gray|RGB|CMYK] exists in /Alternate.
+    # 
+    # [ /ICCBased 15 0 R ]
+    # 
+    # <<
+    #   /Alternate /DeviceRGB
+    #   /Filter /FlateDecode
+    #   /Length 2597
+    #   /N 3
+    # >>
+    if '/ICCBased' in obj_contents:
+        name, x, *_ = obj_contents[1:-1].strip().split()
+        ICC_contents = doc.xrefObject(int(x))
+        return '/Alternate /Device' in ICC_contents
+
+    # ignore all other color spaces, may include if facing associated cases
+    return False
 
 
 def _transform_path(path:list, WCS:fitz.Matrix, M0:fitz.Matrix):
@@ -565,27 +666,39 @@ def _fill_rect_path(path:list, WCS:fitz.Matrix, color:int, page_height:float):
     }
 
 
-def _RGB_from_color_components(components:list):
-    ''' Detect color mode from given components and calculate the RGB value.
+def _RGB_from_color_components(components:list, device_cs:bool=True):
+    ''' Get color based on color components and color space.
         ---
         Args:
-            - components: a list with 4 elements
+        - components: color components in various color space, e.g. grey, RGB, CMYK
+        - device_cs: whether this is under device color space
     '''
+    # black by default
     color = utils.RGB_value((0.0,0.0,0.0)) # type: int
 
+    # NOTE: COnsider only the device color space, i.e. Gray, RGB, CMYK.
+    if not device_cs:
+        return color
+
+    # if device cs, decide the cs with length of color components
+    num = len(components)
+
     # CMYK mode
-    if all(map(utils.is_number, components)):
+    if num==4:
         c, m, y, k = map(float, components)
         color = utils.CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)
 
     # RGB mode
-    elif all(map(utils.is_number, components[1:])):
-        r, g, b = map(float, components[1:])
+    elif num==3:
+        r, g, b = map(float, components)
         color = utils.RGB_value((r, g, b))
 
     # gray mode
-    elif utils.is_number(components[-1]):
-        g = float(components[-1])
+    elif num==1:
+        g = float(components[0])
         color = utils.RGB_value((g,g,g))
 
     return color
+
+
+        

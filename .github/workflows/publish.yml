@@ -47,6 +47,13 @@ jobs:
           python setup.py sdist --formats=gztar,zip
           python setup.py bdist_wheel
 
+      # test wheel file locally
+      - name: Test package
+        run: |
+          pip install ./dist/*.whl
+          cd test
+          python -m unittest test.py
+
       # upload the artifacts for further jobs
       # - app-tag.tar.gz
       # - app-tag.zip
