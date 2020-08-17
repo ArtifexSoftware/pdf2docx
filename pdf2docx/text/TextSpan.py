@@ -34,6 +34,7 @@ data structure for Span
 '''
 
 from docx.shared import Pt, RGBColor
+from docx.oxml.ns import qn
 
 from .Char import Char
 from ..common.BBox import BBox
@@ -59,16 +60,23 @@ class TextSpan(BBox):
     @property
     def font(self):
         '''Parse raw font name, e.g. 
-            - BCDGEE+Calibri-Bold, BCDGEE+Calibri -> Calibri
-            - ArialNarrow -> Arial Narrow.
+            - split with '+' and '-': BCDGEE+Calibri-Bold, BCDGEE+Calibri -> Calibri
+            - split with upper case : ArialNarrow -> Arial Narrow, but exception: NSimSUN -> NSimSUN
+        
+            NSimSUN refers to Chinese font name `新宋体`, so consider a localization mapping.
         '''
         # process on '+' and '-'
         font_name = self._font.split('+')[-1]
         font_name = font_name.split('-')[0]
 
+        # mapping font name
+        key = font_name.replace(' ', '').replace('-', '').replace('_', '').upper() # normalize mapping key
+        font_name = utils.DICT_FONTS.get(key, font_name)
+
         # split with upper case letters
         blank = ' '
         font_name = ''.join(f'{blank}{x}' if x.isupper() else x for x in font_name).strip(blank)
+
         return font_name
 
 
@@ -269,7 +277,11 @@ class TextSpan(BBox):
         docx_span.superscript = bool(self.flags & 2**0)
         docx_span.italic = bool(self.flags & 2**1)
         docx_span.bold = bool(self.flags & 2**4)
-        docx_span.font.name = self.font        
+
+        # font name
+        font_name = self.font
+        docx_span.font.name = font_name
+        docx_span._element.rPr.rFonts.set(qn('w:eastAsia'), font_name) # set font for chinese characters
         docx_span.font.color.rgb = RGBColor(*utils.RGB_component(self.color))
 
         # font size

@@ -126,7 +126,7 @@ class Blocks(Collection):
 
 
     def clean(self):
-        '''Preprocessing for blocks initialized from the raw layout.'''
+        '''Preprocess blocks initialized from the raw layout.'''
 
         # filter function:
         # - remove negative blocks
@@ -144,14 +144,14 @@ class Blocks(Collection):
         return True
 
 
-    def parse_table_content(self):
+    def assign_table_contents(self):
         '''Add Text/Image block lines to associated cells of Table blocks.'''
         # table blocks
         # NOTE: some tables may be already parsed since explicit tables are parsed earlier than implicit tables.
         # It's OK because no text blocks left for parsing such tables at this round.
         tables = self.table_blocks
 
-        if not tables: return False
+        if not tables: return
 
         # collect text blocks in table region        
         blocks_in_tables = [[] for _ in tables] # type: list[list[Block]]
@@ -216,10 +216,8 @@ class Blocks(Collection):
         blocks.extend(tables)
         self.reset(blocks).sort_in_reading_order()
 
-        return True
 
-
-    def collect_table_content(self):
+    def collect_table_contents(self):
         ''' Collect bbox, e.g. Line of TextBlock, which may contained in an implicit table region.
             
             Table may exist on the following conditions:
@@ -409,15 +407,17 @@ class Blocks(Collection):
 
 
     def page_margin(self, width:float, height:float):
-        '''Calculate page margin:
+        '''Calculate page margin.            
+            ---
+            Args:
+            - width: page width
+            - height: page height
+
+            Calculation method:
             - left: MIN(bbox[0])
             - right: MIN(left, width-max(bbox[2]))
             - top: MIN(bbox[1])
             - bottom: height-MAX(bbox[3])
-            ---
-            Args:
-              - width: page width
-              - height: page height
         '''
         # return normal page margin if no blocks exist
         if not self._instances:
@@ -431,7 +431,7 @@ class Blocks(Collection):
 
         # right margin
         x_max = max(map(lambda x: x.x1, list_bbox))
-        right = width-x_max-utils.DM*2.0 # consider tolerance: leave more free space
+        right = width - x_max - utils.DM*10.0  # consider tolerance: leave more free space
         right = min(right, left)     # symmetry margin if necessary
         right = max(right, 0.0)      # avoid negative margin
 

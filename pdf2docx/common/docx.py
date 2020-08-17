@@ -19,7 +19,7 @@ def reset_paragraph_format(p, line_spacing:float=1.05):
     ''' Reset paragraph format, especially line spacing.
         ---
         Args:
-          - p: docx paragraph instance
+        - p: docx paragraph instance
         
         Two kinds of line spacing, corresponding to the setting in MS Office Word:
         - line_spacing=1.05: single or multiple
@@ -32,6 +32,14 @@ def reset_paragraph_format(p, line_spacing:float=1.05):
     pf.left_indent = Pt(0)
     pf.right_indent = Pt(0)
     pf.widow_control = True
+
+    # do not adjust spacing between Chinese and Latin/number
+    xml = r'<w:autoSpaceDE {} w:val="0"/>'.format(nsdecls('w'))
+    p._p.get_or_add_pPr().insert(0, parse_xml(xml))
+
+    xml = r'<w:autoSpaceDN {} w:val="0"/>'.format(nsdecls('w'))
+    p._p.get_or_add_pPr().insert(0, parse_xml(xml))
+
     return pf
 
 
