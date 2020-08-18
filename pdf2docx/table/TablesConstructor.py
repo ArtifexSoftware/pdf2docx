@@ -16,6 +16,8 @@ from ..shape.Rectangles import Rectangles
 from ..table.TableBlock import TableBlock
 from ..table.Row import Row
 from ..table.Cell import Cell
+from ..text.Line import Line
+from ..text.Lines import Lines
 
 
 class TablesConstructor:
@@ -77,12 +79,12 @@ class TablesConstructor:
         if len(self._blocks)<=1: return []      
 
         # potential bboxes
-        tables_bboxes = self._blocks.collect_table_contents()
+        tables_lines = self._blocks.collect_table_contents()
 
         # parse tables
-        for table_bboxes in tables_bboxes:
+        for table_lines in tables_lines:
             # parse borders based on contents in cell
-            table_rects = self._implicit_borders(table_bboxes, X0, X1)
+            table_rects = self._implicit_borders(table_lines, X0, X1)
 
             # get potential cell shading
             table_bbox = table_rects.bbox
@@ -90,6 +92,7 @@ class TablesConstructor:
                 lambda rect: table_bbox.intersects(rect.bbox), self._rects))
 
             # parse table: don't have to detect borders since it's determined already
+            table_rects.sort_in_reading_order() # required
             table = self._parse_table_structure(table_rects, detect_border=False)
 
             # add parsed table to page level blocks
@@ -113,6 +116,9 @@ class TablesConstructor:
 
             NOTE: for implicit table, table borders are determined from text blocks in advance,
             so, it's safe to set `detect_border=False`.
+
+            NOTE: rects must be sorted in reading order in advance, which is required by checking 
+            merged cells.
         '''
 
         # --------------------------------------------------
@@ -434,6 +440,7 @@ class TablesConstructor:
         '''
         res = [] # type: list[int]
         for rects in borders[0:-1]:
+            # NOTE: rects MUST be sorted in reading order!!
             # multi-lines exist in a row/column
             for rect in rects:
 
@@ -483,19 +490,19 @@ class TablesConstructor:
         return res
 
 
-    def _implicit_borders(self, rects:Rectangles, X0:float, X1:float):
-        ''' Parsing borders based on rects representing contents in table cells.
+    def _implicit_borders(self, lines:Lines, X0:float, X1:float):
+        ''' Parsing borders based on lines contained in table cells.
             ---
             Args:
-            - rects: Rectangles, representing contents in table cells
+            - lines: Lines, contained in table cells
             - X0, X1: default left and right outer borders
         '''
         # boundary box (considering margin) of all line box
         margin = 1
         x0 = X0 - margin
-        y0 = min([rect.bbox.y0 for rect in rects]) - margin
+        y0 = min([rect.bbox.y0 for rect in lines]) - margin
         x1 = X1 + margin
-        y1 = max([rect.bbox.y1 for rect in rects]) + margin
+        y1 = max([rect.bbox.y1 for rect in lines]) + margin
         border_bbox = (x0, y0, x1, y1)
 
         # centerline of outer borders
@@ -507,12 +514,13 @@ class TablesConstructor:
         ]
 
         # centerline of inner borders
-        inner_borders = self._borders_from_bboxes(rects, border_bbox)
+        inner_borders = self._borders_from_lines(lines, border_bbox)
         borders.extend(inner_borders)
         
         # all centerlines to rectangle shapes
         res = Rectangles()
         color = utils.RGB_value((1,1,1))
+
         for border in borders: 
             # set an non-zero width for border check; won't draw border in docx for implicit table
             bbox = utils.expand_centerline(border[0:2], border[2:], width=0.2) 
@@ -529,111 +537,85 @@ class TablesConstructor:
         return res
 
 
-    def _borders_from_bboxes(self, rects:Rectangles, border_bbox:tuple):
-        ''' Calculate the surrounding borders of given bbox-es.
+    def _borders_from_lines(self, lines:Lines, border_bbox:tuple):
+        ''' Calculate the surrounding borders of given lines.
             ---
             Args:
-            - rects: contents bbox-es in table cells
+            - lines: lines in table cells
             - border_bbox: boundary box of table region
             
             These borders construct table cells. Considering the re-building of cell content in docx, 
             - only one bbox is allowed in a line;
             - but multi-lines are allowed in a cell.
+        
+            Two purposes of parsing implicit table: 
+            - rebuild layout, e.g. text layout with two columns
+            - parsing real table without showing borders
+
+            It's controdictory that the former needn't to deep into row level, just 1 x N table convenient for layout recreation;
+            instead, the later should, M x N table for each cell precisely.
+            So, the principle determining implicit borders here:
+            - two columns: layout if the count of rows in each column is different; otherwise, it's a real table
+            - more columns: real table -> deep into rows
         '''
-        borders = []  # type: list[tuple[float]]
+        # trying: deep into cells        
+        cols_lines = lines.group_by_columns()
+        group_lines = [col_lines.group_by_rows() for col_lines in cols_lines]
 
-        # collect bbox-ex column by column
-        X0, Y0, X1, Y1 = border_bbox
-        cols_rects = self._column_borders_from_bboxes(rects)
-        col_num = len(cols_rects)
+        # real table or just text layout?
+        col_num = len(cols_lines)
+        real_table = True # table by default
+        if col_num==2:
+            # It's regarded as layout if row count is different, or the count is 1
+            left, right = len(group_lines[0]), len(group_lines[1])
+            if left!=right or left==1:
+                real_table = False
 
-        for i in range(col_num):
+        # detect borders based on table/layout mode
+        borders = set()  # type: set[tuple[float]]        
+        X0, Y0, X1, Y1 = border_bbox 
+        
+        # collect lines column by column
+        for i in range(col_num): 
+
             # add column border
-            x0 = X0 if i==0 else (cols_rects[i-1].bbox.x1 + cols_rects[i].bbox.x0) / 2.0
-            x1 = X1 if i==col_num-1 else (cols_rects[i].bbox.x1 + cols_rects[i+1].bbox.x0) / 2.0
+            x0 = X0 if i==0 else (cols_lines[i-1].bbox.x1 + cols_lines[i].bbox.x0) / 2.0
+            x1 = X1 if i==col_num-1 else (cols_lines[i].bbox.x1 + cols_lines[i+1].bbox.x0) / 2.0
 
             if i<col_num-1:
-                borders.append((x1, Y0, x1, Y1))
+                borders.add((x1, Y0, x1, Y1)) # right border of current column
 
-            # collect bboxes row by row        
-            rows_rects = self._row_borders_from_bboxes(cols_rects[i])
-
+            
             # NOTE: unnecessary to split row if the count of row is 1
-            row_num = len(rows_rects)
+            rows_lines = group_lines[i]
+            row_num = len(rows_lines)
             if row_num==1: continue
         
-            for j in range(row_num):
+            # collect bboxes row by row 
+            for j in range(row_num): 
+
                 # add row border
-                y0 = Y0 if j==0 else (rows_rects[j-1].bbox.y1 + rows_rects[j].bbox.y0) / 2.0
-                y1 = Y1 if j==row_num-1 else (rows_rects[j].bbox.y1 + rows_rects[j+1].bbox.y0) / 2.0
+                y0 = Y0 if j==0 else (rows_lines[j-1].bbox.y1 + rows_lines[j].bbox.y0) / 2.0
+                y1 = Y1 if j==row_num-1 else (rows_lines[j].bbox.y1 + rows_lines[j+1].bbox.y0) / 2.0
                 
-                # it's Ok if single bbox in a line
-                # if len(rows_rects[j])<2:
-                #     continue
+                # needn't go to row level if layout mode
+                if not real_table:
+                    continue
 
-                # otherwise, add row border and check borders further
+                # otherwise, add row borders
                 if j==0:
-                    borders.append((x0, y1, x1, y1))
+                    borders.add((x0, y1, x1, y1)) # bottom border for first row
                 elif j==row_num-1:
-                    borders.append((x0, y0, x1, y0))
+                    borders.add((x0, y0, x1, y0)) # top border for last row
                 else:
-                    borders.append((x0, y0, x1, y0))
-                    borders.append((x0, y1, x1, y1))
+                    # both top and bottom borders added, even though duplicates exist since
+                    # top border of current row may be considered already when process bottom border of previous row.
+                    # So, variable `borders` is a set here
+                    borders.add((x0, y0, x1, y0))
+                    borders.add((x0, y1, x1, y1))
 
-                # recursion
-                _borders = self._borders_from_bboxes(rows_rects[j], (x0, y0, x1, y1))
-                borders.extend(_borders)        
+                # recursion to check borders further
+                borders_ = self._borders_from_lines(rows_lines[j], (x0, y0, x1, y1))
+                borders = borders | borders_
 
         return borders
-
-
-    @staticmethod
-    def _column_borders_from_bboxes(rects:Rectangles):
-        ''' split bbox-es into column groups and add border for adjacent two columns.'''
-        # sort bbox-ex in column first: from left to right, from top to bottom
-        rects.sort_in_line_order()
-        
-        #  bboxes list in each column
-        cols_rects = [] # type: list[Rectangles]
-
-        # collect bbox-es column by column
-        col_rect = Rectangle()
-        for rect in rects:
-            # same column group if vertically aligned
-            if col_rect.vertically_align_with(rect):
-                cols_rects[-1].append(rect)
-            
-            # otherwise, start a new column group
-            else:
-                cols_rects.append(Rectangles([rect]))
-                col_rect = Rectangle() # reset
-                
-            col_rect.union(rect)
-
-        return cols_rects
-
-
-    @staticmethod
-    def _row_borders_from_bboxes(rects:Rectangles):
-        ''' split bbox-es into row groups and add border for adjacent two rows.'''
-        # sort bbox-ex in row first mode: from top to bottom, from left to right
-        rects.sort_in_reading_order()
-
-        #  bboxes list in each row
-        rows_rects = [] # type: list[Rectangles]
-
-        # collect bbox-es row by row
-        row_rect = Rectangle()
-        for rect in rects:
-            # same row group if horizontally aligned
-            if row_rect.horizontally_align_with(rect):
-                rows_rects[-1].append(rect)
-            
-            # otherwise, start a new row group
-            else:
-                rows_rects.append(Rectangles([rect]))
-                row_rect = Rectangle() # reset
-
-            row_rect.union(rect)
-
-        return rows_rects

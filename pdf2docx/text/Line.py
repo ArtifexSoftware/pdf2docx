@@ -30,6 +30,11 @@ class Line(BBox):
         self.wmode = raw.get('wmode', 0) # writing mode
         self.dir = raw.get('dir', [1, 0]) # writing direction
 
+        # Lines contained in text block may be re-grouped, so use an ID to track the parent block.
+        # This ID can't be changed once set -> record the original parent extracted from PDF, 
+        # so that we can determin whether two lines belong to a same original text block.
+        self._pid = None
+
         # collect spans
         self.spans = Spans(None, self).from_dicts(raw.get('spans', []))
 
@@ -56,6 +61,27 @@ class Line(BBox):
             return TextDirection.BOTTOM_TOP
         else:
             return TextDirection.IGNORE
+
+    
+    @property
+    def pid(self):
+        '''Get parent ID.'''
+        return self._pid
+
+    @pid.setter
+    def pid(self, pid):
+        '''Set parent ID only if not set before.'''
+        if self._pid is None:
+            self._pid = int(pid)
+
+
+    def same_parent_with(self, line):
+        '''Check if has same parent ID.'''
+        if self.pid is None:
+            return False
+        else:
+            return self.pid == line.pid
+
 
     def store(self) -> dict:
         res = super().store()
