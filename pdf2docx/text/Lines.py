@@ -62,7 +62,7 @@ class Lines(Collection):
         return False
 
     
-    def merge(self):
+    def join(self):
         ''' Merge lines aligned horizontally in a block. The main purposes:
             - remove overlapped lines, e.g. floating images
             - make inline image as a span in text line logically
@@ -103,8 +103,8 @@ class Lines(Collection):
         ''' Split vertical lines and try to make lines in same original text block grouped together.
 
             To the first priority considering docx recreation, horizontally aligned lines must be assigned to same group.
-            If only one line in each group, lines in same original text block can be group together again even though
-            they are in different physical lines.
+            After that, if only one line in each group, lines in same original text block can be group together again 
+            even though they are in different physical lines.
         '''
         # split vertically
         fun = lambda a,b: a.horizontally_align_with(b, factor=0.0)
@@ -115,7 +115,8 @@ class Lines(Collection):
             if len(group) > 1: # first priority
                 break
         
-        # now one line in each group -> docx recreation is fullfilled
+        # now one line per group -> docx recreation is fullfilled, 
+        # then consider lines in same original text block
         else:
             fun = lambda a,b: a.same_parent_with(b)
             groups = self.group(fun)

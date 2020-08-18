@@ -84,7 +84,7 @@ class TextBlock(Block):
             self.lines.append(line)
 
 
-    def merge(self):
+    def join(self):
         '''Merge contained lines horizontally.'''
         self.lines.merge()
 

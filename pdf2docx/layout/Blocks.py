@@ -139,7 +139,7 @@ class Blocks(Collection):
            
         # merge blocks horizontally, e.g. remove overlap blocks, since no floating elements are supported
         # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
-        self.sort_in_reading_order().merge_horizontally(text_direction=False)
+        self.sort_in_reading_order().join_horizontally(text_direction=False)
 
         return True
 
@@ -209,8 +209,9 @@ class Blocks(Collection):
                     if not cell: continue
                     # check candidate blocks
                     for block in blocks_in_table: cell.add(block)
-                    # merge blocks if contained blocks found
-                    cell.blocks.merge_horizontally().split_vertically()
+
+                    # process cell blocks further: ensure converting float layout to flow layout
+                    cell.blocks.join_horizontally().split_vertically()
 
         # sort in natural reading order and update layout blocks
         blocks.extend(tables)
@@ -360,13 +361,16 @@ class Blocks(Collection):
             ref_pos = ref_block.bbox_raw[idx+2] + dw # assume same bottom border with top one
 
 
-    def merge_horizontally(self, text_direction=True):
-        '''Merge blocks aligned horizontally group by group.
+    def join_horizontally(self, text_direction=True):
+        ''' Join lines in horizontally aligned blocks into new TextBlock.
             ---
             Args:
-              - text_direction: whether consider text direction.
-                if True, detect text direction based on line direction;
-                if False, use default direction: from left to right.
+            - text_direction: whether consider text direction.
+              If True, detect text direction based on line direction;
+              if False, use default direction: from left to right.
+
+            This function converts potential float layout into flow layout, e.g. remove overlapped lines, 
+            reposition inline images, so that make rebuilding such layout in docx possible.
         '''
         # get horizontally aligned blocks group by group
         fun = lambda a,b: a.horizontally_align_with(b, factor=0.0, text_direction=text_direction)
@@ -384,7 +388,14 @@ class Blocks(Collection):
 
 
     def split_vertically(self):
-        '''Split block lines in vertical direction.'''
+        ''' Split the joined lines in vertical direction.
+
+            With preceding joining step, current text block may contain lines coming from various original blocks.
+            Considering that different text block may have different line properties, e.g. height, spacing, 
+            this function is to split them back to original text block. But the original layout may not reasonable for
+            re-building docx, so a high priority is to split them vertically, which converts potential float layout to
+            flow layout.
+        '''
         blocks = [] # type: list[TextBlock]
         for block in self._instances:
             blocks.extend(block.split())
@@ -465,7 +476,7 @@ class Blocks(Collection):
             because average line height is used when create docx. However, the contained lines 
             may be not reasonable after this step. So, this is just a pre-processing step focusing 
             on processing lines in horizontal direction, e.g. merging inline image to its text line.
-            A further step, e.g. split lines vertically, must be applied before final making docx.
+            A further step, e.g. `split_vertically()`, must be applied before final making docx.
         '''
         # combine all lines into a TextBlock
         final_block = TextBlock()
@@ -475,7 +486,7 @@ class Blocks(Collection):
                 final_block.add(line)
 
         # merge lines/spans contained in this textBlock
-        final_block.lines.merge()
+        final_block.lines.join()
 
         return final_block
 
