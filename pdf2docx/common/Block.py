@@ -23,11 +23,6 @@ class Block(BBox):
         self.line_space = raw.get('line_space', 0.0)
 
 
-    @property
-    def sub_bboxes(self):
-        '''sub-region bbox of this block, e.g. Lines in TextBlock. Return self.bbox by default.'''
-        return [self.bbox]
-
     def is_text_block(self):
         return self._type==BlockType.TEXT
 

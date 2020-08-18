@@ -16,6 +16,14 @@ from ..common.Collection import Collection
 class Lines(Collection):
     '''Text line list.'''
 
+    @property
+    def unique_parent(self):
+        '''Whether all contained lines have same parant.'''
+        if not bool(self): return False
+
+        first_line = self._instances[0]
+        return all(line.same_parent_with(first_line) for line in self._instances)
+
     def append(self, line:Line):
         '''Rewrite. Append a line and update line pid and parent bbox.'''
         if not line: return
@@ -163,3 +171,67 @@ class Lines(Collection):
         for row in lines_in_rows:
             row.sort(key=lambda line: line.bbox_raw[idx])
             self._instances.extend(row)
+
+
+    def group_by_columns(self):
+        ''' Group lines into columns.'''
+        # sort lines in column first: from left to right, from top to bottom
+        self.sort_in_line_order()
+        
+        #  lines list in each column
+        cols_lines = [] # type: list[Lines]
+
+        # collect lines column by column
+        col_line = Line()
+        for line in self._instances:
+            # same column group if vertically aligned
+            if col_line.vertically_align_with(line):
+                cols_lines[-1].append(line)
+            
+            # otherwise, start a new column group
+            else:
+                cols_lines.append(Lines([line]))
+                col_line = Line() # reset
+                
+            col_line.union(line)
+
+        return cols_lines
+
+
+    def group_by_rows(self):
+        ''' Group lines into rows.'''
+        # sort lines in row first mode: from top to bottom, from left to right
+        self.sort_in_reading_order()
+
+        # collect lines row by row
+        rows = [] # type: list[Lines]
+        row_line = Line()
+        for line in self._instances:
+            # same row group if horizontally aligned
+            if row_line.horizontally_align_with(line):
+                rows[-1].append(line)
+            
+            # otherwise, start a new row group
+            else:
+                rows.append(Lines([line]))
+                row_line = Line() # reset
+
+            row_line.union(line)
+        
+        # further step:
+        # merge rows if in same original text block
+        lines_list = [] # type: list[Lines]
+        ref = Lines()
+        for row in rows:
+            # same parent text block: merge to previous group
+            if ref.unique_parent and row.unique_parent and row[0].same_parent_with(ref[0]):
+                lines_list[-1].extend(row)
+            
+            # otherwise, append it directly
+            else:
+                lines_list.append(row)
+            
+            # update reference
+            ref = row
+
+        return lines_list

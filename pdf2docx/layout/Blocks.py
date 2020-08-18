@@ -12,9 +12,9 @@ from ..common import utils
 from ..common.Block import Block
 from ..text.TextBlock import TextBlock
 from ..text.ImageBlock import ImageBlock
+from ..text.Lines import Lines
 from ..table.TableBlock import TableBlock
-from ..shape.Rectangle import Rectangle
-from ..shape import Rectangles # avoid conflits:
+
 
 class Blocks(Collection):
     '''Block collections.'''
@@ -219,7 +219,7 @@ class Blocks(Collection):
 
 
     def collect_table_contents(self):
-        ''' Collect bbox, e.g. Line of TextBlock, which may contained in an implicit table region.
+        ''' Collect lines of text block, which may contained in an implicit table region.
 
             NOTE: PyMuPDF may group multi-lines in a row as a text block while each line belongs to different
             cell. So, deep into line level here when collecting table contents regions.
@@ -229,12 +229,11 @@ class Blocks(Collection):
              - (b) multi-blocks are in a same row (horizontally aligned) -> determined by two adjacent blocks
         '''      
 
-        res = [] # type: list[Rectangles.Rectangles]
+        res = [] # type: list[Lines]
 
-        table_lines = [] # type: list[Rect]
         new_line = True
         num = len(self._instances)
-
+        table_lines = Lines()
         for i in range(num):
             block =self._instances[i]
             next_block =self._instances[i+1] if i<num-1 else Block()
@@ -245,7 +244,7 @@ class Blocks(Collection):
             # (a) lines in current block are connected sequently?
             # yes, counted as table lines
             if new_line and block.contains_discrete_lines(): 
-                table_lines.extend(block.sub_bboxes)  # deep into line level
+                table_lines.extend(block.lines)  # deep into line level
                 # update line status
                 new_line = False            
 
@@ -254,10 +253,10 @@ class Blocks(Collection):
             if block.horizontally_align_with(next_block):
                 # if it's start of new table row: add the first block
                 if new_line: 
-                    table_lines.extend(block.sub_bboxes)
+                    table_lines.extend(block.lines)
                 
                 # add next block
-                table_lines.extend(next_block.sub_bboxes)
+                table_lines.extend(next_block.lines)
 
                 # update line status
                 new_line = False
@@ -279,12 +278,10 @@ class Blocks(Collection):
 
             # end of current table
             if table_lines and table_end: 
-                # from fitz.Rect to Rectangle type
-                rects = [Rectangle().update(line) for line in table_lines]
-                res.append(Rectangles.Rectangles(rects))
+                res.append(table_lines)
 
                 # reset table_blocks
-                table_lines = []
+                table_lines = Lines()
         
         return res
 

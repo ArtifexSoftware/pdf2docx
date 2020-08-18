@@ -50,12 +50,6 @@ class TextBlock(Block):
         lines_text = [line.text for line in self.lines]
         return '\n'.join(lines_text)
 
-
-    @property
-    def sub_bboxes(self) -> list:
-        '''bbox of sub-region, i.e. Line.'''
-        return [line.bbox for line in self.lines]
-
     
     @property
     def text_direction(self):
