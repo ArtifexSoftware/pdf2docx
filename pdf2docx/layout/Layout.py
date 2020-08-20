@@ -38,7 +38,7 @@ from .Blocks import Blocks
 from ..shape.Rectangles import Rectangles
 from ..table.TablesConstructor import TablesConstructor
 from ..common.base import PlotControl
-from ..common.utils import debug_plot
+from ..common.utils import debug_plot, DM, ITP
 from ..common.pdf import new_page_with_margin
 from ..common.docx import reset_paragraph_format
 
@@ -65,6 +65,15 @@ class Layout:
     @property
     def margin(self):
         return self._margin
+
+    
+    @property
+    def bbox_raw(self):
+        if self._margin is None:
+            return (0,) * 4
+        else:
+            L, R, T, B = self._margin
+            return (L, T, self.width-R, self.height-B)
 
 
     def store(self):
@@ -210,7 +219,7 @@ class Layout:
             if block.is_text_block():
                 # new paragraph
                 p = doc.add_paragraph()
-                block.make_docx(p, self.margin)
+                block.make_docx(p, self.bbox_raw)
             
             # make table
             elif block.is_table_block():
@@ -249,7 +258,7 @@ class Layout:
         clean_rects  = self.rects.clean()
         
         # calculate page margin based on clean layout
-        self._margin = self.blocks.page_margin(self.width, self.height)
+        self._margin = self.page_margin()
 
         return clean_blocks or clean_rects
 
@@ -284,7 +293,60 @@ class Layout:
         '''Parse text format in both page and table context.'''
         return self.blocks.parse_text_format(self.rects)
  
+
+    def page_margin(self):
+        '''Calculate page margin.            
+            ---
+            Args:
+            - width: page width
+            - height: page height
+
+            Calculation method:
+            - left: MIN(bbox[0])
+            - right: MIN(left, width-max(bbox[2]))
+            - top: MIN(bbox[1])
+            - bottom: height-MAX(bbox[3])
+        '''
+        # return normal page margin if no blocks exist
+        if not self.blocks and not self.rects:
+            return (ITP, ) * 4                 # 1 Inch = 72 pt
+
+        # consider both blocks and rects for page margin
+        list_bbox = list(map(lambda x: x.bbox, self.blocks))
+        list_bbox.extend(list(map(lambda x: x.bbox, self.rects))) 
+
+        # left margin 
+        left = min(map(lambda x: x.x0, list_bbox))
+        left = max(left, 0)
+
+        # right margin
+        x_max = max(map(lambda x: x.x1, list_bbox))
+        right = self.width - x_max - DM*10.0  # consider tolerance: leave more free space
+        right = min(right, left)              # symmetry margin if necessary
+        right = max(right, 0.0)               # avoid negative margin
+
+        # top margin
+        top = min(map(lambda x: x.y0, list_bbox))
+        top = max(top, 0)
+
+        # bottom margin
+        bottom = self.height-max(map(lambda x: x.y1, list_bbox))
+        bottom = max(bottom, 0.0)
+
+        # margin is calculated based on text block only, without considering shape, e.g. table border,
+        # so reduce calculated top/bottom margin to left some free space
+        top *= 0.5
+        bottom *= 0.5
+
+        # use normal margin if calculated margin is large enough
+        return (
+            min(ITP, left), 
+            min(ITP, right), 
+            min(ITP, top), 
+            min(ITP, bottom)
+            )
  
+
     def parse_vertical_spacing(self):
         ''' Calculate external and internal vertical space for paragraph blocks under page context 
             or table context. It'll used as paragraph spacing and line spacing when creating paragraph.

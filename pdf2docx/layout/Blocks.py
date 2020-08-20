@@ -414,55 +414,7 @@ class Blocks(Collection):
         for block in self._instances:
             if block.parse_text_format(rects):
                 flag = True        
-        return flag
-
-
-    def page_margin(self, width:float, height:float):
-        '''Calculate page margin.            
-            ---
-            Args:
-            - width: page width
-            - height: page height
-
-            Calculation method:
-            - left: MIN(bbox[0])
-            - right: MIN(left, width-max(bbox[2]))
-            - top: MIN(bbox[1])
-            - bottom: height-MAX(bbox[3])
-        '''
-        # return normal page margin if no blocks exist
-        if not self._instances:
-            return (utils.ITP, ) * 4 # 1 Inch = 72 pt
-
-        # check candidates for left margin:
-        list_bbox = list(map(lambda x: x.bbox, self._instances))
-
-        # left margin 
-        left = min(map(lambda x: x.x0, list_bbox))
-
-        # right margin
-        x_max = max(map(lambda x: x.x1, list_bbox))
-        right = width - x_max - utils.DM*10.0  # consider tolerance: leave more free space
-        right = min(right, left)     # symmetry margin if necessary
-        right = max(right, 0.0)      # avoid negative margin
-
-        # top/bottom margin
-        top = min(map(lambda x: x.y0, list_bbox))
-        bottom = height-max(map(lambda x: x.y1, list_bbox))
-        bottom = max(bottom, 0.0)
-
-        # margin is calculated based on text block only, without considering shape, e.g. table border,
-        # so reduce calculated top/bottom margin to left some free space
-        top *= 0.5
-        bottom *= 0.5
-
-        # use normal margin if calculated margin is large enough
-        return (
-            min(utils.ITP, left), 
-            min(utils.ITP, right), 
-            min(utils.ITP, top), 
-            min(utils.ITP, bottom)
-            )
+        return flag    
 
 
     def _merge_one(self):
