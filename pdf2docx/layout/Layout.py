@@ -72,8 +72,8 @@ class Layout:
         if self._margin is None:
             return (0,) * 4
         else:
-            L, R, T, B = self._margin
-            return (L, T, self.width-R, self.height-B)
+            left, right, top, bottom = self.margin
+            return (left, top, self.width-right, self.height-bottom)
 
 
     def store(self):
@@ -351,6 +351,4 @@ class Layout:
         ''' Calculate external and internal vertical space for paragraph blocks under page context 
             or table context. It'll used as paragraph spacing and line spacing when creating paragraph.
         '''
-        left, right, top, bottom = self.margin
-        bbox = (left, top, self.width-right, self.height-bottom)
-        self.blocks.parse_vertical_spacing(bbox)
+        self.blocks.parse_vertical_spacing(self.bbox_raw)

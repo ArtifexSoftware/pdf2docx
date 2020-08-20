@@ -327,7 +327,12 @@ class Blocks(Collection):
                 dw = 0.0
 
             start_pos = block.bbox_raw[idx] - dw
-            para_space = max(start_pos-ref_pos, 0.0) # ignore negative value
+            para_space = start_pos-ref_pos
+
+            # modify vertical space in case the block is out of bootom boundary
+            dy = max(block.bbox_raw[idx+2]-bbox[idx+2], 0.0)
+            para_space -= dy
+            para_space = max(para_space, 0.0) # ignore negative value
 
             # ref to current (paragraph): set before-space for paragraph
             if block.is_text_block():
