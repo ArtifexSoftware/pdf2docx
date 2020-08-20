@@ -62,6 +62,7 @@ class TextSpan(BBox):
         '''Parse raw font name, e.g. 
             - split with '+' and '-': BCDGEE+Calibri-Bold, BCDGEE+Calibri -> Calibri
             - split with upper case : ArialNarrow -> Arial Narrow, but exception: NSimSUN -> NSimSUN
+            - replace ',' with blank: e.g. Ko Pub Dotum, Light -> KoPubDotum Light
         
             NSimSUN refers to Chinese font name `新宋体`, so consider a localization mapping.
         '''
@@ -75,7 +76,10 @@ class TextSpan(BBox):
 
         # split with upper case letters
         blank = ' '
-        font_name = ''.join(f'{blank}{x}' if x.isupper() else x for x in font_name).strip(blank)
+        # font_name = ''.join(f'{blank}{x}' if x.isupper() else x for x in font_name).strip(blank)
+
+        # replace ','
+        font_name = font_name.replace(',', blank)
 
         return font_name
 
