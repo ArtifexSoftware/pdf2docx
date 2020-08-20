@@ -282,22 +282,20 @@ class TextBlock(Block):
         pf.tab_stops.clear_all()
 
         # set line spacing for text paragraph
-        pf.line_spacing = Pt(round(self.line_space,1))
-        current_pos = 0.0
+        pf.line_spacing = Pt(round(self.line_space,1))        
 
         # set all tab stops
-        all_pos = set([
-            round(abs(line.bbox_raw[idx]-bbox[idx]), 2) for line in self.lines
-            ])
+        all_pos = set([line.distance(bbox) for line in self.lines])
         for pos in all_pos:
-            if not pos: continue # ignore pos==0
+            if pos<=0.0: continue
             pf.tab_stops.add_tab_stop(Pt(pos))
 
         # add line by line
+        current_pos = 0.0
         for i, line in enumerate(self.lines):
 
             # left indent implemented with tab
-            pos = round(abs(line.bbox_raw[idx]-bbox[idx]), 2)
+            pos = line.distance(bbox)
             docx.add_stop(p, Pt(pos), Pt(current_pos))
 
             # add line
@@ -314,11 +312,15 @@ class TextBlock(Block):
             # do not break line if they're indeed in same line
             elif line.in_same_row(self.lines[i+1]):
                 line_break = False
+
+            # do not break line if no more space in this line
+            elif bbox[idx+2]-line.bbox_raw[idx+2] < utils.DM:
+                line_break = False
             
             if line_break:
                 p.add_run('\n')
                 current_pos = 0
             else:
-                current_pos = round(abs(line.bbox_raw[(idx+2)%4]-bbox[idx]), 2)
+                current_pos = line.distance(bbox) + line.bbox.width
 
         return p

@@ -139,15 +139,15 @@ class TableBlock(Block):
                 cell.blocks.parse_vertical_spacing(bbox)
 
 
-    def make_docx(self, table, page_margin:tuple):
+    def make_docx(self, table, page_bbox:tuple):
         '''Create docx table.
             ---
             Args:
               - table: docx table instance
-              - page_margin: page margin (left, right, top, bottom)
+              - page_bbox: page bbox considering margin
         '''
         # set indent
-        left, *_ = page_margin
+        left, *_ = page_bbox
         pos = self.bbox.x0-left
         docx.indent_table(table, pos)
 
