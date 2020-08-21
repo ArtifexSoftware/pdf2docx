@@ -29,12 +29,6 @@ class BBox(IText):
         '''bbox in fitz.Rect type.'''
         return fitz.Rect(self._bbox) if self._bbox else fitz.rect()
 
-    
-    @property
-    def is_valid(self):
-        '''Ensure bbox can be shown in page, i.e. all coordinates are positive.'''
-        return all(x>=0 for x in self.bbox_raw)
-
 
     def distance(self, bbox:tuple):
         '''x-distance to the given bbox.

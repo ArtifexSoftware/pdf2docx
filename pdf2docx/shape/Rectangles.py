@@ -49,12 +49,16 @@ class Rectangles(Collection):
         return self
 
 
-    def clean(self):
+    def clean(self, page_bbox):
         '''Clean rectangles:
             - delete rectangles fully contained in another one (beside, they have same bg-color)
             - join intersected and horizontally aligned rectangles with same height and bg-color
             - join intersected and vertically aligned rectangles with same width and bg-color
         '''
+        # remove rects out of page
+        f = lambda rect: rect.bbox.intersects(page_bbox)
+        self._instances = list(filter(f, self._instances))
+
         # sort in reading order
         self.sort_in_reading_order()
 

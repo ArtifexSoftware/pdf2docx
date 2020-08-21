@@ -8,7 +8,6 @@ A group of Text/Image or Table block.
 
 from ..common.Collection import Collection
 from ..common.base import BlockType
-from ..common import utils
 from ..common.Block import Block
 from ..text.TextBlock import TextBlock
 from ..text.ImageBlock import ImageBlock
@@ -125,14 +124,14 @@ class Blocks(Collection):
             lambda block: block.is_table_block(), self._instances))
 
 
-    def clean(self):
+    def clean(self, page_bbox):
         '''Preprocess blocks initialized from the raw layout.'''
 
         # filter function:
-        # - remove negative blocks
+        # - remove blocks out of page
         # - remove transformed text: text direction is not (1, 0) or (0, -1)
         # - remove empty blocks
-        f = lambda block:   block.is_valid and \
+        f = lambda block:   block.bbox.intersects(page_bbox) and \
                             block.text.strip() and (
                             block.is_horizontal or block.is_vertical)
         self._instances = list(filter(f, self._instances))
@@ -312,7 +311,7 @@ class Blocks(Collection):
         idx = 1 if self.is_horizontal else 0
 
         ref_block = self._instances[0]
-        ref_pos = max(bbox[idx], 0.0) # ignore negative value: out of page
+        ref_pos = bbox[idx]
 
         for block in self._instances:
             # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border

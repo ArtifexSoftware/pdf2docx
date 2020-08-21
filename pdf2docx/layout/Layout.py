@@ -251,11 +251,12 @@ class Layout:
             reset_paragraph_format(p, Pt(1.0)) # a small line height: 1 Pt
 
 
-    @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.LAYOUT)
+    @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.SHAPE)
     def clean(self, **kwargs):
         '''Clean blocks and rectangles, e.g. remove negative blocks, duplicated rects.'''
-        clean_blocks = self.blocks.clean()
-        clean_rects  = self.rects.clean()
+        page_bbox = (0.0, 0.0, self.width, self.height)
+        clean_blocks = self.blocks.clean(page_bbox)
+        clean_rects  = self.rects.clean(page_bbox)
         
         # calculate page margin based on clean layout
         self._margin = self.page_margin()
