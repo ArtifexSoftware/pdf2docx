@@ -312,7 +312,7 @@ class Blocks(Collection):
         idx = 1 if self.is_horizontal else 0
 
         ref_block = self._instances[0]
-        ref_pos = bbox[idx]
+        ref_pos = max(bbox[idx], 0.0) # ignore negative value: out of page
 
         for block in self._instances:
             # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border

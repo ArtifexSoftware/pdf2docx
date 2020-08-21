@@ -115,7 +115,8 @@ class Lines(Collection):
             even though they are in different physical lines.
         '''
         # split vertically
-        fun = lambda a,b: a.horizontally_align_with(b, factor=0.0)
+        # set a non-zero but small factor to avoid just overlaping in same edge
+        fun = lambda a,b: a.horizontally_align_with(b, factor=0.1)
         groups = self.group(fun)
 
         # check count of lines in each group
