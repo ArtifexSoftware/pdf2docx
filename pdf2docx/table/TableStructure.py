@@ -37,9 +37,8 @@ class TableStructure:
         # --------------------------------------------------
         # mark table borders first
         # --------------------------------------------------
-        # exit if no borders exist
-        if detect_border and not self._set_borders(rects, width_threshold=6.0):
-            return None
+        if detect_border:
+            self._set_borders(rects, width_threshold=6.0)
         
         # --------------------------------------------------
         # group horizontal/vertical borders
@@ -160,7 +159,7 @@ class TableStructure:
 
     @staticmethod
     def _set_borders(rects:Rectangles, width_threshold:float=6.0):
-        ''' Detect table borders from rects.
+        ''' Detect table borders from rects extracted directly from pdf file.
             ---
             Args:
             - rects: all rects in potential table region
@@ -169,10 +168,8 @@ class TableStructure:
             Cell borders are detected based on the experiences that:
               - compared to cell shading, the size of cell border never exceeds 6 pt
               - compared to text format, cell border always has intersection with other rects
-
-            NOTE: cell shading is determined after the table structure is parsed from these cell borders.
         '''
-        # Get all rects with on condition: size < 6 Pt
+        # potential border rects: min-width <= 6 Pt
         thin_rects = [] # type: list[Rectangle]
         for rect in rects:
             x0, y0, x1, y1 = rect.bbox_raw
@@ -199,8 +196,8 @@ class TableStructure:
             for rect in borders:
                 rect.type = RectType.BORDER
             return True
-        else:
-            return False
+            
+        return False
 
 
     @staticmethod

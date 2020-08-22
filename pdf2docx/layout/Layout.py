@@ -281,11 +281,15 @@ class Layout:
             Ensure no horizontally aligned blocks in each column, so that these blocks can be converted to
             paragraphs consequently in docx.
         '''
-        # horizontal range of table
-        left, right, *_ = self.margin
-        X0, X1 = left, self.width - right
+        # combined tables
+        tables = self._tables_constructor.combined_tables()
 
-        tables = self._tables_constructor.stream_tables(X0, X1)
+        # stream tables
+        left, right, *_ = self.margin
+        X0, X1 = left, self.width - right # horizontal range of table
+        stream_tables = self._tables_constructor.stream_tables(X0, X1)
+
+        tables.extend(stream_tables)
         return bool(tables)
 
 
