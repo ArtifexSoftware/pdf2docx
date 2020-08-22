@@ -97,3 +97,24 @@ class Rectangles(Collection):
             self._instances = rects_unique
 
         return rect_changed
+
+
+    def get_contained_rect(self, target, threshold:float):
+        '''Get rect contained in given bbox.
+            ---
+            Args:
+            - target: BBox, target bbox
+            - threshold: regard as contained if the intersection exceeds this threshold
+        '''
+        s = target.bbox.getArea()
+        if not s: return None
+
+        for rect in self._instances:
+            intersection = target.bbox & rect.bbox
+            if intersection.getArea() / s >= threshold:
+                res = rect
+                break
+        else:
+            res = None
+
+        return res
