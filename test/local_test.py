@@ -12,14 +12,28 @@ if __name__ == '__main__':
 
     script_path = os.path.abspath(__file__) # current script path
     output = os.path.join(os.path.dirname(script_path), 'samples')
-    filename = 'demo-table'
+    filename = 'demo-path-transformation'
     pdf_file = os.path.join(output, f'{filename}.pdf')
     docx_file = os.path.join(output, f'{filename}.docx')
 
     cv = Converter(pdf_file, docx_file, debug=True)
 
     # process page by page
-    for page in cv[0:1]:
+    for page in cv[0:10]:
+
+        # print(page.xref)
+        # print(page.getContents())
+        # print(cv.doc_pdf.xrefObject(page.xref))
+        # page.cleanContents()
+        # c = page.readContents().decode(encoding="ISO-8859-1")
+        # with open('c.txt', 'w') as f:
+        #     f.write(c)
+        
+        # print(cv.doc_pdf.xrefObject(94))
+
+        # with open('x.svg', 'w') as f:
+        #     f.write(page.getSVGimage(text_as_path=False))
+        
         # parse layout
         cv.parse(page).make_page()
         

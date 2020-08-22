@@ -29,14 +29,14 @@ class Block(BBox):
     def is_image_block(self):
         return self._type==BlockType.IMAGE
 
-    def is_explicit_table_block(self):
-        return self._type==BlockType.EXPLICIT_TABLE
+    def is_lattice_table_block(self):
+        return self._type==BlockType.LATTICE_TABLE
 
-    def is_implicit_table_block(self):
-        return self._type==BlockType.IMPLICIT_TABLE
+    def is_stream_table_block(self):
+        return self._type==BlockType.STREAM_TABLE
 
     def is_table_block(self):
-        return self.is_explicit_table_block() or self.is_implicit_table_block()
+        return self.is_lattice_table_block() or self.is_stream_table_block()
 
     def set_text_block(self):
         self._type = BlockType.TEXT
@@ -44,11 +44,11 @@ class Block(BBox):
     def set_image_block(self):
         self._type = BlockType.IMAGE
 
-    def set_explicit_table_block(self):
-        self._type = BlockType.EXPLICIT_TABLE
+    def set_lattice_table_block(self):
+        self._type = BlockType.LATTICE_TABLE
 
-    def set_implicit_table_block(self):
-        self._type = BlockType.IMPLICIT_TABLE
+    def set_stream_table_block(self):
+        self._type = BlockType.STREAM_TABLE
 
     def compare(self, block, threshold:float=0.9):
         '''whether has same bbox and vertical spacing with given block.

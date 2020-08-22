@@ -151,7 +151,7 @@ class Cell(BBox):
         if not bool(self): return
         
         # set cell style
-        # no borders for implicit table
+        # no borders for stream table
         self._set_style(table, indexes, border_style)
 
         # clear cell margin

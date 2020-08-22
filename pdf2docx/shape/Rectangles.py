@@ -49,12 +49,16 @@ class Rectangles(Collection):
         return self
 
 
-    def clean(self):
+    def clean(self, page_bbox):
         '''Clean rectangles:
             - delete rectangles fully contained in another one (beside, they have same bg-color)
             - join intersected and horizontally aligned rectangles with same height and bg-color
             - join intersected and vertically aligned rectangles with same width and bg-color
         '''
+        # remove rects out of page
+        f = lambda rect: rect.bbox.intersects(page_bbox)
+        self._instances = list(filter(f, self._instances))
+
         # sort in reading order
         self.sort_in_reading_order()
 
@@ -93,3 +97,24 @@ class Rectangles(Collection):
             self._instances = rects_unique
 
         return rect_changed
+
+
+    def get_contained_rect(self, target, threshold:float):
+        '''Get rect contained in given bbox.
+            ---
+            Args:
+            - target: BBox, target bbox
+            - threshold: regard as contained if the intersection exceeds this threshold
+        '''
+        s = target.bbox.getArea()
+        if not s: return None
+
+        for rect in self._instances:
+            intersection = target.bbox & rect.bbox
+            if intersection.getArea() / s >= threshold:
+                res = rect
+                break
+        else:
+            res = None
+
+        return res

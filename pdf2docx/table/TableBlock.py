@@ -48,8 +48,8 @@ class TableBlock(Block):
         # collect rows
         self._rows = Rows(None, self).from_dicts(raw.get('rows', []))
 
-        # explicit table by default
-        self.set_explicit_table_block()
+        # lattice table by default
+        self.set_lattice_table_block()
 
     def __getitem__(self, idx):
         try:
@@ -106,9 +106,9 @@ class TableBlock(Block):
                 # ignore merged cells
                 if not cell: continue            
                 
-                # plot different border colors for explicit / implicit tables when style=False, 
-                # i.e. table illustration, rather than real style of explicit table
-                bc = (1,0,0) if self.is_explicit_table_block() else (0.6,0.7,0.8)
+                # plot different border colors for lattice / stream tables when style=False, 
+                # i.e. table illustration, rather than real style of lattice table
+                bc = (1,0,0) if self.is_lattice_table_block() else (0.6,0.7,0.8)
                 cell.plot(page, content=content, style=style, color=bc)
 
     
@@ -139,19 +139,19 @@ class TableBlock(Block):
                 cell.blocks.parse_vertical_spacing(bbox)
 
 
-    def make_docx(self, table, page_margin:tuple):
+    def make_docx(self, table, page_bbox:tuple):
         '''Create docx table.
             ---
             Args:
               - table: docx table instance
-              - page_margin: page margin (left, right, top, bottom)
+              - page_bbox: page bbox considering margin
         '''
         # set indent
-        left, *_ = page_margin
+        left, *_ = page_bbox
         pos = self.bbox.x0-left
         docx.indent_table(table, pos)
 
         # set format and contents row by row
-        border_style = self.is_explicit_table_block() # border style for explicit table only
+        border_style = self.is_lattice_table_block() # border style for lattice table only
         for idx_row in range(len(table.rows)):
             self._rows[idx_row].make_docx(table, idx_row, border_style)

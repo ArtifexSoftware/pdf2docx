@@ -6,9 +6,9 @@ A group of Text/Image or Table block.
 @author: train8808@gmail.com
 '''
 
+from ..common.utils import DM
 from ..common.Collection import Collection
 from ..common.base import BlockType
-from ..common import utils
 from ..common.Block import Block
 from ..text.TextBlock import TextBlock
 from ..text.ImageBlock import ImageBlock
@@ -47,7 +47,7 @@ class Blocks(Collection):
                 block = TextBlock(raw_block)
 
             # table block
-            elif block_type in (BlockType.EXPLICIT_TABLE.value, BlockType.IMPLICIT_TABLE.value):
+            elif block_type in (BlockType.LATTICE_TABLE.value, BlockType.STREAM_TABLE.value):
                 block = TableBlock(raw_block)
             
             else:
@@ -107,16 +107,16 @@ class Blocks(Collection):
 
 
     @property
-    def explicit_table_blocks(self):
-        '''Get explicit table blocks contained in this Collection.'''
+    def lattice_table_blocks(self):
+        '''Get lattice table blocks contained in this Collection.'''
         return list(filter(
-            lambda block: block.is_explicit_table_block(), self._instances))
+            lambda block: block.is_lattice_table_block(), self._instances))
 
     @property
-    def implicit_table_blocks(self):
-        '''Get implicit table blocks contained in this Collection.'''
+    def stream_table_blocks(self):
+        '''Get stream table blocks contained in this Collection.'''
         return list(filter(
-            lambda block: block.is_implicit_table_block(), self._instances))
+            lambda block: block.is_stream_table_block(), self._instances))
 
     @property
     def table_blocks(self):
@@ -125,14 +125,14 @@ class Blocks(Collection):
             lambda block: block.is_table_block(), self._instances))
 
 
-    def clean(self):
+    def clean(self, page_bbox):
         '''Preprocess blocks initialized from the raw layout.'''
 
         # filter function:
-        # - remove negative blocks
+        # - remove blocks out of page
         # - remove transformed text: text direction is not (1, 0) or (0, -1)
         # - remove empty blocks
-        f = lambda block:   block.is_valid and \
+        f = lambda block:   block.bbox.intersects(page_bbox) and \
                             block.text.strip() and (
                             block.is_horizontal or block.is_vertical)
         self._instances = list(filter(f, self._instances))
@@ -147,7 +147,7 @@ class Blocks(Collection):
     def assign_table_contents(self):
         '''Add Text/Image block lines to associated cells of Table blocks.'''
         # table blocks
-        # NOTE: some tables may be already parsed since explicit tables are parsed earlier than implicit tables.
+        # NOTE: some tables may be already parsed, e.g. lattice tables are parsed earlier than stream tables.
         # It's OK because no text blocks left for parsing such tables at this round.
         tables = self.table_blocks
 
@@ -218,8 +218,8 @@ class Blocks(Collection):
         self.reset(blocks).sort_in_reading_order()
 
 
-    def collect_table_contents(self):
-        ''' Collect lines of text block, which may contained in an implicit table region.
+    def collect_stream_lines(self):
+        ''' Collect lines of text block, which may contained in a stream table region.
 
             NOTE: PyMuPDF may group multi-lines in a row as a text block while each line belongs to different
             cell. So, deep into line level here when collecting table contents regions.
@@ -327,7 +327,12 @@ class Blocks(Collection):
                 dw = 0.0
 
             start_pos = block.bbox_raw[idx] - dw
-            para_space = max(start_pos-ref_pos, 0.0) # ignore negative value
+            para_space = start_pos-ref_pos
+
+            # modify vertical space in case the block is out of bootom boundary
+            dy = max(block.bbox_raw[idx+2]-bbox[idx+2], 0.0)
+            para_space -= dy
+            para_space = max(para_space, 0.0) # ignore negative value
 
             # ref to current (paragraph): set before-space for paragraph
             if block.is_text_block():
@@ -349,13 +354,21 @@ class Blocks(Collection):
 
             # situation with very low probability, e.g. ref (table) to current (table)
             # we can't set before space for table in docx, but the tricky way is to
-            # create a empty paragraph and set paragraph line spacing and before space
+            # create an empty paragraph and set paragraph line spacing and before space
             else:
                 block.before_space = para_space
 
             # update reference block        
             ref_block = block
             ref_pos = ref_block.bbox_raw[idx+2] + dw # assume same bottom border with top one
+
+        # NOTE: when a table is at the end of a page, a dummy paragraph with a small line spacing 
+        # is added after this table, to avoid unexpected page break. Accordingly, this extra spacing 
+        # must be remove in other place, especially the page space is run out.
+        # Here, reduce the last row of table.
+        block = self._instances[-1]
+        if block.is_table_block():
+            block[-1].height -= DM # same value used when creating docx
 
 
     def join_horizontally(self, text_direction=True):
@@ -414,55 +427,7 @@ class Blocks(Collection):
         for block in self._instances:
             if block.parse_text_format(rects):
                 flag = True        
-        return flag
-
-
-    def page_margin(self, width:float, height:float):
-        '''Calculate page margin.            
-            ---
-            Args:
-            - width: page width
-            - height: page height
-
-            Calculation method:
-            - left: MIN(bbox[0])
-            - right: MIN(left, width-max(bbox[2]))
-            - top: MIN(bbox[1])
-            - bottom: height-MAX(bbox[3])
-        '''
-        # return normal page margin if no blocks exist
-        if not self._instances:
-            return (utils.ITP, ) * 4 # 1 Inch = 72 pt
-
-        # check candidates for left margin:
-        list_bbox = list(map(lambda x: x.bbox, self._instances))
-
-        # left margin 
-        left = min(map(lambda x: x.x0, list_bbox))
-
-        # right margin
-        x_max = max(map(lambda x: x.x1, list_bbox))
-        right = width - x_max - utils.DM*10.0  # consider tolerance: leave more free space
-        right = min(right, left)     # symmetry margin if necessary
-        right = max(right, 0.0)      # avoid negative margin
-
-        # top/bottom margin
-        top = min(map(lambda x: x.y0, list_bbox))
-        bottom = height-max(map(lambda x: x.y1, list_bbox))
-        bottom = max(bottom, 0.0)
-
-        # margin is calculated based on text block only, without considering shape, e.g. table border,
-        # so reduce calculated top/bottom margin to left some free space
-        top *= 0.5
-        bottom *= 0.5
-
-        # use normal margin if calculated margin is large enough
-        return (
-            min(utils.ITP, left), 
-            min(utils.ITP, right), 
-            min(utils.ITP, top), 
-            min(utils.ITP, bottom)
-            )
+        return flag    
 
 
     def _merge_one(self):

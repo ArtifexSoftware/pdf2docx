@@ -38,7 +38,7 @@ from .Blocks import Blocks
 from ..shape.Rectangles import Rectangles
 from ..table.TablesConstructor import TablesConstructor
 from ..common.base import PlotControl
-from ..common.utils import debug_plot
+from ..common.utils import debug_plot, DM, ITP
 from ..common.pdf import new_page_with_margin
 from ..common.docx import reset_paragraph_format
 
@@ -65,6 +65,15 @@ class Layout:
     @property
     def margin(self):
         return self._margin
+
+    
+    @property
+    def bbox_raw(self):
+        if self._margin is None:
+            return (0,) * 4
+        else:
+            left, right, top, bottom = self.margin
+            return (left, top, self.width-right, self.height-bottom)
 
 
     def store(self):
@@ -94,13 +103,13 @@ class Layout:
         if key == PlotControl.LAYOUT: 
             objects = list(self.blocks)
         
-        #  - explicit table structure only
+        #  - lattice table structure only
         elif key == PlotControl.TABLE: 
-            objects = self.blocks.explicit_table_blocks
+            objects = self.blocks.lattice_table_blocks
         
-        #  - implicit table structure only
-        elif key == PlotControl.IMPLICIT_TABLE: 
-            objects = self.blocks.implicit_table_blocks
+        #  - stream table structure only
+        elif key == PlotControl.STREAM_TABLE: 
+            objects = self.blocks.stream_table_blocks
         
         #  - rectangle shapes
         elif key == PlotControl.SHAPE: 
@@ -121,7 +130,7 @@ class Layout:
                 item.plot(page, content=False, style=True)
         
         # plot non-styled table and no text blocks in cell
-        elif key==PlotControl.IMPLICIT_TABLE: 
+        elif key==PlotControl.STREAM_TABLE: 
             for item in objects:
                 item.plot(page, content=False, style=False)
         
@@ -147,10 +156,10 @@ class Layout:
     
         # parse table blocks: 
         #  - table structure/format recognized from rectangles
-        self.parse_explicit_tables(**kwargs)
+        self.parse_lattice_tables(**kwargs)
         
         #  - cell contents extracted from text blocks
-        self.parse_implicit_tables(**kwargs)
+        self.parse_stream_tables(**kwargs)
 
         # parse text format, e.g. highlight, underline
         self.parse_text_format(**kwargs)
@@ -160,9 +169,9 @@ class Layout:
 
 
     def extract_tables(self):
-        '''Extract content from explicit tables.'''
+        '''Extract content from lattice tables.'''
         # parsing tables
-        self.clean().parse_explicit_tables()
+        self.clean().parse_lattice_tables()
 
         # check table
         tables = [] # type: list[ list[list[str]] ]
@@ -210,7 +219,7 @@ class Layout:
             if block.is_text_block():
                 # new paragraph
                 p = doc.add_paragraph()
-                block.make_docx(p, self.margin)
+                block.make_docx(p, self.bbox_raw)
             
             # make table
             elif block.is_table_block():
@@ -219,7 +228,7 @@ class Layout:
                 # line spacing: table before_space/2.0
                 # before space: table before space / 2.0
                 if block.before_space:
-                    h = round(block.before_space/2.0, 1)
+                    h = int(10*block.before_space/2.0) / 10.0 # round(x,1), but to lower bound
                     p = doc.add_paragraph()
                     pf = reset_paragraph_format(p)
                     pf.space_before = Pt(max(h, 0.0))
@@ -237,32 +246,33 @@ class Layout:
         # page break. The solution is to never put a table at the end of a page, so add
         # an empty paragraph and reset its format, particularly line spacing, when a table
         # is created.
-        if len(self.blocks) and self.blocks[-1].is_table_block():
+        if self.blocks and self.blocks[-1].is_table_block():
             p = doc.add_paragraph()
-            reset_paragraph_format(p, Pt(1.0)) # a small line height: 1 Pt
+            reset_paragraph_format(p, Pt(DM)) # a small line height
 
 
     @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.LAYOUT)
     def clean(self, **kwargs):
         '''Clean blocks and rectangles, e.g. remove negative blocks, duplicated rects.'''
-        clean_blocks = self.blocks.clean()
-        clean_rects  = self.rects.clean()
+        page_bbox = (0.0, 0.0, self.width, self.height)
+        clean_blocks = self.blocks.clean(page_bbox)
+        clean_rects  = self.rects.clean(page_bbox)
         
         # calculate page margin based on clean layout
-        self._margin = self.blocks.page_margin(self.width, self.height)
+        self._margin = self.page_margin()
 
         return clean_blocks or clean_rects
 
 
-    @debug_plot('Explicit Table Structure', plot=True, category=PlotControl.TABLE)
-    def parse_explicit_tables(self, **kwargs) -> bool:
+    @debug_plot('Lattice Table Structure', plot=True, category=PlotControl.TABLE)
+    def parse_lattice_tables(self, **kwargs):
         '''parse table structure from rectangle shapes'''
-        tables = self._tables_constructor.explicit_tables()
+        tables = self._tables_constructor.lattice_tables()
         return bool(tables)
 
 
-    @debug_plot('Implicit Table Structure', plot=True, category=PlotControl.IMPLICIT_TABLE)
-    def parse_implicit_tables(self, **kwargs):
+    @debug_plot('Stream Table Structure', plot=True, category=PlotControl.STREAM_TABLE)
+    def parse_stream_tables(self, **kwargs):
         ''' Parse table structure based on the layout of text/image blocks.
 
             Since no cell borders exist in this case, there may be various probabilities of table structures. 
@@ -275,7 +285,7 @@ class Layout:
         left, right, *_ = self.margin
         X0, X1 = left, self.width - right
 
-        tables = self._tables_constructor.implicit_tables(X0, X1)
+        tables = self._tables_constructor.stream_tables(X0, X1)
         return bool(tables)
 
 
@@ -284,11 +294,62 @@ class Layout:
         '''Parse text format in both page and table context.'''
         return self.blocks.parse_text_format(self.rects)
  
+
+    def page_margin(self):
+        '''Calculate page margin.            
+            ---
+            Args:
+            - width: page width
+            - height: page height
+
+            Calculation method:
+            - left: MIN(bbox[0])
+            - right: MIN(left, width-max(bbox[2]))
+            - top: MIN(bbox[1])
+            - bottom: height-MAX(bbox[3])
+        '''
+        # return normal page margin if no blocks exist
+        if not self.blocks and not self.rects:
+            return (ITP, ) * 4                 # 1 Inch = 72 pt
+
+        # consider both blocks and rects for page margin
+        list_bbox = list(map(lambda x: x.bbox, self.blocks))
+        list_bbox.extend(list(map(lambda x: x.bbox, self.rects))) 
+
+        # left margin 
+        left = min(map(lambda x: x.x0, list_bbox))
+        left = max(left, 0)
+
+        # right margin
+        x_max = max(map(lambda x: x.x1, list_bbox))
+        right = self.width - x_max - DM*10.0  # consider tolerance: leave more free space
+        right = min(right, left)              # symmetry margin if necessary
+        right = max(right, 0.0)               # avoid negative margin
+
+        # top margin
+        top = min(map(lambda x: x.y0, list_bbox))
+        top = max(top, 0)
+
+        # bottom margin
+        bottom = self.height-max(map(lambda x: x.y1, list_bbox))
+        bottom = max(bottom, 0.0)
+
+        # margin is calculated based on text block only, without considering shape, e.g. table border,
+        # so reduce calculated top/bottom margin to left some free space
+        top *= 0.5
+        bottom *= 0.5
+
+        # use normal margin if calculated margin is large enough
+        return (
+            min(ITP, left), 
+            min(ITP, right), 
+            min(ITP, top), 
+            min(ITP, bottom)
+            )
  
+
     def parse_vertical_spacing(self):
         ''' Calculate external and internal vertical space for paragraph blocks under page context 
             or table context. It'll used as paragraph spacing and line spacing when creating paragraph.
         '''
-        left, right, top, bottom = self.margin
-        bbox = (left, top, self.width-right, self.height-bottom)
-        self.blocks.parse_vertical_spacing(bbox)
+        self.blocks.parse_vertical_spacing(self.bbox_raw)

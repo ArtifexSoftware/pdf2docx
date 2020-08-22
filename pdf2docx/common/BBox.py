@@ -29,11 +29,25 @@ class BBox(IText):
         '''bbox in fitz.Rect type.'''
         return fitz.Rect(self._bbox) if self._bbox else fitz.rect()
 
-    
-    @property
-    def is_valid(self):
-        '''Ensure bbox can be shown in page, i.e. all coordinates are positive.'''
-        return all(x>=0 for x in self.bbox_raw)
+
+    def distance(self, bbox:tuple):
+        '''x-distance to the given bbox.
+            ---
+            Args:
+            - bbox: container bbox, e.g. the valid docx page region.
+        '''
+        idx0 = 0 if self.is_horizontal else 3
+        dx = self.bbox_raw[idx0]-bbox[idx0]
+
+        # NOTE: consider modification when exceeds right boundary.
+        # dx = max(line.bbox.x1-X1, 0)
+        idx1 = (idx0+2) % 4
+        dt = max(self.bbox_raw[idx1]-bbox[idx1], 0)
+
+        # this value is generally used to set tab stop in docx, 
+        # so prefer a lower value to avoid exceeding line width.
+        # 1 pt = 1/28.35 = 0.035 cm
+        return int(dx-dt) 
     
    
     def vertically_align_with(self, bbox, factor:float=0.0, text_direction:bool=True):
@@ -60,7 +74,7 @@ class BBox(IText):
             L1+L2-L>factor*min(L1,L2)
             ```
         '''
-        if not bbox: return False
+        if not bbox or not bool(self): return False
 
         # text direction
         is_horizontal = self.is_horizontal if text_direction else True
@@ -93,7 +107,7 @@ class BBox(IText):
             L1+L2-L>factor*min(L1,L2)
             ```
         '''
-        if not bbox: return False
+        if not bbox or not bool(self): return False
 
         # text direction
         is_horizontal = self.is_horizontal if text_direction else True
