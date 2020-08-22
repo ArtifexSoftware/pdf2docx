@@ -166,6 +166,10 @@ class MainTest(TestUtility):
         '''sample file focusing on inline-image.'''
         self.init_test('demo-image').verify_layout(threshold=0.95)
 
+    def test_table_bottom(self):
+        '''sample file focusing on page break due to table at the end of page.'''
+        self.init_test('demo-table-bottom').verify_layout(threshold=0.95)
+
     def test_table_format(self):
         '''sample file focusing on table format, e.g. 
             - border and shading style
@@ -174,6 +178,10 @@ class MainTest(TestUtility):
             - text format in cell
         '''
         self.init_test('demo-table').verify_layout(threshold=0.95)
+
+    def test_table_shading(self):
+        '''sample file focusing on simulating shape with shading cell.'''
+        self.init_test('demo-table-shading').verify_layout(threshold=0.95)
 
     def test_text_scaling(self):
         '''sample file focusing on font size.
