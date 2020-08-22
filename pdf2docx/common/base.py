@@ -12,8 +12,8 @@ class BlockType(Enum):
     UNDEFINED = -1
     TEXT = 0
     IMAGE = 1
-    EXPLICIT_TABLE = 2
-    IMPLICIT_TABLE = 3
+    LATTICE_TABLE = 2
+    STREAM_TABLE = 3
 
 
 class RectType(Enum):
@@ -43,13 +43,13 @@ class TextDirection(Enum):
 class PlotControl(Enum):
     ''' Control what to show when plotting blocks.
         - layout         : plot all blocks
-        - table          : plot explicit table blocks only
-        - implicit_table : plot implicit table blocks only
+        - table          : plot lattice table blocks only
+        - stream_table : plot stream table blocks only
         - shape          : plot rectangle shapes
     '''
     LAYOUT = 0
     TABLE = 1
-    IMPLICIT_TABLE = 2
+    STREAM_TABLE = 2
     SHAPE = 3
 
 

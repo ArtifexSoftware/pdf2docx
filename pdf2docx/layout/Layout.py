@@ -103,13 +103,13 @@ class Layout:
         if key == PlotControl.LAYOUT: 
             objects = list(self.blocks)
         
-        #  - explicit table structure only
+        #  - lattice table structure only
         elif key == PlotControl.TABLE: 
-            objects = self.blocks.explicit_table_blocks
+            objects = self.blocks.lattice_table_blocks
         
-        #  - implicit table structure only
-        elif key == PlotControl.IMPLICIT_TABLE: 
-            objects = self.blocks.implicit_table_blocks
+        #  - stream table structure only
+        elif key == PlotControl.STREAM_TABLE: 
+            objects = self.blocks.stream_table_blocks
         
         #  - rectangle shapes
         elif key == PlotControl.SHAPE: 
@@ -130,7 +130,7 @@ class Layout:
                 item.plot(page, content=False, style=True)
         
         # plot non-styled table and no text blocks in cell
-        elif key==PlotControl.IMPLICIT_TABLE: 
+        elif key==PlotControl.STREAM_TABLE: 
             for item in objects:
                 item.plot(page, content=False, style=False)
         
@@ -156,10 +156,10 @@ class Layout:
     
         # parse table blocks: 
         #  - table structure/format recognized from rectangles
-        self.parse_explicit_tables(**kwargs)
+        self.parse_lattice_tables(**kwargs)
         
         #  - cell contents extracted from text blocks
-        self.parse_implicit_tables(**kwargs)
+        self.parse_stream_tables(**kwargs)
 
         # parse text format, e.g. highlight, underline
         self.parse_text_format(**kwargs)
@@ -169,9 +169,9 @@ class Layout:
 
 
     def extract_tables(self):
-        '''Extract content from explicit tables.'''
+        '''Extract content from lattice tables.'''
         # parsing tables
-        self.clean().parse_explicit_tables()
+        self.clean().parse_lattice_tables()
 
         # check table
         tables = [] # type: list[ list[list[str]] ]
@@ -264,15 +264,15 @@ class Layout:
         return clean_blocks or clean_rects
 
 
-    @debug_plot('Explicit Table Structure', plot=True, category=PlotControl.TABLE)
-    def parse_explicit_tables(self, **kwargs) -> bool:
+    @debug_plot('Lattice Table Structure', plot=True, category=PlotControl.TABLE)
+    def parse_lattice_tables(self, **kwargs):
         '''parse table structure from rectangle shapes'''
-        tables = self._tables_constructor.explicit_tables()
+        tables = self._tables_constructor.lattice_tables()
         return bool(tables)
 
 
-    @debug_plot('Implicit Table Structure', plot=True, category=PlotControl.IMPLICIT_TABLE)
-    def parse_implicit_tables(self, **kwargs):
+    @debug_plot('Stream Table Structure', plot=True, category=PlotControl.STREAM_TABLE)
+    def parse_stream_tables(self, **kwargs):
         ''' Parse table structure based on the layout of text/image blocks.
 
             Since no cell borders exist in this case, there may be various probabilities of table structures. 
@@ -285,7 +285,7 @@ class Layout:
         left, right, *_ = self.margin
         X0, X1 = left, self.width - right
 
-        tables = self._tables_constructor.implicit_tables(X0, X1)
+        tables = self._tables_constructor.stream_tables(X0, X1)
         return bool(tables)
 
 

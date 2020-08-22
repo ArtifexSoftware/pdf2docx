@@ -46,7 +46,7 @@ class Blocks(Collection):
                 block = TextBlock(raw_block)
 
             # table block
-            elif block_type in (BlockType.EXPLICIT_TABLE.value, BlockType.IMPLICIT_TABLE.value):
+            elif block_type in (BlockType.LATTICE_TABLE.value, BlockType.STREAM_TABLE.value):
                 block = TableBlock(raw_block)
             
             else:
@@ -106,16 +106,16 @@ class Blocks(Collection):
 
 
     @property
-    def explicit_table_blocks(self):
-        '''Get explicit table blocks contained in this Collection.'''
+    def lattice_table_blocks(self):
+        '''Get lattice table blocks contained in this Collection.'''
         return list(filter(
-            lambda block: block.is_explicit_table_block(), self._instances))
+            lambda block: block.is_lattice_table_block(), self._instances))
 
     @property
-    def implicit_table_blocks(self):
-        '''Get implicit table blocks contained in this Collection.'''
+    def stream_table_blocks(self):
+        '''Get stream table blocks contained in this Collection.'''
         return list(filter(
-            lambda block: block.is_implicit_table_block(), self._instances))
+            lambda block: block.is_stream_table_block(), self._instances))
 
     @property
     def table_blocks(self):
@@ -146,7 +146,7 @@ class Blocks(Collection):
     def assign_table_contents(self):
         '''Add Text/Image block lines to associated cells of Table blocks.'''
         # table blocks
-        # NOTE: some tables may be already parsed since explicit tables are parsed earlier than implicit tables.
+        # NOTE: some tables may be already parsed, e.g. lattice tables are parsed earlier than stream tables.
         # It's OK because no text blocks left for parsing such tables at this round.
         tables = self.table_blocks
 
@@ -217,8 +217,8 @@ class Blocks(Collection):
         self.reset(blocks).sort_in_reading_order()
 
 
-    def collect_table_contents(self):
-        ''' Collect lines of text block, which may contained in an implicit table region.
+    def collect_stream_lines(self):
+        ''' Collect lines of text block, which may contained in a stream table region.
 
             NOTE: PyMuPDF may group multi-lines in a row as a text block while each line belongs to different
             cell. So, deep into line level here when collecting table contents regions.

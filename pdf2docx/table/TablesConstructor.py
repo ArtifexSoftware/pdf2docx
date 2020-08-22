@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
 '''
-Parsing TableBlock based on rectangles explicitly or text blocks implicitly.
+Parsing table blocks:
+
+- lattice table: explicit borders represented by rectangles
+- stream table : borderless table recognized from layout of text blocks.
 
 @created: 2020-08-16
 @author: train8808@gmail.com
@@ -16,7 +19,6 @@ from ..shape.Rectangles import Rectangles
 from ..table.TableBlock import TableBlock
 from ..table.Row import Row
 from ..table.Cell import Cell
-from ..text.Line import Line
 from ..text.Lines import Lines
 
 
@@ -28,8 +30,8 @@ class TablesConstructor:
         self._rects = rects
 
 
-    def explicit_tables(self):
-        '''parse table structure from rectangle shapes'''
+    def lattice_tables(self):
+        '''Parse table with explicit borders/shadings represented by rectangle shapes.'''
         # group rects: each group may be a potential table
         fun = lambda a,b: a.bbox & b.bbox
         groups = self._rects.group(fun)
@@ -55,17 +57,17 @@ class TablesConstructor:
                 table = sorted_group[-1]                    
 
             # add table to page level
-            table.set_explicit_table_block()
+            table.set_lattice_table_block()
             self._blocks.append(table)
 
         # assign text contents to each table
         self._blocks.assign_table_contents()
 
-        return self._blocks.explicit_table_blocks
+        return self._blocks.lattice_table_blocks
 
     
-    def implicit_tables(self, X0:float, X1:float):
-        ''' Parse table structure based on the layout of text/image blocks.
+    def stream_tables(self, X0:float, X1:float):
+        ''' Parse borderless table based on the layout of text/image blocks.
             ---
             Args:
             - X0, X1: left and right boundaries of allowed table region
@@ -79,12 +81,12 @@ class TablesConstructor:
         if len(self._blocks)<=1: return []      
 
         # potential bboxes
-        tables_lines = self._blocks.collect_table_contents()
+        tables_lines = self._blocks.collect_stream_lines()
 
         # parse tables
         for table_lines in tables_lines:
             # parse borders based on contents in cell
-            table_rects = self._implicit_borders(table_lines, X0, X1)
+            table_rects = self._stream_borders(table_lines, X0, X1)
 
             # get potential cell shading
             table_bbox = table_rects.bbox
@@ -96,15 +98,15 @@ class TablesConstructor:
             table = self._parse_table_structure(table_rects, detect_border=False)
 
             # add parsed table to page level blocks
-            # in addition, ignore table if contains only one cell since it's unnecessary for implicit table
+            # in addition, ignore table if contains only one cell since it's unnecessary for stream table
             if table and (table.num_rows>1 or table.num_cols>1):
-                table.set_implicit_table_block()
+                table.set_stream_table_block()
                 self._blocks.append(table)
 
         # assign text contents to each table
         self._blocks.assign_table_contents()
 
-        return self._blocks.implicit_table_blocks
+        return self._blocks.stream_table_blocks
 
 
     def _parse_table_structure(self, rects:Rectangles, detect_border:bool=True):
@@ -114,7 +116,7 @@ class TablesConstructor:
             - rects: Rectangles, representing border, shading or text style
             - detect_border: to detect table border if True.
 
-            NOTE: for implicit table, table borders are determined from text blocks in advance,
+            NOTE: for stream table, table borders are determined from text blocks in advance,
             so, it's safe to set `detect_border=False`.
 
             NOTE: rects must be sorted in reading order in advance, which is required by checking 
@@ -125,16 +127,16 @@ class TablesConstructor:
         # mark table borders first
         # --------------------------------------------------
         # exit if no borders exist
-        if detect_border and not self._set_table_borders(rects, width_threshold=6.0):
+        if detect_border and not self._set_borders(rects, width_threshold=6.0):
             return None
         
         # --------------------------------------------------
         # group horizontal/vertical borders
         # --------------------------------------------------
-        h_borders, v_borders = self._group_explicit_borders(rects)
+        h_borders, v_borders = self._group_lattice_borders(rects)
         if not h_borders or not v_borders:
             # reset borders because it's a invalid table
-            self._unset_table_border(rects)
+            self._unset_borders(rects)
             return None
 
         # sort
@@ -237,7 +239,7 @@ class TablesConstructor:
             # check table: the first cell in first row MUST NOT be None
             if i==0 and not row[0]:
                 # reset borders because it's a invalid table
-                self._unset_table_border(rects)
+                self._unset_borders(rects)
                 return None
 
             table.append(row)
@@ -246,7 +248,7 @@ class TablesConstructor:
 
 
     @staticmethod
-    def _set_table_borders(rects:Rectangles, width_threshold:float=6.0):
+    def _set_borders(rects:Rectangles, width_threshold:float=6.0):
         ''' Detect table borders from rects.
             ---
             Args:
@@ -291,15 +293,15 @@ class TablesConstructor:
 
 
     @staticmethod
-    def _unset_table_border(rects:Rectangles):
+    def _unset_borders(rects:Rectangles):
         '''Unset table border type.'''
         for rect in rects:
             if rect.type==RectType.BORDER:
                 rect.type = RectType.UNDEFINED
 
 
-    def _group_explicit_borders(self, rects:Rectangles):
-        ''' Collect explicit borders in horizontal and vertical groups respectively.'''        
+    def _group_lattice_borders(self, rects:Rectangles):
+        ''' Collect lattice borders in horizontal and vertical groups respectively.'''        
 
         h_borders = {} # type: dict [float, Rectangles]
         v_borders = {} # type: dict [float, Rectangles]
@@ -490,7 +492,7 @@ class TablesConstructor:
         return res
 
 
-    def _implicit_borders(self, lines:Lines, X0:float, X1:float):
+    def _stream_borders(self, lines:Lines, X0:float, X1:float):
         ''' Parsing borders based on lines contained in table cells.
             ---
             Args:
@@ -522,7 +524,7 @@ class TablesConstructor:
         color = utils.RGB_value((1,1,1))
 
         for border in borders: 
-            # set an non-zero width for border check; won't draw border in docx for implicit table
+            # set an non-zero width for border check; won't draw border in docx for stream table
             bbox = utils.expand_centerline(border[0:2], border[2:], width=0.2) 
             if not bbox: continue
 
@@ -543,20 +545,20 @@ class TablesConstructor:
             Args:
             - lines: lines in table cells
             - border_bbox: boundary box of table region
-            
+
             These borders construct table cells. Considering the re-building of cell content in docx, 
             - only one bbox is allowed in a line;
             - but multi-lines are allowed in a cell.
-        
-            Two purposes of parsing implicit table: 
+
+            Two purposes of stream table: 
             - rebuild layout, e.g. text layout with two columns
-            - parsing real table without showing borders
+            - parsing real borderless table
 
             It's controdictory that the former needn't to deep into row level, just 1 x N table convenient for layout recreation;
             instead, the later should, M x N table for each cell precisely.
-            So, the principle determining implicit borders here:
-            - two columns: layout if the count of rows in each column is different; otherwise, it's a real table
-            - more columns: real table -> deep into rows
+            So, the principle determining borders for stream tables here:
+            - two columns: layout if the rows count in each column is different; otherwise, it's a real table
+            - otherwise: real table -> deep into rows
         '''
         # trying: deep into cells        
         cols_lines = lines.group_by_columns()
