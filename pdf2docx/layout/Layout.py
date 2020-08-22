@@ -228,7 +228,7 @@ class Layout:
                 # line spacing: table before_space/2.0
                 # before space: table before space / 2.0
                 if block.before_space:
-                    h = round(block.before_space/2.0, 1)
+                    h = int(10*block.before_space/2.0) / 10.0 # round(x,1), but to lower bound
                     p = doc.add_paragraph()
                     pf = reset_paragraph_format(p)
                     pf.space_before = Pt(max(h, 0.0))
@@ -246,12 +246,12 @@ class Layout:
         # page break. The solution is to never put a table at the end of a page, so add
         # an empty paragraph and reset its format, particularly line spacing, when a table
         # is created.
-        if len(self.blocks) and self.blocks[-1].is_table_block():
+        if self.blocks and self.blocks[-1].is_table_block():
             p = doc.add_paragraph()
-            reset_paragraph_format(p, Pt(1.0)) # a small line height: 1 Pt
+            reset_paragraph_format(p, Pt(DM)) # a small line height
 
 
-    @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.SHAPE)
+    @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.LAYOUT)
     def clean(self, **kwargs):
         '''Clean blocks and rectangles, e.g. remove negative blocks, duplicated rects.'''
         page_bbox = (0.0, 0.0, self.width, self.height)

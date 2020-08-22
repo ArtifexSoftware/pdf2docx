@@ -6,6 +6,7 @@ A group of Text/Image or Table block.
 @author: train8808@gmail.com
 '''
 
+from ..common.utils import DM
 from ..common.Collection import Collection
 from ..common.base import BlockType
 from ..common.Block import Block
@@ -353,13 +354,21 @@ class Blocks(Collection):
 
             # situation with very low probability, e.g. ref (table) to current (table)
             # we can't set before space for table in docx, but the tricky way is to
-            # create a empty paragraph and set paragraph line spacing and before space
+            # create an empty paragraph and set paragraph line spacing and before space
             else:
                 block.before_space = para_space
 
             # update reference block        
             ref_block = block
             ref_pos = ref_block.bbox_raw[idx+2] + dw # assume same bottom border with top one
+
+        # NOTE: when a table is at the end of a page, a dummy paragraph with a small line spacing 
+        # is added after this table, to avoid unexpected page break. Accordingly, this extra spacing 
+        # must be remove in other place, especially the page space is run out.
+        # Here, reduce the last row of table.
+        block = self._instances[-1]
+        if block.is_table_block():
+            block[-1].height -= DM # same value used when creating docx
 
 
     def join_horizontally(self, text_direction=True):
