@@ -183,6 +183,11 @@ class MainTest(TestUtility):
         '''sample file focusing on simulating shape with shading cell.'''
         self.init_test('demo-table-shading').verify_layout(threshold=0.95)
 
+    def test_nested_table(self):
+        '''sample file focusing on nested tables.'''
+        self.init_test('demo-table-nested').verify_layout(threshold=0.95)
+
+
     def test_text_scaling(self):
         '''sample file focusing on font size.
             In this case, the font size is set precisely with character scaling.
