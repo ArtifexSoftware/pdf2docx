@@ -24,10 +24,10 @@ Note: the raw image block will be merged into text block: Text > Line > Span.
 '''
 
 from docx.shared import Pt
-from .Line import Line
+from ..text.Line import Line
+from ..text.TextBlock import TextBlock
 from .Image import Image
 from .ImageSpan import ImageSpan
-from .TextBlock import TextBlock
 from ..common import utils
 from ..common import docx
 from ..common.Block import Block

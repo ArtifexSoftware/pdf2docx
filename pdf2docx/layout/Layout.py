@@ -33,14 +33,13 @@ In addition to the raw layout dict, some new features are also included, e.g.
 import json
 from docx.shared import Pt
 from docx.enum.section import WD_SECTION
-
 from .Blocks import Blocks
 from ..shape.Rectangles import Rectangles
 from ..table.TablesConstructor import TablesConstructor
 from ..common.base import PlotControl
 from ..common.utils import debug_plot, DM, ITP
 from ..common.pdf import new_page_with_margin
-from ..common.docx import reset_paragraph_format
+
 
 
 class Layout:
@@ -183,13 +182,12 @@ class Layout:
 
     def make_page(self, doc):
         ''' Create page based on layout data. 
+            ---
+            Args:
+            - doc: python-docx.Document object
 
             To avoid incorrect page break from original document, a new page section
             is created for each page.
-
-            Support general document style only:
-              - writing mode: from left to right, top to bottom
-              - text direction: horizontal
 
             The vertical postion of paragraph/table is defined by space_before or 
             space_after property of a paragraph.
@@ -213,42 +211,7 @@ class Layout:
         section.bottom_margin = Pt(bottom)
 
         # add paragraph or table according to parsed block
-        for block in self.blocks:           
-
-            # make paragraphs
-            if block.is_text_block():
-                # new paragraph
-                p = doc.add_paragraph()
-                block.make_docx(p, self.bbox_raw)
-            
-            # make table
-            elif block.is_table_block():
-
-                # create dummy paragraph if table before space is set
-                # line spacing: table before_space/2.0
-                # before space: table before space / 2.0
-                if block.before_space:
-                    h = int(10*block.before_space/2.0) / 10.0 # round(x,1), but to lower bound
-                    p = doc.add_paragraph()
-                    pf = reset_paragraph_format(p)
-                    pf.space_before = Pt(max(h, 0.0))
-                    pf.space_after = Pt(0)
-                    pf.line_spacing = Pt(h)
-
-                # new table            
-                table = doc.add_table(rows=block.num_rows, cols=block.num_cols)
-                table.autofit = False
-                table.allow_autofit  = False
-                block.make_docx(table, self.margin)
-                
-        # NOTE: If a table is at the end of a page, a new paragraph will be automatically 
-        # added by the rending engine, e.g. MS Word, which resulting in an unexpected
-        # page break. The solution is to never put a table at the end of a page, so add
-        # an empty paragraph and reset its format, particularly line spacing, when a table
-        # is created.
-        if self.blocks and self.blocks[-1].is_table_block():
-            p = doc.add_paragraph()
-            reset_paragraph_format(p, Pt(DM)) # a small line height
+        self.blocks.make_page(doc, self.bbox_raw)
 
 
     @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.LAYOUT)
@@ -281,11 +244,15 @@ class Layout:
             Ensure no horizontally aligned blocks in each column, so that these blocks can be converted to
             paragraphs consequently in docx.
         '''
-        # horizontal range of table
-        left, right, *_ = self.margin
-        X0, X1 = left, self.width - right
+        # combined tables
+        tables = self._tables_constructor.combined_tables()
 
-        tables = self._tables_constructor.stream_tables(X0, X1)
+        # stream tables
+        left, right, *_ = self.margin
+        X0, X1 = left, self.width - right # horizontal range of table
+        stream_tables = self._tables_constructor.stream_tables(X0, X1)
+
+        tables.extend(stream_tables)
         return bool(tables)
 
 

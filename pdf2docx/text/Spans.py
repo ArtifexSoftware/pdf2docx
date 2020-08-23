@@ -9,7 +9,7 @@ A group of TextSpan and ImageSpan objects.
 
 from ..common.Collection import Collection
 from .TextSpan import TextSpan
-from .ImageSpan import ImageSpan
+from ..image.ImageSpan import ImageSpan
 
 class Spans(Collection):
     '''Text span list.'''

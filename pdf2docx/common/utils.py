@@ -45,7 +45,8 @@ DICT_FONTS = {
     'STHUPO': '华文琥珀',
     'STLITI': '华文隶书',
     'STXINGKAI': '华文行楷',
-    'STXINWEI': '华文新魏'
+    'STXINWEI': '华文新魏',
+    'ARIALNARROW': 'Arial Narrow'
 }
 
 

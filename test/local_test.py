@@ -4,15 +4,50 @@
     `python setpy.py develop`
 '''
 
-import os
+import os, sys
 from pdf2docx.converter import Converter
 from pdf2docx.common.utils import compare_layput
+
+
+def docx2pdf(docx_file, pdf_file):
+    '''Windows local test only. convert docx to pdf with `OfficeToPDF`'''    
+    # Windows: add OfficeToPDF to Path env. variable
+    if not sys.platform.upper().startswith('WIN'):
+        return False
+
+    # convert pdf with command line
+    cmd = f'OfficeToPDF "{docx_file}" "{pdf_file}"'
+    try:
+        os.system(cmd)
+    except:
+        return False
+    else:
+        return True
+
+
+def check_result(pdf_file, docx_file, compare_file_name):
+    ''' Convert the docx file back to pdf manually, and compare results 
+        by checking bbox of each word. The comparison result is stored 
+        in pdf file.
+    '''
+    output = os.path.dirname(docx_file)
+    docx_pdf_file = os.path.join(output, f'docx2pdf.pdf')
+    output_file = os.path.join(output, compare_file_name)
+
+    print('Converting docx to pdf...')
+    if docx2pdf(docx_file, docx_pdf_file):
+        print('Comparing with sample pdf...')
+        if compare_layput(pdf_file, docx_pdf_file, output_file, threshold=0.7):
+            print('Fully matched.')
+    else:
+        print(f'Please convert {docx_file} to {docx_pdf_file} in advance.')
+
 
 if __name__ == '__main__':
 
     script_path = os.path.abspath(__file__) # current script path
     output = os.path.join(os.path.dirname(script_path), 'samples')
-    filename = 'demo-path-transformation'
+    filename = 'demo-table'
     pdf_file = os.path.join(output, f'{filename}.pdf')
     docx_file = os.path.join(output, f'{filename}.docx')
 
@@ -44,10 +79,6 @@ if __name__ == '__main__':
     
     cv.close() # close pdf
 
-    # convert the docx file back to pdf manually, e.g. docx2pdf.pdf,
-    # and compare results by checking bbox of each word.
-    # The comparison result is stored in pdf file, e.g. comparison.pdf
-    docx_pdf_file = os.path.join(output, f'docx2pdf.pdf')
-    output_file = os.path.join(output, f'comparison.pdf')
-    if compare_layput(pdf_file, docx_pdf_file, output_file, threshold=0.7):
-        print('Fully matched.')
+
+    # check results
+    check_result(pdf_file, docx_file, 'comparison.pdf')

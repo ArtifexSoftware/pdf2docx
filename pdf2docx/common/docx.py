@@ -15,6 +15,15 @@ from docx.table import _Cell
 from .utils import RGB_value, DM
 
 
+def delete_paragraph(paragraph):
+    ''' Refer to:
+        https://github.com/python-openxml/python-docx/issues/33#issuecomment-77661907
+    '''
+    p = paragraph._element
+    p.getparent().remove(p)
+    paragraph._p = paragraph._element = None
+
+
 def reset_paragraph_format(p, line_spacing:float=1.05):
     ''' Reset paragraph format, especially line spacing.
         ---
