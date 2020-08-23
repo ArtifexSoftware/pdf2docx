@@ -15,12 +15,14 @@ from ..shape.Rectangles import Rectangles
 from .TableBlock import TableBlock
 from .Row import Row
 from .Cell import Cell
+from ..text.Lines import Lines
 
 
 class TableStructure:
     '''Parsing table structure based on borders/shadings.'''
 
-    def parse_structure(self, rects:Rectangles, detect_border:bool=True):
+    @staticmethod
+    def parse_structure(rects:Rectangles, detect_border:bool=True):
         ''' Parse table structure from rects.
             ---
             Args:
@@ -38,15 +40,15 @@ class TableStructure:
         # mark table borders first
         # --------------------------------------------------
         if detect_border:
-            self._set_borders(rects, width_threshold=6.0)
+            TableStructure._set_borders(rects, width_threshold=6.0)
         
         # --------------------------------------------------
         # group horizontal/vertical borders
         # --------------------------------------------------
-        h_borders, v_borders = self._group_borders(rects)
+        h_borders, v_borders = TableStructure._group_borders(rects)
         if not h_borders or not v_borders:
             # reset borders because it's a invalid table
-            self._unset_borders(rects)
+            TableStructure._unset_borders(rects)
             return None
 
         # sort
@@ -61,7 +63,7 @@ class TableStructure:
         for i, row in enumerate(y_rows[0:-1]):
             ref_y = (row+y_rows[i+1])/2.0
             ordered_v_borders = [v_borders[k] for k in x_cols]
-            row_structure = self._check_merged_cells(ref_y, ordered_v_borders, 'row')
+            row_structure = TableStructure._check_merged_cells(ref_y, ordered_v_borders, 'row')
             merged_cells_rows.append(row_structure)
 
         # check merged cells in each column
@@ -69,7 +71,7 @@ class TableStructure:
         for i, col in enumerate(x_cols[0:-1]):
             ref_x = (col+x_cols[i+1])/2.0
             ordered_h_borders = [h_borders[k] for k in y_rows]
-            col_structure = self._check_merged_cells(ref_x, ordered_h_borders, 'column')        
+            col_structure = TableStructure._check_merged_cells(ref_x, ordered_h_borders, 'column')        
             merged_cells_cols.append(col_structure)
 
         # --------------------------------------------------
@@ -149,12 +151,53 @@ class TableStructure:
             # check table: the first cell in first row MUST NOT be None
             if i==0 and not row[0]:
                 # reset borders because it's a invalid table
-                self._unset_borders(rects)
+                TableStructure._unset_borders(rects)
                 return None
 
             table.append(row)
 
         return table
+
+
+    @staticmethod
+    def stream_borders(lines:Lines, outer_bbox:tuple):
+        ''' Parsing borders based on lines contained in table cells.
+            ---
+            Args:
+            - lines: Lines, contained in table cells
+            - outer_bbox: (x0, y0, x1, y1), boundary box of table region
+        '''
+        # centerline of outer borders
+        x0, y0, x1, y1 = outer_bbox
+        borders = [
+            (x0, y0, x1, y0), # top
+            (x1, y0, x1, y1), # right
+            (x0, y1, x1, y1), # bottom
+            (x0, y0, x0, y1)  # left
+        ]
+        
+        # centerline of inner borders
+        inner_borders = TableStructure._borders_from_lines(lines, outer_bbox)
+        borders.extend(inner_borders)
+        
+        # all centerlines to rectangle shapes
+        res = Rectangles()
+        color = utils.RGB_value((1,1,1))
+
+        for border in borders: 
+            # set an non-zero width for border check; won't draw border in docx for stream table
+            bbox = utils.expand_centerline(border[0:2], border[2:], width=0.2) 
+            if not bbox: continue
+
+            # create Rectangle object and set border style
+            rect = Rectangle({
+                'bbox': bbox,
+                'color': color
+            })
+            rect.type = RectType.BORDER
+            res.append(rect)
+
+        return res
 
 
     @staticmethod
@@ -208,7 +251,8 @@ class TableStructure:
                 rect.type = RectType.UNDEFINED
 
 
-    def _group_borders(self, rects:Rectangles):
+    @staticmethod
+    def _group_borders(rects:Rectangles):
         ''' Collect lattice borders in horizontal and vertical groups respectively.'''        
 
         h_borders = {} # type: dict [float, Rectangles]
@@ -278,25 +322,25 @@ class TableStructure:
             bottom  = None    
 
         c = utils.RGB_value((1,1,1))
-        if not self._exist_outer_border(top_rects, top, 'h'):
+        if not TableStructure._exist_outer_border(top_rects, top, 'h'):
             h_borders[top] = Rectangles([
                 Rectangle({
                     'bbox': (left, top, right, top),
                     'color': c
                 })])
-        if not self._exist_outer_border(bottom_rects, bottom, 'h'):
+        if not TableStructure._exist_outer_border(bottom_rects, bottom, 'h'):
             h_borders[bottom] = Rectangles([
                 Rectangle({
                     'bbox': (left, bottom, right, bottom),
                     'color': c
                 })])
-        if not self._exist_outer_border(left_rects, left, 'v'):
+        if not TableStructure._exist_outer_border(left_rects, left, 'v'):
             v_borders[left] = Rectangles([
                 Rectangle({
                     'bbox': (left, top, left, bottom),
                     'color': c
                 })])
-        if not self._exist_outer_border(right_rects, right, 'v'):
+        if not TableStructure._exist_outer_border(right_rects, right, 'v'):
             v_borders[right] = Rectangles([
                 Rectangle({
                     'bbox': (right, top, right, bottom),
@@ -382,3 +426,88 @@ class TableStructure:
                 res.append(0)
 
         return res
+
+
+    @staticmethod
+    def _borders_from_lines(lines:Lines, border_bbox:tuple):
+        ''' Calculate the surrounding borders of given lines.
+            ---
+            Args:
+            - lines: lines in table cells
+            - border_bbox: boundary box of table region
+
+            These borders construct table cells. Considering the re-building of cell content in docx, 
+            - only one bbox is allowed in a line;
+            - but multi-lines are allowed in a cell.
+
+            Two purposes of stream table: 
+            - rebuild layout, e.g. text layout with two columns
+            - parsing real borderless table
+
+            It's controdictory that the former needn't to deep into row level, just 1 x N table convenient for layout recreation;
+            instead, the later should, M x N table for each cell precisely.
+            So, the principle determining borders for stream tables here:
+            - two columns: layout if the rows count in each column is different; otherwise, it's a real table
+            - otherwise: real table -> deep into rows
+        '''
+        # trying: deep into cells        
+        cols_lines = lines.group_by_columns()
+        group_lines = [col_lines.group_by_rows() for col_lines in cols_lines]
+
+        # real table or just text layout?
+        col_num = len(cols_lines)
+        real_table = True # table by default
+        if col_num==2:
+            # It's regarded as layout if row count is different, or the count is 1
+            left, right = len(group_lines[0]), len(group_lines[1])
+            if left!=right or left==1:
+                real_table = False
+
+        # detect borders based on table/layout mode
+        borders = set()  # type: set[tuple[float]]        
+        X0, Y0, X1, Y1 = border_bbox 
+        
+        # collect lines column by column
+        for i in range(col_num): 
+
+            # add column border
+            x0 = X0 if i==0 else (cols_lines[i-1].bbox.x1 + cols_lines[i].bbox.x0) / 2.0
+            x1 = X1 if i==col_num-1 else (cols_lines[i].bbox.x1 + cols_lines[i+1].bbox.x0) / 2.0
+
+            if i<col_num-1:
+                borders.add((x1, Y0, x1, Y1)) # right border of current column
+
+            
+            # NOTE: unnecessary to split row if the count of row is 1
+            rows_lines = group_lines[i]
+            row_num = len(rows_lines)
+            if row_num==1: continue
+        
+            # collect bboxes row by row 
+            for j in range(row_num): 
+
+                # add row border
+                y0 = Y0 if j==0 else (rows_lines[j-1].bbox.y1 + rows_lines[j].bbox.y0) / 2.0
+                y1 = Y1 if j==row_num-1 else (rows_lines[j].bbox.y1 + rows_lines[j+1].bbox.y0) / 2.0
+                
+                # needn't go to row level if layout mode
+                if not real_table:
+                    continue
+
+                # otherwise, add row borders
+                if j==0:
+                    borders.add((x0, y1, x1, y1)) # bottom border for first row
+                elif j==row_num-1:
+                    borders.add((x0, y0, x1, y0)) # top border for last row
+                else:
+                    # both top and bottom borders added, even though duplicates exist since
+                    # top border of current row may be considered already when process bottom border of previous row.
+                    # So, variable `borders` is a set here
+                    borders.add((x0, y0, x1, y0))
+                    borders.add((x0, y1, x1, y1))
+
+                # recursion to check borders further
+                borders_ = TableStructure._borders_from_lines(rows_lines[j], (x0, y0, x1, y1))
+                borders = borders | borders_
+
+        return borders
