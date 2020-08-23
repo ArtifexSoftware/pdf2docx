@@ -20,7 +20,7 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
 from ..common.BBox import BBox
 from ..common.base import TextDirection
 from .Spans import Spans
-from .ImageSpan import ImageSpan
+from ..image.ImageSpan import ImageSpan
 
 
 class Line(BBox):

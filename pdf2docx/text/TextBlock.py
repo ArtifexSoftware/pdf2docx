@@ -26,7 +26,7 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
 from docx.shared import Pt
 from .Line import Line
 from .Lines import Lines
-from .ImageSpan import ImageSpan
+from ..image.ImageSpan import ImageSpan
 from ..common.base import RectType, TextDirection
 from ..common.Block import Block
 from ..common import utils

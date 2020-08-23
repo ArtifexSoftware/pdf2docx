@@ -86,7 +86,8 @@ class Block(BBox):
             })
         return res
 
-    def contains_discrete_lines(self, distance:float=25, threshold:int=3):
+    @staticmethod
+    def contains_discrete_lines():
         ''' Check whether lines in block are discrete, False by default. 
             Rewrite it if necessary, e.g. in TextBlock.
         '''

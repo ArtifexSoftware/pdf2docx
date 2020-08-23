@@ -36,13 +36,15 @@ class BBox(IText):
             Args:
             - bbox: container bbox, e.g. the valid docx page region.
         '''
-        idx0 = 0 if self.is_horizontal else 3
-        dx = self.bbox_raw[idx0]-bbox[idx0]
+        # NOTE: in PyMuPDF CS, horizontal text direction is dame with positive x-axis,
+        # while vertical text is on the contrarory
+        idx0, f = (0, 1) if self.is_horizontal else (3, -1)
+        dx = (self.bbox_raw[idx0]-bbox[idx0]) * f
 
         # NOTE: consider modification when exceeds right boundary.
         # dx = max(line.bbox.x1-X1, 0)
         idx1 = (idx0+2) % 4
-        dt = max(self.bbox_raw[idx1]-bbox[idx1], 0)
+        dt = max((self.bbox_raw[idx1]-bbox[idx1])*f, 0)
 
         # this value is generally used to set tab stop in docx, 
         # so prefer a lower value to avoid exceeding line width.

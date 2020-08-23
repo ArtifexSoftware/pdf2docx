@@ -114,13 +114,10 @@ class Cell(BBox):
         ''' Add block to this cell. 
             ---
             Arg:
-              - block: Block type
+            - block: text block or table block
 
-            Note: If the block is partly contained in a cell, it must deep into line -> span -> char.
+            Note: If it's a text block and partly contained in a cell, it must deep into line -> span -> char.
         '''
-        if not block.is_text_block():
-            return
-
         # add block directly if fully contained in cell
         if self.bbox.contains(block.bbox):
             self.blocks.append(block)
@@ -130,12 +127,14 @@ class Cell(BBox):
         if not self.bbox.intersects(block.bbox):
             return
 
-        # otherwise, further check lines in block
+        # otherwise, further check lines in text block
+        if not block.is_text_block():  return
+        
+        # NOTE: add each line as a single text block to avoid overlap between table block and combined lines
         split_block = TextBlock()
         for line in block.lines:
             L = line.intersects(self.bbox)
             split_block.add(L)
-
         self.blocks.append(split_block)
 
 
@@ -148,7 +147,8 @@ class Cell(BBox):
               - border_style: whether set border style
         '''
         # ignore merged cells
-        if not bool(self): return
+        # TODO: for some weird tables, empty cell may not due to merging cells, so repair error exists in docx.
+        if not bool(self):  return
         
         # set cell style
         # no borders for stream table
@@ -164,15 +164,11 @@ class Cell(BBox):
         if self.blocks.is_vertical:
             docx.set_vertical_cell_direction(docx_cell)
 
-        # insert text            
-        first = True
-        for block in self.blocks:
-            if first:
-                p = docx_cell.paragraphs[0]
-                first = False
-            else:
-                p = docx_cell.add_paragraph()
-            block.make_docx(p, self.bbox_raw)
+        # insert contents
+        # NOTE: there exists an empty paragraph already in each cell, which should be deleted first.
+        # `docx_cell._element.clear_content()` works here, but results in a repair error in docx. 
+        docx.delete_paragraph(docx_cell.paragraphs[0])
+        self.blocks.make_page(docx_cell, self.bbox_raw)
 
 
     def _set_style(self, table, indexes, border_style=True):

@@ -45,12 +45,11 @@ class TablesConstructor(TableStructure):
         for table in unique_tables:
             # add table to page level
             table.set_lattice_table_block()
-            self._blocks.append(table)
 
         # assign text contents to each table
-        self._blocks.assign_table_contents()
+        self._blocks.assign_table_contents(unique_tables)
 
-        return self._blocks.lattice_table_blocks
+        return unique_tables
 
 
     def combined_tables(self):
@@ -76,10 +75,10 @@ class TablesConstructor(TableStructure):
             table_rects = self.stream_borders(table_lines, rect.bbox_raw)
             if not table_rects: continue
 
-            # get potential cell shading
+            # get potential cell shading: note consider not processed rect only
             table_bbox = table_rects.bbox
             table_rects.extend(filter(
-                lambda rect: table_bbox.intersects(rect.bbox), self._rects))
+                lambda rect: table_bbox.intersects(rect.bbox) and rect.type==RectType.UNDEFINED, self._rects))
 
             # parse table: don't have to detect borders since it's determined already
             table_rects.sort_in_reading_order() # required
@@ -91,12 +90,11 @@ class TablesConstructor(TableStructure):
         for table in unique_tables:
             # add parsed table to page level blocks
             table.set_stream_table_block()
-            self._blocks.append(table)
 
         # assign text contents to each table
-        self._blocks.assign_table_contents()
+        self._blocks.assign_table_contents(unique_tables)
 
-        return self._blocks.stream_table_blocks
+        return unique_tables
 
 
     def stream_tables(self, X0:float=-1, X1:float=-1):
@@ -130,10 +128,10 @@ class TablesConstructor(TableStructure):
             table_rects = self.stream_borders(table_lines, (x0,y0,x1,y1))
             if not table_rects: continue
 
-            # get potential cell shading
+            # get potential cell shading: note consider not processed rect only
             table_bbox = table_rects.bbox
             table_rects.extend(filter(
-                lambda rect: table_bbox.intersects(rect.bbox), self._rects))
+                lambda rect: table_bbox.intersects(rect.bbox) and rect.type==RectType.UNDEFINED, self._rects))
 
             # parse table: don't have to detect borders since it's determined already
             table_rects.sort_in_reading_order() # required
@@ -147,12 +145,11 @@ class TablesConstructor(TableStructure):
             # in addition, ignore table if contains only one cell since it's unnecessary for stream table
             if table.num_rows>1 or table.num_cols>1:
                 table.set_stream_table_block()
-                self._blocks.append(table)
 
         # assign text contents to each table
-        self._blocks.assign_table_contents()
+        self._blocks.assign_table_contents(unique_tables)
 
-        return self._blocks.stream_table_blocks
+        return unique_tables
 
 
     @staticmethod
