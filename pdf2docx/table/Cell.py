@@ -165,10 +165,12 @@ class Cell(BBox):
             docx.set_vertical_cell_direction(docx_cell)
 
         # insert contents
-        # NOTE: there exists an empty paragraph already in each cell, which should be deleted first.
-        # `docx_cell._element.clear_content()` works here, but results in a repair error in docx. 
-        docx.delete_paragraph(docx_cell.paragraphs[0])
-        self.blocks.make_page(docx_cell, self.bbox_raw)
+        # NOTE: there exists an empty paragraph already in each cell, which should be deleted first to
+        # avoid unexpected layout. `docx_cell._element.clear_content()` works here.
+        # But, docx requires at least one paragraph in each cell, otherwise resulting in a repair error. 
+        if self.blocks:
+            docx_cell._element.clear_content()
+            self.blocks.make_page(docx_cell, self.bbox_raw)
 
 
     def _set_style(self, table, indexes, border_style=True):
