@@ -504,8 +504,7 @@ class Blocks(Collection):
         for block in self._instances:
             if not block.is_text_block(): continue
             for line in block.lines:
-                if line.text.strip(): # delete empty line
-                    final_block.add(line)
+                final_block.add(line) # keep empty line, may help to identify table layout
 
         # merge lines/spans contained in this textBlock
         final_block.lines.join()
