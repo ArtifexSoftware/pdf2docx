@@ -51,7 +51,7 @@ class Border:
         if border_range:
             x0, x1 = border_range
         else:
-            x0, x1 = -1, -1
+            x0, x1 = -9999, 9999
         self.LRange:float = x0
         self.URange:float = x1
         return self
@@ -163,22 +163,18 @@ class Borders:
         '''Add border and update '''
         if isinstance(border, HBorder):
             # check intersection with contained h-borders
-            intersects = list(map(
-                lambda h_border: h_border.intersect_length(border), self._HBorders))
-            if intersects:
-                self._dy_max = max(intersects)
-                self._dy_min = min(intersects)
-
+            d_max, d_min = self._max_min_intersects(self._HBorders, border)
+            if d_max is not None:
+                self._dy_max = d_max
+                self._dy_min = d_min
             self._HBorders.append(border)
         
         elif isinstance(border, VBorder):
-            # check intersection with contained h-borders
-            intersects = list(map(
-                lambda v_border: v_border.intersect_length(border), self._VBorders))
-            if intersects:
-                self._dx_max = max(intersects)
-                self._dx_min = min(intersects)
-
+            # check intersection with contained v-borders
+            d_max, d_min = self._max_min_intersects(self._VBorders, border)
+            if d_max is not None:
+                self._dx_max = d_max
+                self._dx_min = d_min
             self._VBorders.append(border)
     
 
@@ -189,16 +185,33 @@ class Borders:
     def HBorders(self): return self._HBorders
 
     @property
-    def VBorders(self): return self.VBorders
+    def VBorders(self): return self._VBorders
 
     def finalize(self):
         ''' Finalize the position of all borders: to align h-borders or v-borders as more as possible,
             so to simplify the table structure.
         '''
-        # 1. Calculate dx: a half of the smallest intersection range
-        # self._finalize_borders(self._HBorders, self._dy_min, self._dy_max)
-        # self._finalize_borders(self._VBorders, self._dx_min, self._dx_max)
-        pass
+        # process un-finalized h-borders only
+        borders = list(filter(lambda border: not border.finalized, self._HBorders))
+        self._finalize_borders(borders, self._dy_min, self._dy_max)
+
+        # process un-finalized v-borders only
+        borders = list(filter(lambda border: not border.finalized, self._VBorders))
+        self._finalize_borders(borders, self._dx_min, self._dx_max)
+
+    
+    @staticmethod
+    def _max_min_intersects(borders, border:Border):
+        '''Get max/min intersection between `borders` and `border`. Return None if no any intersections.'''
+        intersects = list(map(
+            lambda border_: border_.intersect_length(border), borders))
+        intersects = list(filter(
+            lambda border_: border_>0, intersects
+        ))
+        if intersects:
+            return max(intersects), min(intersects)
+        else:
+            return None, None
 
 
     @staticmethod
@@ -235,7 +248,7 @@ class Borders:
                 x_status[x] = '-'.join(c) # e.g. 1-0-0-1-0-0
 
                 x += dx
-        
+
         # merge vertical lines if its intersection status is same
         merged_x_status = {} # status -> coordinate
         for k, v in x_status.items():
