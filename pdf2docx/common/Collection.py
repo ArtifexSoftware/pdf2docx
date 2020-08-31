@@ -13,8 +13,8 @@ from .base import IText, TextDirection
 
 class Collection(IText):
     '''Collection of specific instances.'''
-    def __init__(self, instances:list=[], parent=None) -> None:
-        ''' Construct text line from a list of raw line dict.'''
+    def __init__(self, instances:list=[], parent=None):
+        '''Init collection from a list of BBox instances.'''
         self._instances = instances if instances else [] # type: list[BBox]
         self._parent = parent # type: Block
 
