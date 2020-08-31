@@ -15,8 +15,9 @@ from ..common import utils
 from ..layout.Blocks import Blocks
 from ..shape.Rectangle import Rectangle
 from ..shape.Rectangles import Rectangles
-from .TableStructure import TableStructure
 from ..text.Lines import Lines
+from .TableStructure import TableStructure
+from .Border import HBorder, VBorder
 
 
 class TablesConstructor(TableStructure):
@@ -65,6 +66,18 @@ class TablesConstructor(TableStructure):
         tables = Blocks()
         for rect in shading_rects:
 
+            # boundary borders
+            x0, y0, x1, y1 = rect.bbox_raw
+            top = HBorder().finalize(y0)
+            bottom = HBorder().finalize(y1)
+            left = VBorder().finalize(x0)
+            right = VBorder().finalize(x1)
+
+            top.set_boundary_borders((left, right))
+            bottom.set_boundary_borders((left, right))
+            left.set_boundary_borders((top, bottom))
+            right.set_boundary_borders((top, bottom))
+
             # lines contained in shading rect
             table_lines = Lines()
             for block in self._blocks:
@@ -72,7 +85,7 @@ class TablesConstructor(TableStructure):
                     table_lines.extend(block.lines)
             
             # parse borders based on contents in cell
-            table_rects = self.stream_borders(table_lines, rect.bbox_raw)
+            table_rects = self.stream_borders(table_lines, (top, bottom, left, right))
             if not table_rects: continue
 
             # get potential cell shading: note consider not processed rect only
@@ -118,14 +131,21 @@ class TablesConstructor(TableStructure):
         tables = Blocks()
         margin = 1.0
         for table_lines in tables_lines:
-            # boundary box (considering margin) of outer borders            
-            x0 = X0 - margin
-            y0 = min([rect.bbox.y0 for rect in table_lines]) - margin
-            x1 = X1 + margin
-            y1 = max([rect.bbox.y1 for rect in table_lines]) + margin
+            # boundary borders
+            y0 = min([rect.bbox.y0 for rect in table_lines])
+            y1 = max([rect.bbox.y1 for rect in table_lines])
+            top = HBorder((y0-margin, y0))
+            bottom = HBorder((y1, y1+margin))
+            left = VBorder((X0-margin, X0))
+            right = VBorder((X1, X1+margin))
+
+            top.set_boundary_borders((left, right))
+            bottom.set_boundary_borders((left, right))
+            left.set_boundary_borders((top, bottom))
+            right.set_boundary_borders((top, bottom))
 
             # parse borders based on contents in cell
-            table_rects = self.stream_borders(table_lines, (x0,y0,x1,y1))
+            table_rects = self.stream_borders(table_lines, (top, bottom, left, right))
             if not table_rects: continue
 
             # get potential cell shading: note consider not processed rect only
