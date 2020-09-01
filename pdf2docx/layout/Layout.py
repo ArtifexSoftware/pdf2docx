@@ -37,7 +37,8 @@ from .Blocks import Blocks
 from ..shape.Rectangles import Rectangles
 from ..table.TablesConstructor import TablesConstructor
 from ..common.base import PlotControl
-from ..common.utils import debug_plot, DM, ITP
+from ..common.utils import debug_plot
+from ..common.constants import DM, ITP
 from ..common.pdf import new_page_with_margin
 
 

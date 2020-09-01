@@ -29,7 +29,8 @@ from .Lines import Lines
 from ..image.ImageSpan import ImageSpan
 from ..common.base import RectType, TextDirection
 from ..common.Block import Block
-from ..common import utils
+from ..common.utils import RGB_component_from_name
+from ..common.constants import DM, DR
 from ..common import docx
 
 
@@ -101,18 +102,18 @@ class TextBlock(Block):
               - page: fitz.Page object
         '''
         # block border in blue
-        blue = utils.RGB_component_from_name('blue')   
+        blue = RGB_component_from_name('blue')   
         page.drawRect(self.bbox, color=blue, fill=None, overlay=False)
 
         # lines and spans
         for line in self.lines:
             # line border in red
-            red = utils.RGB_component_from_name('red')
+            red = RGB_component_from_name('red')
             line.plot(page, red)
 
             # span regions in random color
             for span in line.spans:
-                c = utils.RGB_component_from_name('')                
+                c = RGB_component_from_name('')                
                 span.plot(page, c)
 
 
@@ -177,7 +178,7 @@ class TextBlock(Block):
             # yes, then go further to lines in block            
             for line in self.lines:
                 # any intersection in this line?
-                intsec = rect.bbox & ( line.bbox + utils.DR )
+                intsec = rect.bbox & ( line.bbox + DR )
                 
                 if not intsec: 
                     if rect.bbox.y1 < line.bbox.y0: break # lines must be sorted in advance
@@ -314,7 +315,7 @@ class TextBlock(Block):
                 line_break = False
 
             # do not break line if no more space in this line
-            elif bbox[idx+2]-line.bbox_raw[idx+2] < utils.DM:
+            elif bbox[idx+2]-line.bbox_raw[idx+2] < DM:
                 line_break = False
             
             if line_break:

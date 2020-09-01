@@ -28,7 +28,8 @@ Consider horizontal and vertical borders only.
 
 from ..shape.Rectangles import Rectangles
 from ..shape.Rectangle import Rectangle
-from ..common.utils import expand_centerline, RGB_value, MAX_W_BORDER
+from ..common.utils import expand_centerline, RGB_value
+from ..common.constants import MAX_W_BORDER
 from ..common.base import RectType
 
 

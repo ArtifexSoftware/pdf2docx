@@ -9,7 +9,8 @@ Parsing table structure based on borders.
 
 from ..common.BBox import BBox
 from ..common.base import RectType
-from ..common import utils
+from ..common.utils import RGB_value
+from ..common.constants import DM, MAX_W_BORDER
 from ..shape.Rectangle import Rectangle
 from ..shape.Rectangles import Rectangles
 from ..text.Lines import Lines
@@ -41,7 +42,7 @@ class TableStructure:
         # mark table borders first
         # --------------------------------------------------
         if detect_border:
-            TableStructure._set_borders(rects, width_threshold=utils.MAX_W_BORDER)
+            TableStructure._set_borders(rects, width_threshold=MAX_W_BORDER)
         
         # --------------------------------------------------
         # group horizontal/vertical borders
@@ -257,7 +258,7 @@ class TableStructure:
 
                 # ignore minor error resulting from different border width
                 for y_ in h_borders:
-                    if abs(y-y_)<utils.DM:
+                    if abs(y-y_)<DM:
                         h_borders[y_].append(rect)
                         break
                 else:
@@ -273,7 +274,7 @@ class TableStructure:
                 
                 # ignore minor error resulting from different border width
                 for x_ in v_borders:
-                    if abs(x-x_)<utils.DM:
+                    if abs(x-x_)<DM:
                         v_borders[x_].append(rect)
                         break
                 else:
@@ -290,26 +291,26 @@ class TableStructure:
         # check whether outer borders exists in collected borders
         left, right = min(v_outer), max(v_outer)
         top, bottom = min(h_outer), max(h_outer)
-        c = utils.RGB_value((1,1,1))
-        if abs(min(h_borders)-top)>utils.DM:
+        c = RGB_value((1,1,1))
+        if abs(min(h_borders)-top)>DM:
             h_borders[top] = Rectangles([
                 Rectangle({
                     'bbox': (left, top, right, top),
                     'color': c
                 })])
-        if abs(max(h_borders)-bottom)>utils.DM:
+        if abs(max(h_borders)-bottom)>DM:
             h_borders[bottom] = Rectangles([
                 Rectangle({
                     'bbox': (left, bottom, right, bottom),
                     'color': c
                 })])
-        if abs(min(v_borders)-left)>utils.DM:
+        if abs(min(v_borders)-left)>DM:
             v_borders[left] = Rectangles([
                 Rectangle({
                     'bbox': (left, top, left, bottom),
                     'color': c
                 })])
-        if abs(max(v_borders)-right)>utils.DM:
+        if abs(max(v_borders)-right)>DM:
             v_borders[right] = Rectangles([
                 Rectangle({
                     'bbox': (right, top, right, bottom),

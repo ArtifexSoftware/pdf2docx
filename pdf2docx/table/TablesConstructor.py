@@ -11,7 +11,7 @@ Parsing table blocks:
 
 
 from ..common.base import RectType
-from ..common import utils
+from ..common.constants import MAX_W_BORDER, DR
 from ..layout.Blocks import Blocks
 from ..shape.Rectangle import Rectangle
 from ..shape.Rectangles import Rectangles
@@ -60,7 +60,7 @@ class TablesConstructor(TableStructure):
             Combined with lattice and stream table parsing methods, this table 
             is to simulate the shading shape in docx. 
         '''
-        shading_rects = self._shading_rects(width_threshold=utils.MAX_W_BORDER)
+        shading_rects = self._shading_rects(width_threshold=MAX_W_BORDER)
 
         # table based on each shading rect
         tables = Blocks()
@@ -247,7 +247,7 @@ class TablesConstructor(TableStructure):
             # now shading rect or highlight rect:
             # shading rect contains at least one text block
             shading = False
-            expand_bbox = rect.bbox + utils.DR / 0.2 # expand 2.5 Pt
+            expand_bbox = rect.bbox + DR / 0.2 # expand 2.5 Pt
             for block in self._blocks:
                 if expand_bbox.contains(block.bbox):
                     shading = True
