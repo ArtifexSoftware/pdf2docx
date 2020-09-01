@@ -131,11 +131,12 @@ class TablesConstructor(TableStructure):
 
         # parse tables
         tables = Blocks()
-        margin = 1.0
         for table_lines in tables_lines:
             # boundary box
             y0 = min([rect.bbox.y0 for rect in table_lines])
             y1 = max([rect.bbox.y1 for rect in table_lines])
+            x0 = min([rect.bbox.x0 for rect in table_lines])
+            x1 = max([rect.bbox.x1 for rect in table_lines])
             
             # top/bottom border margin: the block before/after table
             y0_margin, y1_margin = 0.0, 0.0
@@ -149,8 +150,8 @@ class TablesConstructor(TableStructure):
             # boundary borders
             top = HBorder((y0_margin, y0))
             bottom = HBorder((y1, y1_margin))
-            left = VBorder((X0-margin, X0))
-            right = VBorder((X1, X1+margin))
+            left = VBorder((X0, x0))
+            right = VBorder((x1, X1))
 
             top.set_boundary_borders((left, right))
             bottom.set_boundary_borders((left, right))
@@ -158,7 +159,7 @@ class TablesConstructor(TableStructure):
             right.set_boundary_borders((top, bottom))
 
             # potential borders/shadings contained in table region
-            bbox = (X0-margin, y0_margin, X1+margin, y1_margin)
+            bbox = (X0, y0_margin, X1, y1_margin)
             rects = list(filter(
                 lambda rect: rect.bbox.intersects(bbox) and rect.type==RectType.UNDEFINED, self._rects))
 
