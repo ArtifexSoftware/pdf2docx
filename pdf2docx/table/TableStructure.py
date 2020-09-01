@@ -441,9 +441,6 @@ class TableStructure:
         # trying: deep into cells        
         cols_lines = lines.group_by_columns()
         group_lines = [col_lines.group_by_rows() for col_lines in cols_lines]
-        print('---------->')
-        print(len(cols_lines))
-        print([len(x) for x in group_lines])
 
         # real table or just text layout?
         col_num = len(cols_lines)
@@ -489,7 +486,8 @@ class TableStructure:
                         y0 = rows_lines[j].bbox.y1
                         y1 = rows_lines[j+1].bbox.y0
                         bottom = HBorder(border_range=(y0, y1), borders=(left, right))
-                        borders.add(bottom) # bottom border of current row
+                        
+                        if real_table: borders.add(bottom) # bottom border of current row
                     
                     # needn't go to row level if layout mode
                     if real_table:
