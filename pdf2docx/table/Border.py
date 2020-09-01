@@ -28,7 +28,7 @@ Consider horizontal and vertical borders only.
 
 from ..shape.Rectangles import Rectangles
 from ..shape.Rectangle import Rectangle
-from ..common.utils import expand_centerline, RGB_value
+from ..common.utils import expand_centerline, RGB_value, MAX_W_BORDER
 from ..common.base import RectType
 
 
@@ -260,13 +260,13 @@ class Borders:
         '''
         # process h- and v- rects respectively
         h_rects = list(filter(
-            lambda rect: rect.bbox.width >= rect.bbox.height, rects))
+            lambda rect: rect.bbox.width >= rect.bbox.height <= MAX_W_BORDER, rects))
         for rect in h_rects:
             for border in self._HBorders:            
                 border.finalize_by_rect(rect)
 
         v_rects = list(filter(
-            lambda rect: rect.bbox.width < rect.bbox.height, rects))
+            lambda rect: rect.bbox.height > rect.bbox.width <= MAX_W_BORDER, rects))
         for rect in v_rects:
             for border in self._VBorders:            
                 border.finalize_by_rect(rect)        

@@ -6,7 +6,7 @@ import fitz
 from fitz.utils import getColorList, getColorInfoList
 from .base import PlotControl
 
-# border margin
+# margin
 DM = 1.0
 
 # inch to point
@@ -14,6 +14,9 @@ ITP = 72.0
 
 # tolerant rectangle area
 DR = fitz.Rect(-DM, -DM, DM, DM) / 2.0
+
+# max width of table border
+MAX_W_BORDER = 6.0
 
 # font name mapping
 # special process on the key:

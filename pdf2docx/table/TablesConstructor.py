@@ -60,7 +60,7 @@ class TablesConstructor(TableStructure):
             Combined with lattice and stream table parsing methods, this table 
             is to simulate the shading shape in docx. 
         '''
-        shading_rects = self._shading_rects(width_threshold=6.0)
+        shading_rects = self._shading_rects(width_threshold=utils.MAX_W_BORDER)
 
         # table based on each shading rect
         tables = Blocks()
@@ -127,7 +127,7 @@ class TablesConstructor(TableStructure):
 
             Ensure no horizontally aligned blocks in each column, so that these blocks can be converted to
             paragraphs consequently in docx.
-        '''    
+        '''
         if len(self._blocks)<=1: return []      
 
         # potential bboxes
@@ -207,7 +207,7 @@ class TablesConstructor(TableStructure):
         return unique_tables
 
 
-    def _shading_rects(self, width_threshold:float=6.0):
+    def _shading_rects(self, width_threshold:float):
         ''' Detect shading rects.
             ---
             Args:
