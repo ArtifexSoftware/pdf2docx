@@ -1,10 +1,22 @@
 # -*- coding: utf-8 -*-
 
 '''
-There's no exact border for stream table, so define a BORDER class with a valid range.
-For instance, a vertical border is reasonable when it locates in range (x0, x1). In addition,
-it must start from a horizontal border (top) and end with another horizontal border (bottom).
-It's also true for horizontal borders.
+Module to determin stream table borders.
+
+Though no exact borders exist for stream table, it's better to simplify table structure by
+aligning borders as more as possible. Taking vertical borders for example, it can be moved 
+in a valid range in horizontal direction, but restricted by top and bottom borders in vertical 
+direction. It's also true for horizontal borders.
+
+Accordingly, introduce `Border` object, which has the following attributes:
+- valid range, e. g. (100, 250);
+- boundary borders, e. g. (top_border, bottom_border) for v-border, 
+                       or (left_border, right_border) for h-border.
+
+The target is to finalize the position in valid range, e. g. x=125 for v-border with valid range 
+(120, 250). Then it's y-direction is determined by its boundary borders, where the y-coordinates 
+are finalized in same logic. Finally, this border is fixed since both x- and y- directions are 
+determined.
 
 NOTE:
 Consider horizontal and vertical borders only.
@@ -219,17 +231,17 @@ class Borders:
         ''' Finalize the position of all borders: align borders as more as possible to simplify the table structure.
             ---
             Args:
-            - borders: a list of Border instances
+            - borders: a list of HBorder or VBorder instances
             - dx_min : minimum length of intersected border range
             - dx_max : maximum length of intersected border range
             
             Taking finalizing vertical borders for example:
-            1. initialize a group of vertical lines (space dx) from valid range of each v-border
-            2. count the intersection with valid range of v-borders for each line
-            3. merge vertical lines going through same v-borders
-            4. sort vertical lines with the count of intersections with v-borders
-            5. finalize v-borders with x-coordinate of the vertical line in sorting order
-            6. terminate the process util all v-borders are finalized
+            - for each border, initialize a group of x-coordinates with spacing `dx` in its valid range
+            - for each x-coordinate, count the intersection status with all borders
+            - merge x-coordinates (using average value) passing through same borders
+            - sort x-coordinates with the count of intersections in decent order
+            - finalize borders with x-coordinate in sorting order consequently
+            - terminate the process when all borders are finalized
         '''
         # no intersection exists for any borders -> it can be finalized right now.
         if dx_max == 0.0: return

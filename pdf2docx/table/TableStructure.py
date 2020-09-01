@@ -441,6 +441,9 @@ class TableStructure:
         # trying: deep into cells        
         cols_lines = lines.group_by_columns()
         group_lines = [col_lines.group_by_rows() for col_lines in cols_lines]
+        print('---------->')
+        print(len(cols_lines))
+        print([len(x) for x in group_lines])
 
         # real table or just text layout?
         col_num = len(cols_lines)
@@ -472,34 +475,32 @@ class TableStructure:
             # NOTE: unnecessary to split row if the count of row is 1
             rows_lines = group_lines[i]
             row_num = len(rows_lines)
-            if row_num==1: continue
-        
-            # collect bboxes row by row 
-            for j in range(row_num): 
+            if row_num > 1:        
+                # collect bboxes row by row 
+                for j in range(row_num): 
 
-                # top row border
-                if j==0: top = TOP
+                    # top row border
+                    if j==0: top = TOP
 
-                # bottom row border
-                if j==row_num-1:
-                    bottom = BOTTOM
-                else:                
-                    y0 = rows_lines[j].bbox.y1
-                    y1 = rows_lines[j+1].bbox.y0
-                    bottom = HBorder(border_range=(y0, y1), borders=(left, right))
-                    borders.add(bottom) # bottom border of current row
+                    # bottom row border
+                    if j==row_num-1:
+                        bottom = BOTTOM
+                    else:                
+                        y0 = rows_lines[j].bbox.y1
+                        y1 = rows_lines[j+1].bbox.y0
+                        bottom = HBorder(border_range=(y0, y1), borders=(left, right))
+                        borders.add(bottom) # bottom border of current row
+                    
+                    # needn't go to row level if layout mode
+                    if real_table:
+                        # recursion to check borders further
+                        borders_ = TableStructure._borders_from_lines(rows_lines[j], (top, bottom, left, right))
+                        borders.extend(borders_)
+                    
+                    # update for next row:
+                    # the bottom border of the i-th row becomes top border of the (i+1)-th row
+                    top = bottom
                 
-                # needn't go to row level if layout mode
-                if not real_table: continue
-
-                # recursion to check borders further
-                borders_ = TableStructure._borders_from_lines(rows_lines[j], (top, bottom, left, right))
-                borders.extend(borders_)
-                
-                # update for next row:
-                # the bottom border of the i-th row becomes top border of the (i+1)-th row
-                top = bottom
-            
             # update for next column:
             # the right border of the i-th column becomes left border of the (i+1)-th column
             left = right
