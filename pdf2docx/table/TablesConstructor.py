@@ -85,19 +85,15 @@ class TablesConstructor(TableStructure):
                     table_lines.extend(block.lines)
             
             # potentail borders contained in shading rect
-            showing_borders = Rectangles()
-            for rect_ in self._rects:
-                if rect.bbox.intersects(rect_.bbox):
-                    showing_borders.append(rect_)
+            rects = list(filter(
+                lambda rect_: rect.bbox.intersects(rect_.bbox) and rect_.type==RectType.UNDEFINED, self._rects))
             
             # parse borders based on contents in cell
-            table_rects = self.stream_borders(table_lines, (top, bottom, left, right), showing_borders)
+            table_rects = self.stream_borders(table_lines, (top, bottom, left, right), Rectangles(rects))
             if not table_rects: continue
 
             # get potential cell shading: note consider not processed rect only
-            table_bbox = table_rects.bbox
-            table_rects.extend(filter(
-                lambda rect: table_bbox.intersects(rect.bbox) and rect.type==RectType.UNDEFINED, self._rects))
+            table_rects.extend(rects)
 
             # parse table: don't have to detect borders since it's determined already
             table_rects.sort_in_reading_order() # required
@@ -137,11 +133,22 @@ class TablesConstructor(TableStructure):
         tables = Blocks()
         margin = 1.0
         for table_lines in tables_lines:
-            # boundary borders
+            # boundary box
             y0 = min([rect.bbox.y0 for rect in table_lines])
             y1 = max([rect.bbox.y1 for rect in table_lines])
-            top = HBorder((y0-margin, y0))
-            bottom = HBorder((y1, y1+margin))
+            
+            # top/bottom border margin: the block before/after table
+            y0_margin, y1_margin = 0.0, 0.0
+            for block in self._blocks:
+                if block.bbox.y1 < y0:
+                    y0_margin = block.bbox.y1
+                if block.bbox.y0 > y1:
+                    y1_margin = block.bbox.y0
+                    break
+
+            # boundary borders
+            top = HBorder((y0_margin, y0))
+            bottom = HBorder((y1, y1_margin))
             left = VBorder((X0-margin, X0))
             right = VBorder((X1, X1+margin))
 
@@ -150,21 +157,17 @@ class TablesConstructor(TableStructure):
             left.set_boundary_borders((top, bottom))
             right.set_boundary_borders((top, bottom))
 
-            # potentail borders contained in shading rect
-            bbox = (X0-margin, y0-margin, X1+margin, y1+margin)
-            showing_borders = Rectangles()
-            for rect in self._rects:
-                if rect.bbox.intersects(bbox):
-                    showing_borders.append(rect)
+            # potential borders/shadings contained in table region
+            bbox = (X0-margin, y0_margin, X1+margin, y1_margin)
+            rects = list(filter(
+                lambda rect: rect.bbox.intersects(bbox) and rect.type==RectType.UNDEFINED, self._rects))
 
             # parse borders based on contents in cell
-            table_rects = self.stream_borders(table_lines, (top, bottom, left, right), showing_borders)
+            table_rects = self.stream_borders(table_lines, (top, bottom, left, right), Rectangles(rects))
             if not table_rects: continue
 
             # get potential cell shading: note consider not processed rect only
-            table_bbox = table_rects.bbox
-            table_rects.extend(filter(
-                lambda rect: table_bbox.intersects(rect.bbox) and rect.type==RectType.UNDEFINED, self._rects))
+            table_rects.extend(rects)
 
             # parse table: don't have to detect borders since it's determined already
             table_rects.sort_in_reading_order() # required

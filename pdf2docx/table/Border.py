@@ -29,7 +29,7 @@ Consider horizontal and vertical borders only.
 from ..shape.Rectangles import Rectangles
 from ..shape.Rectangle import Rectangle
 from ..common.utils import expand_centerline, RGB_value
-from ..common.constants import MAX_W_BORDER, MIN_W_BORDER
+from ..common.constants import MAX_W_BORDER, HIDDEN_W_BORDER
 from ..common.base import RectType
 
 
@@ -50,7 +50,7 @@ class Border:
         self.set_boundary_borders(borders)
         
         # border style
-        self.width = MIN_W_BORDER
+        self.width = HIDDEN_W_BORDER
         self.color = RGB_value((1,1,1)) # white by default
 
         # whether the position is determined
@@ -124,8 +124,9 @@ class HBorder(Border):
         return (self._LBorder.x, self.y, self._UBorder.x, self.y)
 
     def finalize(self, y:float):
-        '''Finalize border with given position.'''
-        if not self.is_valid(y): return self
+        ''' Finalize border with given position.'''
+        # can be finalized only one time
+        if self.finalized or not self.is_valid(y): return self
         self._y = y
         self.finalized = True
         return self
@@ -138,7 +139,7 @@ class HBorder(Border):
         y = (bbox.y0+bbox.y1)/2.0
 
         # skip if no intersection in y-direction
-        if not self.is_valid(y): return self
+        if self.finalized or not self.is_valid(y): return self
 
         # skip if no intersection in x-ditrection
         if bbox.x1 <= self._LBorder.LRange or bbox.x0 >= self._UBorder.URange: return self
@@ -174,7 +175,8 @@ class VBorder(Border):
     
     def finalize(self, x:float):
         '''Finalize border with given position.'''
-        if not self.is_valid(x): return self
+        # can be finalized fo only one time
+        if self.finalized or not self.is_valid(x): return self
         self._x = x
         self.finalized = True
         return self
@@ -187,7 +189,7 @@ class VBorder(Border):
         x = (bbox.x0+bbox.x1)/2.0
 
         # skip if no intersection in y-direction
-        if not self.is_valid(x): return self
+        if self.finalized or not self.is_valid(x): return self
 
         # skip if no intersection in x-ditrection
         if bbox.y1 <= self._LBorder.LRange or bbox.y0 >= self._UBorder.URange: return self

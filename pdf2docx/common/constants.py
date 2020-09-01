@@ -14,6 +14,7 @@ DR = fitz.Rect(-DM, -DM, DM, DM) / 2.0
 # max/min width of table border in docx
 MAX_W_BORDER = 6.0
 MIN_W_BORDER = 0.25
+HIDDEN_W_BORDER = 0.0 # not show border
 
 # font name mapping
 # special process on the key:
