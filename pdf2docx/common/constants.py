@@ -11,8 +11,9 @@ ITP = 72.0
 # tolerant rectangle area
 DR = fitz.Rect(-DM, -DM, DM, DM) / 2.0
 
-# max width of table border
+# max/min width of table border in docx
 MAX_W_BORDER = 6.0
+MIN_W_BORDER = 0.25
 
 # font name mapping
 # special process on the key:

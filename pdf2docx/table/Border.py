@@ -29,7 +29,7 @@ Consider horizontal and vertical borders only.
 from ..shape.Rectangles import Rectangles
 from ..shape.Rectangle import Rectangle
 from ..common.utils import expand_centerline, RGB_value
-from ..common.constants import MAX_W_BORDER
+from ..common.constants import MAX_W_BORDER, MIN_W_BORDER
 from ..common.base import RectType
 
 
@@ -50,7 +50,7 @@ class Border:
         self.set_boundary_borders(borders)
         
         # border style
-        self.width = 0.2
+        self.width = MIN_W_BORDER
         self.color = RGB_value((1,1,1)) # white by default
 
         # whether the position is determined

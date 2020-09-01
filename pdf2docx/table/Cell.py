@@ -138,13 +138,12 @@ class Cell(BBox):
         self.blocks.append(split_block)
 
 
-    def make_docx(self, table, indexes, border_style:bool):
+    def make_docx(self, table, indexes):
         '''Create docx table.
             ---
             Args:
               - table: docx table instance
               - indexes: (i, j), row and column indexes
-              - border_style: whether set border style
         '''
         # ignore merged cells
         # TODO: for some weird tables, empty cell may not due to merging cells, so repair error exists in docx.
@@ -152,7 +151,7 @@ class Cell(BBox):
         
         # set cell style
         # no borders for stream table
-        self._set_style(table, indexes, border_style)
+        self._set_style(table, indexes)
 
         # clear cell margin
         # NOTE: the start position of a table is based on text in cell, rather than left border of table. 
@@ -173,14 +172,13 @@ class Cell(BBox):
             self.blocks.make_page(docx_cell, self.bbox_raw)
 
 
-    def _set_style(self, table, indexes, border_style=True):
+    def _set_style(self, table, indexes):
         ''' Set python-docx cell style, e.g. border, shading, width, row height, 
             based on cell block parsed from PDF.
             ---
             Args:
               - table: python-docx table object
               - indexes: (i, j) index of current cell in table
-              - border_style: set border style or not
         '''
         i, j = indexes
         docx_cell = table.cell(i, j)
@@ -191,18 +189,17 @@ class Cell(BBox):
         # ---------------------
         # NOTE: border width is specified in eighths of a point, with a minimum value of 
         # two (1/4 of a point) and a maximum value of 96 (twelve points)
-        if border_style:
-            keys = ('top', 'end', 'bottom', 'start')
-            kwargs = {}
-            for k, w, c in zip(keys, self.border_width, self.border_color):
-                hex_c = f'#{hex(c)[2:].zfill(6)}'
-                kwargs[k] = {
-                    'sz': 8*w, 'val': 'single', 'color': hex_c.upper()
-                }
-            # merged cells are assumed to have same borders with the main cell        
-            for m in range(i, i+n_row):
-                for n in range(j, j+n_col):
-                    docx.set_cell_border(table.cell(m, n), **kwargs)
+        keys = ('top', 'end', 'bottom', 'start')
+        kwargs = {}
+        for k, w, c in zip(keys, self.border_width, self.border_color):
+            hex_c = f'#{hex(c)[2:].zfill(6)}'
+            kwargs[k] = {
+                'sz': 8*w, 'val': 'single', 'color': hex_c.upper()
+            }
+        # merged cells are assumed to have same borders with the main cell        
+        for m in range(i, i+n_row):
+            for n in range(j, j+n_col):
+                docx.set_cell_border(table.cell(m, n), **kwargs)
 
         # ---------------------
         # merge cells
