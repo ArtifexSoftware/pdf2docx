@@ -26,6 +26,7 @@ Consider horizontal and vertical borders only.
 '''
 
 
+from ..shape.Rectangles import Rectangles
 from ..shape.Rectangle import Rectangle
 from ..common.utils import expand_centerline, RGB_value
 from ..common.base import RectType
@@ -47,8 +48,9 @@ class Border:
         # boundary borders
         self.set_boundary_borders(borders)
         
-        # border width
+        # border style
         self.width = 0.2
+        self.color = RGB_value((1,1,1)) # white by default
 
         # whether the position is determined
         self.finalized = False
@@ -96,7 +98,7 @@ class Border:
         # create Rectangle instance
         rect = Rectangle({
             'bbox' : bbox,
-            'color': RGB_value((1,1,1)) # white by default
+            'color': self.color
         })
         rect.type = RectType.BORDER # set border style
         
@@ -121,9 +123,34 @@ class HBorder(Border):
         return (self._LBorder.x, self.y, self._UBorder.x, self.y)
 
     def finalize(self, y:float):
-        if self.is_valid(y):
-            self._y = y
-            self.finalized = True
+        '''Finalize border with given position.'''
+        if not self.is_valid(y): return self
+        self._y = y
+        self.finalized = True
+        return self
+
+    def finalize_by_rect(self, h_rect:Rectangle):
+        ''' Finalize border with specified horizontal rect, which is generally a showing border.        
+            NOTE: the boundary borders may also be affected by this rect.
+        '''
+        bbox = h_rect.bbox
+        y = (bbox.y0+bbox.y1)/2.0
+
+        # skip if no intersection in y-direction
+        if not self.is_valid(y): return self
+
+        # skip if no intersection in x-ditrection
+        if bbox.x1 <= self._LBorder.LRange or bbox.x0 >= self._UBorder.URange: return self
+
+        # now, it can be used to finalize current border
+        self.finalize(y)
+        self.color = h_rect.color
+        self.width = bbox.y1 - bbox.y0
+
+        # and, try to finalize boundary borders
+        self._LBorder.finalize(bbox.x0)
+        self._UBorder.finalize(bbox.x1)
+
         return self
 
 
@@ -145,9 +172,34 @@ class VBorder(Border):
         return (self.x, self._LBorder.y, self.x, self._UBorder.y)  
     
     def finalize(self, x:float):
-        if self.is_valid(x):
-            self._x = x
-            self.finalized = True
+        '''Finalize border with given position.'''
+        if not self.is_valid(x): return self
+        self._x = x
+        self.finalized = True
+        return self
+    
+    def finalize_by_rect(self, v_rect:Rectangle):
+        ''' Finalize border with specified horizontal rect, which is generally a showing border.        
+            NOTE: the boundary borders may also be affected by this rect.
+        '''
+        bbox = v_rect.bbox
+        x = (bbox.x0+bbox.x1)/2.0
+
+        # skip if no intersection in y-direction
+        if not self.is_valid(x): return self
+
+        # skip if no intersection in x-ditrection
+        if bbox.y1 <= self._LBorder.LRange or bbox.y0 >= self._UBorder.URange: return self
+
+        # now, it can be used to finalize current border
+        self.finalize(x)
+        self.color = v_rect.color
+        self.width = bbox.x1 - bbox.x0
+
+        # and, try to finalize boundary borders
+        self._LBorder.finalize(bbox.y0)
+        self._UBorder.finalize(bbox.y1)
+
         return self
 
 
@@ -199,15 +251,31 @@ class Borders:
     @property
     def VBorders(self): return self._VBorders
 
-    def finalize(self):
+    def finalize(self, rects:Rectangles):
         ''' Finalize the position of all borders: to align h-borders or v-borders as more as possible,
             so to simplify the table structure.
+            ---
+            Args:
+            - rects: a group of explicit border rects. Stream table borders should follow these borders.
         '''
-        # process un-finalized h-borders only
+        # process h- and v- rects respectively
+        h_rects = list(filter(
+            lambda rect: rect.bbox.width >= rect.bbox.height, rects))
+        for rect in h_rects:
+            for border in self._HBorders:            
+                border.finalize_by_rect(rect)
+
+        v_rects = list(filter(
+            lambda rect: rect.bbox.width < rect.bbox.height, rects))
+        for rect in v_rects:
+            for border in self._VBorders:            
+                border.finalize_by_rect(rect)        
+
+        # process un-finalized h-borders further
         borders = list(filter(lambda border: not border.finalized, self._HBorders))
         self._finalize_borders(borders, self._dy_min, self._dy_max)
 
-        # process un-finalized v-borders only
+        # process un-finalized v-borders further
         borders = list(filter(lambda border: not border.finalized, self._VBorders))
         self._finalize_borders(borders, self._dx_min, self._dx_max)
 

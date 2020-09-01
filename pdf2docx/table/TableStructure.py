@@ -54,8 +54,8 @@ class TableStructure:
 
         # sort
         y_rows = sorted(h_borders)
-        x_cols = sorted(v_borders)       
-            
+        x_cols = sorted(v_borders)
+
         # --------------------------------------------------
         # parse table structure, especially the merged cells
         # -------------------------------------------------- 
@@ -161,12 +161,13 @@ class TableStructure:
 
 
     @staticmethod
-    def stream_borders(lines:Lines, outer_borders:tuple):
+    def stream_borders(lines:Lines, outer_borders:tuple, showing_borders:Rectangles):
         ''' Parsing borders based on lines contained in table cells.
             ---
             Args:
             - lines: Lines, contained in table cells
             - outer_borders: (top, bottom, left, right), boundary borders of table region
+            - showing_borders: showing borders in a stream table
         '''
         borders = Borders()
 
@@ -178,7 +179,7 @@ class TableStructure:
         borders.extend(inner_borders)
         
         # finalize borders
-        borders.finalize()
+        borders.finalize(showing_borders)
 
         # all centerlines to rectangle shapes
         res = Rectangles()
@@ -287,27 +288,15 @@ class TableStructure:
 
         # Note: add dummy borders if no outer borders exist
         # check whether outer borders exists in collected borders
-        if h_borders:
-            top_rects = h_borders[min(h_borders)]
-            bottom_rects = h_borders[max(h_borders)]
-            left   = min(v_outer)
-            right  = max(v_outer)
-        else:
-            top_rects = Rectangles()
-            bottom_rects = Rectangles()
-            left   = None
-            right  = None
+        top_rects = h_borders[min(h_borders)]
+        bottom_rects = h_borders[max(h_borders)]
+        left   = min(v_outer)
+        right  = max(v_outer)
 
-        if v_borders:
-            left_rects = v_borders[min(v_borders)]
-            right_rects = v_borders[max(v_borders)]
-            top   = min(h_outer)
-            bottom  = max(h_outer)
-        else:
-            left_rects = Rectangles()
-            right_rects = Rectangles()
-            top   = None
-            bottom  = None    
+        left_rects = v_borders[min(v_borders)]
+        right_rects = v_borders[max(v_borders)]
+        top   = min(h_outer)
+        bottom  = max(h_outer)
 
         c = utils.RGB_value((1,1,1))
         if not TableStructure._exist_outer_border(top_rects, top, 'h'):

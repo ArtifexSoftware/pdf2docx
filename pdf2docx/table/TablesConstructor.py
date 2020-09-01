@@ -84,8 +84,14 @@ class TablesConstructor(TableStructure):
                 if rect.bbox.contains(block.bbox):
                     table_lines.extend(block.lines)
             
+            # potentail borders contained in shading rect
+            showing_borders = Rectangles()
+            for rect_ in self._rects:
+                if rect.bbox.intersects(rect_.bbox):
+                    showing_borders.append(rect_)
+            
             # parse borders based on contents in cell
-            table_rects = self.stream_borders(table_lines, (top, bottom, left, right))
+            table_rects = self.stream_borders(table_lines, (top, bottom, left, right), showing_borders)
             if not table_rects: continue
 
             # get potential cell shading: note consider not processed rect only
@@ -144,8 +150,15 @@ class TablesConstructor(TableStructure):
             left.set_boundary_borders((top, bottom))
             right.set_boundary_borders((top, bottom))
 
+            # potentail borders contained in shading rect
+            bbox = (X0-margin, y0-margin, X1+margin, y1+margin)
+            showing_borders = Rectangles()
+            for rect in self._rects:
+                if rect.bbox.intersects(bbox):
+                    showing_borders.append(rect)
+
             # parse borders based on contents in cell
-            table_rects = self.stream_borders(table_lines, (top, bottom, left, right))
+            table_rects = self.stream_borders(table_lines, (top, bottom, left, right), showing_borders)
             if not table_rects: continue
 
             # get potential cell shading: note consider not processed rect only
