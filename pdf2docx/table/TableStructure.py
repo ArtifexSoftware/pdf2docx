@@ -163,12 +163,13 @@ class TableStructure:
 
     @staticmethod
     def stream_borders(lines:Lines, outer_borders:tuple, showing_borders:Rectangles):
-        ''' Parsing borders based on lines contained in table cells.
+        ''' Parsing borders mainly based on content lines contained in cells, and update borders 
+            (position and style) with explicit borders represented by rectangle shapes.
             ---
             Args:
             - lines: Lines, contained in table cells
-            - outer_borders: (top, bottom, left, right), boundary borders of table region
-            - showing_borders: showing borders in a stream table
+            - outer_borders: (top, bottom, left, right), boundary borders of table
+            - showing_borders: showing borders in a stream table; can be empty.
         '''
         borders = Borders()
 

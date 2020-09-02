@@ -203,6 +203,9 @@ class VBorder(Border):
         self._LBorder.finalize(bbox.y0)
         self._UBorder.finalize(bbox.y1)
 
+        # update rect type as table border
+        v_rect.type = RectType.BORDER
+
         return self
 
 

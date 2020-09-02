@@ -10,6 +10,7 @@ Parsing table blocks:
 '''
 
 
+from ..common.BBox import BBox
 from ..common.base import RectType
 from ..common.constants import MAX_W_BORDER, DR
 from ..layout.Blocks import Blocks
@@ -53,20 +54,29 @@ class TablesConstructor(TableStructure):
         return unique_tables
 
 
-    def combined_tables(self):
-        ''' Parse table with outer borders extracted from shading rects, 
-            and inner borders parsed from layout of text blocks.
+    def stream_tables(self, X0:float, X1:float):
+        ''' Parse table with layout of text/image blocks, and update borders with explicit borders 
+            represented by rectangle shapes.'''
+        # stream tables determined by outer borders
+        tables = self.stream_tables_from_outer_borders()
 
-            Combined with lattice and stream table parsing methods, this table 
-            is to simulate the shading shape in docx. 
+        # stream tables from layout
+        tables_ = self.stream_tables_from_layout(X0, X1)
+        tables.extend(tables_)
+
+        return tables
+
+
+    def stream_tables_from_outer_borders(self):
+        ''' Parse table where the main structure is determined by outer borders extracted from shading rects.            
+            This table is generally to simulate the shading shape in docx. 
         '''
         shading_rects = self._shading_rects(width_threshold=MAX_W_BORDER)
 
         # table based on each shading rect
         tables = Blocks()
         for rect in shading_rects:
-
-            # boundary borders
+            # boundary borders: finalized by shading edge
             x0, y0, x1, y1 = rect.bbox_raw
             top = HBorder().finalize(y0)
             bottom = HBorder().finalize(y1)
@@ -84,20 +94,8 @@ class TablesConstructor(TableStructure):
                 if rect.bbox.contains(block.bbox):
                     table_lines.extend(block.lines)
             
-            # potentail borders contained in shading rect
-            rects = list(filter(
-                lambda rect_: rect.bbox.intersects(rect_.bbox) and rect_.type==RectType.UNDEFINED, self._rects))
-            
-            # parse borders based on contents in cell
-            table_rects = self.stream_borders(table_lines, (top, bottom, left, right), Rectangles(rects))
-            if not table_rects: continue
-
-            # get potential cell shading: note consider not processed rect only
-            table_rects.extend(rects)
-
-            # parse table: don't have to detect borders since it's determined already
-            table_rects.sort_in_reading_order() # required
-            table = self.parse_structure(table_rects, detect_border=False)
+            # parsing stream table
+            table = self._stream_table(table_lines, rect, (top, bottom, left, right))
             tables.append(table)
 
         # check if any intersection with previously parsed tables
@@ -112,17 +110,14 @@ class TablesConstructor(TableStructure):
         return unique_tables
 
 
-    def stream_tables(self, X0:float=-1, X1:float=-1):
-        ''' Parse borderless table based on the layout of text/image blocks.
+    def stream_tables_from_layout(self, X0:float, X1:float):
+        ''' Parse table where the main structure is determined by layout of text/image blocks.
             ---
             Args:
             - X0, X1: left and right boundaries of allowed table region
 
             Since no cell borders exist in this case, there may be various probabilities of table structures. 
             Among which, we use the simplest one, i.e. 1-row and n-column, to make the docx look like pdf.
-
-            Ensure no horizontally aligned blocks in each column, so that these blocks can be converted to
-            paragraphs consequently in docx.
         '''
         if len(self._blocks)<=1: return []      
 
@@ -133,13 +128,13 @@ class TablesConstructor(TableStructure):
         tables = Blocks()
         for table_lines in tables_lines:
             # boundary box
-            y0 = min([rect.bbox.y0 for rect in table_lines])
-            y1 = max([rect.bbox.y1 for rect in table_lines])
             x0 = min([rect.bbox.x0 for rect in table_lines])
+            y0 = min([rect.bbox.y0 for rect in table_lines])
             x1 = max([rect.bbox.x1 for rect in table_lines])
+            y1 = max([rect.bbox.y1 for rect in table_lines])
             
             # top/bottom border margin: the block before/after table
-            y0_margin, y1_margin = 0.0, 0.0
+            y0_margin, y1_margin = y0, y1
             for block in self._blocks:
                 if block.bbox.y1 < y0:
                     y0_margin = block.bbox.y1
@@ -147,7 +142,7 @@ class TablesConstructor(TableStructure):
                     y1_margin = block.bbox.y0
                     break
 
-            # boundary borders
+            # boundary borders: to be finalized, so set a valid range
             top = HBorder((y0_margin, y0))
             bottom = HBorder((y1, y1_margin))
             left = VBorder((X0, x0))
@@ -158,21 +153,11 @@ class TablesConstructor(TableStructure):
             left.set_boundary_borders((top, bottom))
             right.set_boundary_borders((top, bottom))
 
-            # potential borders/shadings contained in table region
-            bbox = (X0, y0_margin, X1, y1_margin)
-            rects = list(filter(
-                lambda rect: rect.bbox.intersects(bbox) and rect.type==RectType.UNDEFINED, self._rects))
+            # table bbox
+            rect = BBox().update((X0, y0_margin, X1, y1_margin))
 
-            # parse borders based on contents in cell
-            table_rects = self.stream_borders(table_lines, (top, bottom, left, right), Rectangles(rects))
-            if not table_rects: continue
-
-            # get potential cell shading: note consider not processed rect only
-            table_rects.extend(rects)
-
-            # parse table: don't have to detect borders since it's determined already
-            table_rects.sort_in_reading_order() # required
-            table = self.parse_structure(table_rects, detect_border=False)
+            # parsing stream table
+            table = self._stream_table(table_lines, rect, (top, bottom, left, right))
             tables.append(table)
 
         # check if any intersection with previously parsed tables
@@ -269,5 +254,33 @@ class TablesConstructor(TableStructure):
                 shading_rects.append(rect)            
 
         return shading_rects
+
+
+    def _stream_table(self, table_lines:Lines, bbox:BBox, outer_borders:tuple):
+        '''Parsing stream table based on both block layout and parts of explicit borders.
+            ---
+            Args:
+            - table_lines: a group of Line instances representing cell contents
+            - bbox: boundary box of table
+            - outer_borders: four Border instances, (top, bottom, left, right), representing outer borders
+        '''
+        # potentail explicit borders/shadings contained in table
+        # NOTE: not yet processed rects only
+        rects = list(filter(
+            lambda rect: rect.bbox.intersects(bbox.bbox) and rect.type==RectType.UNDEFINED, self._rects))
+        
+        # parse stream borders based on contents in cell and explicit borders
+        table_rects = self.stream_borders(table_lines, outer_borders, Rectangles(rects))
+        if not table_rects: return None
+
+        # append potential explicit shadings for parsing table style
+        # NOTE: duplicated borders may exist between stream borders and explicit borders
+        table_rects.extend(rects)
+
+        # parse table: don't have to detect borders since it's determined already
+        table_rects.sort_in_reading_order() # required
+        table = self.parse_structure(table_rects, detect_border=False)
+        
+        return table
 
 

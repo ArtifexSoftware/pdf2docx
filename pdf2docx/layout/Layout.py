@@ -237,23 +237,10 @@ class Layout:
 
     @debug_plot('Stream Table Structure', plot=True, category=PlotControl.STREAM_TABLE)
     def parse_stream_tables(self, **kwargs):
-        ''' Parse table structure based on the layout of text/image blocks.
-
-            Since no cell borders exist in this case, there may be various probabilities of table structures. 
-            Among which, we use the simplest one, i.e. 1-row and n-column, to make the docx look like pdf.
-
-            Ensure no horizontally aligned blocks in each column, so that these blocks can be converted to
-            paragraphs consequently in docx.
-        '''
-        # combined tables
-        tables = self._tables_constructor.combined_tables()
-
-        # stream tables
+        ''' Parse table structure from blocks layout.'''
         left, right, *_ = self.margin
         X0, X1 = left, self.width - right # horizontal range of table
-        stream_tables = self._tables_constructor.stream_tables(X0, X1)
-
-        tables.extend(stream_tables)
+        tables = self._tables_constructor.stream_tables(X0, X1)
         return bool(tables)
 
 
