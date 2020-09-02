@@ -7,8 +7,6 @@ A group of Text/Image or Table block.
 '''
 
 from docx.shared import Pt
-from docx.table import _Cell
-
 from ..common.constants import DM
 from ..common.Collection import Collection
 from ..common.base import BlockType
@@ -171,9 +169,8 @@ class Blocks(Collection):
                     blocks_in_table.append(block)
                     break
                 
-                # not possible in current table, the check next table
-                elif not table.bbox.intersects(block.bbox):
-                    continue
+                # not possible in current table, then check next table
+                elif not table.bbox.intersects(block.bbox): continue
                 
                 # deep into line level for text block
                 elif block.is_text_block():
@@ -246,7 +243,7 @@ class Blocks(Collection):
 
             table_end = False
             
-            # there is gap between these two criteria, so consider condition (a) only if it's the first block in new row
+            # there is gap between these two criteria, so consider condition (a) only if it's the first block in new row.
             # (a) lines in current block are connected sequently?
             # yes, counted as table lines
             if new_line and block.contains_discrete_lines(): 
@@ -259,8 +256,7 @@ class Blocks(Collection):
             # yes, add both current and next blocks
             if block.horizontally_align_with(next_block, factor=0.1):
                 # if it's start of new table row: add the first block
-                if new_line: 
-                    table_lines.extend(sub_lines(block))
+                if new_line: table_lines.extend(sub_lines(block))
                 
                 # add next block
                 table_lines.extend(sub_lines(next_block))
@@ -270,25 +266,19 @@ class Blocks(Collection):
 
             # no, consider to start a new row
             else:
-                # table end 
-                # - if it's a text line, i.e. no more than one block in a same line
-                # - or the next block is also a table
-                if new_line or block.is_table_block():
-                    table_end = True
+                # table end if it's a text line, i.e. no more than one block in a same line
+                if new_line: table_end = True
 
                 # update line status            
                 new_line = True
 
             # NOTE: close table detecting manually if last block
-            if i==num-1:
-                table_end = True
+            if i==num-1: table_end = True
 
             # end of current table
             if table_lines and table_end: 
-                res.append(table_lines)
-
-                # reset table_blocks
-                table_lines = Lines()
+                res.append(table_lines)                
+                table_lines = Lines() # reset table_blocks
 
         return res
 
