@@ -9,7 +9,8 @@ A group of Line objects.
 
 
 from .Line import Line
-from ..common import utils
+from ..common.utils import get_main_bbox
+from ..common.constants import DM
 from ..common.Collection import Collection
 
 
@@ -64,7 +65,7 @@ class Lines(Collection):
                     return True
             
             # otherwise, the overlap tolerance is larger
-            elif utils.get_main_bbox(instance.bbox, line.bbox, threshold=0.5):
+            elif get_main_bbox(instance.bbox, line.bbox, threshold=0.5):
                 return True
         
         return False
@@ -96,7 +97,7 @@ class Lines(Collection):
 
             # if it exists x-distance obviously to previous line,
             # take it as a separate line as it is
-            if abs(line.bbox.x0-lines[-1].bbox.x1) > utils.DM:
+            if abs(line.bbox.x0-lines[-1].bbox.x1) > DM:
                 lines.append(line)
                 continue
 

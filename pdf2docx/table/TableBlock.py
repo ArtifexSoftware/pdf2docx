@@ -152,6 +152,5 @@ class TableBlock(Block):
         docx.indent_table(table, pos)
 
         # set format and contents row by row
-        border_style = self.is_lattice_table_block() # border style for lattice table only
         for idx_row in range(len(table.rows)):
-            self._rows[idx_row].make_docx(table, idx_row, border_style)
+            self._rows[idx_row].make_docx(table, idx_row)

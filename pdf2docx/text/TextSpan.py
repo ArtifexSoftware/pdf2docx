@@ -39,6 +39,7 @@ from docx.oxml.ns import qn
 from .Char import Char
 from ..common.BBox import BBox
 from ..common.base import RectType
+from ..common.constants import DICT_FONTS
 from ..common import utils, docx
 from ..shape.Rectangle import Rectangle
 
@@ -72,7 +73,7 @@ class TextSpan(BBox):
 
         # mapping font name
         key = font_name.replace(' ', '').replace('-', '').replace('_', '').upper() # normalize mapping key
-        font_name = utils.DICT_FONTS.get(key, font_name)
+        font_name = DICT_FONTS.get(key, font_name)
 
         # split with upper case letters
         blank = ' '

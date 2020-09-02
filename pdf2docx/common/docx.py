@@ -12,7 +12,8 @@ from docx.enum.text import WD_COLOR_INDEX
 from docx.image.exceptions import UnrecognizedImageError
 from docx.table import _Cell
 
-from .utils import RGB_value, DM
+from .utils import RGB_value
+from .constants import DM
 
 
 def delete_paragraph(paragraph):

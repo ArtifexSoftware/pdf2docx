@@ -310,6 +310,8 @@ def rects_from_stream(doc:fitz.Document, page:fitz.Page):
     for line in lines:
 
         words = line.split()
+        if not words: continue
+
         op = words[-1] # operator always at the end after page.cleanContents()
 
         # -----------------------------------------------

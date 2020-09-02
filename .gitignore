@@ -5,8 +5,11 @@
 *.docx
 layout.json
 
+# pdf testing files
 *.pdf
 !demo-*.pdf
+
+issue-*/
 
 # building dir
 build/

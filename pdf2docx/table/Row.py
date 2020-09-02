@@ -58,13 +58,12 @@ class Row(BBox):
         return res
 
 
-    def make_docx(self, table, idx_row, border_style:bool):
+    def make_docx(self, table, idx_row):
         '''Create docx table.
             ---
             Args:
               - table: docx table instance
               - idx_row: current row index
-              - border_style: whether set border style
         '''  
         # set row height
         docx_row = table.rows[idx_row]
@@ -78,4 +77,4 @@ class Row(BBox):
 
         # set cell style and contents
         for idx_col in range(len(table.columns)):
-            self._cells[idx_col].make_docx(table, (idx_row, idx_col), border_style)
+            self._cells[idx_col].make_docx(table, (idx_row, idx_col))

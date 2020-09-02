@@ -9,7 +9,8 @@ Parsing table structure based on borders.
 
 from ..common.BBox import BBox
 from ..common.base import RectType
-from ..common import utils
+from ..common.utils import RGB_value
+from ..common.constants import DM, MAX_W_BORDER
 from ..shape.Rectangle import Rectangle
 from ..shape.Rectangles import Rectangles
 from ..text.Lines import Lines
@@ -41,7 +42,7 @@ class TableStructure:
         # mark table borders first
         # --------------------------------------------------
         if detect_border:
-            TableStructure._set_borders(rects, width_threshold=6.0)
+            TableStructure._set_borders(rects, width_threshold=MAX_W_BORDER)
         
         # --------------------------------------------------
         # group horizontal/vertical borders
@@ -54,8 +55,8 @@ class TableStructure:
 
         # sort
         y_rows = sorted(h_borders)
-        x_cols = sorted(v_borders)       
-            
+        x_cols = sorted(v_borders)
+
         # --------------------------------------------------
         # parse table structure, especially the merged cells
         # -------------------------------------------------- 
@@ -161,12 +162,14 @@ class TableStructure:
 
 
     @staticmethod
-    def stream_borders(lines:Lines, outer_borders:tuple):
-        ''' Parsing borders based on lines contained in table cells.
+    def stream_borders(lines:Lines, outer_borders:tuple, showing_borders:Rectangles):
+        ''' Parsing borders mainly based on content lines contained in cells, and update borders 
+            (position and style) with explicit borders represented by rectangle shapes.
             ---
             Args:
             - lines: Lines, contained in table cells
-            - outer_borders: (top, bottom, left, right), boundary borders of table region
+            - outer_borders: (top, bottom, left, right), boundary borders of table
+            - showing_borders: showing borders in a stream table; can be empty.
         '''
         borders = Borders()
 
@@ -174,11 +177,11 @@ class TableStructure:
         borders.extend(outer_borders)
         
         # inner borders
-        inner_borders = TableStructure._borders_from_lines(lines, outer_borders)
+        inner_borders = TableStructure._inner_borders(lines, outer_borders)
         borders.extend(inner_borders)
         
         # finalize borders
-        borders.finalize()
+        borders.finalize(showing_borders)
 
         # all centerlines to rectangle shapes
         res = Rectangles()
@@ -189,7 +192,7 @@ class TableStructure:
 
 
     @staticmethod
-    def _set_borders(rects:Rectangles, width_threshold:float=6.0):
+    def _set_borders(rects:Rectangles, width_threshold:float):
         ''' Detect table borders from rects extracted directly from pdf file.
             ---
             Args:
@@ -256,7 +259,7 @@ class TableStructure:
 
                 # ignore minor error resulting from different border width
                 for y_ in h_borders:
-                    if abs(y-y_)<utils.DM:
+                    if abs(y-y_)<DM:
                         h_borders[y_].append(rect)
                         break
                 else:
@@ -272,7 +275,7 @@ class TableStructure:
                 
                 # ignore minor error resulting from different border width
                 for x_ in v_borders:
-                    if abs(x-x_)<utils.DM:
+                    if abs(x-x_)<DM:
                         v_borders[x_].append(rect)
                         break
                 else:
@@ -287,48 +290,28 @@ class TableStructure:
 
         # Note: add dummy borders if no outer borders exist
         # check whether outer borders exists in collected borders
-        if h_borders:
-            top_rects = h_borders[min(h_borders)]
-            bottom_rects = h_borders[max(h_borders)]
-            left   = min(v_outer)
-            right  = max(v_outer)
-        else:
-            top_rects = Rectangles()
-            bottom_rects = Rectangles()
-            left   = None
-            right  = None
-
-        if v_borders:
-            left_rects = v_borders[min(v_borders)]
-            right_rects = v_borders[max(v_borders)]
-            top   = min(h_outer)
-            bottom  = max(h_outer)
-        else:
-            left_rects = Rectangles()
-            right_rects = Rectangles()
-            top   = None
-            bottom  = None    
-
-        c = utils.RGB_value((1,1,1))
-        if not TableStructure._exist_outer_border(top_rects, top, 'h'):
+        left, right = min(v_outer), max(v_outer)
+        top, bottom = min(h_outer), max(h_outer)
+        c = RGB_value((1,1,1))
+        if abs(min(h_borders)-top)>DM:
             h_borders[top] = Rectangles([
                 Rectangle({
                     'bbox': (left, top, right, top),
                     'color': c
                 })])
-        if not TableStructure._exist_outer_border(bottom_rects, bottom, 'h'):
+        if abs(max(h_borders)-bottom)>DM:
             h_borders[bottom] = Rectangles([
                 Rectangle({
                     'bbox': (left, bottom, right, bottom),
                     'color': c
                 })])
-        if not TableStructure._exist_outer_border(left_rects, left, 'v'):
+        if abs(min(v_borders)-left)>DM:
             v_borders[left] = Rectangles([
                 Rectangle({
                     'bbox': (left, top, left, bottom),
                     'color': c
                 })])
-        if not TableStructure._exist_outer_border(right_rects, right, 'v'):
+        if abs(max(v_borders)-right)>DM:
             v_borders[right] = Rectangles([
                 Rectangle({
                     'bbox': (right, top, right, bottom),
@@ -336,35 +319,6 @@ class TableStructure:
                 })])
 
         return h_borders, v_borders
-
-
-    @staticmethod
-    def _exist_outer_border(rects:Rectangles, target:float, direction:str='h') -> bool:
-        ''' Check outer borders: whether target border exists in collected borders.
-            ---
-            Args:
-            - rects: all rects in potential table region
-            - target: float, target position of outer border
-            - direction: str, 'h'->horizontal border; 'v'->vertical border
-        '''
-        # no target outer border needed
-        if target==None: return True
-
-        # need outer border if no borders exist
-        if not rects: return False
-        
-        # considering direction
-        idx = 1 if direction=='h' else 0
-        
-        # centerline of source borders
-        source = round((rects[0].bbox_raw[idx+2] + rects[0].bbox_raw[idx]) / 2.0, 1)
-        # max width of source borders
-        width = max(map(lambda rect: rect.bbox_raw[idx+2]-rect.bbox_raw[idx], rects))
-
-        target = round(target, 1)
-        width = round(width, 1)
-
-        return abs(target-source) <= width
 
 
     @staticmethod
@@ -417,7 +371,7 @@ class TableStructure:
 
 
     @staticmethod
-    def _borders_from_lines(lines:Lines, outer_borders:tuple):
+    def _inner_borders(lines:Lines, outer_borders:tuple):
         ''' Calculate the surrounding borders of given lines.
             ---
             Args:
@@ -492,7 +446,7 @@ class TableStructure:
                     # needn't go to row level if layout mode
                     if real_table:
                         # recursion to check borders further
-                        borders_ = TableStructure._borders_from_lines(rows_lines[j], (top, bottom, left, right))
+                        borders_ = TableStructure._inner_borders(rows_lines[j], (top, bottom, left, right))
                         borders.extend(borders_)
                     
                     # update for next row:
