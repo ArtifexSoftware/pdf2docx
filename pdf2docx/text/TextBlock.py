@@ -315,7 +315,7 @@ class TextBlock(Block):
                 line_break = False
 
             # do not break line if no more space in this line
-            elif bbox[idx+2]-line.bbox_raw[idx+2] < DM:
+            elif bbox[(idx+2)%4]-line.bbox_raw[(idx+2)%4] < DM:
                 line_break = False
             
             if line_break:
