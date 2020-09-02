@@ -133,7 +133,7 @@ class TableBlock(Block):
                 if not cell: continue
 
                 # reference for vertical spacing is dependent on text direction
-                x0,y0,x1,y1 = cell.bbox_raw
+                x0,y0,x1,y1 = cell.bbox
                 w_top, w_right, w_bottom, w_left = cell.border_width
                 bbox = (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
                 cell.blocks.parse_vertical_spacing(bbox)

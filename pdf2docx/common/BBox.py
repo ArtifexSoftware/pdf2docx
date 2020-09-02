@@ -11,24 +11,23 @@ from .utils import get_main_bbox
 
 class BBox(IText):
     '''Boundary box with attribute in fitz.Rect type.'''
+
+    # all coordinates are related to un-rotated page in PyMuPDF
+    ROTATION_MATRIX = fitz.Matrix(0.0) # rotation angle = 0 degree
+
+    @classmethod
+    def set_rotation(cls, rotation_matrix):
+        if rotation_matrix and isinstance(rotation_matrix, fitz.Matrix):
+            cls.ROTATION_MATRIX = rotation_matrix
+
     def __init__(self, raw:dict={}):
         bbox = raw.get('bbox', (0,0,0,0))
-        self._bbox = tuple([round(x,1) for x in bbox])
+        rect = fitz.Rect(bbox) * BBox.ROTATION_MATRIX
+        self.update(rect)
 
     def __bool__(self):
         '''Real object when bbox is defined.'''
         return bool(self.bbox)
-    
-    @property
-    def bbox_raw(self):
-        '''top-left, bottom-right points of bbox, (x0, y0, x1, y1).'''
-        return self._bbox
-
-    @property
-    def bbox(self):
-        '''bbox in fitz.Rect type.'''
-        return fitz.Rect(self._bbox) if self._bbox else fitz.rect()
-
 
     def distance(self, bbox:tuple):
         '''x-distance to the given bbox.
@@ -39,12 +38,12 @@ class BBox(IText):
         # NOTE: in PyMuPDF CS, horizontal text direction is dame with positive x-axis,
         # while vertical text is on the contrarory
         idx0, f = (0, 1) if self.is_horizontal else (3, -1)
-        dx = (self.bbox_raw[idx0]-bbox[idx0]) * f
+        dx = (self.bbox[idx0]-bbox[idx0]) * f
 
         # NOTE: consider modification when exceeds right boundary.
         # dx = max(line.bbox.x1-X1, 0)
         idx1 = (idx0+2) % 4
-        dt = max((self.bbox_raw[idx1]-bbox[idx1])*f, 0)
+        dt = max((self.bbox[idx1]-bbox[idx1])*f, 0)
 
         # this value is generally used to set tab stop in docx, 
         # so prefer a lower value to avoid exceeding line width.
@@ -82,9 +81,9 @@ class BBox(IText):
         is_horizontal = self.is_horizontal if text_direction else True
         idx = 0 if is_horizontal else 1
 
-        L1 = self.bbox_raw[idx+2]-self.bbox_raw[idx]
-        L2 = bbox.bbox_raw[idx+2]-bbox.bbox_raw[idx]
-        L = max(self.bbox_raw[idx+2], bbox.bbox_raw[idx+2]) - min(self.bbox_raw[idx], bbox.bbox_raw[idx])
+        L1 = self.bbox[idx+2]-self.bbox[idx]
+        L2 = bbox.bbox[idx+2]-bbox.bbox[idx]
+        L = max(self.bbox[idx+2], bbox.bbox[idx+2]) - min(self.bbox[idx], bbox.bbox[idx])
 
         return L1+L2-L>=factor*max(L1,L2)
 
@@ -115,9 +114,9 @@ class BBox(IText):
         is_horizontal = self.is_horizontal if text_direction else True
         idx = 1 if is_horizontal else 0
         
-        L1 = self.bbox_raw[idx+2]-self.bbox_raw[idx]
-        L2 = bbox.bbox_raw[idx+2]-bbox.bbox_raw[idx]
-        L = max(self.bbox_raw[idx+2], bbox.bbox_raw[idx+2]) - min(self.bbox_raw[idx], bbox.bbox_raw[idx])
+        L1 = self.bbox[idx+2]-self.bbox[idx]
+        L2 = bbox.bbox[idx+2]-bbox.bbox[idx]
+        L = max(self.bbox[idx+2], bbox.bbox[idx+2]) - min(self.bbox[idx], bbox.bbox[idx])
 
         return L1+L2-L>=factor*max(L1,L2)
 
@@ -126,16 +125,16 @@ class BBox(IText):
         '''make a deep copy.'''
         return copy.deepcopy(self)
 
+
     def update(self, rect):
         '''Update current bbox to specified `rect`.
             ---
             Args:
               - rect: fitz.rect or raw bbox like (x0, y0, x1, y1)
         '''
-        fitz_rect = fitz.Rect(rect)
-        bbox = (fitz_rect.x0, fitz_rect.y0, fitz_rect.x1, fitz_rect.y1)
-        self._bbox = tuple([round(x,1) for x in bbox])
+        self.bbox = fitz.Rect([round(x,1) for x in rect])
         return self
+
 
     def union(self, bbox):
         '''Update current bbox to the union with specified `rect`.
@@ -151,11 +150,12 @@ class BBox(IText):
         if not isinstance(bbox, self.__class__):
             return False, f'Inconsistent type: {self.__class__.__name__} v.s. {bbox.__class__.__name__}'
         
-        if self.bbox_raw!=bbox.bbox_raw and not get_main_bbox(self.bbox, bbox.bbox, threshold):
-            return False, f'Inconsistent bbox: {self.bbox_raw} v.s. {bbox.bbox_raw}'
+        if not get_main_bbox(self.bbox, bbox.bbox, threshold):
+            return False, f'Inconsistent bbox: {self.bbox} v.s. {bbox.bbox}'
         
         return True, ''
 
+
     def store(self):
         '''Store in json format.'''
-        return { 'bbox': self._bbox }
+        return { 'bbox': tuple([x for x in self.bbox]) }

@@ -77,7 +77,7 @@ class TablesConstructor(TableStructure):
         tables = Blocks()
         for rect in shading_rects:
             # boundary borders: finalized by shading edge
-            x0, y0, x1, y1 = rect.bbox_raw
+            x0, y0, x1, y1 = rect.bbox
             top = HBorder().finalize(y0)
             bottom = HBorder().finalize(y1)
             left = VBorder().finalize(x0)
@@ -229,7 +229,7 @@ class TablesConstructor(TableStructure):
             if skip: continue
 
             # potential shading rects: min-width > 6 Pt
-            x0, y0, x1, y1 = rect.bbox_raw
+            x0, y0, x1, y1 = rect.bbox
             if min(x1-x0, y1-y0) <= width_threshold:
                 continue
 

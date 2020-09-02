@@ -201,11 +201,11 @@ class TextSpan(BBox):
 
         # recognize text format based on rect and the span it applying to
         # region height
-        h_rect = rect.bbox_raw[idx+2] - rect.bbox_raw[idx]
-        h_span = self.bbox_raw[idx+2] - self.bbox_raw[idx]
+        h_rect = rect.bbox[idx+2] - rect.bbox[idx]
+        h_span = self.bbox[idx+2] - self.bbox[idx]
 
         # distance to span bottom border
-        d = self.bbox_raw[idx+2] - rect.bbox_raw[idx]
+        d = self.bbox[idx+2] - rect.bbox[idx]
 
         # highlight: both the rect height and overlap must be large enough
         if h_rect >= 0.5*h_span:

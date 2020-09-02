@@ -226,9 +226,9 @@ class TextBlock(Block):
             # update reference line
             ref_line = line            
         
-        bbox = self.lines[0].bbox_raw   # first line
+        bbox = self.lines[0].bbox   # first line
         first_line_height = bbox[idx+2] - bbox[idx]
-        block_height = self.bbox_raw[idx+2]-self.bbox_raw[idx]
+        block_height = self.bbox[idx+2]-self.bbox[idx]
         
         # average line spacing
         if count > 1:
@@ -315,7 +315,7 @@ class TextBlock(Block):
                 line_break = False
 
             # do not break line if no more space in this line
-            elif bbox[(idx+2)%4]-line.bbox_raw[(idx+2)%4] < DM:
+            elif bbox[(idx+2)%4]-line.bbox[(idx+2)%4] < DM:
                 line_break = False
             
             if line_break:

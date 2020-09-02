@@ -162,10 +162,10 @@ class Line(BBox):
         # normal reading direction by default
         idx = 1 if self.is_horizontal else 0
 
-        c1 = (self.bbox_raw[idx] + self.bbox_raw[idx+2]) / 2.0
-        c2 = (line.bbox_raw[idx] + line.bbox_raw[idx+2]) / 2.0
+        c1 = (self.bbox[idx] + self.bbox[idx+2]) / 2.0
+        c2 = (line.bbox[idx] + line.bbox[idx+2]) / 2.0
 
         # Note y direction under PyMuPDF context
-        res = c1<=line.bbox_raw[idx+2] and c2<=self.bbox_raw[idx+2]
+        res = c1<=line.bbox[idx+2] and c2<=self.bbox[idx+2]
         return res
             

@@ -323,11 +323,11 @@ class Blocks(Collection):
             else:
                 dw = 0.0
 
-            start_pos = block.bbox_raw[idx] - dw
+            start_pos = block.bbox[idx] - dw
             para_space = start_pos-ref_pos
 
             # modify vertical space in case the block is out of bootom boundary
-            dy = max(block.bbox_raw[idx+2]-bbox[idx+2], 0.0)
+            dy = max(block.bbox[idx+2]-bbox[idx+2], 0.0)
             para_space -= dy
             para_space = max(para_space, 0.0) # ignore negative value
 
@@ -357,7 +357,7 @@ class Blocks(Collection):
 
             # update reference block        
             ref_block = block
-            ref_pos = ref_block.bbox_raw[idx+2] + dw # assume same bottom border with top one
+            ref_pos = ref_block.bbox[idx+2] + dw # assume same bottom border with top one
 
         # NOTE: when a table is at the end of a page, a dummy paragraph with a small line spacing 
         # is added after this table, to avoid unexpected page break. Accordingly, this extra spacing 

@@ -30,12 +30,14 @@ In addition to the raw layout dict, some new features are also included, e.g.
 '''
 
 
+
 import json
 from docx.shared import Pt
 from docx.enum.section import WD_SECTION
 from .Blocks import Blocks
 from ..shape.Rectangles import Rectangles
 from ..table.TablesConstructor import TablesConstructor
+from ..common.BBox import BBox
 from ..common.base import PlotControl
 from ..common.utils import debug_plot
 from ..common.constants import DM, ITP
@@ -46,9 +48,18 @@ from ..common.pdf import new_page_with_margin
 class Layout:
     ''' Object representing the whole page, e.g. margins, blocks, shapes, spacing.'''
 
-    def __init__(self, raw:dict) -> None:
+    def __init__(self, raw:dict, rotation_matrix=None):
+        ''' Initialize page layout.
+            ---
+            Args:
+            - raw: raw dict representing page blocks, shape
+            - rotation_matrix: fitz.Matrix representing page rotation
+        '''
         self.width = raw.get('width', 0.0)
         self.height = raw.get('height', 0.0)
+
+        # BBox is a base class processing coordinates, so set rotation matrix globally
+        BBox.set_rotation(rotation_matrix)
 
         # initialize blocks
         self.blocks = Blocks().from_dicts(raw.get('blocks', []))
@@ -68,7 +79,7 @@ class Layout:
 
     
     @property
-    def bbox_raw(self):
+    def bbox(self):
         if self._margin is None:
             return (0,) * 4
         else:
@@ -212,7 +223,7 @@ class Layout:
         section.bottom_margin = Pt(bottom)
 
         # add paragraph or table according to parsed block
-        self.blocks.make_page(doc, self.bbox_raw)
+        self.blocks.make_page(doc, self.bbox)
 
 
     @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.LAYOUT)
@@ -307,4 +318,4 @@ class Layout:
         ''' Calculate external and internal vertical space for paragraph blocks under page context 
             or table context. It'll used as paragraph spacing and line spacing when creating paragraph.
         '''
-        self.blocks.parse_vertical_spacing(self.bbox_raw)
+        self.blocks.parse_vertical_spacing(self.bbox)

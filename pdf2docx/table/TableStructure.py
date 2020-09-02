@@ -207,7 +207,7 @@ class TableStructure:
         # potential border rects: min-width <= 6 Pt
         thin_rects = [] # type: list[Rectangle]
         for rect in rects:
-            x0, y0, x1, y1 = rect.bbox_raw
+            x0, y0, x1, y1 = rect.bbox
             if min(x1-x0, y1-y0) <= width_threshold:
                 thin_rects.append(rect)
 
@@ -343,9 +343,9 @@ class TableStructure:
 
                 # reference coordinates depending on checking direction
                 if direction=='row':
-                    _, ref0, _, ref1 = rect.bbox_raw
+                    _, ref0, _, ref1 = rect.bbox
                 else:
-                    ref0, _, ref1, _ = rect.bbox_raw
+                    ref0, _, ref1, _ = rect.bbox
 
                 # 1) intersection found
                 if ref0 < ref < ref1:

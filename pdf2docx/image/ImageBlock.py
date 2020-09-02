@@ -56,7 +56,7 @@ class ImageBlock(Block, Image):
             Args: 
               - page: fitz.Page object
         '''
-        x0, y0, x1, y1 = self.bbox_raw
+        x0, y0, x1, y1 = self.bbox
         color = utils.RGB_component_from_name('blue')
 
         page.drawLine((x0, y0), (x1, y1), color=color, width=1)
