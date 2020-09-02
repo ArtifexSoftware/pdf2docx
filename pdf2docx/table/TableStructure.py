@@ -149,9 +149,10 @@ class TableStructure:
                 }
                 row.append(Cell(cell_dict))
                     
-            # one row finished
-            # check table: the first cell in first row MUST NOT be None
-            if i==0 and not row[0]:
+            # check table when each row finished: 
+            # - the first cell in first row MUST NOT be empty
+            # - a certain row MUST NOT be empty
+            if not row or (i==0 and not row[0]):
                 # reset borders because it's a invalid table
                 TableStructure._unset_borders(rects)
                 return None
