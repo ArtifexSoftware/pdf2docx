@@ -75,8 +75,7 @@ class TextBlock(Block):
 
     def add(self, line:Line):
         '''Add line to TextBlock.'''
-        if isinstance(line, Line):
-            self.lines.append(line)
+        self.lines.append(line)
 
 
     def join(self):
@@ -127,12 +126,10 @@ class TextBlock(Block):
         if num==1: return False
 
         # check image spans
-        if self.lines.image_spans:
-            return True
+        if self.lines.image_spans: return True
 
         # check text direction
-        if self.is_vertical:
-            return True
+        if self.is_vertical: return True
 
         # check the count of discrete lines
         cnt = 1
@@ -142,13 +139,11 @@ class TextBlock(Block):
 
             if line.horizontally_align_with(next_line):
                 # horizontally aligned but not in a same row -> discrete block
-                if not line.in_same_row(next_line):
-                    return True
+                if not line.in_same_row(next_line): return True
                 
                 # otherwise, check the distance only
-                else:
-                    if abs(line.bbox.x1-next_line.bbox.x0) > distance:
-                        cnt += 1
+                elif abs(line.bbox.x1-next_line.bbox.x0) > distance:
+                    cnt += 1
 
         return cnt >= threshold
 
@@ -165,8 +160,7 @@ class TextBlock(Block):
         for rect in rects:
 
             # a same style rect applies on only one block
-            if rect.type != RectType.UNDEFINED:
-                continue
+            if rect.type != RectType.UNDEFINED: continue
 
             # any intersection with current block?
             if not self.bbox.intersects(rect.bbox):
@@ -188,8 +182,7 @@ class TextBlock(Block):
                 split_spans = []
                 for span in line.spans: 
                     # include image span directly
-                    if isinstance(span, ImageSpan):
-                        split_spans.append(span)                   
+                    if isinstance(span, ImageSpan): split_spans.append(span)                   
 
                     # split text span with the format rectangle: span-intersection-span
                     else:
@@ -220,8 +213,7 @@ class TextBlock(Block):
 
         for line in self.lines:
             # count of lines
-            if not line.in_same_row(ref_line):
-                count += 1
+            if not line.in_same_row(ref_line): count += 1
 
             # update reference line
             ref_line = line            
@@ -300,15 +292,12 @@ class TextBlock(Block):
             docx.add_stop(p, Pt(pos), Pt(current_pos))
 
             # add line
-            for span in line.spans:
-                # add content
-                span.make_docx(p)
+            for span in line.spans: span.make_docx(p)
 
             # break line? new line by default
             line_break = True
             # no more lines after last line
-            if line==self.lines[-1]: 
-                line_break = False            
+            if line==self.lines[-1]: line_break = False            
             
             # do not break line if they're indeed in same line
             elif line.in_same_row(self.lines[i+1]):

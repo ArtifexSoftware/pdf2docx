@@ -97,10 +97,7 @@ class Border:
         bbox = expand_centerline(centerline[0:2], centerline[2:], width=self.width)
 
         # create Rectangle instance
-        rect = Rectangle({
-            'bbox' : bbox,
-            'color': self.color
-        })
+        rect = Rectangle({'color': self.color}).update(bbox)
         rect.type = RectType.BORDER # set border style
         
         return rect

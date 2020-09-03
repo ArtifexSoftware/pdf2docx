@@ -2,6 +2,14 @@
 
 '''
 Object with a boundary box, e.g. Block, Line, Span.
+
+Based on `PyMuPDF`, the coordinates are provided relative to the un-rotated page; while this
+`pdf2docx` library works under real page coordinate system, i.e. with rotation considered. 
+So, any instances created by this Class are always applied a rotation matrix automatically.
+
+In other words, the bbox parameter used to create BBox instance MUST be relative to un-rotated
+CS. If final coordinates are provided, should update it after creating an empty object, e.g.
+`BBox().update(final_bbox)`.
 '''
 
 import copy
@@ -13,16 +21,26 @@ class BBox(IText):
     '''Boundary box with attribute in fitz.Rect type.'''
 
     # all coordinates are related to un-rotated page in PyMuPDF
-    ROTATION_MATRIX = fitz.Matrix(0.0) # rotation angle = 0 degree
+    # e.g. Matrix(0.0, 1.0, -1.0, 0.0, 842.0, 0.0)
+    ROTATION_MATRIX = fitz.Matrix(0.0) # rotation angle = 0 degree by default
 
     @classmethod
-    def set_rotation(cls, rotation_matrix):
+    def set_rotation_matrix(cls, rotation_matrix):
         if rotation_matrix and isinstance(rotation_matrix, fitz.Matrix):
             cls.ROTATION_MATRIX = rotation_matrix
 
+    @classmethod
+    def pure_rotation_matrix(cls):
+        '''Pure rotation matrix used for calculating text direction after rotation.'''
+        a,b,c,d,e,f = cls.ROTATION_MATRIX
+        return fitz.Matrix(a,b,c,d,0,0)
+
     def __init__(self, raw:dict={}):
-        bbox = raw.get('bbox', (0,0,0,0))
-        rect = fitz.Rect(bbox) * BBox.ROTATION_MATRIX
+        '''Initialize BBox and convert to the real (rotation considered) page coordinate system.'''
+        if 'bbox' in raw:
+            rect = fitz.Rect(raw['bbox']) * BBox.ROTATION_MATRIX
+        else:
+            rect = fitz.Rect()
         self.update(rect)
 
     def __bool__(self):

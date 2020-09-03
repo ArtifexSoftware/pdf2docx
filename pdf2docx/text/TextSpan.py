@@ -49,7 +49,7 @@ class TextSpan(BBox):
     def __init__(self, raw:dict={}) -> None:
         super(TextSpan, self).__init__(raw)
         self.color = raw.get('color', 0)
-        self._font = raw.get('font', None)
+        self._font = raw.get('font', '')
         self.size = raw.get('size', 12.0)
         self.flags = raw.get('flags', 0)
         self.chars = [ Char(c) for c in raw.get('chars', []) ] # type: list[Char]

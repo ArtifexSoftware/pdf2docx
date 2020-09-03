@@ -59,7 +59,7 @@ class Layout:
         self.height = raw.get('height', 0.0)
 
         # BBox is a base class processing coordinates, so set rotation matrix globally
-        BBox.set_rotation(rotation_matrix)
+        BBox.set_rotation_matrix(rotation_matrix)
 
         # initialize blocks
         self.blocks = Blocks().from_dicts(raw.get('blocks', []))

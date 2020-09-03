@@ -82,7 +82,6 @@ class TableStructure:
         table = TableBlock()
         n_rows = len(merged_cells_rows)
         n_cols = len(merged_cells_cols)
-
         for i in range(n_rows):
             # row object
             row = Row()
@@ -140,14 +139,14 @@ class TableStructure:
                     bg_color = None
 
                 # Cell object
-                cell_dict = {
-                    'bbox': bbox,
+                # Note that cell bbox is calculated under real page CS, so needn't to consider rotation.
+                cell = Cell({
                     'bg_color':  bg_color,
                     'border_color': (top.color, right.color, bottom.color, left.color),
                     'border_width': (w_top, w_right, w_bottom, w_left),
                     'merged_cells': (n_row, n_col),
-                }
-                row.append(Cell(cell_dict))
+                }).update(bbox)
+                row.append(cell)
                     
             # check table when each row finished: 
             # - the first cell in first row MUST NOT be empty
@@ -293,31 +292,18 @@ class TableStructure:
         # check whether outer borders exists in collected borders
         left, right = min(v_outer), max(v_outer)
         top, bottom = min(h_outer), max(h_outer)
-        c = RGB_value((1,1,1))
+        rect = Rectangle({'color': RGB_value((1,1,1))})
         if abs(min(h_borders)-top)>DM:
-            h_borders[top] = Rectangles([
-                Rectangle({
-                    'bbox': (left, top, right, top),
-                    'color': c
-                })])
+            h_borders[top] = Rectangles([rect.copy().update((left, top, right, top))])
+
         if abs(max(h_borders)-bottom)>DM:
-            h_borders[bottom] = Rectangles([
-                Rectangle({
-                    'bbox': (left, bottom, right, bottom),
-                    'color': c
-                })])
+            h_borders[bottom] = Rectangles([rect.copy().update((left, bottom, right, bottom))])
+
         if abs(min(v_borders)-left)>DM:
-            v_borders[left] = Rectangles([
-                Rectangle({
-                    'bbox': (left, top, left, bottom),
-                    'color': c
-                })])
+            v_borders[left] = Rectangles([rect.copy().update((left, top, left, bottom))])
+
         if abs(max(v_borders)-right)>DM:
-            v_borders[right] = Rectangles([
-                Rectangle({
-                    'bbox': (right, top, right, bottom),
-                    'color': c
-                })])
+            v_borders[right] = Rectangles([rect.copy().update((right, top, right, bottom))])
 
         return h_borders, v_borders
 

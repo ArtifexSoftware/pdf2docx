@@ -21,8 +21,8 @@ class Cell(BBox):
         if raw is None: raw = {}
         super(Cell, self).__init__(raw)
         self.bg_color = raw.get('bg_color', None) # type: int
-        self.border_color = raw.get('border_color', None) # type: tuple [int]
-        self.border_width = raw.get('border_width', None) # type: tuple [float]
+        self.border_color = raw.get('border_color', (0,0,0,0)) # type: tuple [int]
+        self.border_width = raw.get('border_width', (0,0,0,0)) # type: tuple [float]
         self.merged_cells = raw.get('merged_cells', (1,1)) # type: tuple [int]
 
         # collect blocks
@@ -124,8 +124,7 @@ class Cell(BBox):
             return
         
         # add nothing if no intersection
-        if not self.bbox.intersects(block.bbox):
-            return
+        if not self.bbox & block.bbox: return
 
         # otherwise, further check lines in text block
         if not block.is_text_block():  return
