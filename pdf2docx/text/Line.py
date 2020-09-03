@@ -17,6 +17,7 @@ Data structure of line in text block:
 https://pymupdf.readthedocs.io/en/latest/textpage.html
 '''
 
+from fitz import Point
 from ..common.BBox import BBox
 from ..common.base import TextDirection
 from .Spans import Spans
@@ -28,7 +29,12 @@ class Line(BBox):
     def __init__(self, raw:dict={}) -> None:
         super(Line, self).__init__(raw)
         self.wmode = raw.get('wmode', 0) # writing mode
-        self.dir = raw.get('dir', [1, 0]) # writing direction
+
+        # update writing direction to rotated page CS
+        if 'dir' in raw:
+            self.dir = list(Point(raw['dir'])*Line.pure_rotation_matrix())
+        else:
+            self.dir = [1.0, 0.0] # left -> right by default
 
         # Lines contained in text block may be re-grouped, so use an ID to track the parent block.
         # This ID can't be changed once set -> record the original parent extracted from PDF, 
@@ -53,6 +59,7 @@ class Line(BBox):
             lambda span: isinstance(span, ImageSpan), self.spans
         ))
 
+
     @property
     def text_direction(self):
         if self.dir[0] == 1.0:
@@ -67,6 +74,7 @@ class Line(BBox):
     def pid(self):
         '''Get parent ID.'''
         return self._pid
+
 
     @pid.setter
     def pid(self, pid):
@@ -120,8 +128,7 @@ class Line(BBox):
 
     def add_span(self, span:BBox):
         '''Add span to current Line.'''
-        if isinstance(span, BBox):
-            self.spans.append(span)
+        self.spans.append(span)
 
 
     def intersects(self, rect):
@@ -136,15 +143,14 @@ class Line(BBox):
 
         # further check spans in line
         # new line with same text attributes
-        line = Line({
-            'wmode': self.wmode,
-            'dir': self.dir
-        })
+        line = Line({'wmode': self.wmode})
+        line.dir = self.dir # update line direction relative to final CS
         for span in self.spans:
             contained_span = span.intersects(rect)
             line.add(contained_span)
 
         return line
+
 
     def in_same_row(self, line):
         ''' Check whether in same row/line with specified line. Note text direction.
@@ -162,10 +168,10 @@ class Line(BBox):
         # normal reading direction by default
         idx = 1 if self.is_horizontal else 0
 
-        c1 = (self.bbox_raw[idx] + self.bbox_raw[idx+2]) / 2.0
-        c2 = (line.bbox_raw[idx] + line.bbox_raw[idx+2]) / 2.0
+        c1 = (self.bbox[idx] + self.bbox[idx+2]) / 2.0
+        c2 = (line.bbox[idx] + line.bbox[idx+2]) / 2.0
 
         # Note y direction under PyMuPDF context
-        res = c1<=line.bbox_raw[idx+2] and c2<=self.bbox_raw[idx+2]
+        res = c1<=line.bbox[idx+2] and c2<=self.bbox[idx+2]
         return res
             

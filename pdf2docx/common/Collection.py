@@ -188,5 +188,5 @@ class Collection(IText):
 
             # it's sorted already, so no relationship exists if not intersected in vertical direction 
             else:
-                if target.bbox_raw[idx] > bbox.bbox_raw[idx+2]:
+                if target.bbox[idx] > bbox.bbox[idx+2]:
                     break

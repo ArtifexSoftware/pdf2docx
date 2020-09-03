@@ -84,8 +84,18 @@ class Converter:
     def init(self, page:fitz.Page) -> Layout:
         '''Initialize layout object.'''
         # Layout object based on raw dict
+        # NOTE: all these coordinates are relative to un-rotated page
+        # https://pymupdf.readthedocs.io/en/latest/page.html#modifying-pages
         raw_layout = page.getText('rawdict')
-        self._layout = Layout(raw_layout)
+
+        # though 'width', 'height' are contained in `raw_dict`, they are based on un-rotated page.
+        # so, update page width/height to right direction in case page is rotated
+        *_, w, h = page.rect # always reflecting page rotation
+        raw_layout.update({
+            'width' : w,
+            'height': h
+        })
+        self._layout = Layout(raw_layout, page.rotationMatrix)
         
         # get rectangle shapes from page source
         self._layout.rects.from_stream(self.doc_pdf, page)

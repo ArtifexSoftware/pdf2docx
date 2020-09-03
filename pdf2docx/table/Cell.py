@@ -21,8 +21,8 @@ class Cell(BBox):
         if raw is None: raw = {}
         super(Cell, self).__init__(raw)
         self.bg_color = raw.get('bg_color', None) # type: int
-        self.border_color = raw.get('border_color', None) # type: tuple [int]
-        self.border_width = raw.get('border_width', None) # type: tuple [float]
+        self.border_color = raw.get('border_color', (0,0,0,0)) # type: tuple [int]
+        self.border_width = raw.get('border_width', (0,0,0,0)) # type: tuple [float]
         self.merged_cells = raw.get('merged_cells', (1,1)) # type: tuple [int]
 
         # collect blocks
@@ -49,16 +49,16 @@ class Cell(BBox):
             return res, msg
         
         if self.bg_color != cell.bg_color:
-            return False, f'Inconsistent background color @ Cell {self.bbox_raw}:\n{self.bg_color} v.s. {cell.bg_color}'
+            return False, f'Inconsistent background color @ Cell {self.bbox}:\n{self.bg_color} v.s. {cell.bg_color}'
 
         if tuple(self.border_color) != tuple(cell.border_color):
-            return False, f'Inconsistent border color @ Cell {self.bbox_raw}:\n{self.border_color} v.s. {cell.border_color}'
+            return False, f'Inconsistent border color @ Cell {self.bbox}:\n{self.border_color} v.s. {cell.border_color}'
 
         if tuple(self.border_width) != tuple(cell.border_width):
-            return False, f'Inconsistent border width @ Cell {self.bbox_raw}:\n{self.border_width} v.s. {cell.border_width}'
+            return False, f'Inconsistent border width @ Cell {self.bbox}:\n{self.border_width} v.s. {cell.border_width}'
 
         if tuple(self.merged_cells) != tuple(cell.merged_cells):
-            return False, f'Inconsistent count of merged cells @ Cell {self.bbox_raw}:\n{self.merged_cells} v.s. {cell.merged_cells}'
+            return False, f'Inconsistent count of merged cells @ Cell {self.bbox}:\n{self.merged_cells} v.s. {cell.merged_cells}'
 
         return True, ''
 
@@ -124,8 +124,7 @@ class Cell(BBox):
             return
         
         # add nothing if no intersection
-        if not self.bbox.intersects(block.bbox):
-            return
+        if not self.bbox & block.bbox: return
 
         # otherwise, further check lines in text block
         if not block.is_text_block():  return
@@ -169,7 +168,7 @@ class Cell(BBox):
         # But, docx requires at least one paragraph in each cell, otherwise resulting in a repair error. 
         if self.blocks:
             docx_cell._element.clear_content()
-            self.blocks.make_page(docx_cell, self.bbox_raw)
+            self.blocks.make_page(docx_cell, self.bbox)
 
 
     def _set_style(self, table, indexes):
@@ -213,7 +212,7 @@ class Cell(BBox):
         # cell width (cell height is set by row height)
         # ---------------------
         # experience: width of merged cells may change if not setting width for merged cells
-        x0, y0, x1, y1 = self.bbox_raw
+        x0, y0, x1, y1 = self.bbox
         docx_cell.width = Pt(x1-x0)
 
         # ---------------------

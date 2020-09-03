@@ -171,7 +171,7 @@ class Lines(Collection):
         idx = 0 if self.is_horizontal else 3
         self._instances = []
         for row in lines_in_rows:
-            row.sort(key=lambda line: line.bbox_raw[idx])
+            row.sort(key=lambda line: line.bbox[idx])
             self._instances.extend(row)
 
 

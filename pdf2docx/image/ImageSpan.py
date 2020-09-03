@@ -27,7 +27,7 @@ class ImageSpan(Image):
             Args: 
               - page: fitz.Page object
         '''
-        x0, y0, x1, y1 = self.bbox_raw
+        x0, y0, x1, y1 = self.bbox
         page.drawLine((x0, y0), (x1, y1), color=color, width=1)
         page.drawLine((x0, y1), (x1, y0), color=color, width=1)
         page.drawRect(self.bbox, color=color, fill=None, overlay=False)

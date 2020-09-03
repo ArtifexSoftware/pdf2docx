@@ -9,6 +9,7 @@ Base class for text/image/table blocks.
 
 from .base import BlockType
 from .BBox import BBox
+from .constants import DM
 
 
 class Block(BBox):
@@ -63,14 +64,14 @@ class Block(BBox):
         if not res:
             return res, msg
         
-        if self.before_space != block.before_space:
-            return False, f'Inconsistent before space @ {self.bbox_raw}:\n{self.before_space} v.s. {block.before_space}'
+        if abs(self.before_space-block.before_space)>DM/4.0:
+            return False, f'Inconsistent before space @ {self.bbox}:\n{self.before_space} v.s. {block.before_space}'
 
-        if self.after_space != block.after_space:
-            return False, f'Inconsistent after space @ {self.bbox_raw}:\n{self.after_space} v.s. {block.after_space}'
+        if abs(self.after_space-block.after_space)>DM/4.0:
+            return False, f'Inconsistent after space @ {self.bbox}:\n{self.after_space} v.s. {block.after_space}'
 
-        if self.line_space != block.line_space:
-            return False, f'Inconsistent line space @ {self.bbox_raw}:\n{self.line_space} v.s. {block.line_space}'
+        if abs(self.line_space-block.line_space)>DM/4.0:
+            return False, f'Inconsistent line space @ {self.bbox}:\n{self.line_space} v.s. {block.line_space}'
 
         return True, ''
         
