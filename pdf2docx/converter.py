@@ -11,7 +11,7 @@ from .common.pdf import new_page_section
 
 class Converter:
     ''' Read PDF file `pdf_file` with PyMuPDF to get raw layout data page by page, including text, 
-        image and the associated properties, e.g. boundary box, font, size, image width, height, 
+        image and the associated properties, e.g. bounding box, font, size, image width, height, 
         then parse it with consideration for docx re-generation structure. Finally, generate docx
         with python-docx.
     '''
