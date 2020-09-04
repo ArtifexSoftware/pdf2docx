@@ -178,6 +178,8 @@ class Layout:
         # paragraph / line spacing
         self.parse_vertical_spacing()
 
+        return self
+
 
     def extract_tables(self):
         '''Extract content from lattice tables.'''
