@@ -25,8 +25,7 @@ import os
 import unittest
 import json
 
-from pdf2docx.converter import Converter
-from pdf2docx.layout.Layout import Layout
+from pdf2docx import Converter, Layout
 from pdf2docx.text.TextSpan import TextSpan
 
 
@@ -63,7 +62,7 @@ class TestUtility(unittest.TestCase):
         pdf_file = os.path.join(self.sample_dir, f'{filename}.pdf')
         docx_file = os.path.join(self.output_dir, f'{filename}.docx')
         cv = Converter(pdf_file, docx_file)        
-        cv.parse(cv[0]).make_page()
+        cv.make_page(cv[0])
         self.test = cv.layout # type: Layout
         cv.close()
 

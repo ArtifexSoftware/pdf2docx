@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-Object with a boundary box, e.g. Block, Line, Span.
+Object with a bounding box, e.g. Block, Line, Span.
 
 Based on `PyMuPDF`, the coordinates are provided relative to the un-rotated page; while this
 `pdf2docx` library works under real page coordinate system, i.e. with rotation considered. 

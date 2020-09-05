@@ -19,11 +19,13 @@
     - [x] shading style, i.e. background color
     - [x] merged cells
     - [x] vertical direction cell
+    - [x] table with partly hidden borders
 - [x] Rebuild page layout in docx
 	- [x] text in horizontal direction: from left to right
 	- [x] text in vertical direction: from bottom to top
 	- [x] in-line image
     - [x] paragraph layout: horizontal and vertical spacing
+- [x] Parsing pages with multi-processing
 
 *It can also be used as a tool to extract table contents since both table content and format/style is parsed.*
 
@@ -34,7 +36,6 @@
     - horizontal/vertical paragraph/line/word
     - no word transformation, e.g. rotation
 - No floating images
-- Full borders table only
 
 
 ## Installation
@@ -77,6 +78,7 @@ $ pdf2docx test.pdf test.docx --start=5 --end=10
 
 ```
 $ pdf2docx test.pdf test.docx --pages=5,7,9
+$ pdf2docx test.pdf --multi_processing=True
 ```
 
 ```
@@ -86,7 +88,7 @@ NAME
     pdf2docx - Run the pdf2docx parser.
 
 SYNOPSIS
-    pdf2docx PDF_FILE DOCX_FILE <flags>
+    pdf2docx PDF_FILE <flags>
 
 DESCRIPTION
     Run the pdf2docx parser.
@@ -94,18 +96,17 @@ DESCRIPTION
 POSITIONAL ARGUMENTS
     PDF_FILE
         PDF filename to read from
-    DOCX_FILE
-        DOCX filename to write to
 
 FLAGS
+    --docx_file=DOCX_FILE
+        DOCX filename to write to
     --start=START
         first page to process, starting from zero
     --end=END
         last page to process, starting from zero
     --pages=PAGES
         range of pages
-    --debug=DEBUG
-        create illustration pdf showing layouts if True, else do nothing
+    --multi_processing=MULTI_PROCESSING
 
 NOTES
     You can also use flags syntax for POSITIONAL ARGUMENTS
@@ -118,7 +119,7 @@ NOTES
     `pip install pdf2docx`, or `python setup.py install`.
 '''
 
-from pdf2docx.main import parse
+from pdf2docx import parse
 
 pdf_file = '/path/to/sample.pdf'
 docx_file = 'path/to/sample.docx'
@@ -130,7 +131,7 @@ parse(pdf_file, docx_file, start=0, end=1)
 Or just to extract tables,
 
 ```python
-from pdf2docx.main import extract_tables
+from pdf2docx import extract_tables
 
 pdf_file = '/path/to/sample.pdf'
 

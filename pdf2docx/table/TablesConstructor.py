@@ -127,7 +127,7 @@ class TablesConstructor(TableStructure):
         # parse tables
         tables = Blocks()
         for table_lines in tables_lines:
-            # boundary box
+            # bounding box
             x0 = min([rect.bbox.x0 for rect in table_lines])
             y0 = min([rect.bbox.y0 for rect in table_lines])
             x1 = max([rect.bbox.x1 for rect in table_lines])
@@ -261,7 +261,7 @@ class TablesConstructor(TableStructure):
             ---
             Args:
             - table_lines: a group of Line instances representing cell contents
-            - bbox: boundary box of table
+            - bbox: bounding box of table
             - outer_borders: four Border instances, (top, bottom, left, right), representing outer borders
         '''
         # potentail explicit borders/shadings contained in table

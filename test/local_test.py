@@ -5,7 +5,7 @@
 '''
 
 import os, sys
-from pdf2docx.converter import Converter
+from pdf2docx import Converter
 from pdf2docx.common.utils import compare_layput
 
 
@@ -46,15 +46,20 @@ def check_result(pdf_file, docx_file, compare_file_name):
 if __name__ == '__main__':
 
     script_path = os.path.abspath(__file__) # current script path
-    output = os.path.join(os.path.dirname(script_path), 'samples')
-    filename = 'demo-table'
+    output = os.path.dirname(script_path)
+    filename = 'test'
     pdf_file = os.path.join(output, f'{filename}.pdf')
     docx_file = os.path.join(output, f'{filename}.docx')
 
-    cv = Converter(pdf_file, docx_file, debug=True)
+    cv = Converter(pdf_file, docx_file)
 
     # process page by page
-    for page in cv[0:10]:
+    for page in cv[0:1]:
+
+        # print(page.rotation, page.rotationMatrix)
+        # print(page.transformationMatrix)
+        # print(page.rect, page.MediaBox, page.CropBox)
+
 
         # print(page.xref)
         # print(page.getContents())
@@ -70,7 +75,7 @@ if __name__ == '__main__':
         #     f.write(page.getSVGimage(text_as_path=False))
         
         # parse layout
-        cv.parse(page).make_page()
+        cv.make_page(page)
         
         # # extract tables
         # tables = cv.extract_tables(page)
@@ -81,4 +86,4 @@ if __name__ == '__main__':
 
 
     # check results
-    check_result(pdf_file, docx_file, 'comparison.pdf')
+    # check_result(pdf_file, docx_file, 'comparison.pdf')

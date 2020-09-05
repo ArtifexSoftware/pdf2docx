@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 
-from pdf2docx.converter import Converter
+from .converter import Converter
 
 
-def parse(pdf_file, docx_file, start=0, end=None, pages=[], debug=False):
+def parse(pdf_file, docx_file=None, start=0, end=None, pages=None, multi_processing=False):
     ''' Run the pdf2docx parser.
     
         Args:
@@ -14,23 +14,21 @@ def parse(pdf_file, docx_file, start=0, end=None, pages=[], debug=False):
             start (int)    : first page to process, starting from zero
             end (int)      : last page to process, starting from zero
             pages (list)   : range of pages
-            debug          : create illustration pdf showing layouts if True, else do nothing
     '''
 
-    cv = Converter(pdf_file, docx_file, debug)
+    cv = Converter(pdf_file, docx_file)
 
     # parsing arguments
     pdf_len = len(cv)
     if pages: 
-        pdf_pages = [cv[int(x)] for x in pages]
+        indexes = [int(x) for x in pages if 0<=x<pdf_len]
     else:
         end = end or pdf_len
-        pdf_pages = cv[int(start):int(end)]
+        s = slice(int(start), int(end))
+        indexes = range(pdf_len)[s]
 
     # process page by page
-    for page in pdf_pages:
-        print(f"Processing {page.number}/{pdf_len-1}...")
-        cv.parse(page).make_page()
+    cv.make_docx(indexes, multi_processing)
 
     # close pdf
     cv.close()
@@ -51,18 +49,14 @@ def extract_tables(pdf_file, start=0, end=None, pages=[]):
     # parsing arguments
     pdf_len = len(cv)
     if pages: 
-        pdf_pages = [cv[int(x)] for x in pages]
+        indexes = [int(x) for x in pages if 0<=x<pdf_len]
     else:
         end = end or pdf_len
-        pdf_pages = cv[int(start):int(end)]
+        s = slice(int(start), int(end))
+        indexes = range(pdf_len)[s]
 
     # process page by page
-    tables = []
-    for page in pdf_pages:
-        print(f"Processing {page.number}/{pdf_len-1}...")
-        page_tables = cv.extract_tables(page)
-        tables.extend(page_tables)
-
+    tables = cv.extract_tables(indexes)
     cv.close()
 
     return tables

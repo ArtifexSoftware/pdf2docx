@@ -245,7 +245,7 @@ class TextBlock(Block):
             ---
             Args:
               - p: docx paragraph instance
-              - bbox: boundary box of paragraph
+              - bbox: bounding box of paragraph
 
             Generally, a pdf block is a docx paragraph, with block|line as line in paragraph.
             But without the context, it's not able to recognize a block line as word wrap, or a 

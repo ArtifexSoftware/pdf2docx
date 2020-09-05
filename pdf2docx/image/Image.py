@@ -4,6 +4,8 @@
 Image object.
 '''
 
+
+import base64
 import fitz
 from ..common.BBox import BBox
 
@@ -15,7 +17,13 @@ class Image(BBox):
         self.ext = raw.get('ext', 'png')
         self.width = raw.get('width', 0.0)
         self.height = raw.get('height', 0.0)
-        self._image = raw.get('image', b'')    # source image bytes
+
+        # source image bytes
+        # - image bytes passed from PyMuPDF -> use it directly
+        # - base64 encoded string restored from json file -> encode to bytes and decode with base64 -> image bytes 
+        image = raw.get('image', b'')
+        self._image = image if isinstance(image, bytes) else base64.b64decode(image.encode())
+
 
     @property
     def text(self):
@@ -53,11 +61,14 @@ class Image(BBox):
 
     def store_image(self):
         res = super().store()
+        # store image with base64 encode:
+        # - encode image bytes with base64 -> base64 bytes
+        # - decode base64 bytes -> str -> so can be serialized in json formart
         res.update({
             'ext': self.ext,
             'width': self.width,
             'height': self.height,
-            'image': '<image>' # drop real content to reduce size
+            'image': base64.b64encode(self._image).decode() # serialize image with base64
         })
 
         return res
