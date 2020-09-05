@@ -70,8 +70,10 @@ class Layout:
         # table parser
         self._tables_constructor = TablesConstructor(self.blocks, self.rects)
 
-        # page margin: to calculate after cleaning blocks
-        self._margin = None
+        # page margin: 
+        # - dict from PyMuPDF: to calculate after cleaning blocks
+        # - restored from json: get margin directly
+        self._margin = raw.get('margin', None)
 
     @property
     def margin(self):
