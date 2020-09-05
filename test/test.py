@@ -63,7 +63,7 @@ class TestUtility(unittest.TestCase):
         pdf_file = os.path.join(self.sample_dir, f'{filename}.pdf')
         docx_file = os.path.join(self.output_dir, f'{filename}.docx')
         cv = Converter(pdf_file, docx_file)        
-        cv.parse(cv[0]).make_page()
+        cv.make_page(cv[0])
         self.test = cv.layout # type: Layout
         cv.close()
 
