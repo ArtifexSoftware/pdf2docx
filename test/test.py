@@ -25,8 +25,7 @@ import os
 import unittest
 import json
 
-from pdf2docx.converter import Converter
-from pdf2docx.layout.Layout import Layout
+from pdf2docx import Converter, Layout
 from pdf2docx.text.TextSpan import TextSpan
 
 

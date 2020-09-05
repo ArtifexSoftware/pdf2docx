@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-from pdf2docx.converter import Converter
+from .converter import Converter
 
 
 def parse(pdf_file, docx_file=None, start=0, end=None, pages=None, multi_processing=False):
