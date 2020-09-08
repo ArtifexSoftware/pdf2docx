@@ -27,8 +27,13 @@ from ..image.ImageSpan import ImageSpan
 class Line(BBox):
     '''Object representing a line in text block.'''
     def __init__(self, raw:dict={}) -> None:
+        # bbox is calculated from contained spans
+        # so remove key 'bbox' here
+        if 'bbox' in raw: raw.pop('bbox') 
         super(Line, self).__init__(raw)
-        self.wmode = raw.get('wmode', 0) # writing mode
+
+        # writing mode
+        self.wmode = raw.get('wmode', 0) 
 
         # update writing direction to rotated page CS
         if 'dir' in raw:

@@ -33,6 +33,8 @@ data structure for Span
     }
 '''
 
+import fitz
+
 from docx.shared import Pt, RGBColor
 from docx.oxml.ns import qn
 
@@ -56,7 +58,11 @@ class TextSpan(BBox):
 
         # introduced attributes
         # a list of dict: { 'type': int, 'color': int }
-        self.style = raw.get('style', []) 
+        self.style = raw.get('style', [])
+
+        # update bbox if no font is set
+        if 'UNNAMED' in self.font.upper(): self.set_font('Arial')
+
 
     @property
     def font(self):
@@ -90,6 +96,51 @@ class TextSpan(BBox):
         '''Joining chars in text span'''
         chars = [char.c for char in self.chars]        
         return ''.join(chars)
+
+
+    def set_font(self, fontname):
+        ''' Set new font, and update font size, span/char bbox accordingly.
+
+            It's generally used for span with unnamed fonts.
+            https://github.com/pymupdf/PyMuPDF/issues/642
+
+            In corner case, where the PDF file containing unnamed and not embedded fonts, the span bbox
+            extracted from PyMuPDF is not correct. PyMuPDF provides feature to replace these unnamed fonts
+            with specified fonts, then extract correct bbox from the updated PDF. Since we care less about
+            the original PDF itself but its layout, the idea here is to set a default font for text spans 
+            with unnamed fonts, and estimate the updated bbox with method from `fitz.TextWriter`.
+        '''
+        # set new font
+        font = fitz.Font(fontname)
+        self._font = fontname
+
+        # compute text length under new font with that size
+        new_length = font.text_length(self.text, fontsize=self.size)
+        if new_length > self.bbox.width:
+            self.size *= self.bbox.width / new_length
+
+        # estimate occupied rect when added with TextWriter
+        x0, y0, x1, y1 = self.bbox
+        tw = fitz.TextWriter((0, 0, x1, y1))
+        rect, _ = tw.append(
+            self.chars[0].origin, # the bottom left point of the first character
+            self.text,
+            font=font,
+            fontsize=self.size
+        )
+
+        # update span bbox
+        # - x-direction: use original horizontal range
+        # - y-direction: centerline defined by estimated vertical range, and height by font size
+        buff = (rect.height-self.size)/2.0
+        y0 = rect.y0 + buff
+        y1 = rect.y1 - buff
+        self.update((x0, y0, x1, y1))
+
+        # update contained char bbox
+        for char in self.chars:
+            x0, _, x1, _ = char.bbox
+            char.update((x0, y0, x1, y1))
 
 
     def add(self, char:Char):

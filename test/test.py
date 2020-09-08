@@ -62,7 +62,7 @@ class TestUtility(unittest.TestCase):
         pdf_file = os.path.join(self.sample_dir, f'{filename}.pdf')
         docx_file = os.path.join(self.output_dir, f'{filename}.docx')
         cv = Converter(pdf_file, docx_file)        
-        cv.make_page(cv[0])
+        cv.make_page(cv[0], debug=False)
         self.test = cv.layout # type: Layout
         cv.close()
 
@@ -201,3 +201,9 @@ class MainTest(TestUtility):
             In this case, the (0,0) origin is out of the page.
         '''
         self.init_test('demo-path-transformation').verify_layout(threshold=0.95)
+
+    
+    def test_unnamed_fonts(self):
+        '''Unnamed fonts destroy span bbox, and accordingly line/block layout.
+        '''
+        self.init_test('demo-unnamed-fonts').verify_layout(threshold=0.95)
