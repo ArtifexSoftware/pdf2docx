@@ -37,6 +37,9 @@ from ..common import docx
 class TextBlock(Block):
     '''Text block.'''
     def __init__(self, raw:dict={}) -> None:
+        # bbox is calculated from contained lines
+        # so remove key 'bbox' here
+        if 'bbox' in raw: raw.pop('bbox') 
         super(TextBlock, self).__init__(raw)
 
         # collect lines

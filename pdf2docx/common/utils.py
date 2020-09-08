@@ -28,7 +28,10 @@ def RGB_component_from_name(name:str=''):
 
 
 def RGB_component(srgb:int):
-    '''srgb value to R,G,B components, e.g. 16711680 -> (255, 0, 0)'''
+    ''' srgb value to R,G,B components, e.g. 16711680 -> (255, 0, 0).
+        
+        Equal to PyMuPDF built-in method: [int(255*x) for x in fitz.sRGB_to_pdf(x)]
+    '''
     # decimal to hex: 0x...
     s = hex(srgb)[2:].zfill(6)
     return [int(s[i:i+2], 16) for i in [0, 2, 4]]
