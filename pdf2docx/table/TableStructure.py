@@ -151,7 +151,7 @@ class TableStructure:
             # check table when each row finished: 
             # - the first cell in first row MUST NOT be empty
             # - a certain row MUST NOT be empty
-            if not row or (i==0 and not row[0]):
+            if not row :
                 # reset borders because it's a invalid table
                 TableStructure._unset_borders(rects)
                 return None
@@ -254,6 +254,8 @@ class TableStructure:
         h_outer = []   # type: list[float]
         v_outer = []   # type: list[float]
 
+        table_bbox = BBox() # table bbox
+
         for rect in rects.border_rects:
             # group horizontal borders in each row
             if rect.bbox.width > rect.bbox.height:
@@ -273,6 +275,10 @@ class TableStructure:
                 # candidates for vertical outer border
                 v_outer.extend([rect.bbox.x0, rect.bbox.x1])
 
+                # update table region
+                bbox = BBox().update((rect.bbox.x0, y, rect.bbox.x1, y))
+                table_bbox.union(bbox)
+
             # group vertical borders in each column
             else:
                 # column centerline
@@ -291,28 +297,97 @@ class TableStructure:
                 # candidates for horizontal outer border
                 h_outer.extend([rect.bbox.y0, rect.bbox.y1])
 
+                # update table region
+                bbox = BBox().update((x, rect.bbox.y0, x, rect.bbox.y1))
+                table_bbox.union(bbox)
+
         # at least 2 inner borders exist
         if not h_borders or not v_borders:
             return None, None
 
         # Note: add dummy borders if no outer borders exist
         # check whether outer borders exists in collected borders
-        left, right = min(v_outer), max(v_outer)
-        top, bottom = min(h_outer), max(h_outer)
-        rect = Rectangle({'color': RGB_value((1,1,1))})
-        if abs(min(h_borders)-top)>DM:
-            h_borders[top] = Rectangles([rect.copy().update((left, top, right, top))])
+        # left, right = min(v_outer), max(v_outer)
+        # top, bottom = min(h_outer), max(h_outer)
+        # rect = Rectangle({'color': RGB_value((1,1,1))})
+        # if abs(min(h_borders)-top)>DM:
+        #     h_borders[top] = Rectangles([rect.copy().update((left, top, right, top))])
 
-        if abs(max(h_borders)-bottom)>DM:
-            h_borders[bottom] = Rectangles([rect.copy().update((left, bottom, right, bottom))])
+        # if abs(max(h_borders)-bottom)>DM:
+        #     h_borders[bottom] = Rectangles([rect.copy().update((left, bottom, right, bottom))])
 
-        if abs(min(v_borders)-left)>DM:
-            v_borders[left] = Rectangles([rect.copy().update((left, top, left, bottom))])
+        # if abs(min(v_borders)-left)>DM:
+        #     v_borders[left] = Rectangles([rect.copy().update((left, top, left, bottom))])
 
-        if abs(max(v_borders)-right)>DM:
-            v_borders[right] = Rectangles([rect.copy().update((right, top, right, bottom))])
+        # if abs(max(v_borders)-right)>DM:
+        #     v_borders[right] = Rectangles([rect.copy().update((right, top, right, bottom))])
+
+        TableStructure._check_outer_borders(table_bbox, h_borders, 'top')
+        TableStructure._check_outer_borders(table_bbox, h_borders, 'bottom')
+        TableStructure._check_outer_borders(table_bbox, v_borders, 'left')
+        TableStructure._check_outer_borders(table_bbox, v_borders, 'right')
 
         return h_borders, v_borders
+    
+
+    @staticmethod
+    def _check_outer_borders(table_bbox:BBox, borders:dict, direction:str):
+        '''Add missing outer borders based on table bbox and grouped horizontal/vertical borders.
+            ---
+            Args:
+            - table_bbox: table region
+            - borders: grouped horizontal (or vertical borders) at y-coordinates
+            - direction: either 'top' or 'bottom' or 'left' or 'right'
+        '''
+        # target / real borders
+        bbox = list(table_bbox.bbox)
+        if direction=='top':
+            idx = 1
+            current = min(borders)
+            borders[current].sort_in_line_order()
+        if direction=='bottom':
+            idx = 3
+            current = max(borders)
+            borders[current].sort_in_line_order()
+        if direction=='left':
+            idx = 0
+            current = min(borders)
+            borders[current].sort_in_reading_order()
+        if direction=='right':
+            idx = 2
+            current = max(borders)
+            borders[current].sort_in_reading_order()
+        else:
+            return        
+        target = bbox[idx]
+        
+        # add missing border rects
+        rect = Rectangle({'color': RGB_value((1,1,1))})        
+        bbox[idx] = target
+        bbox[(idx+2)%4] = target
+
+        # add whole border if not exist
+        if abs(target-current)>DM:            
+            borders[target] = Rectangles([rect.copy().update(bbox)])
+        
+        # otherwise, check border segments
+        else:
+            idx_start = (idx+1)%2 # 0, 1
+            start = table_bbox.bbox[idx_start]
+
+            segments = []
+            for rect in borders[current]:
+                end = rect.bbox[idx_start]
+                # not connected -> add missing border segment
+                if abs(start-end)>DM:
+                    bbox[idx_start] = start
+                    bbox[idx_start+2] = end
+                    segments.append(rect.copy().update(bbox))
+                
+                # update ref position
+                start = rect.bbox[idx_start+2]
+            
+            borders[current].extend(segments)
 
 
     @staticmethod
