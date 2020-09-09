@@ -32,7 +32,7 @@ class TablesConstructor(TableStructure):
     def lattice_tables(self):
         '''Parse table with explicit borders/shadings represented by rectangle shapes.'''
         # group rects: each group may be a potential table
-        fun = lambda a,b: a.bbox & b.bbox
+        fun = lambda a,b: a.bbox & (b.bbox+DR) # NOTE: considering margin
         groups = self._rects.group(fun)
 
         # parse table with each group
@@ -181,14 +181,13 @@ class TablesConstructor(TableStructure):
         fun = lambda a,b: a.bbox & b.bbox
         for group in tables.group(fun):
             # single table
-            if len(group)==1:
-                table = group[0]
+            if len(group)==1: table = group[0]
             
             # intersected tables: keep the table with the most cells only 
             # since no floating elements are supported with python-docx
             else:
                 sorted_group = sorted(group, 
-                            key=lambda table: table.num_rows*table.num_cols)
+                    key=lambda table: table.num_rows*table.num_cols)
                 table = sorted_group[-1]
             
             unique_tables.append(table)

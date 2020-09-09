@@ -10,7 +10,7 @@ Parsing table structure based on borders.
 from ..common.BBox import BBox
 from ..common.base import RectType
 from ..common.utils import RGB_value
-from ..common.constants import DM, MAX_W_BORDER
+from ..common.constants import DM, DR, MAX_W_BORDER
 from ..shape.Rectangle import Rectangle
 from ..shape.Rectangles import Rectangles
 from ..text.Lines import Lines
@@ -214,13 +214,16 @@ class TableStructure:
         # Compared to text format, cell border always has intersection with other rects
         borders = [] # type: list[Rectangle]
         for rect in thin_rects:
+            # NOTE: consider margin due to small gap between borders
+            rect_with_margin = rect.bbox + DR
+
             # check intersections with other rect
             for other_rect in thin_rects:
                 if rect==other_rect: continue
                 # it's a cell border if intersection found
                 # Note: if the intersection is an edge, method `intersects` returns False, while
                 # the operator `&` return True. So, `&` is used here.
-                if rect.bbox & other_rect.bbox: 
+                if rect_with_margin & other_rect.bbox: 
                     borders.append(rect)
                     break
 
@@ -259,8 +262,10 @@ class TableStructure:
 
                 # ignore minor error resulting from different border width
                 for y_ in h_borders:
-                    if abs(y-y_)<DM:
-                        h_borders[y_].append(rect)
+                    if abs(y-y_)<2.0*DM:
+                        y = (y_+y)/2.0 # average
+                        h_borders[y] = h_borders.pop(y_)
+                        h_borders[y].append(rect)
                         break
                 else:
                     h_borders[y] = Rectangles([rect])
@@ -275,8 +280,10 @@ class TableStructure:
                 
                 # ignore minor error resulting from different border width
                 for x_ in v_borders:
-                    if abs(x-x_)<DM:
-                        v_borders[x_].append(rect)
+                    if abs(x-x_)<2.0*DM:
+                        x = (x+x_)/2.0 # average
+                        v_borders[x] = v_borders.pop(x_)
+                        v_borders[x].append(rect)
                         break
                 else:
                     v_borders[x] = Rectangles([rect])
