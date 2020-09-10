@@ -182,6 +182,10 @@ class MainTest(TestUtility):
         '''sample file focusing on simulating shape with shading cell.'''
         self.init_test('demo-table-shading').verify_layout(threshold=0.95)
 
+    def test_table_border_style(self):
+        '''sample file focusing on border style, e.g. width, color.'''
+        self.init_test('demo-table-border-style').verify_layout(threshold=0.95)
+
     def test_table_align_borders(self):
         '''sample file focusing on aligning stream table borders to simplify table structure.'''
         self.init_test('demo-table-align-borders').verify_layout(threshold=0.95)
