@@ -117,22 +117,15 @@ class TableStructure:
                 bbox = (x_cols[j], y_rows[i], x_cols[j+n_col], y_rows[i+n_row])
 
                 # cell border rects
-                # top = h_borders[y_rows[i]][0]
-                # bottom = h_borders[y_rows[i+n_row]][0]
-                # left = v_borders[x_cols[j]][0]
-                # right = v_borders[x_cols[j+n_col]][0]
-
-                top = TableStructure._get_border_rect(bbox[0], h_borders[y_rows[i]], 'row')
-                bottom = TableStructure._get_border_rect(bbox[0], h_borders[y_rows[i+n_row]], 'row')
-                left = TableStructure._get_border_rect(bbox[1], v_borders[x_cols[j]], 'col')
-                right = TableStructure._get_border_rect(bbox[1], v_borders[x_cols[j+n_col]], 'col')
+                top = TableStructure._get_border_rect(bbox, h_borders[bbox[1]], 'row')
+                bottom = TableStructure._get_border_rect(bbox, h_borders[bbox[3]], 'row')
+                left = TableStructure._get_border_rect(bbox, v_borders[bbox[0]], 'col')
+                right = TableStructure._get_border_rect(bbox, v_borders[bbox[2]], 'col')
 
                 w_top = top.bbox.y1-top.bbox.y0
                 w_right = right.bbox.x1-right.bbox.x0
                 w_bottom = bottom.bbox.y1-bottom.bbox.y0
-                w_left = left.bbox.x1-left.bbox.x0
-
-                
+                w_left = left.bbox.x1-left.bbox.x0                
 
                 # shading rect in this cell
                 # modify the cell bbox from border center to inner region
@@ -344,13 +337,13 @@ class TableStructure:
         target = bbox[idx]
         
         # add missing border rects
-        rect = Rectangle({'color': RGB_value((1,1,1))})        
+        sample_rect = Rectangle({'color': RGB_value((1,1,1))})        
         bbox[idx] = target
         bbox[(idx+2)%4] = target
 
         # add whole border if not exist
-        if abs(target-current)>DM:
-            borders[target] = Rectangles([rect.copy().update(bbox)])
+        if abs(target-current)>MAX_W_BORDER:
+            borders[target] = Rectangles([sample_rect.copy().update(bbox)])
         
         # otherwise, check border segments
         else:
@@ -364,7 +357,7 @@ class TableStructure:
                 if abs(start-end)>DM:
                     bbox[idx_start] = start
                     bbox[idx_start+2] = end
-                    segments.append(rect.copy().update(bbox))
+                    segments.append(sample_rect.copy().update(bbox))
                 
                 # update ref position
                 start = rect.bbox[idx_start+2]
@@ -373,7 +366,7 @@ class TableStructure:
 
 
     @staticmethod
-    def _get_border_rect(x:float, rects:Rectangles, direction:str):
+    def _get_border_rect(cell_rect:tuple, rects:Rectangles, direction:str):
         ''' Find the rect representing current cell border.
             ---
             Args:
@@ -386,10 +379,15 @@ class TableStructure:
         # depends on border direction
         idx = 0 if direction=='row' else 1
 
+        # cell range
+        x0, x1 = cell_rect[idx], cell_rect[idx+2]
+
         # check rects
         for rect in rects:
-            if (rect.bbox[idx]-DM) <= x < rect.bbox[idx+2]: # consider margin
-                if rect.color >0: print(rect.bbox, x)
+            t0, t1 = rect.bbox[idx], rect.bbox[idx+2]
+            # it's the border rect if has a main intersection with cell border
+            L = min(x1, t1) - max(x0, t0)
+            if L / (x1-x0) >= 0.75:
                 return rect
 
         return rects[0]

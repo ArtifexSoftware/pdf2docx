@@ -156,7 +156,14 @@ class Cell(BBox):
         docx_cell = table.cell(i, j)
         if n_row*n_col!=1:
             _cell = table.cell(i+n_row-1, j+n_col-1)
-            docx_cell.merge(_cell)        
+            docx_cell.merge(_cell)
+        
+        # ---------------------
+        # cell width (cell height is set by row height)
+        # ---------------------
+        # experience: width of merged cells may change if not setting width for merged cells
+        x0, y0, x1, y1 = self.bbox
+        docx_cell.width = Pt(x1-x0)
 
         # insert contents
         # NOTE: there exists an empty paragraph already in each cell, which should be deleted first to
@@ -196,14 +203,7 @@ class Cell(BBox):
             for m in range(i, i+n_row):
                 for n in range(j, j+n_col):
                     docx.set_cell_border(table.cell(m, n), **kwargs)
-
-
-        # ---------------------
-        # cell width (cell height is set by row height)
-        # ---------------------
-        # experience: width of merged cells may change if not setting width for merged cells
-        x0, y0, x1, y1 = self.bbox
-        docx_cell.width = Pt(x1-x0)
+        
 
         # ---------------------
         # cell bg-color
