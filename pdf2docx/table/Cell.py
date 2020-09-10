@@ -138,29 +138,25 @@ class Cell(BBox):
 
 
     def make_docx(self, table, indexes):
-        '''Create docx table.
+        '''Set cell style and assign contents.
             ---
             Args:
               - table: docx table instance
               - indexes: (i, j), row and column indexes
-        '''
-        # ignore merged cells
-        # TODO: for some weird tables, empty cell may not due to merging cells, so repair error exists in docx.
-        if not bool(self):  return
-        
-        # set cell style
-        # no borders for stream table
+        '''        
+        # set cell style, e.g. border, shading, cell width
         self._set_style(table, indexes)
+        
+        # ignore merged cells
+        if not bool(self):  return
 
-        # clear cell margin
-        # NOTE: the start position of a table is based on text in cell, rather than left border of table. 
-        # They're almost aligned if left-margin of cell is zero.
-        docx_cell = table.cell(*indexes)
-        docx.set_cell_margins(docx_cell, start=0, end=0)
-
-        # set vertical direction if contained text blocks are in vertical direction
-        if self.blocks.is_vertical:
-            docx.set_vertical_cell_direction(docx_cell)
+        # merge cells
+        n_row, n_col = self.merged_cells
+        i, j = indexes
+        docx_cell = table.cell(i, j)
+        if n_row*n_col!=1:
+            _cell = table.cell(i+n_row-1, j+n_col-1)
+            docx_cell.merge(_cell)        
 
         # insert contents
         # NOTE: there exists an empty paragraph already in each cell, which should be deleted first to
@@ -201,12 +197,6 @@ class Cell(BBox):
                 for n in range(j, j+n_col):
                     docx.set_cell_border(table.cell(m, n), **kwargs)
 
-        # ---------------------
-        # merge cells
-        # ---------------------        
-        if n_row*n_col!=1:
-            _cell = table.cell(i+n_row-1, j+n_col-1)
-            docx_cell.merge(_cell)
 
         # ---------------------
         # cell width (cell height is set by row height)
@@ -220,3 +210,14 @@ class Cell(BBox):
         # ---------------------
         if self.bg_color!=None:
             docx.set_cell_shading(docx_cell, self.bg_color)
+        
+        # ---------------------
+        # clear cell margin
+        # ---------------------
+        # NOTE: the start position of a table is based on text in cell, rather than left border of table. 
+        # They're almost aligned if left-margin of cell is zero.
+        docx.set_cell_margins(docx_cell, start=0, end=0)
+
+        # set vertical direction if contained text blocks are in vertical direction
+        if self.blocks.is_vertical:
+            docx.set_vertical_cell_direction(docx_cell)

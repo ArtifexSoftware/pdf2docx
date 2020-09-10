@@ -112,20 +112,27 @@ class TableStructure:
                         n_row += 1
                     else:
                         break
+                
+                # cell bbox: merged cells considered
+                bbox = (x_cols[j], y_rows[i], x_cols[j+n_col], y_rows[i+n_row])
 
-                # cell border rects: merged cells considered
-                top = h_borders[y_rows[i]][0]
-                bottom = h_borders[y_rows[i+n_row]][0]
-                left = v_borders[x_cols[j]][0]
-                right = v_borders[x_cols[j+n_col]][0]
+                # cell border rects
+                # top = h_borders[y_rows[i]][0]
+                # bottom = h_borders[y_rows[i+n_row]][0]
+                # left = v_borders[x_cols[j]][0]
+                # right = v_borders[x_cols[j+n_col]][0]
+
+                top = TableStructure._get_border_rect(bbox[0], h_borders[y_rows[i]], 'row')
+                bottom = TableStructure._get_border_rect(bbox[0], h_borders[y_rows[i+n_row]], 'row')
+                left = TableStructure._get_border_rect(bbox[1], v_borders[x_cols[j]], 'col')
+                right = TableStructure._get_border_rect(bbox[1], v_borders[x_cols[j+n_col]], 'col')
 
                 w_top = top.bbox.y1-top.bbox.y0
                 w_right = right.bbox.x1-right.bbox.x0
                 w_bottom = bottom.bbox.y1-bottom.bbox.y0
                 w_left = left.bbox.x1-left.bbox.x0
 
-                # cell bbox
-                bbox = (x_cols[j], y_rows[i], x_cols[j+n_col], y_rows[i+n_row])
+                
 
                 # shading rect in this cell
                 # modify the cell bbox from border center to inner region
@@ -247,15 +254,11 @@ class TableStructure:
 
     @staticmethod
     def _group_borders(rects:Rectangles):
-        ''' Collect lattice borders in horizontal and vertical groups respectively.'''        
-
+        ''' Collect lattice borders in horizontal and vertical groups respectively.'''
         h_borders = {} # type: dict [float, Rectangles]
         v_borders = {} # type: dict [float, Rectangles]
-        h_outer = []   # type: list[float]
-        v_outer = []   # type: list[float]
 
-        table_bbox = BBox() # table bbox
-
+        X0, Y0, X1, Y1 = 9999.0, 9999.0, 0.0, 0.0
         for rect in rects.border_rects:
             # group horizontal borders in each row
             if rect.bbox.width > rect.bbox.height:
@@ -271,13 +274,10 @@ class TableStructure:
                         break
                 else:
                     h_borders[y] = Rectangles([rect])
-                
-                # candidates for vertical outer border
-                v_outer.extend([rect.bbox.x0, rect.bbox.x1])
 
                 # update table region
-                bbox = BBox().update((rect.bbox.x0, y, rect.bbox.x1, y))
-                table_bbox.union(bbox)
+                X0 = min(X0, rect.bbox.x0)
+                X1 = max(X1, rect.bbox.x1)
 
             # group vertical borders in each column
             else:
@@ -293,35 +293,17 @@ class TableStructure:
                         break
                 else:
                     v_borders[x] = Rectangles([rect])
-                
-                # candidates for horizontal outer border
-                h_outer.extend([rect.bbox.y0, rect.bbox.y1])
 
                 # update table region
-                bbox = BBox().update((x, rect.bbox.y0, x, rect.bbox.y1))
-                table_bbox.union(bbox)
+                Y0 = min(Y0, rect.bbox.y0)
+                Y1 = max(Y1, rect.bbox.y1)
 
         # at least 2 inner borders exist
         if not h_borders or not v_borders:
             return None, None
 
-        # Note: add dummy borders if no outer borders exist
-        # check whether outer borders exists in collected borders
-        # left, right = min(v_outer), max(v_outer)
-        # top, bottom = min(h_outer), max(h_outer)
-        # rect = Rectangle({'color': RGB_value((1,1,1))})
-        # if abs(min(h_borders)-top)>DM:
-        #     h_borders[top] = Rectangles([rect.copy().update((left, top, right, top))])
-
-        # if abs(max(h_borders)-bottom)>DM:
-        #     h_borders[bottom] = Rectangles([rect.copy().update((left, bottom, right, bottom))])
-
-        # if abs(min(v_borders)-left)>DM:
-        #     v_borders[left] = Rectangles([rect.copy().update((left, top, left, bottom))])
-
-        # if abs(max(v_borders)-right)>DM:
-        #     v_borders[right] = Rectangles([rect.copy().update((right, top, right, bottom))])
-
+        # Note: add dummy borders if no outer borders exist        
+        table_bbox = BBox().update((X0, Y0, X1, Y1)) # table bbox
         TableStructure._check_outer_borders(table_bbox, h_borders, 'top')
         TableStructure._check_outer_borders(table_bbox, h_borders, 'bottom')
         TableStructure._check_outer_borders(table_bbox, v_borders, 'left')
@@ -336,7 +318,7 @@ class TableStructure:
             ---
             Args:
             - table_bbox: table region
-            - borders: grouped horizontal (or vertical borders) at y-coordinates
+            - borders: grouped horizontal (or vertical) borders at y-coordinates
             - direction: either 'top' or 'bottom' or 'left' or 'right'
         '''
         # target / real borders
@@ -345,20 +327,20 @@ class TableStructure:
             idx = 1
             current = min(borders)
             borders[current].sort_in_line_order()
-        if direction=='bottom':
+        elif direction=='bottom':
             idx = 3
             current = max(borders)
             borders[current].sort_in_line_order()
-        if direction=='left':
+        elif direction=='left':
             idx = 0
             current = min(borders)
             borders[current].sort_in_reading_order()
-        if direction=='right':
+        elif direction=='right':
             idx = 2
             current = max(borders)
             borders[current].sort_in_reading_order()
         else:
-            return        
+            return
         target = bbox[idx]
         
         # add missing border rects
@@ -367,7 +349,7 @@ class TableStructure:
         bbox[(idx+2)%4] = target
 
         # add whole border if not exist
-        if abs(target-current)>DM:            
+        if abs(target-current)>DM:
             borders[target] = Rectangles([rect.copy().update(bbox)])
         
         # otherwise, check border segments
@@ -388,6 +370,29 @@ class TableStructure:
                 start = rect.bbox[idx_start+2]
             
             borders[current].extend(segments)
+
+
+    @staticmethod
+    def _get_border_rect(x:float, rects:Rectangles, direction:str):
+        ''' Find the rect representing current cell border.
+            ---
+            Args:
+            - x: cell border coordinate, e.g. y for top border
+            - rects: candidate rects for cell border
+            - direction: either 'row' or 'col'
+        '''
+        if not rects: return Rectangle()
+
+        # depends on border direction
+        idx = 0 if direction=='row' else 1
+
+        # check rects
+        for rect in rects:
+            if (rect.bbox[idx]-DM) <= x < rect.bbox[idx+2]: # consider margin
+                if rect.color >0: print(rect.bbox, x)
+                return rect
+
+        return rects[0]
 
 
     @staticmethod
