@@ -68,19 +68,6 @@ $ pip uninstall pdf2docx
 
 ## Usage
 
-### By range of pages
-
-```
-$ pdf2docx test.pdf test.docx --start=5 --end=10
-```
-
-### By page numbers
-
-```
-$ pdf2docx test.pdf test.docx --pages=5,7,9
-$ pdf2docx test.pdf --multi_processing=True
-```
-
 ```
 $ pdf2docx --help
 
@@ -111,6 +98,25 @@ FLAGS
 NOTES
     You can also use flags syntax for POSITIONAL ARGUMENTS
 ```
+
+### By range of pages
+
+```
+$ pdf2docx test.pdf test.docx --start=5 --end=10
+```
+
+### By page numbers
+
+```
+$ pdf2docx test.pdf test.docx --pages=5,7,9
+```
+
+### Multi-Processing
+
+```
+$ pdf2docx test.pdf --multi_processing=True
+```
+
 
 ### As a library
 
