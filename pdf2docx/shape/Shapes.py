@@ -1,26 +1,39 @@
 # -*- coding: utf-8 -*-
 
 '''
-A group of Rectangle instances focusing on table parsing process.
+A group of Shape instances.
 
-@created: 2020-07-22
+@created: 2020-09-15
 @author: train8808@gmail.com
 '''
 
-from .Rectangle import Rectangle
+from .Shape import Stroke, Fill
 from ..common.base import RectType
 from ..common.Collection import Collection
 from ..common import utils
 from ..common import pdf
 
 
-class Rectangles(Collection):
+class Shapes(Collection):
 
     @property
-    def border_rects(self):
-        '''Rectangles in border type.'''
+    def borders(self):
+        '''Shapes in border type.'''
         return list(filter(
-            lambda rect: rect.type==RectType.BORDER, self._instances))
+            lambda shape: shape.type==RectType.BORDER, self._instances))
+
+    @property
+    def strokes(self):
+        '''Shapes in border type.'''
+        return list(filter(
+            lambda shape: isinstance(shape, Stroke), self._instances))
+
+    @property
+    def fillings(self):
+        '''Shapes in border type.'''
+        return list(filter(
+            lambda shape: isinstance(shape, Fill), self._instances))
+
 
     def from_annotations(self, page):
         ''' Get shapes, e.g. Line, Square, Highlight, from annotations(comment shapes) in PDF page.
@@ -28,9 +41,13 @@ class Rectangles(Collection):
             Args:
             - page: fitz.Page, current page
         '''
-        rects = pdf.rects_from_annotations(page)
-        for rect in rects:
-            self._instances.append(Rectangle(rect))
+        strokes, fills = pdf.shapes_from_annotations(page)
+
+        for raw in strokes:
+            self._instances.append(Stroke(raw))
+
+        for raw in fills:
+            self._instances.append(Fill(raw))
 
         return self
 
@@ -42,9 +59,13 @@ class Rectangles(Collection):
             - doc: fitz.Document representing the pdf file
             - page: fitz.Page, current page
         '''
-        rects = pdf.rects_from_stream(doc, page)
-        for rect in rects:
-            self._instances.append(Rectangle(rect))
+        strokes, fills = pdf.shapes_from_stream(doc, page)
+        
+        for raw in strokes:
+            self._instances.append(Stroke(raw))
+
+        for raw in fills:
+            self._instances.append(Fill(raw))
 
         return self
 
@@ -65,7 +86,7 @@ class Rectangles(Collection):
         # skip rectangles with both of the following two conditions satisfied:
         #  - fully or almost contained in another rectangle
         #  - same filling color with the containing rectangle
-        rects_unique = [] # type: list [Rectangle]
+        rects_unique = [] # type: list [Shape]
         rect_changed = False
         for rect in self._instances:
             for ref_rect in rects_unique:

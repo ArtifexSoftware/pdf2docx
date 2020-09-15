@@ -25,7 +25,7 @@ In addition to the raw layout dict, some new features are also included, e.g.
     # introduced dict
     ----------------------------
     "margin": [left, right, top, bottom],
-    "rects" : [{...}, {...}, ...]
+    "shapes" : [{...}, {...}, ...]
 }
 '''
 
@@ -35,7 +35,7 @@ import json
 from docx.shared import Pt
 from docx.enum.section import WD_SECTION
 from .Blocks import Blocks
-from ..shape.Rectangles import Rectangles
+from ..shape.Shapes import Shapes
 from ..table.TablesConstructor import TablesConstructor
 from ..common.BBox import BBox
 from ..common.base import PlotControl
@@ -64,11 +64,11 @@ class Layout:
         # initialize blocks
         self.blocks = Blocks().from_dicts(raw.get('blocks', []))
 
-        # initialize rects: to add rectangles later
-        self.rects = Rectangles()
+        # initialize shapes: to add rectangles later
+        self.shapes = Shapes()
 
         # table parser
-        self._tables_constructor = TablesConstructor(self.blocks, self.rects)
+        self._tables_constructor = TablesConstructor(self.blocks, self.shapes)
 
         # page margin: 
         # - dict from PyMuPDF: to calculate after cleaning blocks
@@ -95,7 +95,7 @@ class Layout:
             'height': self.height,
             'margin': self._margin,
             'blocks': self.blocks.store(),
-            'rects': self.rects.store(),
+            'shapes': self.shapes.store(),
         }
 
 
@@ -126,7 +126,7 @@ class Layout:
         
         #  - rectangle shapes
         elif key == PlotControl.SHAPE: 
-            objects = list(self.rects)
+            objects = list(self.shapes)
 
         else:
             objects = []
@@ -232,15 +232,15 @@ class Layout:
 
     @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.LAYOUT)
     def clean(self, **kwargs):
-        '''Clean blocks and rectangles, e.g. remove negative blocks, duplicated rects.'''
+        '''Clean blocks and rectangles, e.g. remove negative blocks, duplicated shapes.'''
         page_bbox = (0.0, 0.0, self.width, self.height)
         clean_blocks = self.blocks.clean(page_bbox)
-        clean_rects  = self.rects.clean(page_bbox)
+        clean_shapes  = self.shapes.clean(page_bbox)
         
         # calculate page margin based on clean layout
         self._margin = self.page_margin()
 
-        return clean_blocks or clean_rects
+        return clean_blocks or clean_shapes
 
 
     @debug_plot('Lattice Table Structure', plot=True, category=PlotControl.TABLE)
@@ -262,7 +262,7 @@ class Layout:
     @debug_plot('Parsed Text Blocks', plot=True, category=PlotControl.LAYOUT)
     def parse_text_format(self, **kwargs):
         '''Parse text format in both page and table context.'''
-        return self.blocks.parse_text_format(self.rects)
+        return self.blocks.parse_text_format(self.shapes)
  
 
     def page_margin(self):
@@ -279,12 +279,12 @@ class Layout:
             - bottom: height-MAX(bbox[3])
         '''
         # return normal page margin if no blocks exist
-        if not self.blocks and not self.rects:
+        if not self.blocks and not self.shapes:
             return (ITP, ) * 4                 # 1 Inch = 72 pt
 
-        # consider both blocks and rects for page margin
+        # consider both blocks and shapes for page margin
         list_bbox = list(map(lambda x: x.bbox, self.blocks))
-        list_bbox.extend(list(map(lambda x: x.bbox, self.rects))) 
+        list_bbox.extend(list(map(lambda x: x.bbox, self.shapes))) 
 
         # left margin 
         left = min(map(lambda x: x.x0, list_bbox))

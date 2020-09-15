@@ -17,7 +17,7 @@ class BlockType(Enum):
 
 
 class RectType(Enum):
-    ''' Rectangle type in context:
+    ''' Shape type in context:
         - not defined   : -1
         - highlight     : 0
         - underline     : 1

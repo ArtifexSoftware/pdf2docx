@@ -155,7 +155,7 @@ class TextBlock(Block):
         '''parse text format with style represented by rectangles.
             ---
             Args:
-              - rects: Rectangles, potential styles applied on blocks
+              - rects: Shapes, potential styles applied on blocks
         '''
         flag = False
 

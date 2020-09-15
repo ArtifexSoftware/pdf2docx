@@ -12,7 +12,7 @@ from ..common.base import RectType
 from ..common.utils import RGB_value
 from ..common.constants import DM, DR, MAX_W_BORDER
 from ..shape.Rectangle import Rectangle
-from ..shape.Rectangles import Rectangles
+from ..shape.Shapes import Shapes
 from ..text.Lines import Lines
 from .TableBlock import TableBlock
 from .Row import Row
@@ -24,11 +24,11 @@ class TableStructure:
     '''Parsing table structure based on borders/shadings.'''
 
     @staticmethod
-    def parse_structure(rects:Rectangles, detect_border:bool=True):
+    def parse_structure(rects:Shapes, detect_border:bool=True):
         ''' Parse table structure from rects.
             ---
             Args:
-            - rects: Rectangles, representing border, shading or text style
+            - rects: Shapes, representing border, shading or text style
             - detect_border: to detect table border if True.
 
             NOTE: for stream table, table borders are determined from text blocks in advance,
@@ -162,7 +162,7 @@ class TableStructure:
 
 
     @staticmethod
-    def stream_borders(lines:Lines, outer_borders:tuple, showing_borders:Rectangles):
+    def stream_borders(lines:Lines, outer_borders:tuple, showing_borders:Shapes):
         ''' Parsing borders mainly based on content lines contained in cells, and update borders 
             (position and style) with explicit borders represented by rectangle shapes.
             ---
@@ -184,7 +184,7 @@ class TableStructure:
         borders.finalize(showing_borders)
 
         # all centerlines to rectangle shapes
-        res = Rectangles()
+        res = Shapes()
         for border in borders: 
             res.append(border.to_rect())
 
@@ -192,7 +192,7 @@ class TableStructure:
 
 
     @staticmethod
-    def _set_borders(rects:Rectangles, width_threshold:float):
+    def _set_borders(rects:Shapes, width_threshold:float):
         ''' Detect table borders from rects extracted directly from pdf file.
             ---
             Args:
@@ -238,7 +238,7 @@ class TableStructure:
 
 
     @staticmethod
-    def _unset_borders(rects:Rectangles):
+    def _unset_borders(rects:Shapes):
         '''Unset table border type.'''
         for rect in rects:
             if rect.type==RectType.BORDER:
@@ -246,13 +246,13 @@ class TableStructure:
 
 
     @staticmethod
-    def _group_borders(rects:Rectangles):
+    def _group_borders(rects:Shapes):
         ''' Collect lattice borders in horizontal and vertical groups respectively.'''
-        h_borders = {} # type: dict [float, Rectangles]
-        v_borders = {} # type: dict [float, Rectangles]
+        h_borders = {} # type: dict [float, Shapes]
+        v_borders = {} # type: dict [float, Shapes]
 
         X0, Y0, X1, Y1 = 9999.0, 9999.0, 0.0, 0.0
-        for rect in rects.border_rects:
+        for rect in rects.borders:
             # group horizontal borders in each row
             if rect.bbox.width > rect.bbox.height:
                 # row centerline
@@ -266,7 +266,7 @@ class TableStructure:
                         h_borders[y].append(rect)
                         break
                 else:
-                    h_borders[y] = Rectangles([rect])
+                    h_borders[y] = Shapes([rect])
 
                 # update table region
                 X0 = min(X0, rect.bbox.x0)
@@ -285,7 +285,7 @@ class TableStructure:
                         v_borders[x].append(rect)
                         break
                 else:
-                    v_borders[x] = Rectangles([rect])
+                    v_borders[x] = Shapes([rect])
 
                 # update table region
                 Y0 = min(Y0, rect.bbox.y0)
@@ -343,7 +343,7 @@ class TableStructure:
 
         # add whole border if not exist
         if abs(target-current)>MAX_W_BORDER:
-            borders[target] = Rectangles([sample_rect.copy().update(bbox)])
+            borders[target] = Shapes([sample_rect.copy().update(bbox)])
         
         # otherwise, check border segments
         else:
@@ -366,7 +366,7 @@ class TableStructure:
 
 
     @staticmethod
-    def _get_border_rect(cell_rect:tuple, rects:Rectangles, direction:str):
+    def _get_border_rect(cell_rect:tuple, rects:Shapes, direction:str):
         ''' Find the rect representing current cell border.
             ---
             Args:
@@ -399,7 +399,7 @@ class TableStructure:
             ---
             Args:
               - ref: y (or x) coordinate of horizontal (or vertical) passing-through line
-              - borders: list[Rectangles], a list of vertical (or horizontal) rects list in a column (or row)
+              - borders: list[Shapes], a list of vertical (or horizontal) rects list in a column (or row)
               - direction: 'row' - check merged cells in row; 'column' - check merged cells in a column
 
             Taking cells in a row (direction=0) for example, give a horizontal line (y=ref) passing through this row, 

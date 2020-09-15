@@ -422,7 +422,7 @@ class Blocks(Collection):
         '''Parse text format with style represented by rectangles.
             ---
             Args:
-              - rects: Rectangles, potential styles applied on blocks
+              - rects: Shapes, potential styles applied on blocks
 
             NOTE: `parse_text_format` must be implemented by TextBlock, ImageBlock and TableBlock.
         '''

@@ -26,8 +26,8 @@ Consider horizontal and vertical borders only.
 '''
 
 
-from ..shape.Rectangles import Rectangles
-from ..shape.Rectangle import Rectangle
+from ..shape.Shapes import Shapes
+from ..shape.Shape import Shape
 from ..common.utils import expand_centerline, RGB_value
 from ..common.constants import MAX_W_BORDER, HIDDEN_W_BORDER
 from ..common.base import RectType
@@ -92,7 +92,7 @@ class Border:
         raise NotImplementedError
 
     def to_rect(self):
-        '''COnvert to Rectangle instance.'''
+        '''Convert to Rectangle instance.'''
         centerline = self.centerline
         bbox = expand_centerline(centerline[0:2], centerline[2:], width=self.width)
 
@@ -128,7 +128,7 @@ class HBorder(Border):
         self.finalized = True
         return self
 
-    def finalize_by_rect(self, h_rect:Rectangle):
+    def finalize_by_rect(self, h_rect:Shape):
         ''' Finalize border with specified horizontal rect, which is generally a showing border.        
             NOTE: the boundary borders may also be affected by this rect.
         '''
@@ -178,7 +178,7 @@ class VBorder(Border):
         self.finalized = True
         return self
     
-    def finalize_by_rect(self, v_rect:Rectangle):
+    def finalize_by_rect(self, v_rect:Shape):
         ''' Finalize border with specified horizontal rect, which is generally a showing border.        
             NOTE: the boundary borders may also be affected by this rect.
         '''
@@ -254,7 +254,7 @@ class Borders:
     @property
     def VBorders(self): return self._VBorders
 
-    def finalize(self, rects:Rectangles):
+    def finalize(self, rects:Shapes):
         ''' Finalize the position of all borders: to align h-borders or v-borders as more as possible,
             so to simplify the table structure.
             ---

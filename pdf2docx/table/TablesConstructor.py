@@ -14,8 +14,8 @@ from ..common.BBox import BBox
 from ..common.base import RectType
 from ..common.constants import MAX_W_BORDER, DR
 from ..layout.Blocks import Blocks
-from ..shape.Rectangle import Rectangle
-from ..shape.Rectangles import Rectangles
+from ..shape.Shape import Shape
+from ..shape.Shapes import Shapes
 from ..text.Lines import Lines
 from .TableStructure import TableStructure
 from .Border import HBorder, VBorder
@@ -23,7 +23,7 @@ from .Border import HBorder, VBorder
 
 class TablesConstructor(TableStructure):
 
-    def __init__(self, blocks:Blocks, rects:Rectangles):
+    def __init__(self, blocks:Blocks, rects:Shapes):
         '''Object parsing TableBlock.'''
         self._blocks = blocks
         self._rects = rects
@@ -212,7 +212,7 @@ class TablesConstructor(TableStructure):
         lattice_tables = self._blocks.lattice_table_blocks
 
         # check rects
-        shading_rects = [] # type: list[Rectangle]
+        shading_rects = [] # type: list[Shape]
         for rect in self._rects:
 
             # focus on rect not parsed yet
@@ -269,7 +269,7 @@ class TablesConstructor(TableStructure):
             lambda rect: rect.bbox.intersects(bbox.bbox) and rect.type==RectType.UNDEFINED, self._rects))
         
         # parse stream borders based on contents in cell and explicit borders
-        table_rects = self.stream_borders(table_lines, outer_borders, Rectangles(rects))
+        table_rects = self.stream_borders(table_lines, outer_borders, Shapes(rects))
         if not table_rects: return None
 
         # append potential explicit shadings for parsing table style

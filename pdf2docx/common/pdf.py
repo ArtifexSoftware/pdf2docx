@@ -61,7 +61,7 @@ def new_page_with_margin(doc, width:float, height:float, margin:tuple, title:str
     return page
 
 
-def rects_from_annotations(page:fitz.Page):
+def shapes_from_annotations(page:fitz.Page):
     ''' Get shapes, e.g. Line, Square, Highlight, from annotations(comment shapes) in PDF page.
         ---
         Args:
@@ -75,7 +75,7 @@ def rects_from_annotations(page:fitz.Page):
             - https://pymupdf.readthedocs.io/en/latest/annot.html
             - https://pymupdf.readthedocs.io/en/latest/vars.html#annotation-types
     '''
-    rects = []
+    strokes, fills = [], []
     for annot in page.annots():
 
         # annot type, e.g. (8, 'Highlight')
@@ -99,8 +99,7 @@ def rects_from_annotations(page:fitz.Page):
         # PDF_ANNOT_SQUARE 4
         # PDF_ANNOT_HIGHLIGHT 8
         # PDF_ANNOT_UNDERLINE 9
-        # PDF_ANNOT_STRIKEOUT 11
-        stroke_bboxes, fill_bboxes = [], []
+        # PDF_ANNOT_STRIKEOUT 11        
 
         # Line: a space of 1.5*w around each border
         # 
@@ -113,12 +112,10 @@ def rects_from_annotations(page:fitz.Page):
         # +----------------------------+
         # 
         if key==3: 
-            stroke_bboxes.append((
-                rect.x0+1.5*w,
-                rect.y0+1.5*w,
-                rect.x1-1.5*w,
-                rect.y1-1.5*w
-            ))
+            strokes.append({
+                'start': (rect.x0+1.5*w, (rect.y0+rect.y1)/2.0),
+                'end'  : (rect.x1-1.5*w, (rect.y0+rect.y1)/2.0),
+                })
 
         # Square: a space of 0.5*w around eah border
         # border rects and filling rects are to be extracted from original square
@@ -138,27 +135,35 @@ def rects_from_annotations(page:fitz.Page):
         elif key==4:
             # stroke rectangles
             if not sc is None:
+                d = 0.5*w
                 x0, y0, x1, y1 = (
-                    rect.x0+0.5*w,
-                    rect.y0+0.5*w,
-                    rect.x1-0.5*w,
-                    rect.y1-0.5*w
+                    rect.x0+d,
+                    rect.y0+d,
+                    rect.x1-d,
+                    rect.y1-d
                 )
-                stroke_bboxes.extend([
-                    (x0, y0, x1, y0+w), # top
-                    (x0, y1-w, x1, y1), # bottom
-                    (x0, y0, x0+w, y1), # left
-                    (x1-w, y0, x1, y1)  # right
-                ])
+                points = [
+                    (x0  , y0+d), (x1  , y0+d), # top
+                    (x0  , y1-d), (x1  , y1-d), # bottom
+                    (x0+d, y0  ), (x0+d, y1), # left
+                    (x1-d, y0  ), (x1-d, y1)  # right
+                ]
+                for start, end in points:
+                    strokes.append({
+                        'start': start,
+                        'end'  : end
+                        })
 
             # fill rectangle
             if not fc is None:
-                fill_bboxes.append((
-                    rect.x0+1.5*w,
-                    rect.y0+1.5*w,
-                    rect.x1-1.5*w,
-                    rect.y1-1.5*w
-                ))
+                d = 1.5*w
+                fills.append({
+                    'bbox': (
+                        rect.x0+d,
+                        rect.y0+d,
+                        rect.x1-d,
+                        rect.y1-d)
+                    })
         
         # highlight, underline, strikethrough: on space
         # For these shapes, `annot.rect` is a combination of all sub-highlights, especially 
@@ -180,42 +185,44 @@ def rects_from_annotations(page:fitz.Page):
                 if key==8:
                     x0, y0 = points[4*i]
                     x1, y1 = points[4*i+3]
-                    bbox = (x0, y0, x1, y1)
-                
-                # underline: bottom edge
-                elif key==9:
-                    start, end = points[4*i+2], points[4*i+3]
-                    bbox = utils.expand_centerline(start, end, w)
-                
-                # strikethrough: average of top and bottom edge
-                else:
-                    x0, x1 = points[4*i][0], points[4*i+1][0]
-                    y_ = (points[4*i][1]+points[4*i+2][1])/2.0
-                    start = x0, y_
-                    end = x1, y_
-                    bbox = utils.expand_centerline(start, end, w)    
-                
-                # add shape distributed in each line
-                if bbox:
-                    stroke_bboxes.append(bbox)
+                    fills.append({
+                        'bbox': (x0, y0, x1, y1)
+                        })
 
-        # create Rectangle
-        for bbox in stroke_bboxes:
-            rects.append({
-                    'bbox': bbox,
+                else:                
+                    # underline: bottom edge
+                    if key==9:
+                        start, end = points[4*i+2], points[4*i+3]
+                    
+                    # strikethrough: average of top and bottom edge
+                    else:
+                        x0, x1 = points[4*i][0], points[4*i+1][0]
+                        y_ = (points[4*i][1]+points[4*i+2][1])/2.0
+                        start = x0, y_
+                        end = x1, y_
+
+                    strokes.append({
+                        'start': start,
+                        'end'  : end
+                        })
+
+
+        # append color/width
+        for stroke in strokes:
+            stroke.update({
+                    'width': w,
                     'color': sc
                 })
 
-        for bbox in fill_bboxes:
-            rects.append({
-                    'bbox': bbox,
+        for fill in fills:
+            fill.update({
                     'color': fc
                 })
 
-    return rects
+    return strokes, fills
 
 
-def rects_from_stream(doc:fitz.Document, page:fitz.Page):
+def shapes_from_stream(doc:fitz.Document, page:fitz.Page):
     ''' Get rectangle shapes, e.g. highlight, underline, table borders, from page source contents.
         ---
         Args:
@@ -305,7 +312,7 @@ def rects_from_stream(doc:fitz.Document, page:fitz.Page):
     # Cleaned by `page.cleanContents()`, operator and operand are aligned in a same line;
     # otherwise, have to check stream contents word by word (line always changes)
     lines = xref_stream.splitlines()
-    rects = []
+    strokes, fills = [], []
 
     for line in lines:
 
@@ -472,8 +479,8 @@ def rects_from_stream(doc:fitz.Document, page:fitz.Page):
 
             # stroke path
             for path in paths:
-                rects_ = _stroke_path(path, WCS, Wcs, Wd, matrix)
-                rects.extend(rects_)
+                res = _stroke_path(path, WCS, Wcs, Wd, matrix)
+                strokes.extend(res)
 
             # reset path
             paths = []
@@ -485,8 +492,8 @@ def rects_from_stream(doc:fitz.Document, page:fitz.Page):
                 _close_path(path)
             
                 # fill path
-                rect = _fill_rect_path(path, WCS, Wcf, matrix)
-                if rect: rects.append(rect)
+                res = _fill_rect_path(path, WCS, Wcf, matrix)
+                fills.append(res)
 
             # reset path
             paths = []
@@ -498,12 +505,12 @@ def rects_from_stream(doc:fitz.Document, page:fitz.Page):
                 _close_path(path)
                 
                 # fill path
-                rect = _fill_rect_path(path, WCS, Wcf, matrix)
-                if rect: rects.append(rect)
+                res = _fill_rect_path(path, WCS, Wcf, matrix)
+                fills.append(res)
 
                 # stroke path
-                rects_ = _stroke_path(path, WCS, Wcs, Wd, matrix)
-                rects.extend(rects_)
+                res = _stroke_path(path, WCS, Wcs, Wd, matrix)
+                strokes.extend(res)
 
             # reset path
             paths = []
@@ -516,7 +523,7 @@ def rects_from_stream(doc:fitz.Document, page:fitz.Page):
         elif op=='n':
             paths = []
 
-    return rects
+    return strokes, fills
 
 
 def _check_device_cs(doc:fitz.Document, page:fitz.Page):
@@ -627,26 +634,24 @@ def _stroke_path(path:list, WCS:fitz.Matrix, color:int, width:float, page_height
     # CS transformation
     t_path = _transform_path(path, WCS, page_height)
 
-    rects = []
+    strokes = []
     for i in range(len(t_path)-1):
         # start point
         x0, y0 = t_path[i]
         # end point
         x1, y1 = t_path[i+1]
 
-        # ensure from top-left to bottom-right
-        if x0>x1 or y0>y1:
-            x0, y0, x1, y1 = x1, y1, x0, y0
+        # ensure from left to right
+        if x0>x1: x0, x1 = x1, x0
 
-        # convert line to rectangle
-        bbox = utils.expand_centerline((x0, y0), (x1, y1), width)
-        if bbox:
-            rects.append({
-                'bbox': bbox,
-                'color': color
-            })
+        strokes.append({
+            'start': (x0, y0),
+            'end'  : (x1, y1),
+            'width': width,
+            'color': color
+        })
     
-    return rects
+    return strokes
 
 
 def _fill_rect_path(path:list, WCS:fitz.Matrix, color:int, page_height:float):

@@ -43,7 +43,7 @@ from ..common.BBox import BBox
 from ..common.base import RectType
 from ..common.constants import DICT_FONTS
 from ..common import utils, docx
-from ..shape.Rectangle import Rectangle
+from ..shape.Shape import Shape
 
 
 class TextSpan(BBox):
@@ -174,7 +174,7 @@ class TextSpan(BBox):
         page.drawRect(self.bbox, color=color, fill=color, width=0, overlay=False)
 
 
-    def split(self, rect:Rectangle, horizontal:bool=True):
+    def split(self, rect:Shape, horizontal:bool=True):
         '''Split span with the intersection: span-intersection-span.'''
         # any intersection in this span?
         intsec = rect.bbox & self.bbox
@@ -240,7 +240,7 @@ class TextSpan(BBox):
         return split_spans
 
 
-    def parse_text_style(self, rect: Rectangle, horizontal:bool=True):
+    def parse_text_style(self, rect: Shape, horizontal:bool=True):
         '''Parse text style based on the position to a span bbox.'''
 
         # consider text format type only

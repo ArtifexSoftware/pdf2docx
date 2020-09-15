@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-A group of instances, e.g. instances, Spans, Rectangles.
+A group of instances, e.g. instances, Spans, Shapes.
 
 @created: 2020-07-24
 @author: train8808@gmail.com
