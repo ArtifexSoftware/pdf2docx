@@ -23,17 +23,17 @@ from .Border import HBorder, VBorder
 
 class TablesConstructor(TableStructure):
 
-    def __init__(self, blocks:Blocks, rects:Shapes):
+    def __init__(self, blocks:Blocks, shapes:Shapes):
         '''Object parsing TableBlock.'''
         self._blocks = blocks
-        self._rects = rects
+        self._shapes = shapes
 
 
     def lattice_tables(self):
         '''Parse table with explicit borders/shadings represented by rectangle shapes.'''
         # group rects: each group may be a potential table
         fun = lambda a,b: a.bbox & (b.bbox+DR) # NOTE: considering margin
-        groups = self._rects.group(fun)
+        groups = self._shapes.group(fun)
 
         # parse table with each group
         tables = Blocks()
@@ -213,7 +213,7 @@ class TablesConstructor(TableStructure):
 
         # check rects
         shading_rects = [] # type: list[Shape]
-        for rect in self._rects:
+        for rect in self._shapes:
 
             # focus on rect not parsed yet
             if rect.type != RectType.UNDEFINED: continue
@@ -266,7 +266,7 @@ class TablesConstructor(TableStructure):
         # potentail explicit borders/shadings contained in table
         # NOTE: not yet processed rects only
         rects = list(filter(
-            lambda rect: rect.bbox.intersects(bbox.bbox) and rect.type==RectType.UNDEFINED, self._rects))
+            lambda rect: rect.bbox.intersects(bbox.bbox) and rect.type==RectType.UNDEFINED, self._shapes))
         
         # parse stream borders based on contents in cell and explicit borders
         table_rects = self.stream_borders(table_lines, outer_borders, Shapes(rects))

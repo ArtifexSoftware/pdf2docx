@@ -25,7 +25,7 @@ Data structure:
 from ..common.BBox import BBox
 from ..common.base import RectType
 from ..common.utils import RGB_component
-from ..common.base import RectType
+from ..common.constants import DM
 
 
 
@@ -65,34 +65,76 @@ class Shape(BBox):
 class Stroke(Shape):
     '''Liear stroke of a path.'''
     def __init__(self, raw:dict={}):
-        # stroke style
-        self.start = raw.get('start', (0.0, 0.0))
-        self.end = raw.get('end', (0.0, 0.0))
-        self.width = raw.get('width', 0.5)
-
-        # calculate bbox
-        raw['bbox'] = self.to_rect()
+        self._start = raw.get('start', None)
+        self._end = raw.get('end', None)
+        width = raw.get('width', 0.0)
+        raw['bbox'] = self._to_rect(width)
         super(Stroke, self).__init__(raw)
 
+    @property
+    def is_horizontal(self):
+        '''override IText method.'''
+        return self._start[1] == self._end[1]
 
-    def to_rect(self):
+    @property
+    def is_vertical(self):
+        '''override IText method.'''
+        return self._start[0] == self._end[0]
+
+    @property
+    def width(self):
+        return min(self.bbox.width, self.bbox.height)
+
+    @property
+    def x0(self):
+        return self._x0
+    
+
+
+    def update(self, rect):
+        '''Update current bbox to specified `rect`.
+            ---
+            Args:
+              - rect: fitz.rect or raw bbox like (x0, y0, x1, y1)
+        '''
+        super(Stroke, self).update(rect)
+
+        # suppose horizontal or vertical stroke
+        bbox = self.bbox
+        if bbox.width >= bbox.height: # horizontal
+            y = (bbox.y0+bbox.y1)/2.0
+            self._start = (bbox.x0, y)
+            self._end   = (bbox.x1, y)
+        else: #vertical
+            x = (bbox.x0+bbox.x1)/2.0
+            self._start = (x, bbox.y0)
+            self._end   = (x, bbox.y1)
+
+        return self    
+
+
+    def _to_rect(self, width):
         ''' convert centerline to rectangle shape.
             centerline is represented with start/end points: (x0, y0), (x1, y1).
         '''
-        h = self.width / 2.0
-        x0, y0 = self.start
-        x1, y1 = self.end
+        if not self._start or not self._end:
+            return None
+
+        h = width / 2.0
+        x0, y0 = self._start
+        x1, y1 = self._end
 
         # horizontal line
-        if y0==y1:
+        if abs(y0-y1)<=DM:
             res = (x0, y0-h, x1, y1+h)
         # vertical line
-        elif x0==x1:
+        elif abs(x0-x1)<=DM:
             res = (x0-h, y0, x1+h, y1)
         else:
             res = (min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1))
 
         return res
+
 
     def plot(self, page):
         '''Plot rectangle shapes with PyMuPDF.
@@ -101,7 +143,7 @@ class Stroke(Shape):
               - page: fitz.Page object
         '''
         color = [c/255.0 for c in RGB_component(self.color)]
-        page.drawLine(self.start, self.end, color=None, width=self.width, overlay=False)
+        page.drawLine(self._start, self._end, color=None, width=self.width, overlay=False)
 
 
 class Fill(Shape):

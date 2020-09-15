@@ -27,7 +27,7 @@ Consider horizontal and vertical borders only.
 
 
 from ..shape.Shapes import Shapes
-from ..shape.Shape import Shape
+from ..shape.Shape import Stroke
 from ..common.utils import expand_centerline, RGB_value
 from ..common.constants import MAX_W_BORDER, HIDDEN_W_BORDER
 from ..common.base import RectType
@@ -128,27 +128,30 @@ class HBorder(Border):
         self.finalized = True
         return self
 
-    def finalize_by_rect(self, h_rect:Shape):
-        ''' Finalize border with specified horizontal rect, which is generally a showing border.        
-            NOTE: the boundary borders may also be affected by this rect.
+    def finalize_by_stroke(self, stroke:Stroke):
+        ''' Finalize border with specified horizontal stroke shape, which is generally a showing border.        
+            NOTE: the boundary borders may also be affected by this stroke shape.
         '''
-        bbox = h_rect.bbox
-        y = (bbox.y0+bbox.y1)/2.0
+        x0, x1 = stroke.x0, stroke.x1
+        y = stroke.y0 # equal to stroke.y1
 
         # skip if no intersection in y-direction
         if self.finalized or not self.is_valid(y): return self
 
         # skip if no intersection in x-ditrection
-        if bbox.x1 <= self._LBorder.LRange or bbox.x0 >= self._UBorder.URange: return self
+        if x1 <= self._LBorder.LRange or x0 >= self._UBorder.URange: return self
 
         # now, it can be used to finalize current border
         self.finalize(y)
-        self.color = h_rect.color
-        self.width = bbox.y1 - bbox.y0
+        self.color = stroke.color
+        self.width = stroke.width
 
         # and, try to finalize boundary borders
-        self._LBorder.finalize(bbox.x0)
-        self._UBorder.finalize(bbox.x1)
+        self._LBorder.finalize(x0)
+        self._UBorder.finalize(x1)
+
+        # update rect type as table border
+        stroke.type = RectType.BORDER
 
         return self
 
@@ -178,30 +181,30 @@ class VBorder(Border):
         self.finalized = True
         return self
     
-    def finalize_by_rect(self, v_rect:Shape):
+    def finalize_by_stroke(self, stroke:Stroke):
         ''' Finalize border with specified horizontal rect, which is generally a showing border.        
             NOTE: the boundary borders may also be affected by this rect.
         '''
-        bbox = v_rect.bbox
-        x = (bbox.x0+bbox.x1)/2.0
+        y0, y1 = stroke.y0, stroke.y1
+        x = stroke.x0 # or stroke.x1
 
         # skip if no intersection in y-direction
         if self.finalized or not self.is_valid(x): return self
 
         # skip if no intersection in x-ditrection
-        if bbox.y1 <= self._LBorder.LRange or bbox.y0 >= self._UBorder.URange: return self
+        if y1 <= self._LBorder.LRange or y0 >= self._UBorder.URange: return self
 
         # now, it can be used to finalize current border
         self.finalize(x)
-        self.color = v_rect.color
-        self.width = bbox.x1 - bbox.x0
+        self.color = stroke.color
+        self.width = stroke.width
 
         # and, try to finalize boundary borders
-        self._LBorder.finalize(bbox.y0)
-        self._UBorder.finalize(bbox.y1)
+        self._LBorder.finalize(y0)
+        self._UBorder.finalize(y1)
 
         # update rect type as table border
-        v_rect.type = RectType.BORDER
+        stroke.type = RectType.BORDER
 
         return self
 
@@ -254,25 +257,25 @@ class Borders:
     @property
     def VBorders(self): return self._VBorders
 
-    def finalize(self, rects:Shapes):
+    def finalize(self, strokes:Shapes):
         ''' Finalize the position of all borders: to align h-borders or v-borders as more as possible,
             so to simplify the table structure.
             ---
             Args:
-            - rects: a group of explicit border rects. Stream table borders should follow these borders.
+            - strokes: a group of explicit border strokes. Stream table borders should follow these borders.
         '''
-        # process h- and v- rects respectively
-        h_rects = list(filter(
-            lambda rect: rect.bbox.width >= rect.bbox.height <= MAX_W_BORDER, rects))
-        for rect in h_rects:
+        # process h- and v- strokes respectively
+        h_strokes = list(filter(
+            lambda stroke: stroke.is_horizontal, strokes))
+        for stroke in h_strokes:
             for border in self._HBorders:            
-                border.finalize_by_rect(rect)
+                border.finalize_by_stroke(stroke)
 
-        v_rects = list(filter(
-            lambda rect: rect.bbox.height > rect.bbox.width <= MAX_W_BORDER, rects))
-        for rect in v_rects:
+        v_strokes = list(filter(
+            lambda stroke: stroke.is_vertical, strokes))
+        for stroke in v_strokes:
             for border in self._VBorders:            
-                border.finalize_by_rect(rect)        
+                border.finalize_by_stroke(stroke)
 
         # process un-finalized h-borders further
         borders = list(filter(lambda border: not border.finalized, self._HBorders))

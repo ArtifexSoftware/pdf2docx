@@ -19,20 +19,23 @@ class Shapes(Collection):
     @property
     def borders(self):
         '''Shapes in border type.'''
-        return list(filter(
+        instances = list(filter(
             lambda shape: shape.type==RectType.BORDER, self._instances))
+        return Shapes(instances)
 
     @property
     def strokes(self):
         '''Shapes in border type.'''
-        return list(filter(
+        instances = list(filter(
             lambda shape: isinstance(shape, Stroke), self._instances))
+        return Shapes(instances)
 
     @property
     def fillings(self):
         '''Shapes in border type.'''
-        return list(filter(
+        instances = list(filter(
             lambda shape: isinstance(shape, Fill), self._instances))
+        return Shapes(instances)
 
 
     def from_annotations(self, page):
