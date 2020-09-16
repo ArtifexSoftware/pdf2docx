@@ -171,7 +171,7 @@ class Line(BBox):
             return False
 
         # normal reading direction by default
-        idx = 1 if self.is_horizontal else 0
+        idx = 1 if self.is_horizontal_text else 0
 
         c1 = (self.bbox[idx] + self.bbox[idx+2]) / 2.0
         c2 = (line.bbox[idx] + line.bbox[idx+2]) / 2.0

@@ -55,7 +55,7 @@ class BBox(IText):
         '''
         # NOTE: in PyMuPDF CS, horizontal text direction is dame with positive x-axis,
         # while vertical text is on the contrarory
-        idx0, f = (0, 1) if self.is_horizontal else (3, -1)
+        idx0, f = (0, 1) if self.is_horizontal_text else (3, -1)
         dx = (self.bbox[idx0]-bbox[idx0]) * f
 
         # NOTE: consider modification when exceeds right boundary.
@@ -96,8 +96,8 @@ class BBox(IText):
         if not bbox or not bool(self): return False
 
         # text direction
-        is_horizontal = self.is_horizontal if text_direction else True
-        idx = 0 if is_horizontal else 1
+        is_horizontal_text = self.is_horizontal_text if text_direction else True
+        idx = 0 if is_horizontal_text else 1
 
         L1 = self.bbox[idx+2]-self.bbox[idx]
         L2 = bbox.bbox[idx+2]-bbox.bbox[idx]
@@ -129,8 +129,8 @@ class BBox(IText):
         if not bbox or not bool(self): return False
 
         # text direction
-        is_horizontal = self.is_horizontal if text_direction else True
-        idx = 1 if is_horizontal else 0
+        is_horizontal_text = self.is_horizontal_text if text_direction else True
+        idx = 1 if is_horizontal_text else 0
         
         L1 = self.bbox[idx+2]-self.bbox[idx]
         L2 = bbox.bbox[idx+2]-bbox.bbox[idx]

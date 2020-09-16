@@ -28,7 +28,7 @@ Consider horizontal and vertical borders only.
 
 from ..shape.Shapes import Shapes
 from ..shape.Shape import Stroke
-from ..common.utils import expand_centerline, RGB_value
+from ..common.utils import RGB_value
 from ..common.constants import MAX_W_BORDER, HIDDEN_W_BORDER
 from ..common.base import RectType
 
@@ -91,16 +91,12 @@ class Border:
     def centerline(self):
         raise NotImplementedError
 
-    def to_rect(self):
-        '''Convert to Rectangle instance.'''
-        centerline = self.centerline
-        bbox = expand_centerline(centerline[0:2], centerline[2:], width=self.width)
-
-        # create Rectangle instance
-        rect = Rectangle({'color': self.color}).update(bbox)
-        rect.type = RectType.BORDER # set border style
+    def to_stroke(self):
+        '''Convert to border stroke.'''
+        stroke = Stroke({'color': self.color, 'width': self.width}).update(self.centerline)
+        stroke.type = RectType.BORDER # set border style
         
-        return rect
+        return stroke
 
 
 class HBorder(Border):
@@ -266,13 +262,13 @@ class Borders:
         '''
         # process h- and v- strokes respectively
         h_strokes = list(filter(
-            lambda stroke: stroke.is_horizontal, strokes))
+            lambda stroke: stroke.horizontal, strokes))
         for stroke in h_strokes:
             for border in self._HBorders:            
                 border.finalize_by_stroke(stroke)
 
         v_strokes = list(filter(
-            lambda stroke: stroke.is_vertical, strokes))
+            lambda stroke: stroke.vertical, strokes))
         for stroke in v_strokes:
             for border in self._VBorders:            
                 border.finalize_by_stroke(stroke)

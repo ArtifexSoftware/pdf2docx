@@ -132,7 +132,7 @@ class TextBlock(Block):
         if self.lines.image_spans: return True
 
         # check text direction
-        if self.is_vertical: return True
+        if self.is_vertical_text: return True
 
         # check the count of discrete lines
         cnt = 1
@@ -189,7 +189,7 @@ class TextBlock(Block):
 
                     # split text span with the format rectangle: span-intersection-span
                     else:
-                        spans = span.split(rect, line.is_horizontal)
+                        spans = span.split(rect, line.is_horizontal_text)
                         split_spans.extend(spans)
                         flag = True
                                                 
@@ -209,7 +209,7 @@ class TextBlock(Block):
         '''
 
         # check text direction
-        idx = 1 if self.is_horizontal else 0
+        idx = 1 if self.is_horizontal_text else 0
 
         ref_line = None
         count = 0
@@ -265,7 +265,7 @@ class TextBlock(Block):
         # check text direction
         # normal direction by default, taking left border as a reference
         # when from bottom to top, taking bottom border as a reference
-        idx = 0 if self.is_horizontal else 3
+        idx = 0 if self.is_horizontal_text else 3
 
         # indent and space setting
         before_spacing = max(round(self.before_space, 1), 0.0)

@@ -12,9 +12,9 @@ Parsing table blocks:
 
 from ..common.BBox import BBox
 from ..common.base import RectType
-from ..common.constants import MAX_W_BORDER, DR
+from ..common.constants import DR
 from ..layout.Blocks import Blocks
-from ..shape.Shape import Shape
+from ..shape.Shape import Fill
 from ..shape.Shapes import Shapes
 from ..text.Lines import Lines
 from .TableStructure import TableStructure
@@ -31,15 +31,23 @@ class TablesConstructor(TableStructure):
 
     def lattice_tables(self):
         '''Parse table with explicit borders/shadings represented by rectangle shapes.'''
-        # group rects: each group may be a potential table
+        # group stroke shapes: each group may be a potential table
         fun = lambda a,b: a.bbox & (b.bbox+DR) # NOTE: considering margin
-        groups = self._shapes.group(fun)
+        groups = self._shapes.strokes.group(fun)
+        print('----------->', len(self._shapes.strokes))
+
+        # all filling shapes
+        shadings = self._shapes.fillings
 
         # parse table with each group
         tables = Blocks()
         for group in groups:
+            print('===>', len(group))
+            # get potential shadings in this table region
+            group_shadings = shadings.contained_in_bbox(group.bbox)
+
             # parse table structure based on rects in border type
-            table = self.parse_structure(group, detect_border=True)
+            table = self.parse_structure(group, group_shadings)
             tables.append(table)
 
         # check if any intersection with previously parsed tables
@@ -71,7 +79,7 @@ class TablesConstructor(TableStructure):
         ''' Parse table where the main structure is determined by outer borders extracted from shading rects.            
             This table is generally to simulate the shading shape in docx. 
         '''
-        shading_rects = self._shading_rects(width_threshold=MAX_W_BORDER)
+        shading_rects = self._shading_shapes()
 
         # table based on each shading rect
         tables = Blocks()
@@ -195,11 +203,8 @@ class TablesConstructor(TableStructure):
         return unique_tables
 
 
-    def _shading_rects(self, width_threshold:float):
+    def _shading_shapes(self):
         ''' Detect shading rects.
-            ---
-            Args:
-            - width_threshold: float, suppose shading rect width is larger than this value
 
             NOTE: Shading borders are checked after parsing lattice tables.            
             
@@ -211,48 +216,42 @@ class TablesConstructor(TableStructure):
         # lattice tables
         lattice_tables = self._blocks.lattice_table_blocks
 
-        # check rects
-        shading_rects = [] # type: list[Shape]
-        for rect in self._shapes:
+        # check shapes
+        shading_shapes = [] # type: list[Fill]
+        for shape in self._shapes.fillings:
 
-            # focus on rect not parsed yet
-            if rect.type != RectType.UNDEFINED: continue
+            # focus on shape not parsed yet
+            if shape.type != RectType.UNDEFINED: continue
 
             # not in lattice table region
             for table in lattice_tables:
-                if table.bbox.contains(rect.bbox):
+                if table.bbox.contains(shape.bbox):
                     skip = True
                     break
             else:
                 skip = False
             if skip: continue
 
-            # potential shading rects: min-width > 6 Pt
-            x0, y0, x1, y1 = rect.bbox
-            if min(x1-x0, y1-y0) <= width_threshold:
-                continue
-
-            # now shading rect or highlight rect:
-            # shading rect contains at least one text block
+            # cell shading or highlight:
+            # shading shape contains at least one text block
             shading = False
-            expand_bbox = rect.bbox + DR / 0.2 # expand 2.5 Pt
+            expand_bbox = shape.bbox + DR / 0.2 # expand 2.5 Pt
             for block in self._blocks:
                 if expand_bbox.contains(block.bbox):
                     shading = True
                     break
 
-                # do not containing but intersecting with text block -> can't be shading rect
+                # do not containing but intersecting with text block -> can't be shading shape
                 elif expand_bbox.intersects(block.bbox):
                     break
                 
                 # no chance any more
-                elif block.bbox.y0 > rect.bbox.y1: 
+                elif block.bbox.y0 > shape.bbox.y1: 
                     break
             
-            if shading:
-                shading_rects.append(rect)            
+            if shading: shading_shapes.append(shape)            
 
-        return shading_rects
+        return shading_shapes
 
 
     def _stream_table(self, table_lines:Lines, bbox:BBox, outer_borders:tuple):
@@ -263,22 +262,21 @@ class TablesConstructor(TableStructure):
             - bbox: bounding box of table
             - outer_borders: four Border instances, (top, bottom, left, right), representing outer borders
         '''
-        # potentail explicit borders/shadings contained in table
+        # potentail explicit borders contained in table
         # NOTE: not yet processed rects only
-        rects = list(filter(
-            lambda rect: rect.bbox.intersects(bbox.bbox) and rect.type==RectType.UNDEFINED, self._shapes))
+        explicit_strokes = list(filter(
+            lambda shape: shape.bbox & bbox.bbox and shape.type==RectType.UNDEFINED, self._shapes.strokes))
         
         # parse stream borders based on contents in cell and explicit borders
-        table_rects = self.stream_borders(table_lines, outer_borders, Shapes(rects))
-        if not table_rects: return None
+        strokes = self.stream_borders(table_lines, outer_borders, Shapes(explicit_strokes))
+        if not strokes: return None
 
-        # append potential explicit shadings for parsing table style
-        # NOTE: duplicated borders may exist between stream borders and explicit borders
-        table_rects.extend(rects)
+        # potential shadings in this table region
+        shadings = self._shapes.fillings.contained_in_bbox(bbox.bbox)
 
-        # parse table: don't have to detect borders since it's determined already
-        table_rects.sort_in_reading_order() # required
-        table = self.parse_structure(table_rects, detect_border=False)
+        # parse table
+        strokes.sort_in_reading_order() # required
+        table = self.parse_structure(strokes, shadings)
         
         return table
 

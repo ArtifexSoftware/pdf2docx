@@ -137,7 +137,7 @@ class Blocks(Collection):
         # - remove empty blocks
         f = lambda block:   block.bbox.intersects(page_bbox) and \
                             block.text.strip() and (
-                            block.is_horizontal or block.is_vertical)
+                            block.is_horizontal_text or block.is_vertical_text)
         self._instances = list(filter(f, self._instances))
            
         # merge blocks horizontally, e.g. remove overlap blocks, since no floating elements are supported
@@ -306,7 +306,7 @@ class Blocks(Collection):
         # normal reading direction by default, i.e. from left to right, 
         # the reference boundary is top border, i.e. bbox[1].
         # regarding vertical text direction, e.g. from bottom to top, left border bbox[0] is the reference
-        idx = 1 if self.is_horizontal else 0
+        idx = 1 if self.is_horizontal_text else 0
 
         ref_block = self._instances[0]
         ref_pos = bbox[idx]

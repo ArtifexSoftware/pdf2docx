@@ -14,6 +14,7 @@ from ..common import utils
 from ..common import pdf
 
 
+
 class Shapes(Collection):
 
     @property
@@ -45,13 +46,7 @@ class Shapes(Collection):
             - page: fitz.Page, current page
         '''
         strokes, fills = pdf.shapes_from_annotations(page)
-
-        for raw in strokes:
-            self._instances.append(Stroke(raw))
-
-        for raw in fills:
-            self._instances.append(Fill(raw))
-
+        self._initialize(strokes, fills)
         return self
 
 
@@ -62,15 +57,18 @@ class Shapes(Collection):
             - doc: fitz.Document representing the pdf file
             - page: fitz.Page, current page
         '''
-        strokes, fills = pdf.shapes_from_stream(doc, page)
-        
-        for raw in strokes:
-            self._instances.append(Stroke(raw))
-
-        for raw in fills:
-            self._instances.append(Fill(raw))
-
+        strokes, fills = pdf.shapes_from_stream(doc, page)        
+        self._initialize(strokes, fills)
         return self
+
+
+    def _initialize(self, strokes:list, fills:list):
+        '''Create Stroke or Fill instances with parsed shapes from PDF.'''
+        # strokes
+        for raw in strokes: self._instances.append(Stroke(raw))
+
+        # fills: may be stroke, to further process later
+        for raw in fills: self._instances.append(Fill(raw))
 
 
     def clean(self, page_bbox):
@@ -79,9 +77,9 @@ class Shapes(Collection):
             - join intersected and horizontally aligned rectangles with same height and bg-color
             - join intersected and vertically aligned rectangles with same width and bg-color
         '''
-        # remove rects out of page
-        f = lambda rect: rect.bbox.intersects(page_bbox)
-        self._instances = list(filter(f, self._instances))
+        # remove shapes out of page
+        f = lambda shape: shape.bbox.intersects(page_bbox)
+        shapes = list(filter(f, self._instances))
 
         # sort in reading order
         self.sort_in_reading_order()
@@ -89,54 +87,70 @@ class Shapes(Collection):
         # skip rectangles with both of the following two conditions satisfied:
         #  - fully or almost contained in another rectangle
         #  - same filling color with the containing rectangle
-        rects_unique = [] # type: list [Shape]
-        rect_changed = False
-        for rect in self._instances:
-            for ref_rect in rects_unique:
-                # Do nothing if these two rects in different bg-color
-                if ref_rect.color!=rect.color: continue     
+        shapes_unique = [] # type: list [Shape]
+        for shape in shapes:
+            for ref_shape in shapes_unique:
+                # Do nothing if these two shapes in different bg-color
+                if ref_shape.color!=shape.color: continue     
 
-                # combine two rects in a same row if any intersection exists
+                # combine two shapes in a same row if any intersection exists
                 # ideally the aligning threshold should be 1.0, but use 0.98 here to consider tolerance
-                if rect.horizontally_align_with(ref_rect, 0.98): 
-                    main_bbox = utils.get_main_bbox(rect.bbox, ref_rect.bbox, 0.0)
+                if shape.horizontally_align_with(ref_shape, 0.98): 
+                    main_bbox = utils.get_main_bbox(shape.bbox, ref_shape.bbox, 0.0)
 
-                # combine two rects in a same column if any intersection exists
-                elif rect.vertically_align_with(ref_rect, 0.98):
-                    main_bbox = utils.get_main_bbox(rect.bbox, ref_rect.bbox, 0.0)
+                # combine two shapes in a same column if any intersection exists
+                elif shape.vertically_align_with(ref_shape, 0.98):
+                    main_bbox = utils.get_main_bbox(shape.bbox, ref_shape.bbox, 0.0)
 
-                # combine two rects if they have a large intersection
+                # combine two shapes if they have a large intersection
                 else:
-                    main_bbox = utils.get_main_bbox(rect.bbox, ref_rect.bbox, 0.5)
+                    main_bbox = utils.get_main_bbox(shape.bbox, ref_shape.bbox, 0.5)
 
                 if main_bbox:
-                    rect_changed = True
-                    ref_rect.update(main_bbox)
+                    ref_shape.update(main_bbox)
                     break            
             else:
-                rects_unique.append(rect)
+                shapes_unique.append(shape)
                 
-        # update layout
-        if rect_changed:
-            self._instances = rects_unique
+        # convert Fill instance to Stroke if looks like stroke
+        shapes = []
+        for shape in shapes_unique:
+            if isinstance(shape, Stroke):
+                shapes.append(shape)
+            else:
+                stroke = shape.to_stroke()
+                shapes.append(stroke if stroke else shape)
 
-        return rect_changed
+        self._instances = shapes
+
+        return True
 
 
-    def get_contained_rect(self, target, threshold:float):
-        '''Get rect contained in given bbox.
+    def contained_in_bbox(self, bbox):
+        ''' Filter shapes contained in target bbox.
             ---
             Args:
-            - target: BBox, target bbox
+            - bbox: fitz.Rect
+        '''
+        instances = list(filter(
+            lambda shape: shape.bbox & bbox, self._instances)) # use intersection as torrence
+        return Shapes(instances)
+
+
+    def containing_bbox(self, bbox, threshold:float):
+        ''' Get the shape containing target bbox.
+            ---
+            Args:
+            - bbox: fitz.Rect, target bbox
             - threshold: regard as contained if the intersection exceeds this threshold
         '''
-        s = target.bbox.getArea()
+        s = bbox.getArea()
         if not s: return None
 
-        for rect in self._instances:
-            intersection = target.bbox & rect.bbox
+        for instance in self._instances:
+            intersection = bbox & instance.bbox
             if intersection.getArea() / s >= threshold:
-                res = rect
+                res = instance
                 break
         else:
             res = None

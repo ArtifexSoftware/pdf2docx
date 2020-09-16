@@ -46,6 +46,12 @@ class TableStructure:
         y_rows = sorted(h_borders)
         x_cols = sorted(v_borders)
 
+        print(len(y_rows), len(x_cols))
+        for y in y_rows:
+            print('y=', y)
+            for b in h_borders[y]:
+                print(b.x0, b.y0,b.x1,b.y1)
+
         # --------------------------------------------------
         # parse table structure, especially the merged cells
         # -------------------------------------------------- 
@@ -116,7 +122,7 @@ class TableStructure:
                 # modify the cell bbox from border center to inner region
                 inner_bbox = (bbox[0]+w_left/2.0, bbox[1]+w_top/2.0, bbox[2]-w_right/2.0, bbox[3]-w_bottom/2.0)
                 target_bbox = BBox().update(inner_bbox)
-                shading_rect = shadings.get_contained_rect(target_bbox, threshold=0.9)
+                shading_rect = shadings.containing_bbox(target_bbox.bbox, threshold=0.9)
                 if shading_rect:
                     shading_rect.type = RectType.SHADING # ATTENTION: set shaing type
                     bg_color = shading_rect.color
@@ -172,7 +178,7 @@ class TableStructure:
         # all centerlines to rectangle shapes
         res = Shapes()
         for border in borders: 
-            res.append(border.to_rect())
+            res.append(border.to_stroke())
 
         return res
 
@@ -186,7 +192,7 @@ class TableStructure:
         X0, Y0, X1, Y1 = 9999.0, 9999.0, 0.0, 0.0
         for border in borders:
             # group horizontal borders in each row
-            if border.is_horizontal:
+            if border.horizontal:
                 # row centerline
                 y = round(border.y0, 1)
 
@@ -205,7 +211,7 @@ class TableStructure:
                 X1 = max(X1, border.x1)
 
             # group vertical borders in each column
-            elif border.is_vertical:
+            elif border.vertical:
                 # column centerline
                 x = round(border.x0, 1)
                 

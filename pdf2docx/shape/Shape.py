@@ -26,7 +26,7 @@ from ..common.BBox import BBox
 from ..common.base import RectType
 from ..common.utils import RGB_component
 from ..common.constants import DM
-
+from ..common.constants import MAX_W_BORDER
 
 
 class Shape(BBox):
@@ -53,31 +53,31 @@ class Shape(BBox):
         return res
 
     def plot(self, page):
-        '''Plot rectangle shapes with PyMuPDF.
-            ---
-            Args:
-              - page: fitz.Page object
-        '''
+        '''Plot rectangle shapes with PyMuPDF.'''
         color = [c/255.0 for c in RGB_component(self.color)]
         page.drawRect(self.bbox, color=color, fill=color, width=0, overlay=False)
 
 
 class Stroke(Shape):
-    '''Liear stroke of a path.'''
+    '''Linear stroke of a path.'''
     def __init__(self, raw:dict={}):
         self._start = raw.get('start', None)
         self._end = raw.get('end', None)
+
+        # Note: rotation matrix is applied to Stroke.bbox by initializing BBox,
+        # while self._start and self._end are still in original PyMuPDF CS. This affects the debug plot.
         width = raw.get('width', 0.0)
-        raw['bbox'] = self._to_rect(width)
+        bbox = self._to_rect(width)
+        if bbox: raw['bbox'] = bbox
         super(Stroke, self).__init__(raw)
 
     @property
-    def is_horizontal(self):
+    def horizontal(self):
         '''override IText method.'''
         return self._start[1] == self._end[1]
 
     @property
-    def is_vertical(self):
+    def vertical(self):
         '''override IText method.'''
         return self._start[0] == self._end[0]
 
@@ -85,11 +85,30 @@ class Stroke(Shape):
     def width(self):
         return min(self.bbox.width, self.bbox.height)
 
+    # Note: Get the coordinates from rotated bbox, rather than self._start and self._end
     @property
     def x0(self):
-        return self._x0
-    
+        if self.horizontal: return self.bbox.x0
+        if self.vertical: return (self.bbox.x0+self.bbox.x1)/2.0
+        raise Exception('Not supported for horizontal or vertical Strokes.')
 
+    @property
+    def x1(self):
+        if self.horizontal: return self.bbox.x1
+        if self.vertical: return (self.bbox.x0+self.bbox.x1)/2.0
+        raise Exception('Not supported for horizontal or vertical Strokes.')
+
+    @property
+    def y0(self):
+        if self.horizontal: return (self.bbox.y0+self.bbox.y1)/2.0
+        if self.vertical: return self.bbox.y0
+        raise Exception('Not supported for horizontal or vertical Strokes.')
+
+    @property
+    def y1(self):
+        if self.horizontal: return (self.bbox.y0+self.bbox.y1)/2.0
+        if self.vertical: return self.bbox.y1
+        raise Exception('Not supported for horizontal or vertical Strokes.')
 
     def update(self, rect):
         '''Update current bbox to specified `rect`.
@@ -124,12 +143,9 @@ class Stroke(Shape):
         x0, y0 = self._start
         x1, y1 = self._end
 
-        # horizontal line
-        if abs(y0-y1)<=DM:
-            res = (x0, y0-h, x1, y1+h)
-        # vertical line
-        elif abs(x0-x1)<=DM:
-            res = (x0-h, y0, x1+h, y1)
+        # horizontal/vertical line
+        if abs(y0-y1)<=DM or abs(x0-x1)<=DM:
+            res = (x0-h, y0-h, x1+h, y1+h)
         else:
             res = (min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1))
 
@@ -137,16 +153,24 @@ class Stroke(Shape):
 
 
     def plot(self, page):
-        '''Plot rectangle shapes with PyMuPDF.
-            ---
-            Args:
-              - page: fitz.Page object
-        '''
+        '''Plot rectangle shapes with PyMuPDF.'''
         color = [c/255.0 for c in RGB_component(self.color)]
-        page.drawLine(self._start, self._end, color=None, width=self.width, overlay=False)
+        page.drawLine(self._start, self._end, color=color, width=self.width, overlay=False)
 
 
 class Fill(Shape):
-    '''Rectanglular (bbox) filling area of a closed path.'''
+    '''Rectangular (bbox) filling area of a closed path.'''
 
-    ...
+    def to_stroke(self):
+        '''Convert to Stroke instance based on width criterion.
+
+            NOTE: a Fill from shape point of view may be a Stroke from content point of view.
+            The criterion here is whether the width is smaller than `MAX_W_BORDER` defined in constants.
+        '''
+        w = min(self.bbox.width, self.bbox.height)
+
+        # not a stroke if exceed max border width
+        if w > MAX_W_BORDER:
+            return None
+        else:
+            return Stroke({'width': w, 'color': self.color}).update(self.bbox)

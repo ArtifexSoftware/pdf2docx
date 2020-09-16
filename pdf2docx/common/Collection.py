@@ -89,7 +89,7 @@ class Collection(IText):
         '''Sort collection instances in reading order (considering text direction), e.g.
             for normal reading direction: from top to bottom, from left to right.
         '''
-        if self.is_horizontal:
+        if self.is_horizontal_text:
             self._instances.sort(key=lambda instance: (instance.bbox.y0, instance.bbox.x0, instance.bbox.x1))
         else:
             self._instances.sort(key=lambda instance: (instance.bbox.x0, instance.bbox.y1, instance.bbox.y0))
@@ -100,7 +100,7 @@ class Collection(IText):
         '''Sort collection instances in a physical with text direction considered, e.g.
             for normal reading direction: from left to right.
         '''
-        if self.is_horizontal:
+        if self.is_horizontal_text:
             self._instances.sort(key=lambda instance: (instance.bbox.x0, instance.bbox.y0, instance.bbox.x1))
         else:
             self._instances.sort(key=lambda instance: (instance.bbox.y1, instance.bbox.x0, instance.bbox.y0))
@@ -119,7 +119,7 @@ class Collection(IText):
         return [ instance.store() for instance in self._instances ]
 
 
-    def group(self, fun):
+    def group0(self, fun):
         '''group instances according to user defined criterion.
             ---
             Args:
@@ -155,7 +155,51 @@ class Collection(IText):
             # add rect to groups
             group_instances = [self._instances[x] for x in group]
             instances = self.__class__(group_instances)
+            print(group)
+            if len(group)<10:
+                for g in instances:
+                    print(g.bbox.x0,g.bbox.y0, g.bbox.x1, g.bbox.y1)
             groups.append(instances)
+
+        return groups
+
+
+    def group(self, fun):
+        '''group instances according to user defined criterion.
+            ---
+            Args:
+              - fun: function with 2 parameters (BBox) representing 2 instances, and return bool
+            
+            Examples:
+            ```
+            # group instances intersected with each other
+            fun = lambda a,b: a & b
+            # group instances aligned horizontally
+            fun = lambda a,b: a.horizontally_aligned_with(b)
+            ```
+        '''
+        groups = [] # type: list[Collection]
+        counted_index = set() # type: set[int]
+
+        # check each instance
+        for instance in self._instances:
+            found = False
+            # check each group
+            for group in groups:
+                # check each instance in group
+                for target in group:
+                    if fun(instance, target):
+                        group.append(instance)
+                        found = True
+                        break
+
+                # stop if found in any groups
+                if found: break
+            # new group if not found
+            else:
+                groups.append([instance])
+
+        groups = [self.__class__(group) for group in groups]
 
         return groups
 
@@ -170,7 +214,7 @@ class Collection(IText):
                     2 parameters: instance 1 and instance 2, return bool.
         '''
 
-        idx = 1 if self.is_horizontal else 0
+        idx = 1 if self.is_horizontal_text else 0
 
         for i, target in enumerate(self._instances):
 
