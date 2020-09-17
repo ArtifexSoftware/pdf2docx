@@ -71,6 +71,7 @@ class TableStructure:
         table = TableBlock()
         n_rows = len(merged_cells_rows)
         n_cols = len(merged_cells_cols)
+
         for i in range(n_rows):
             # row object
             row = Row()
@@ -131,14 +132,21 @@ class TableStructure:
                     'border_width': (w_top, w_right, w_bottom, w_left),
                     'merged_cells': (n_row, n_col),
                 }).update(bbox)
+
+                # check cell before adding to row:
+                # no intersection with cells in previous row
+                if i > 0:
+                    for pre_cell in table[i-1]:
+                        # Note the difference between methods: `intersects` and `&`
+                        if cell.bbox.intersects(pre_cell.bbox): return None
+
                 row.append(cell)
                     
-            # check table when each row finished: 
-            # - the first cell in first row MUST NOT be empty
-            # - a certain row MUST NOT be empty
+            # check row before adding to table: row MUST NOT be empty
             if not row: return None
 
             table.append(row)
+
 
         # parse table successfully, so set border type explicitly
         for border in borders:

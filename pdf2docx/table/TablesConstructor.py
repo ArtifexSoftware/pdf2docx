@@ -168,11 +168,9 @@ class TablesConstructor(TableStructure):
 
         # check if any intersection with previously parsed tables
         unique_tables = self._remove_floating_tables(tables)
-        for table in unique_tables:
-            # add parsed table to page level blocks
-            # in addition, ignore table if contains only one cell since it's unnecessary for stream table
-            if table.num_rows>1 or table.num_cols>1:
-                table.set_stream_table_block()
+        
+        # ignore table if contains only one cell since it's unnecessary for stream table
+        unique_tables = list(filter(lambda table: table.num_rows>1 or table.num_cols>1, unique_tables))
 
         # assign text contents to each table
         self._blocks.assign_table_contents(unique_tables)

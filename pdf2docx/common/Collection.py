@@ -119,51 +119,6 @@ class Collection(IText):
         return [ instance.store() for instance in self._instances ]
 
 
-    def group0(self, fun):
-        '''group instances according to user defined criterion.
-            ---
-            Args:
-              - fun: function with 2 parameters (BBox) representing 2 instances, and return bool
-            
-            Examples:
-            ```
-            # group instances intersected with each other
-            fun = lambda a,b: a & b
-            # group instances aligned horizontally
-            fun = lambda a,b: a.horizontally_aligned_with(b)
-            ```
-        '''
-        groups = [] # type: list[Collection]
-        counted_index = set() # type: set[int]
-
-        # check each instance to the others
-        for i,instance in enumerate(self._instances):
-
-            # do nothing if current rect has been considered already
-            if i in counted_index:
-                continue
-
-            # start a new group
-            group = { i }
-
-            # get intersected instances
-            self._group_instances(instance, group, fun)
-
-            # update counted instances
-            counted_index = counted_index | group
-
-            # add rect to groups
-            group_instances = [self._instances[x] for x in group]
-            instances = self.__class__(group_instances)
-            print(group)
-            if len(group)<10:
-                for g in instances:
-                    print(g.bbox.x0,g.bbox.y0, g.bbox.x1, g.bbox.y1)
-            groups.append(instances)
-
-        return groups
-
-
     def group(self, fun):
         '''group instances according to user defined criterion.
             ---
