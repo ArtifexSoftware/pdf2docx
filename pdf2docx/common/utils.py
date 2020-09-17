@@ -74,23 +74,6 @@ def get_main_bbox(bbox_1:fitz.Rect, bbox_2:fitz.Rect, threshold:float=0.95):
         return fitz.Rect()
 
 
-def expand_centerline(start: list, end: list, width:float=2.0):
-    ''' convert centerline to rectangle shape.
-        centerline is represented with start/end points: (x0, y0), (x1, y1).
-    '''
-    h = width / 2.0
-    x0, y0 = start
-    x1, y1 = end
-
-    # consider horizontal or vertical line only
-    if x0==x1 or y0==y1:
-        res = (x0-h, y0-h, x1+h, y1+h)
-    else:
-        res = None
-
-    return res
-
-
 def debug_plot(title:str, plot:bool=True, category:PlotControl=PlotControl.LAYOUT):
     ''' Plot layout / shapes for debug mode when the following conditions are all satisfied:
           - plot=True

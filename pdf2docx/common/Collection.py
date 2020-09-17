@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-A group of instances, e.g. instances, Spans, Rectangles.
+A group of instances, e.g. instances, Spans, Shapes.
 
 @created: 2020-07-24
 @author: train8808@gmail.com
@@ -89,7 +89,7 @@ class Collection(IText):
         '''Sort collection instances in reading order (considering text direction), e.g.
             for normal reading direction: from top to bottom, from left to right.
         '''
-        if self.is_horizontal:
+        if self.is_horizontal_text:
             self._instances.sort(key=lambda instance: (instance.bbox.y0, instance.bbox.x0, instance.bbox.x1))
         else:
             self._instances.sort(key=lambda instance: (instance.bbox.x0, instance.bbox.y1, instance.bbox.y0))
@@ -100,7 +100,7 @@ class Collection(IText):
         '''Sort collection instances in a physical with text direction considered, e.g.
             for normal reading direction: from left to right.
         '''
-        if self.is_horizontal:
+        if self.is_horizontal_text:
             self._instances.sort(key=lambda instance: (instance.bbox.x0, instance.bbox.y0, instance.bbox.x1))
         else:
             self._instances.sort(key=lambda instance: (instance.bbox.y1, instance.bbox.x0, instance.bbox.y0))
@@ -133,60 +133,46 @@ class Collection(IText):
             fun = lambda a,b: a.horizontally_aligned_with(b)
             ```
         '''
-        groups = [] # type: list[Collection]
-        counted_index = set() # type: set[int]
+        # build connection relation list:
+        # the i-th item is a set of indexes, which connected to the i-th instance
+        num = len(self._instances)
+        index_groups = [set() for i in range(num)] # type: list[set]        
+        for i, instance in enumerate(self._instances):
+            # connections of current instance to all instances after it
+            for j in range(i, num):
+                if fun(instance, self._instances[j]):
+                    index_groups[i].add(j)
+                    index_groups[j].add(i)
 
-        # check each instance to the others
-        for i,instance in enumerate(self._instances):
+        # combine all connected groups
+        counted_indexes = set() # type: set[int]
+        groups = []
+        for i, group in enumerate(index_groups):
+            # skip if counted
+            if i in counted_indexes: continue
 
-            # do nothing if current rect has been considered already
-            if i in counted_index:
-                continue
+            # collect indexes
+            indexes = set()
+            self._group_instances(i, index_groups, indexes)
+            groups.append([self._instances[x] for x in indexes])
 
-            # start a new group
-            group = { i }
+            # update counted indexes
+            counted_indexes = counted_indexes | indexes
 
-            # get intersected instances
-            self._group_instances(instance, group, fun)
-
-            # update counted instances
-            counted_index = counted_index | group
-
-            # add rect to groups
-            group_instances = [self._instances[x] for x in group]
-            instances = self.__class__(group_instances)
-            groups.append(instances)
+        # final grouped instances
+        groups = [self.__class__(group) for group in groups]
 
         return groups
 
 
-    def _group_instances(self, bbox:BBox, group:set, fun):
-        ''' Get instances related to given bbox.
-            ---
-            Args:
-              - bbox: reference bbox
-              - group: set[int], a set() of index of intersected instances
-              - fun: define the relationship with reference bbox. 
-                    2 parameters: instance 1 and instance 2, return bool.
-        '''
+    @staticmethod
+    def _group_instances(i:int, groups:list, indexes:set):
+        '''combine group indexes.''' 
+        if i in indexes: return
 
-        idx = 1 if self.is_horizontal else 0
+        # add this index
+        indexes.add(i)
 
-        for i, target in enumerate(self._instances):
-
-            # ignore bbox already processed
-            if i in group: continue
-
-            # # ignore instances with different text direction
-            # if self.text_direction != bbox.text_direction:
-            #     continue
-
-            # if satisfying given relationship, check bboxs further
-            if fun(bbox, target):
-                group.add(i)
-                self._group_instances(target, group, fun)
-
-            # it's sorted already, so no relationship exists if not intersected in vertical direction 
-            else:
-                if target.bbox[idx] > bbox.bbox[idx+2]:
-                    break
+        # check sub-group further
+        for j in groups[i]:
+            Collection._group_instances(j, groups, indexes)

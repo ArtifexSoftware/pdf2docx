@@ -116,7 +116,7 @@ class TableBlock(Block):
         '''Parse text format for blocks contained in each cell.
             ---
             Args:
-              - rects: Rectangles, format styles are represented by these rectangles.
+              - rects: Shapes, format styles are represented by these rectangles.
         '''
         for row in self._rows:
             for cell in row:

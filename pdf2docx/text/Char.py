@@ -19,7 +19,7 @@ raw dict for Char
 
 
 from ..common.BBox import BBox
-from ..shape.Rectangle import Rectangle
+from ..shape.Shape import Shape
 
 
 class Char(BBox):
@@ -30,7 +30,7 @@ class Char(BBox):
         self.origin = raw.get('origin', None)       
 
 
-    def contained_in_rect(self, rect:Rectangle, horizontal:bool=True):
+    def contained_in_rect(self, rect:Shape, horizontal:bool=True):
         ''' Detect whether locates in a rect, or has an intersection 
             larger than half of the char bbox.
         '''

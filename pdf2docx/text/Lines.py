@@ -168,7 +168,7 @@ class Lines(Collection):
                 lines_in_rows[-1].append(line)
         
         # sort lines in each row: consider text direction
-        idx = 0 if self.is_horizontal else 3
+        idx = 0 if self.is_horizontal_text else 3
         self._instances = []
         for row in lines_in_rows:
             row.sort(key=lambda line: line.bbox[idx])

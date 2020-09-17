@@ -24,10 +24,12 @@ class BBox(IText):
     # e.g. Matrix(0.0, 1.0, -1.0, 0.0, 842.0, 0.0)
     ROTATION_MATRIX = fitz.Matrix(0.0) # rotation angle = 0 degree by default
 
+
     @classmethod
     def set_rotation_matrix(cls, rotation_matrix):
         if rotation_matrix and isinstance(rotation_matrix, fitz.Matrix):
             cls.ROTATION_MATRIX = rotation_matrix
+
 
     @classmethod
     def pure_rotation_matrix(cls):
@@ -35,17 +37,23 @@ class BBox(IText):
         a,b,c,d,e,f = cls.ROTATION_MATRIX
         return fitz.Matrix(a,b,c,d,0,0)
 
+
     def __init__(self, raw:dict={}):
-        '''Initialize BBox and convert to the real (rotation considered) page coordinate system.'''
+        ''' Initialize BBox and convert to the real (rotation considered) page coordinate system.
+            NOTE: Any coordinates provided in raw is in original page CS (without considering page rotation).
+        '''
         if 'bbox' in raw:
             rect = fitz.Rect(raw['bbox']) * BBox.ROTATION_MATRIX
         else:
             rect = fitz.Rect()
+        
         self.update(rect)
+
 
     def __bool__(self):
         '''Real object when bbox is defined.'''
         return bool(self.bbox)
+
 
     def distance(self, bbox:tuple):
         '''x-distance to the given bbox.
@@ -53,9 +61,9 @@ class BBox(IText):
             Args:
             - bbox: container bbox, e.g. the valid docx page region.
         '''
-        # NOTE: in PyMuPDF CS, horizontal text direction is dame with positive x-axis,
+        # NOTE: in PyMuPDF CS, horizontal text direction is same with positive x-axis,
         # while vertical text is on the contrarory
-        idx0, f = (0, 1) if self.is_horizontal else (3, -1)
+        idx0, f = (0, 1) if self.is_horizontal_text else (3, -1)
         dx = (self.bbox[idx0]-bbox[idx0]) * f
 
         # NOTE: consider modification when exceeds right boundary.
@@ -96,8 +104,8 @@ class BBox(IText):
         if not bbox or not bool(self): return False
 
         # text direction
-        is_horizontal = self.is_horizontal if text_direction else True
-        idx = 0 if is_horizontal else 1
+        is_horizontal_text = self.is_horizontal_text if text_direction else True
+        idx = 0 if is_horizontal_text else 1
 
         L1 = self.bbox[idx+2]-self.bbox[idx]
         L2 = bbox.bbox[idx+2]-bbox.bbox[idx]
@@ -129,8 +137,8 @@ class BBox(IText):
         if not bbox or not bool(self): return False
 
         # text direction
-        is_horizontal = self.is_horizontal if text_direction else True
-        idx = 1 if is_horizontal else 0
+        is_horizontal_text = self.is_horizontal_text if text_direction else True
+        idx = 1 if is_horizontal_text else 0
         
         L1 = self.bbox[idx+2]-self.bbox[idx]
         L2 = bbox.bbox[idx+2]-bbox.bbox[idx]
@@ -148,7 +156,7 @@ class BBox(IText):
         '''Update current bbox to specified `rect`.
             ---
             Args:
-              - rect: fitz.rect or raw bbox like (x0, y0, x1, y1)
+              - rect: fitz.rect or raw bbox like (x0, y0, x1, y1) in real page CS (with rotation considered).
         '''
         self.bbox = fitz.Rect([round(x,1) for x in rect])
         return self

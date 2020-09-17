@@ -219,5 +219,5 @@ class Cell(BBox):
         docx.set_cell_margins(docx_cell, start=0, end=0)
 
         # set vertical direction if contained text blocks are in vertical direction
-        if self.blocks.is_vertical:
+        if self.blocks.is_vertical_text:
             docx.set_vertical_cell_direction(docx_cell)

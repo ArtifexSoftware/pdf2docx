@@ -17,7 +17,7 @@ class BlockType(Enum):
 
 
 class RectType(Enum):
-    ''' Rectangle type in context:
+    ''' Shape type in context:
         - not defined   : -1
         - highlight     : 0
         - underline     : 1
@@ -61,10 +61,10 @@ class IText:
         return TextDirection.LEFT_RIGHT
 
     @property
-    def is_horizontal(self):
+    def is_horizontal_text(self):
         '''Check whether text direction is from left to right.'''
         return self.text_direction == TextDirection.LEFT_RIGHT
 
     @property
-    def is_vertical(self):
+    def is_vertical_text(self):
         return self.text_direction == TextDirection.BOTTOM_TOP

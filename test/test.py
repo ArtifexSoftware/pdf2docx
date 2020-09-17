@@ -144,6 +144,8 @@ class TestUtility(unittest.TestCase):
                     m, n = len(sample_span.style), len(test_span.style)
                     self.assertEqual(m, n, msg=f"\nThe count of applied text style {n} is inconsistent with sample {m}")
 
+                    sample_span.style.sort(key=lambda item: item['type'])
+                    test_span.style.sort(key=lambda item: item['type'])
                     for sample_dict, test_dict in zip(sample_span.style, test_span.style):
                         a, b = sample_dict['type'], test_dict['type']
                         self.assertEqual(a, b, msg=f"\nApplied text style '{b}' is inconsistent with sample '{a}'")

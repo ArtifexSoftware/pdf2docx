@@ -84,7 +84,7 @@ class Converter:
         self.initialize(page)
         if debug: 
             self._layout.plot(debug_kwargs['doc'], 'Original Text Blocks', key=PlotControl.LAYOUT)
-            self._layout.plot(debug_kwargs['doc'], 'Original Rectangle Shapes', key=PlotControl.SHAPE)
+            self._layout.plot(debug_kwargs['doc'], 'Original Shapes', key=PlotControl.SHAPE)
 
         # parse and save page
         self.layout.parse(**debug_kwargs).make_page(self.doc_docx)
@@ -144,11 +144,11 @@ class Converter:
         self._layout = Layout(raw_layout, page.rotationMatrix)
         
         # get rectangle shapes from page source
-        self._layout.rects.from_stream(self.doc_pdf, page)
+        self._layout.shapes.from_stream(self.doc_pdf, page)
         
         # get annotations(comment shapes) from PDF page, e.g. 
         # highlight, underline and strike-through-line        
-        self._layout.rects.from_annotations(page)
+        self._layout.shapes.from_annotations(page)
 
         return self._layout
 
