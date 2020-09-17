@@ -22,6 +22,7 @@ Data structure:
     }
 '''
 
+import fitz
 from ..common.BBox import BBox
 from ..common.base import RectType
 from ..common.utils import RGB_component
@@ -61,93 +62,94 @@ class Shape(BBox):
 class Stroke(Shape):
     '''Linear stroke of a path.'''
     def __init__(self, raw:dict={}):
-        self._start = raw.get('start', None)
-        self._end = raw.get('end', None)
+        # convert start/end point to real page CS
+        self._start = fitz.Point(raw.get('start', (0.0, 0.0))) * Stroke.ROTATION_MATRIX
+        self._end = fitz.Point(raw.get('end', (0.0, 0.0))) * Stroke.ROTATION_MATRIX
 
-        # Note: rotation matrix is applied to Stroke.bbox by initializing BBox,
-        # while self._start and self._end are still in original PyMuPDF CS. This affects the debug plot.
-        width = raw.get('width', 0.0)
-        bbox = self._to_rect(width)
-        if bbox: raw['bbox'] = bbox
-        super(Stroke, self).__init__(raw)
+        # width, color
+        self.width = raw.get('width', 0.0)
+        self.color = raw.get('color', 0)
+        self._type = RectType.UNDEFINED # no type by default
 
-    @property
-    def horizontal(self):
-        '''override IText method.'''
-        return self._start[1] == self._end[1]
+        # update bbox
+        self.update(self._to_rect())
+        
 
     @property
-    def vertical(self):
-        '''override IText method.'''
-        return self._start[0] == self._end[0]
+    def horizontal(self): return self._start[1] == self._end[1]
 
     @property
-    def width(self):
-        return min(self.bbox.width, self.bbox.height)
+    def vertical(self): return self._start[0] == self._end[0]
 
-    # Note: Get the coordinates from rotated bbox, rather than self._start and self._end
     @property
     def x0(self):
         if self.horizontal: return self.bbox.x0
         if self.vertical: return (self.bbox.x0+self.bbox.x1)/2.0
-        raise Exception('Not supported for horizontal or vertical Strokes.')
+        raise Exception('Supports horizontal or vertical Strokes only.')
 
     @property
     def x1(self):
         if self.horizontal: return self.bbox.x1
         if self.vertical: return (self.bbox.x0+self.bbox.x1)/2.0
-        raise Exception('Not supported for horizontal or vertical Strokes.')
+        raise Exception('Supports horizontal or vertical Strokes only.')
 
     @property
     def y0(self):
         if self.horizontal: return (self.bbox.y0+self.bbox.y1)/2.0
         if self.vertical: return self.bbox.y0
-        raise Exception('Not supported for horizontal or vertical Strokes.')
+        raise Exception('Supports horizontal or vertical Strokes only.')
 
     @property
     def y1(self):
         if self.horizontal: return (self.bbox.y0+self.bbox.y1)/2.0
         if self.vertical: return self.bbox.y1
-        raise Exception('Not supported for horizontal or vertical Strokes.')
+        raise Exception('Supports horizontal or vertical Strokes only.')
+
 
     def update(self, rect):
-        '''Update current bbox to specified `rect`.
-            ---
-            Args:
-              - rect: fitz.rect or raw bbox like (x0, y0, x1, y1)
+        '''Update stroke bbox (related to real page CS):
+            - rect.area==0: start/end points
+            - rect.area!=0: update bbox directly
         '''
-        super(Stroke, self).update(rect)
+        rect = fitz.Rect(rect)
 
-        # suppose horizontal or vertical stroke
-        bbox = self.bbox
-        if bbox.width >= bbox.height: # horizontal
-            y = (bbox.y0+bbox.y1)/2.0
-            self._start = (bbox.x0, y)
-            self._end   = (bbox.x1, y)
-        else: #vertical
-            x = (bbox.x0+bbox.x1)/2.0
-            self._start = (x, bbox.y0)
-            self._end   = (x, bbox.y1)
+        # an empty area line
+        if rect.getArea()==0.0:
+            self._start = fitz.Point(rect[0:2])
+            self._end = fitz.Point(rect[2:])
+            super(Stroke, self).update(self._to_rect())
+
+        # a rect 
+        else:
+            super(Stroke, self).update(rect)
+
+            # suppose horizontal or vertical stroke
+            if rect.width >= rect.height: # horizontal
+                y = (rect.y0+rect.y1)/2.0
+                self._start = fitz.Point(rect.x0, y)
+                self._end   = fitz.Point(rect.x1, y)
+            else: #vertical
+                x = (rect.x0+rect.x1)/2.0
+                self._start = fitz.Point(x, rect.y0)
+                self._end   = fitz.Point(x, rect.y1)
 
         return self    
 
 
-    def _to_rect(self, width):
-        ''' convert centerline to rectangle shape.
-            centerline is represented with start/end points: (x0, y0), (x1, y1).
-        '''
-        if not self._start or not self._end:
-            return None
-
-        h = width / 2.0
+    def _to_rect(self):
+        ''' convert centerline to rectangle shape.'''
+        h = self.width / 2.0
         x0, y0 = self._start
         x1, y1 = self._end
+
+        if x0>x1: x0, x1 = x1, x0
+        if y0>y1: y0, y1 = y1, y0
 
         # horizontal/vertical line
         if abs(y0-y1)<=DM or abs(x0-x1)<=DM:
             res = (x0-h, y0-h, x1+h, y1+h)
         else:
-            res = (min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1))
+            res = (x0, y0, x1, y1)
 
         return res
 

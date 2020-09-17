@@ -166,11 +166,7 @@ class TextBlock(Block):
             if rect.type != RectType.UNDEFINED: continue
 
             # any intersection with current block?
-            if not self.bbox.intersects(rect.bbox):
-                # impossible to intersect with next rect if this block is behind current rect
-                # NOTE: rects are sorted in reading order in advance
-                if self.bbox.y1 < rect.bbox.y0: break
-                continue
+            if not self.bbox.intersects(rect.bbox): continue
 
             # yes, then go further to lines in block            
             for line in self.lines:
