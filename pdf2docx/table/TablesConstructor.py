@@ -34,7 +34,6 @@ class TablesConstructor(TableStructure):
         # group stroke shapes: each group may be a potential table
         fun = lambda a,b: a.bbox & (b.bbox+DR) # NOTE: considering margin
         groups = self._shapes.strokes.group(fun)
-        print('----------->', len(self._shapes.strokes))
 
         # all filling shapes
         shadings = self._shapes.fillings
@@ -42,7 +41,6 @@ class TablesConstructor(TableStructure):
         # parse table with each group
         tables = Blocks()
         for group in groups:
-            print('===>', len(group))
             # get potential shadings in this table region
             group_shadings = shadings.contained_in_bbox(group.bbox)
 

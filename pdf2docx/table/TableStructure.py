@@ -46,12 +46,6 @@ class TableStructure:
         y_rows = sorted(h_borders)
         x_cols = sorted(v_borders)
 
-        print(len(y_rows), len(x_cols))
-        for y in y_rows:
-            print('y=', y)
-            for b in h_borders[y]:
-                print(b.x0, b.y0,b.x1,b.y1)
-
         # --------------------------------------------------
         # parse table structure, especially the merged cells
         # -------------------------------------------------- 

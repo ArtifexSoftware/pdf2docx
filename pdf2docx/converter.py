@@ -87,8 +87,7 @@ class Converter:
             self._layout.plot(debug_kwargs['doc'], 'Original Shapes', key=PlotControl.SHAPE)
 
         # parse and save page
-        self.layout.parse(**debug_kwargs)
-        # .make_page(self.doc_docx)
+        self.layout.parse(**debug_kwargs).make_page(self.doc_docx)
         self.save()
 
         # save debug files
