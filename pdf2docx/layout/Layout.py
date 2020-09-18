@@ -178,7 +178,7 @@ class Layout:
         self.parse_text_format(**kwargs)
         
         # paragraph / line spacing
-        self.parse_vertical_spacing()
+        self.parse_spacing()
 
         return self
 
@@ -227,7 +227,7 @@ class Layout:
         section.bottom_margin = Pt(bottom)
 
         # add paragraph or table according to parsed block
-        self.blocks.make_page(doc, self.bbox)
+        self.blocks.make_page(doc)
 
 
     @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.SHAPE)
@@ -304,8 +304,7 @@ class Layout:
         bottom = self.height-max(map(lambda x: x.y1, list_bbox))
         bottom = max(bottom, 0.0)
 
-        # margin is calculated based on text block only, without considering shape, e.g. table border,
-        # so reduce calculated top/bottom margin to left some free space
+        # reduce calculated top/bottom margin to left some free space
         top *= 0.5
         bottom *= 0.5
 
@@ -318,8 +317,8 @@ class Layout:
             )
  
 
-    def parse_vertical_spacing(self):
+    def parse_spacing(self):
         ''' Calculate external and internal vertical space for paragraph blocks under page context 
             or table context. It'll used as paragraph spacing and line spacing when creating paragraph.
         '''
-        self.blocks.parse_vertical_spacing(self.bbox)
+        self.blocks.parse_spacing(self.bbox)

@@ -174,10 +174,10 @@ class BBox(IText):
     def compare(self, bbox, threshold=0.9):
         '''Whether has same type and bbox.'''
         if not isinstance(bbox, self.__class__):
-            return False, f'Inconsistent type: {self.__class__.__name__} v.s. {bbox.__class__.__name__}'
+            return False, f'Inconsistent type: {self.__class__.__name__} v.s. {bbox.__class__.__name__} (expected)'
         
         if not get_main_bbox(self.bbox, bbox.bbox, threshold):
-            return False, f'Inconsistent bbox: {self.bbox} v.s. {bbox.bbox}'
+            return False, f'Inconsistent bbox: {self.bbox} v.s. {bbox.bbox}(expected)'
         
         return True, ''
 

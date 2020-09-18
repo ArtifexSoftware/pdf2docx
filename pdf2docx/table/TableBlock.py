@@ -126,7 +126,7 @@ class TableBlock(Block):
         return True # always return True if table is parsed
 
 
-    def parse_vertical_spacing(self):
+    def parse_spacing(self):
         ''' Calculate vertical space for blocks contained in table cells.'''
         for row in self._rows:
             for cell in row:
@@ -136,20 +136,18 @@ class TableBlock(Block):
                 x0,y0,x1,y1 = cell.bbox
                 w_top, w_right, w_bottom, w_left = cell.border_width
                 bbox = (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
-                cell.blocks.parse_vertical_spacing(bbox)
+
+                cell.blocks.parse_spacing(bbox)
 
 
-    def make_docx(self, table, page_bbox:tuple):
+    def make_docx(self, table):
         '''Create docx table.
             ---
             Args:
               - table: docx table instance
-              - page_bbox: page bbox considering margin
         '''
-        # set indent
-        left, *_ = page_bbox
-        pos = self.bbox.x0-left
-        docx.indent_table(table, pos)
+        # set left indent
+        docx.indent_table(table, self.left_space)
 
         # set format and contents row by row
         for idx_row in range(len(table.rows)):

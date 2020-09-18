@@ -139,7 +139,7 @@ class Collection(IText):
         index_groups = [set() for i in range(num)] # type: list[set]        
         for i, instance in enumerate(self._instances):
             # connections of current instance to all instances after it
-            for j in range(i, num):
+            for j in range(i+1, num):
                 if fun(instance, self._instances[j]):
                     index_groups[i].add(j)
                     index_groups[j].add(i)

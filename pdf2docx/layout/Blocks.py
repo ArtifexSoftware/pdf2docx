@@ -283,7 +283,7 @@ class Blocks(Collection):
         return res
 
 
-    def parse_vertical_spacing(self, bbox:tuple):
+    def parse_spacing(self, bbox:tuple):
         ''' Calculate external and internal vertical space for text blocks.
         
             - paragraph spacing is determined by the vertical distance to previous block. 
@@ -302,23 +302,37 @@ class Blocks(Collection):
         '''
         if not self._instances: return
 
-        # check text direction
-        # normal reading direction by default, i.e. from left to right, 
-        # the reference boundary is top border, i.e. bbox[1].
-        # regarding vertical text direction, e.g. from bottom to top, left border bbox[0] is the reference
+        # check text direction for vertical space calculation:
+        # - normal reading direction (from left to right)    -> the reference boundary is top border, i.e. bbox[1].
+        # - vertical text direction, e.g. from bottom to top -> left border bbox[0] is the reference
         idx = 1 if self.is_horizontal_text else 0
 
         ref_block = self._instances[0]
         ref_pos = bbox[idx]
 
         for block in self._instances:
+
+            #---------------------------------------------------------
+            # left spacing:
+            # - horizontal block -> take left boundary as reefrence
+            # - vertical block   -> take bottom boundary as reefrence
+            #---------------------------------------------------------
+            if self.is_horizontal_text:
+                block.left_space = block.bbox[0] - bbox[0]
+            else:
+                block.left_space = bbox[3] - block.bbox[3]
+
+            #---------------------------------------------------------
+            # vertical space calculation
+            #---------------------------------------------------------
+
             # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
             # size should be excluded from the calculated vertical spacing
             if block.is_table_block():
                 dw = block[0][0].border_width[0] / 2.0 # use top border of the first cell
 
                 # calculate vertical spacing of blocks under this table
-                block.parse_vertical_spacing()
+                block.parse_spacing()
             
             else:
                 dw = 0.0
@@ -433,12 +447,11 @@ class Blocks(Collection):
         return flag    
 
 
-    def make_page(self, doc, page_bbox:tuple):
+    def make_page(self, doc):
         ''' Create page based on parsed block structure. 
             ---
             Args:
             - doc: python-docx Document or _Cell object
-            - page_bbox: page bbox
         '''
         for block in self._instances:
 
@@ -446,7 +459,7 @@ class Blocks(Collection):
             if block.is_text_block():
                 # new paragraph
                 p = doc.add_paragraph()
-                block.make_docx(p, page_bbox)
+                block.make_docx(p)
             
             # make table
             elif block.is_table_block():
@@ -467,7 +480,7 @@ class Blocks(Collection):
                 table = doc.add_table(rows=block.num_rows, cols=block.num_cols)
                 table.autofit = False
                 table.allow_autofit  = False
-                block.make_docx(table, page_bbox)
+                block.make_docx(table)
                 
         # NOTE: If a table is at the end of a page, a new paragraph will be automatically 
         # added by the rending engine, e.g. MS Word, which resulting in an unexpected

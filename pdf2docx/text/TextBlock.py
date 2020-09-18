@@ -239,77 +239,55 @@ class TextBlock(Block):
             self.before_space = 0.0
 
 
-    def make_docx(self, p, bbox:tuple):
-        ''' Create paragraph for a text block. Join line sets with TAB and set position according to bbox.
+    def make_docx(self, p):
+        ''' Create paragraph for a text block.
             ---
             Args:
               - p: docx paragraph instance
-              - bbox: bounding box of paragraph
 
-            Generally, a pdf block is a docx paragraph, with block|line as line in paragraph.
+            NOTE:
+            - the left position of paragraph set by paragraph indent, rather than TAB stop
+            - hard line break is used for line in block.
+
+            Generally, a pdf block is a docx paragraph, with block->line as line in paragraph.
             But without the context, it's not able to recognize a block line as word wrap, or a 
-            separate line instead. A rough rule used here:
-            
-            block line will be treated as separate line by default, except
-              - (1) this line and next line are actually in the same line (y-position)
-              - (2) if the rest space of this line can't accommodate even one span of next line, 
-                    it's supposed to be normal word wrap.
+            separate line instead. A rough rule used here: block line will be treated as separate 
+            line, except this line and next line are indeed in the same line.
 
             Refer to python-docx doc for details on text format:
             https://python-docx.readthedocs.io/en/latest/user/text.html            
         '''
-        # check text direction
-        # normal direction by default, taking left border as a reference
-        # when from bottom to top, taking bottom border as a reference
-        idx = 0 if self.is_horizontal_text else 3
-
-        # indent and space setting
+        # indentation and spacing
         before_spacing = max(round(self.before_space, 1), 0.0)
         after_spacing = max(round(self.after_space, 1), 0.0)
+        left_spacing = round(self.left_space, 1)
+
         pf = docx.reset_paragraph_format(p)
         pf.space_before = Pt(before_spacing)
         pf.space_after = Pt(after_spacing)
-        
-        # restore default tabs
-        pf.tab_stops.clear_all()
+        pf.left_indent  = Pt(left_spacing)
 
-        # set line spacing for text paragraph
-        pf.line_spacing = Pt(round(self.line_space,1))        
-
-        # set all tab stops
-        all_pos = set([line.distance(bbox) for line in self.lines])
-        for pos in all_pos:
-            if pos<=0.0: continue
-            pf.tab_stops.add_tab_stop(Pt(pos))
+        # line spacing
+        pf.line_spacing = Pt(round(self.line_space, 1))        
 
         # add line by line
         current_pos = 0.0
         for i, line in enumerate(self.lines):
 
-            # left indent implemented with tab
-            pos = line.distance(bbox)
-            docx.add_stop(p, Pt(pos), Pt(current_pos))
-
             # add line
             for span in line.spans: span.make_docx(p)
 
-            # break line? new line by default
+            # hard line break is necessary, otherwise the paragraph structure may change in docx,
+            # which leads to the pdf-based layout calculation becomes wrong
             line_break = True
+
             # no more lines after last line
             if line==self.lines[-1]: line_break = False            
             
             # do not break line if they're indeed in same line
             elif line.in_same_row(self.lines[i+1]):
                 line_break = False
-
-            # do not break line if no more space in this line
-            elif bbox[(idx+2)%4]-line.bbox[(idx+2)%4] < DM:
-                line_break = False
             
-            if line_break:
-                p.add_run('\n')
-                current_pos = 0
-            else:
-                current_pos = line.distance(bbox) + line.bbox.width
+            if line_break: p.add_run('\n')
 
         return p
