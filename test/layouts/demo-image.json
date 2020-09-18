@@ -16,6 +16,9 @@
                 86.4
             ],
             "type": 0,
+            "alignment": 0,
+            "left_space": 18.0,
+            "right_space": 0.0,
             "before_space": 37.2,
             "after_space": 0.0,
             "line_space": 12.0,
@@ -285,6 +288,9 @@
                 325.6
             ],
             "type": 0,
+            "alignment": 1,
+            "left_space": 0.0,
+            "right_space": 0.0,
             "before_space": 12.5,
             "after_space": 0.0,
             "line_space": 226.70000000000002,
@@ -326,6 +332,9 @@
                 407.7
             ],
             "type": 0,
+            "alignment": 0,
+            "left_space": 18.0,
+            "right_space": 0.0,
             "before_space": 66.19999999999999,
             "after_space": 0.0,
             "line_space": 15.899999999999977,
@@ -540,6 +549,9 @@
                 453.6
             ],
             "type": 0,
+            "alignment": 0,
+            "left_space": 18.0,
+            "right_space": 0.0,
             "before_space": 13.199999999999989,
             "after_space": 0.0,
             "line_space": 32.700000000000045,
@@ -1369,6 +1381,9 @@
                 489.5
             ],
             "type": 0,
+            "alignment": 0,
+            "left_space": 18.0,
+            "right_space": 0.0,
             "before_space": 3.099999999999966,
             "after_space": 0.0,
             "line_space": 32.80000000000001,
@@ -2267,6 +2282,9 @@
                 512.4
             ],
             "type": 0,
+            "alignment": 0,
+            "left_space": 18.0,
+            "right_space": 0.0,
             "before_space": 6.899999999999977,
             "after_space": 0.0,
             "line_space": 16.0,
@@ -2455,6 +2473,9 @@
                 571.3
             ],
             "type": 0,
+            "alignment": 0,
+            "left_space": 18.0,
+            "right_space": 0.0,
             "before_space": 47.80000000000007,
             "after_space": 0.0,
             "line_space": 11.099999999999909,
@@ -3148,6 +3169,9 @@
                 755.9
             ],
             "type": 0,
+            "alignment": 0,
+            "left_space": 18.0,
+            "right_space": 0.0,
             "before_space": 173.5,
             "after_space": 0.0,
             "line_space": 11.100000000000023,
@@ -3355,7 +3379,7 @@
             ]
         }
     ],
-    "rects": [
+    "shapes": [
         {
             "bbox": [
                 165.9,
