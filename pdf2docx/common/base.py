@@ -40,6 +40,14 @@ class TextDirection(Enum):
     BOTTOM_TOP = 1 # from bottom to top within a line, and lines go from left to right
 
 
+class TextAlignment(Enum):
+    '''Block types.'''
+    LEFT    = 0
+    CENTER  = 1
+    RIGHT   = 2
+    JUSTIFY = 3
+
+
 class PlotControl(Enum):
     ''' Control what to show when plotting blocks.
         - layout         : plot all blocks

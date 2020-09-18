@@ -7,7 +7,7 @@ Base class for text/image/table blocks.
 @author: train8808@gmail.com
 '''
 
-from .base import BlockType
+from .base import BlockType, TextAlignment
 from .BBox import BBox
 from .constants import DM
 
@@ -19,9 +19,13 @@ class Block(BBox):
         self._type = BlockType.UNDEFINED
 
         # spacing attributes
+        self.alignment = TextAlignment.LEFT
+        self.left_space = raw.get('left_space', 0.0)
+        self.right_space = raw.get('right_space', 0.0)
+
         self.before_space = raw.get('before_space', 0.0)
         self.after_space = raw.get('after_space', 0.0)
-        self.left_space = raw.get('left_space', 0.0)
+        
         self.line_space = raw.get('line_space', 0.0)
 
 
@@ -52,6 +56,15 @@ class Block(BBox):
     def set_stream_table_block(self):
         self._type = BlockType.STREAM_TABLE
 
+    def set_alignment(self, bbox):
+        '''set left alignment by default.'''
+        # NOTE: in PyMuPDF CS, horizontal text direction is same with positive x-axis,
+        # while vertical text is on the contrarory, so use f = -1 here
+        idx, f = (0, 1.0) if self.is_horizontal_text else (3, -1.0)
+        self.alignment = TextAlignment.LEFT
+        self.left_space = (self.bbox[idx] - bbox[idx]) * f
+
+
     def compare(self, block, threshold:float=0.9):
         '''whether has same bbox and vertical spacing with given block.
             ---
@@ -80,9 +93,11 @@ class Block(BBox):
         res = super().store()
         res.update({
             'type': self._type.value,
+            'alignment': self.alignment.value,
+            'left_space': self.left_space,
+            'right_space': self.right_space,
             'before_space': self.before_space,
             'after_space': self.after_space,
-            'left_space': self.left_space,
             'line_space': self.line_space
             })
         return res

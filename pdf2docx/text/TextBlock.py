@@ -24,10 +24,12 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
 '''
 
 from docx.shared import Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+
 from .Line import Line
 from .Lines import Lines
 from ..image.ImageSpan import ImageSpan
-from ..common.base import RectType, TextDirection
+from ..common.base import RectType, TextDirection, TextAlignment
 from ..common.Block import Block
 from ..common.utils import RGB_component_from_name
 from ..common.constants import DM, DR
@@ -67,6 +69,48 @@ class TextBlock(Block):
         else:
             return TextDirection.LEFT_RIGHT
 
+
+    def set_alignment(self, bbox):
+        '''Alignment mode based on lines layout and page bbox.'''
+        # NOTE: in PyMuPDF CS, horizontal text direction is same with positive x-axis,
+        # while vertical text is on the contrarory, so use f = -1 here
+        idx0, idx1, f = (0, 2, 1.0) if self.is_horizontal_text else (3, 1, -1.0)
+        d_left   = (self.bbox[idx0] - bbox[idx0]) * f # left margin
+        d_right  = (bbox[idx1] - self.bbox[idx1]) * f # right margin
+        d_center = (d_left-d_right) / 2.0             # center margin
+
+        # check contained lines in first priority
+        X0 = [line.bbox[idx0] for line in self.lines]
+        X1 = [line.bbox[idx1] for line in self.lines]
+        X  = [(x0+x1)/2.0 for (x0, x1) in zip(X0, X1)]
+        left_aligned   = abs(max(X0)-min(X0))<=DM
+        right_aligned  = abs(max(X1)-min(X1))<=DM
+        center_aligned = abs(max(X)-min(X))<=DM
+
+        if left_aligned and not right_aligned:
+            self.alignment = TextAlignment.LEFT
+            self.left_space = d_left
+
+        elif right_aligned and not left_aligned: 
+            self.alignment = TextAlignment.RIGHT
+            self.right_space = d_right
+
+        elif center_aligned and not left_aligned and not right_aligned:
+            self.alignment = TextAlignment.CENTER
+
+        else:
+            # check position to page bbox further
+            if abs(d_center)<DM:
+                self.alignment = TextAlignment.CENTER
+
+            elif abs(d_left) <= abs(d_right):
+                self.alignment = TextAlignment.LEFT
+                self.left_space = d_left
+
+            else:
+                self.alignment = TextAlignment.RIGHT
+                self.right_space = d_right            
+    
 
     def store(self) -> dict:
         res = super().store()
@@ -255,20 +299,32 @@ class TextBlock(Block):
             line, except this line and next line are indeed in the same line.
 
             Refer to python-docx doc for details on text format:
-            https://python-docx.readthedocs.io/en/latest/user/text.html            
+            - https://python-docx.readthedocs.io/en/latest/user/text.html
+            - https://python-docx.readthedocs.io/en/latest/api/enum/WdAlignParagraph.html#wdparagraphalignment
         '''
-        # indentation and spacing
+        pf = docx.reset_paragraph_format(p)
+
+        # vertical spacing
         before_spacing = max(round(self.before_space, 1), 0.0)
         after_spacing = max(round(self.after_space, 1), 0.0)
-        left_spacing = round(self.left_space, 1)
 
-        pf = docx.reset_paragraph_format(p)
         pf.space_before = Pt(before_spacing)
-        pf.space_after = Pt(after_spacing)
-        pf.left_indent  = Pt(left_spacing)
+        pf.space_after = Pt(after_spacing)        
 
         # line spacing
-        pf.line_spacing = Pt(round(self.line_space, 1))        
+        pf.line_spacing = Pt(round(self.line_space, 1))
+
+        # horizontal alignment
+        if self.alignment==TextAlignment.LEFT:
+            pf.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            pf.left_indent  = Pt(round(self.left_space, 1))
+
+        elif self.alignment==TextAlignment.RIGHT:
+            pf.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            pf.right_indent  = Pt(round(self.right_space, 1))
+
+        else:
+            pf.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
         # add line by line
         current_pos = 0.0

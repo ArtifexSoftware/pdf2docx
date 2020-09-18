@@ -313,14 +313,11 @@ class Blocks(Collection):
         for block in self._instances:
 
             #---------------------------------------------------------
-            # left spacing:
+            # alignment mode and left spacing:
             # - horizontal block -> take left boundary as reefrence
             # - vertical block   -> take bottom boundary as reefrence
             #---------------------------------------------------------
-            if self.is_horizontal_text:
-                block.left_space = block.bbox[0] - bbox[0]
-            else:
-                block.left_space = bbox[3] - block.bbox[3]
+            block.set_alignment(bbox)
 
             #---------------------------------------------------------
             # vertical space calculation
