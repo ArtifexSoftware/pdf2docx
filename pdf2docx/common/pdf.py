@@ -185,8 +185,11 @@ def shapes_from_annotations(page:fitz.Page):
                 if key==8:
                     x0, y0 = points[4*i]
                     x1, y1 = points[4*i+3]
+
+                    # NOTE: this indded a stroke for PyMuPDF -> no fill color but stroke color !!
                     fills.append({
-                        'bbox': (x0, y0, x1, y1)
+                        'bbox': (x0, y0, x1, y1),
+                        'color': sc
                         })
 
                 else:                
@@ -215,9 +218,10 @@ def shapes_from_annotations(page:fitz.Page):
                 })
 
         for fill in fills:
-            fill.update({
-                    'color': fc
-                })
+            if 'color' not in fill:
+                fill.update({
+                        'color': fc
+                    })
 
     return strokes, fills
 
