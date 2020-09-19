@@ -19,10 +19,12 @@ class Block(BBox):
         self._type = BlockType.UNDEFINED
 
         # horizontal spacing
-        self.alignment = TextAlignment.LEFT
+        self.alignment = self.get_alignment(raw.get('alignment', 0))
         self.left_space = raw.get('left_space', 0.0)
         self.right_space = raw.get('right_space', 0.0)
-        self.tab_stops = []
+
+        # RELATIVE position of tab stops
+        self.tab_stops = raw.get('tab_stops', []) 
 
         # vertical spacing
         self.before_space = raw.get('before_space', 0.0)
@@ -56,6 +58,12 @@ class Block(BBox):
 
     def set_stream_table_block(self):
         self._type = BlockType.STREAM_TABLE
+
+    def get_alignment(self, mode:int):
+        for t in TextAlignment:
+            if t.value==mode:
+                return t
+        return TextAlignment.LEFT
 
     def parse_horizontal_spacing(self, bbox):
         '''set left alignment by default.'''

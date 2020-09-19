@@ -226,9 +226,9 @@ class TextBlock(Block):
         idx0, idx1, f = (0, 2, 1.0) if self.is_horizontal_text else (3, 1, -1.0)
 
         # block position in page
-        d_left   = (self.bbox[idx0] - bbox[idx0]) * f # left margin
-        d_right  = (bbox[idx1] - self.bbox[idx1]) * f # right margin
-        d_center = (d_left-d_right) / 2.0             # center margin
+        d_left   = round((self.bbox[idx0]-bbox[idx0])*f, 1) # left margin
+        d_right  = round((bbox[idx1]-self.bbox[idx1])*f, 1) # right margin
+        d_center = round((d_left-d_right)/2.0, 1)           # center margin
 
         # check contained lines layout if the count of lines (real lines) >= 2
         if len(rows)>=2:
@@ -293,7 +293,16 @@ class TextBlock(Block):
 
         # ------------------------------------------------------
         # tab stops for block lines
+        # NOTE:
+        # relative stop position to left boundary of block is calculated,
+        # so block.left_space is required
         # ------------------------------------------------------
+        if self.alignment != TextAlignment.LEFT: return
+
+        fun = lambda line: round((line.bbox[idx0]-self.bbox[idx0])*f, 1) # relative position to block
+        all_pos = set(map(fun, self.lines))
+        self.tab_stops = list(filter(lambda pos: pos>=DM, all_pos))
+        self.left_space = d_left
 
 
     def parse_line_spacing(self):
@@ -374,23 +383,32 @@ class TextBlock(Block):
         # horizontal alignment
         if self.alignment==TextAlignment.LEFT:
             pf.alignment = WD_ALIGN_PARAGRAPH.LEFT
-            pf.left_indent  = Pt(round(self.left_space, 1))
+            pf.left_indent  = Pt(self.left_space)
+
+            # set tab stops to ensure line position
+            for pos in self.tab_stops:
+                pf.tab_stops.add_tab_stop(Pt(self.left_space + pos))
 
         elif self.alignment==TextAlignment.RIGHT:
             pf.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-            pf.right_indent  = Pt(round(self.right_space, 1))
+            pf.right_indent  = Pt(self.right_space)
 
         elif self.alignment==TextAlignment.CENTER:
             pf.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
         else:
             pf.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-            pf.left_indent  = Pt(round(self.left_space, 1))
-            pf.right_indent  = Pt(round(self.right_space, 1))
+            pf.left_indent  = Pt(self.left_space)
+            pf.right_indent  = Pt(self.right_space)
 
-        # add line by line
-        current_pos = 0.0
+        # add line by line        
+        idx = 0 if self.is_horizontal_text else 3
+        current_pos = self.bbox[idx]
         for i, line in enumerate(self.lines):
+
+            # left indentation implemented with tab
+            pos = line.bbox[idx]-self.bbox[idx]
+            if pos: docx.add_stop(p, Pt(pos+self.left_space), Pt(current_pos))
 
             # add line
             for span in line.spans: span.make_docx(p)
@@ -406,6 +424,10 @@ class TextBlock(Block):
             elif line.in_same_row(self.lines[i+1]):
                 line_break = False
             
-            if line_break: p.add_run('\n')
+            if line_break:
+                p.add_run('\n')
+                current_pos = self.bbox[idx]
+            else:
+                current_pos = pos + self.left_space + line.bbox.width
 
         return p
