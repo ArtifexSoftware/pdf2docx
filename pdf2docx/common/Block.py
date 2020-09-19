@@ -18,14 +18,15 @@ class Block(BBox):
         super(Block, self).__init__(raw)
         self._type = BlockType.UNDEFINED
 
-        # spacing attributes
+        # horizontal spacing
         self.alignment = TextAlignment.LEFT
         self.left_space = raw.get('left_space', 0.0)
         self.right_space = raw.get('right_space', 0.0)
+        self.tab_stops = []
 
+        # vertical spacing
         self.before_space = raw.get('before_space', 0.0)
-        self.after_space = raw.get('after_space', 0.0)
-        
+        self.after_space = raw.get('after_space', 0.0)        
         self.line_space = raw.get('line_space', 0.0)
 
 
@@ -56,7 +57,7 @@ class Block(BBox):
     def set_stream_table_block(self):
         self._type = BlockType.STREAM_TABLE
 
-    def set_alignment(self, bbox):
+    def parse_horizontal_spacing(self, bbox):
         '''set left alignment by default.'''
         # NOTE: in PyMuPDF CS, horizontal text direction is same with positive x-axis,
         # while vertical text is on the contrarory, so use f = -1 here
@@ -92,13 +93,14 @@ class Block(BBox):
         '''Store attributes in json format.'''
         res = super().store()
         res.update({
-            'type': self._type.value,
-            'alignment': self.alignment.value,
-            'left_space': self.left_space,
-            'right_space': self.right_space,
+            'type'        : self._type.value,
+            'alignment'   : self.alignment.value,
+            'left_space'  : self.left_space,
+            'right_space' : self.right_space,
             'before_space': self.before_space,
-            'after_space': self.after_space,
-            'line_space': self.line_space
+            'after_space' : self.after_space,
+            'line_space'  : self.line_space,
+            'tab_stops'   : self.tab_stops
             })
         return res
 

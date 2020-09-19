@@ -177,7 +177,7 @@ class Layout:
         # parse text format, e.g. highlight, underline
         self.parse_text_format(**kwargs)
         
-        # paragraph / line spacing
+        # paragraph / line spacing        
         self.parse_spacing()
 
         return self
@@ -230,7 +230,7 @@ class Layout:
         self.blocks.make_page(doc)
 
 
-    @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.SHAPE)
+    @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.LAYOUT)
     def clean(self, **kwargs):
         '''Clean blocks and rectangles, e.g. remove negative blocks, duplicated shapes.'''
         page_bbox = (0.0, 0.0, self.width, self.height)
@@ -292,7 +292,7 @@ class Layout:
 
         # right margin
         x_max = max(map(lambda x: x.x1, list_bbox))
-        right = self.width - x_max - DM*10.0  # consider tolerance: leave more free space
+        right = self.width - x_max - DM*5.0  # consider tolerance: leave more free space
         right = min(right, left)              # symmetry margin if necessary
         right = max(right, 0.0)               # avoid negative margin
 

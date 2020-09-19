@@ -19,7 +19,13 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
         # --------------------------------
         'before_space': bs,
         'after_space': as,
-        'line_space': ls
+        'line_space': ls,
+
+        'alignment': 0,
+        'left_space': 10.0,
+        'right_space': 0.0,
+
+        'tab_stops': [15.4, 35.0]
     }
 '''
 
@@ -51,7 +57,7 @@ class TextBlock(Block):
         self.set_text_block()
 
     @property
-    def text(self) -> str:
+    def text(self):
         '''Get text content in block, joning each line with `\n`.'''
         lines_text = [line.text for line in self.lines]
         return '\n'.join(lines_text)
@@ -70,49 +76,7 @@ class TextBlock(Block):
             return TextDirection.LEFT_RIGHT
 
 
-    def set_alignment(self, bbox):
-        '''Alignment mode based on lines layout and page bbox.'''
-        # NOTE: in PyMuPDF CS, horizontal text direction is same with positive x-axis,
-        # while vertical text is on the contrarory, so use f = -1 here
-        idx0, idx1, f = (0, 2, 1.0) if self.is_horizontal_text else (3, 1, -1.0)
-        d_left   = (self.bbox[idx0] - bbox[idx0]) * f # left margin
-        d_right  = (bbox[idx1] - self.bbox[idx1]) * f # right margin
-        d_center = (d_left-d_right) / 2.0             # center margin
-
-        # check contained lines in first priority
-        X0 = [line.bbox[idx0] for line in self.lines]
-        X1 = [line.bbox[idx1] for line in self.lines]
-        X  = [(x0+x1)/2.0 for (x0, x1) in zip(X0, X1)]
-        left_aligned   = abs(max(X0)-min(X0))<=DM
-        right_aligned  = abs(max(X1)-min(X1))<=DM
-        center_aligned = abs(max(X)-min(X))<=DM
-
-        if left_aligned and not right_aligned:
-            self.alignment = TextAlignment.LEFT
-            self.left_space = d_left
-
-        elif right_aligned and not left_aligned: 
-            self.alignment = TextAlignment.RIGHT
-            self.right_space = d_right
-
-        elif center_aligned and not left_aligned and not right_aligned:
-            self.alignment = TextAlignment.CENTER
-
-        else:
-            # check position to page bbox further
-            if abs(d_center)<DM:
-                self.alignment = TextAlignment.CENTER
-
-            elif abs(d_left) <= abs(d_right):
-                self.alignment = TextAlignment.LEFT
-                self.left_space = d_left
-
-            else:
-                self.alignment = TextAlignment.RIGHT
-                self.right_space = d_right            
-    
-
-    def store(self) -> dict:
+    def store(self):
         res = super().store()
         res.update({
             'lines': self.lines.store()
@@ -163,7 +127,7 @@ class TextBlock(Block):
                 span.plot(page, c)
 
 
-    def contains_discrete_lines(self, distance:float=25, threshold:int=2) -> bool:
+    def contains_discrete_lines(self, distance:float=25, threshold:int=2):
         ''' Check whether lines in block are discrete: 
               - the count of lines with a distance larger than `distance` is greater then `threshold`.
               - ImageSpan exists
@@ -195,7 +159,7 @@ class TextBlock(Block):
         return cnt >= threshold
 
     
-    def parse_text_format(self, rects) -> bool:
+    def parse_text_format(self, rects):
         '''parse text format with style represented by rectangles.
             ---
             Args:
@@ -237,6 +201,99 @@ class TextBlock(Block):
                 line.spans.reset(split_spans)
 
         return flag
+
+
+    def parse_horizontal_spacing(self, bbox):
+        ''' Set horizontal spacing based on lines layout and page bbox.
+            - The general spacing is determined by paragraph alignment and indentation.
+            - The detailed spacing of block lines is determined by tab stops.
+
+            Multiple alignment modes may exist in block (due to improper organized lines
+            from PyMuPDF), e.g. some lines align left, and others right. In this case,
+            LEFT alignment is set, and use TAB to position each line.
+        '''
+        # get lines in each row (an indeed line)
+        fun = lambda a,b: a.in_same_row(b)
+        rows = self.lines.group(fun)
+
+        # ------------------------------------------------------
+        # block alignment
+        # - parse alignment mode by lines layout if rows>=2, otherwise by page bbox
+        # - calculate indentation with page bbox
+        # ------------------------------------------------------
+        # NOTE: in PyMuPDF CS, horizontal text direction is same with positive x-axis,
+        # while vertical text is on the contrary, so use f = -1 here
+        idx0, idx1, f = (0, 2, 1.0) if self.is_horizontal_text else (3, 1, -1.0)
+
+        # block position in page
+        d_left   = (self.bbox[idx0] - bbox[idx0]) * f # left margin
+        d_right  = (bbox[idx1] - self.bbox[idx1]) * f # right margin
+        d_center = (d_left-d_right) / 2.0             # center margin
+
+        # check contained lines layout if the count of lines (real lines) >= 2
+        if len(rows)>=2:
+            # contained lines layout
+            X0 = [lines[0].bbox[idx0]  for lines in rows]
+            X1 = [lines[-1].bbox[idx1] for lines in rows]
+            X  = [(x0+x1)/2.0 for (x0, x1) in zip(X0, X1)]
+
+            left_aligned   = abs(max(X0)-min(X0))<=DM*2.0
+            right_aligned  = abs(max(X1)-min(X1))<=DM*2.0
+            center_aligned = abs(max(X)-min(X))  <=DM*2.0
+
+            # consider left/center/right alignment, 2*2*2=8 cases in total, of which
+            # there cases are impossible: 0-1-1, 1-1-0, 1-0-1
+            if center_aligned and not left_aligned and not right_aligned: # 0-1-0
+                self.alignment = TextAlignment.CENTER
+
+            elif right_aligned and not left_aligned: # 0-0-1
+                self.alignment = TextAlignment.RIGHT
+                self.right_space = d_right
+
+            elif left_aligned and right_aligned: # 1-1-1
+                self.alignment = TextAlignment.JUSTIFY
+                self.left_space = d_left
+                self.right_space = d_right
+
+            # set left alignment and ensure line position with TAB stop further
+            elif not left_aligned and not right_aligned: # 0-0-0
+                self.alignment = TextAlignment.LEFT
+                self.left_space = d_left
+
+            # now, it's 1-0-0, but if remove last line, it may be 1-1-1
+            else: # 1-0-0
+                if len(rows)==2:
+                    self.alignment = TextAlignment.LEFT
+                    self.left_space = d_left
+
+                # at least 2 lines excepting the last line
+                else:
+                    X1 = [lines[-1].bbox[idx1] for lines in rows[0:-1]]
+                    right_aligned  = abs(max(X1)-min(X1))<=DM*2.0
+                    if right_aligned:
+                        self.alignment = TextAlignment.JUSTIFY
+                        self.left_space = d_left
+                        self.right_space = d_right
+                    else:
+                        self.alignment = TextAlignment.LEFT
+                        self.left_space = d_left
+
+        # otherwise, check block position to page bbox further
+        else:
+            if abs(d_center)<DM:
+                self.alignment = TextAlignment.CENTER
+
+            elif abs(d_left) <= abs(d_right):
+                self.alignment = TextAlignment.LEFT
+                self.left_space = d_left
+
+            else:
+                self.alignment = TextAlignment.RIGHT
+                self.right_space = d_right
+
+        # ------------------------------------------------------
+        # tab stops for block lines
+        # ------------------------------------------------------
 
 
     def parse_line_spacing(self):
@@ -323,8 +380,13 @@ class TextBlock(Block):
             pf.alignment = WD_ALIGN_PARAGRAPH.RIGHT
             pf.right_indent  = Pt(round(self.right_space, 1))
 
-        else:
+        elif self.alignment==TextAlignment.CENTER:
             pf.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        else:
+            pf.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+            pf.left_indent  = Pt(round(self.left_space, 1))
+            pf.right_indent  = Pt(round(self.right_space, 1))
 
         # add line by line
         current_pos = 0.0

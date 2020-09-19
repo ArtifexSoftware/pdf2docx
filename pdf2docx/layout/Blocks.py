@@ -317,7 +317,7 @@ class Blocks(Collection):
             # - horizontal block -> take left boundary as reefrence
             # - vertical block   -> take bottom boundary as reefrence
             #---------------------------------------------------------
-            block.set_alignment(bbox)
+            block.parse_horizontal_spacing(bbox)
 
             #---------------------------------------------------------
             # vertical space calculation
@@ -437,11 +437,11 @@ class Blocks(Collection):
 
             NOTE: `parse_text_format` must be implemented by TextBlock, ImageBlock and TableBlock.
         '''
-        flag = False
+        # parse text block style one by one
         for block in self._instances:
-            if block.parse_text_format(rects):
-                flag = True        
-        return flag    
+            block.parse_text_format(rects)
+
+        return True    
 
 
     def make_page(self, doc):
