@@ -12,7 +12,7 @@ from ..text.TextBlock import TextBlock
 from ..common.BBox import BBox
 from ..common.utils import RGB_component
 from ..common import docx
-from ..layout import Blocks # avoid conflict
+from ..layout import Blocks # avoid import conflict
 
 
 class Cell(BBox):
@@ -26,9 +26,7 @@ class Cell(BBox):
         self.merged_cells = raw.get('merged_cells', (1,1)) # type: tuple [int]
 
         # collect blocks
-        # NOTE: The cell bbox is determined first, and then find blocks contained in this bbox.
-        # so, don't update cell bbox when appending blocks, i.e. set parent=None.
-        self.blocks = Blocks.Blocks().from_dicts(raw.get('blocks', []))
+        self.blocks = Blocks.Blocks(parent=self).from_dicts(raw.get('blocks', []))
 
 
     @property

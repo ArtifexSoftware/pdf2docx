@@ -62,10 +62,10 @@ class Layout:
         BBox.set_rotation_matrix(rotation_matrix)
 
         # initialize blocks
-        self.blocks = Blocks().from_dicts(raw.get('blocks', []))
+        self.blocks = Blocks(parent=self).from_dicts(raw.get('blocks', []))
 
         # initialize shapes: to add rectangles later
-        self.shapes = Shapes()
+        self.shapes = Shapes(parent=self)
 
         # table parser
         self._tables_constructor = TablesConstructor(self.blocks, self.shapes)
@@ -233,9 +233,8 @@ class Layout:
     @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.LAYOUT)
     def clean(self, **kwargs):
         '''Clean blocks and rectangles, e.g. remove negative blocks, duplicated shapes.'''
-        page_bbox = (0.0, 0.0, self.width, self.height)
-        clean_blocks = self.blocks.clean(page_bbox)
-        clean_shapes  = self.shapes.clean(page_bbox)
+        clean_blocks = self.blocks.clean()
+        clean_shapes  = self.shapes.clean()
         
         # calculate page margin based on clean layout
         self._margin = self.page_margin()
@@ -253,9 +252,7 @@ class Layout:
     @debug_plot('Stream Table Structure', plot=True, category=PlotControl.STREAM_TABLE)
     def parse_stream_tables(self, **kwargs):
         ''' Parse table structure from blocks layout.'''
-        left, right, *_ = self.margin
-        X0, X1 = left, self.width - right # horizontal range of table
-        tables = self._tables_constructor.stream_tables(X0, X1)
+        tables = self._tables_constructor.stream_tables()
         return bool(tables)
 
 
@@ -321,4 +318,4 @@ class Layout:
         ''' Calculate external and internal vertical space for paragraph blocks under page context 
             or table context. It'll used as paragraph spacing and line spacing when creating paragraph.
         '''
-        self.blocks.parse_spacing(self.bbox)
+        self.blocks.parse_spacing()

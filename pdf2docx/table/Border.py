@@ -29,7 +29,7 @@ Consider horizontal and vertical borders only.
 from ..shape.Shapes import Shapes
 from ..shape.Shape import Stroke
 from ..common.utils import RGB_value
-from ..common.constants import MAX_W_BORDER, HIDDEN_W_BORDER
+from ..common.constants import HIDDEN_W_BORDER
 from ..common.base import RectType
 
 

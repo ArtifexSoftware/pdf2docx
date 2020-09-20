@@ -20,10 +20,6 @@ class Cells(Collection):
         return self
     
     def append(self, cell:Cell):
-        '''Append a cell and update bbox accordingly.
-            Rewrite method of parent class, since allow empty cells, i.e. merged cells, being added.
-        '''
+        '''Override. Append a cell (allow empty cell, i.e. merged cells) and update bbox accordingly.'''
         self._instances.append(cell)
-        if not self._parent is None: # Note: `if self._parent` does not work here
-            self._parent.union(cell)
-
+        self._update(cell)

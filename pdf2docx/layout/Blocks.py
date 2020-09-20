@@ -17,6 +17,8 @@ from ..text.Line import Line
 from ..text.Lines import Lines
 from ..image.ImageBlock import ImageBlock
 from ..table.TableBlock import TableBlock
+from ..table.Cell import Cell
+from . import Layout
 
 
 class Blocks(Collection):
@@ -32,9 +34,15 @@ class Blocks(Collection):
         for block in instances:
             if isinstance(block, ImageBlock):
                 text_block = block.to_text_block()
-                self._instances.append(text_block)
+                self.append(text_block)
             else:
-                self._instances.append(block)
+                self.append(block)
+
+    def _update(self, block:Block):
+        ''' Override. The parent of block is generally Layout or Cell, which is not necessary to 
+            update its bbox. So, do nothing but required here.
+        '''
+        pass
 
 
     def from_dicts(self, raws:list):
@@ -128,17 +136,18 @@ class Blocks(Collection):
             lambda block: block.is_table_block(), self._instances))
 
 
-    def clean(self, page_bbox):
+    def clean(self):
         '''Preprocess blocks initialized from the raw layout.'''
 
         # filter function:
         # - remove blocks out of page
         # - remove transformed text: text direction is not (1, 0) or (0, -1)
         # - remove empty blocks
+        page_bbox = (0.0, 0.0, self.parent.width, self.parent.height)
         f = lambda block:   block.bbox.intersects(page_bbox) and \
                             block.text.strip() and (
                             block.is_horizontal_text or block.is_vertical_text)
-        self._instances = list(filter(f, self._instances))
+        self.reset(filter(f, self._instances))
            
         # merge blocks horizontally, e.g. remove overlap blocks, since no floating elements are supported
         # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
@@ -283,7 +292,7 @@ class Blocks(Collection):
         return res
 
 
-    def parse_spacing(self, bbox:tuple):
+    def parse_spacing(self):
         ''' Calculate external and internal vertical space for text blocks.
         
             - paragraph spacing is determined by the vertical distance to previous block. 
@@ -295,12 +304,22 @@ class Blocks(Collection):
                 previous block should be a paragraph).
             
             - line spacing is defined as the average line height in current block.
-
-            ---
-            Args:
-            - bbox: reference boundary of all the blocks
         '''
         if not self._instances: return
+
+        # bbox of blocks
+        # - page level, e.g. blocks in top layout
+        # - table level, e.g. blocks in table cell
+        if isinstance(self.parent, Layout.Layout): 
+            bbox = self.parent.bbox
+
+        elif isinstance(self.parent, Cell):
+            cell = self.parent
+            x0,y0,x1,y1 = cell.bbox
+            w_top, w_right, w_bottom, w_left = cell.border_width
+            bbox = (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
+        else:
+            return
 
         # check text direction for vertical space calculation:
         # - normal reading direction (from left to right)    -> the reference boundary is top border, i.e. bbox[1].

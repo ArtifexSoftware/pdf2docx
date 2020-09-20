@@ -7,12 +7,12 @@ A group of Line objects.
 @author: train8808@gmail.com
 '''
 
-
+from docx.shared import Pt
 from .Line import Line
 from ..common.utils import get_main_bbox
 from ..common.constants import DM
 from ..common.Collection import Collection
-
+from ..common import docx
 
 class Lines(Collection):
     '''Text line list.'''
@@ -26,15 +26,11 @@ class Lines(Collection):
         return all(line.same_parent_with(first_line) for line in self._instances)
 
     def append(self, line:Line):
-        '''Rewrite. Append a line and update line pid and parent bbox.'''
-        if not line: return
+        '''Override. Append a line and update line pid and parent bbox.'''
+        super(Lines, self).append(line)
 
-        # append line
-        self._instances.append(line)
-
-        # update parent bbox
+        # update original parent id
         if not self._parent is None:
-            self._parent.union(line)
             line.pid = id(self._parent)
 
 
@@ -105,7 +101,7 @@ class Lines(Collection):
             lines[-1].add(list(line.spans))
 
         # update lines in block
-        self.reset(list(lines))
+        self.reset(lines)
 
 
     def split(self):
@@ -237,3 +233,37 @@ class Lines(Collection):
             ref = row
 
         return lines_list
+
+
+    def make_docx(self, p):
+        '''Create lines in paragraph.'''
+        block = self.parent        
+        idx = 0 if block.is_horizontal_text else 3
+        current_pos = block.left_space
+
+        for i, line in enumerate(self._instances):
+
+            # left indentation implemented with tab
+            pos = block.left_space + (line.bbox[idx]-block.bbox[idx])
+            if pos>block.left_space:
+                docx.add_stop(p, Pt(pos), Pt(current_pos))
+
+            # add line
+            line.make_docx(p)
+
+            # hard line break is necessary, otherwise the paragraph structure may change in docx,
+            # which leads to the pdf-based layout calculation becomes wrong
+            line_break = True
+
+            # no more lines after last line
+            if line==self._instances[-1]: line_break = False            
+            
+            # do not break line if they're indeed in same line
+            elif line.in_same_row(self._instances[i+1]):
+                line_break = False
+            
+            if line_break:
+                p.add_run('\n')
+                current_pos = block.left_space
+            else:
+                current_pos = pos + line.bbox.width

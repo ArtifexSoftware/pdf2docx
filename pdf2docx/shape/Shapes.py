@@ -7,7 +7,7 @@ A group of Shape instances.
 @author: train8808@gmail.com
 '''
 
-from .Shape import Stroke, Fill
+from .Shape import Shape, Stroke, Fill
 from ..common.base import RectType
 from ..common.Collection import Collection
 from ..common import utils
@@ -16,6 +16,10 @@ from ..common import pdf
 
 
 class Shapes(Collection):
+
+    def _update(self, shape:Shape):
+        ''' override. Do nothing.'''
+        pass
 
     @property
     def borders(self):
@@ -71,13 +75,14 @@ class Shapes(Collection):
         for raw in fills: self._instances.append(Fill(raw))
 
 
-    def clean(self, page_bbox):
+    def clean(self):
         '''Clean rectangles:
             - delete rectangles fully contained in another one (beside, they have same bg-color)
             - join intersected and horizontally aligned rectangles with same height and bg-color
             - join intersected and vertically aligned rectangles with same width and bg-color
         '''
         # remove shapes out of page
+        page_bbox = (0.0, 0.0, self.parent.width, self.parent.height)
         f = lambda shape: shape.bbox.intersects(page_bbox)
         shapes = list(filter(f, self._instances))
 
@@ -121,7 +126,7 @@ class Shapes(Collection):
                 stroke = shape.to_stroke()
                 shapes.append(stroke if stroke else shape)
 
-        self._instances = shapes
+        self.reset(shapes)
 
         return True
 

@@ -10,7 +10,7 @@ Parsing table structure based on borders.
 from ..common.BBox import BBox
 from ..common.base import RectType
 from ..common.utils import RGB_value
-from ..common.constants import DM, DR, MAX_W_BORDER
+from ..common.constants import DM, MAX_W_BORDER
 from ..shape.Shape import Stroke
 from ..shape.Shapes import Shapes
 from ..text.Lines import Lines

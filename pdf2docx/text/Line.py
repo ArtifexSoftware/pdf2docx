@@ -26,7 +26,7 @@ from ..image.ImageSpan import ImageSpan
 
 class Line(BBox):
     '''Object representing a line in text block.'''
-    def __init__(self, raw:dict={}) -> None:
+    def __init__(self, raw:dict={}):
         # bbox is calculated from contained spans
         # so remove key 'bbox' here
         if 'bbox' in raw: raw.pop('bbox') 
@@ -47,7 +47,7 @@ class Line(BBox):
         self._pid = None
 
         # collect spans
-        self.spans = Spans(None, self).from_dicts(raw.get('spans', []))
+        self.spans = Spans(parent=self).from_dicts(raw.get('spans', []))
 
     
     @property
@@ -96,7 +96,7 @@ class Line(BBox):
             return self.pid == line.pid
 
 
-    def store(self) -> dict:
+    def store(self):
         res = super().store()
         res.update({
             'wmode': self.wmode,
@@ -179,4 +179,9 @@ class Line(BBox):
         # Note y direction under PyMuPDF context
         res = c1<=line.bbox[idx+2] and c2<=self.bbox[idx+2]
         return res
+
+
+    def make_docx(self, p):
+        for span in self.spans:
+            span.make_docx(p)
             
