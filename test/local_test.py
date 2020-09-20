@@ -4,9 +4,14 @@
     `python setpy.py develop`
 '''
 
-import os, sys
+import os
+import sys
+import shutil
 from pdf2docx import Converter
 from pdf2docx.common.utils import compare_layput
+
+script_path = os.path.abspath(__file__) # current script path
+output = os.path.dirname(script_path)
 
 
 def docx2pdf(docx_file, pdf_file):
@@ -25,29 +30,36 @@ def docx2pdf(docx_file, pdf_file):
         return True
 
 
-def check_result(pdf_file, docx_file, compare_file_name):
+def check_result(pdf_file, docx_file, compare_file_name, make_test_case):
     ''' Convert the docx file back to pdf manually, and compare results 
         by checking bbox of each word. The comparison result is stored 
         in pdf file.
     '''
-    output = os.path.dirname(docx_file)
+    _, filename = os.path.split(pdf_file)
     docx_pdf_file = os.path.join(output, f'docx2pdf.pdf')
     output_file = os.path.join(output, compare_file_name)
 
+    print(f'{filename}...\n{"-"*50}')
+
     print('Converting docx to pdf...')
     if docx2pdf(docx_file, docx_pdf_file):
+
         print('Comparing with sample pdf...')
         if compare_layput(pdf_file, docx_pdf_file, output_file, threshold=0.7):
-            print('Fully matched.')
+            print(f'* fully matched.')
+        
+        if make_test_case:
+            layout_file = filename.replace('.pdf', '.json')
+            print(f'Copy to {layout_file}...')
+            shutil.move(os.path.join(output, 'layout.json'), os.path.join(output, 'layouts', layout_file))
+
+        print()
+
     else:
         print(f'Please convert {docx_file} to {docx_pdf_file} in advance.')
 
 
-if __name__ == '__main__':
-
-    script_path = os.path.abspath(__file__) # current script path
-    output = os.path.dirname(script_path)
-    filename = 'test'
+def local_test(filename, make_test_case=False):
     pdf_file = os.path.join(output, f'{filename}.pdf')
     docx_file = os.path.join(output, f'{filename}.docx')
 
@@ -86,4 +98,26 @@ if __name__ == '__main__':
 
 
     # check results
-    # check_result(pdf_file, docx_file, 'comparison.pdf')
+    check_result(pdf_file, docx_file, 'comparison.pdf', make_test_case)
+
+
+if __name__ == '__main__':
+
+    filenames = [
+        'demo-image', 
+        'demo-text', 
+        'demo-text-scaling', 
+        'demo-unnamed-fonts', 
+        'demo-path-transformation', 
+        'demo-table', 
+        'demo-table-bottom', 
+        'demo-table-nested', 
+        'demo-table-shading', 
+        'demo-table-border-style', 
+        'demo-table-align-borders'
+    ]
+
+    filename = 'demo-image'
+    local_test(filename, make_test_case=False)
+
+    # for filename in filenames: local_test(filename, make_test_case=True)
