@@ -51,7 +51,7 @@ class TextBlock(Block):
         super(TextBlock, self).__init__(raw)
 
         # collect lines
-        self.lines = Lines(None, self).from_dicts(raw.get('lines', []))
+        self.lines = Lines(parent=self).from_dicts(raw.get('lines', []))
 
         # set type
         self.set_text_block()
@@ -229,9 +229,25 @@ class TextBlock(Block):
         d_left   = round((self.bbox[idx0]-bbox[idx0])*f, 1) # left margin
         d_right  = round((bbox[idx1]-self.bbox[idx1])*f, 1) # right margin
         d_center = round((d_left-d_right)/2.0, 1)           # center margin
+        d_left = max(d_left, 0.0)
+        d_right = max(d_right, 0.0)
+
+        # First priority: 
+        # if significant distance exists in any two adjacent lines -> set LEFT alignment,
+        # then ensure the detailed line position with TAB stops further
+        def discrete_lines(threshold):
+            for row in rows:
+                if len(row)==1: continue
+                for i in range(1, len(row)):
+                    dis = (row[i].bbox[idx0]-row[i-1].bbox[idx1])*f
+                    if dis >= threshold: return True
+            return False
+
+        if discrete_lines(5.0*DM):
+            self.alignment = TextAlignment.LEFT
 
         # check contained lines layout if the count of lines (real lines) >= 2
-        if len(rows)>=2:
+        elif len(rows)>=2:
             # contained lines layout
             X0 = [lines[0].bbox[idx0]  for lines in rows]
             X1 = [lines[-1].bbox[idx1] for lines in rows]
@@ -248,23 +264,18 @@ class TextBlock(Block):
 
             elif right_aligned and not left_aligned: # 0-0-1
                 self.alignment = TextAlignment.RIGHT
-                self.right_space = d_right
 
             elif left_aligned and right_aligned: # 1-1-1
                 self.alignment = TextAlignment.JUSTIFY
-                self.left_space = d_left
-                self.right_space = d_right
 
             # set left alignment and ensure line position with TAB stop further
             elif not left_aligned and not right_aligned: # 0-0-0
                 self.alignment = TextAlignment.LEFT
-                self.left_space = d_left
 
             # now, it's 1-0-0, but if remove last line, it may be 1-1-1
             else: # 1-0-0
                 if len(rows)==2:
                     self.alignment = TextAlignment.LEFT
-                    self.left_space = d_left
 
                 # at least 2 lines excepting the last line
                 else:
@@ -272,24 +283,26 @@ class TextBlock(Block):
                     right_aligned  = abs(max(X1)-min(X1))<=DM*2.0
                     if right_aligned:
                         self.alignment = TextAlignment.JUSTIFY
-                        self.left_space = d_left
-                        self.right_space = d_right
                     else:
                         self.alignment = TextAlignment.LEFT
-                        self.left_space = d_left
 
         # otherwise, check block position to page bbox further
         else:
-            if abs(d_center)<DM:
+            if (self.bbox[idx1]-self.bbox[idx0])/(bbox[idx1]-bbox[idx0])>=0.9: # line is long enough
+                self.alignment = TextAlignment.LEFT
+
+            elif abs(d_center) < DM*2.0:
                 self.alignment = TextAlignment.CENTER
 
             elif abs(d_left) <= abs(d_right):
                 self.alignment = TextAlignment.LEFT
-                self.left_space = d_left
 
             else:
                 self.alignment = TextAlignment.RIGHT
-                self.right_space = d_right
+
+        # set horizontal space
+        self.left_space  = d_left
+        self.right_space = d_right        
 
         # ------------------------------------------------------
         # tab stops for block lines
@@ -301,8 +314,7 @@ class TextBlock(Block):
 
         fun = lambda line: round((line.bbox[idx0]-self.bbox[idx0])*f, 1) # relative position to block
         all_pos = set(map(fun, self.lines))
-        self.tab_stops = list(filter(lambda pos: pos>=DM, all_pos))
-        self.left_space = d_left
+        self.tab_stops = list(filter(lambda pos: pos>=DM, all_pos))        
 
 
     def parse_line_spacing(self):
@@ -401,33 +413,7 @@ class TextBlock(Block):
             pf.left_indent  = Pt(self.left_space)
             pf.right_indent  = Pt(self.right_space)
 
-        # add line by line        
-        idx = 0 if self.is_horizontal_text else 3
-        current_pos = self.bbox[idx]
-        for i, line in enumerate(self.lines):
-
-            # left indentation implemented with tab
-            pos = line.bbox[idx]-self.bbox[idx]
-            if pos: docx.add_stop(p, Pt(pos+self.left_space), Pt(current_pos))
-
-            # add line
-            for span in line.spans: span.make_docx(p)
-
-            # hard line break is necessary, otherwise the paragraph structure may change in docx,
-            # which leads to the pdf-based layout calculation becomes wrong
-            line_break = True
-
-            # no more lines after last line
-            if line==self.lines[-1]: line_break = False            
-            
-            # do not break line if they're indeed in same line
-            elif line.in_same_row(self.lines[i+1]):
-                line_break = False
-            
-            if line_break:
-                p.add_run('\n')
-                current_pos = self.bbox[idx]
-            else:
-                current_pos = pos + self.left_space + line.bbox.width
+        # add lines        
+        self.lines.make_docx(p)
 
         return p
