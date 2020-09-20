@@ -8,7 +8,6 @@ A group of instances, e.g. instances, Spans, Shapes.
 '''
 
 from .BBox import BBox
-from .Block import Block
 from .base import IText, TextDirection
 
 class Collection(IText):
@@ -16,7 +15,7 @@ class Collection(IText):
     def __init__(self, instances:list=[], parent=None):
         '''Init collection from a list of BBox instances.'''
         self._instances = instances if instances else [] # type: list[BBox]
-        self._parent = parent # type: Block
+        self._parent = parent # type: BBox
 
 
     def __getitem__(self, idx):
@@ -35,6 +34,10 @@ class Collection(IText):
 
     def __len__(self):
         return len(self._instances)
+
+
+    @property
+    def parent(self): return self._parent   
 
 
     @property
@@ -63,12 +66,17 @@ class Collection(IText):
         raise NotImplementedError
 
 
+    def _update(self, bbox:BBox):
+        '''Update parent of bbox, and the bbox of parent.'''
+        if not self._parent is None: # Note: `if self._parent` does not work here
+            self._parent.union(bbox)
+
+
     def append(self, bbox:BBox):
         '''Append an instance and update parent's bbox accordingly.'''
         if not bbox: return
         self._instances.append(bbox)
-        if not self._parent is None: # Note: `if self._parent` does not work here
-            self._parent.union(bbox)
+        self._update(bbox)
 
 
     def extend(self, bboxes:list):
@@ -77,12 +85,18 @@ class Collection(IText):
             self.append(bbox)
 
 
+    def reset(self, bboxes:list=[]):
+        '''Reset instances list.'''
+        self._instances = []
+        self.extend(bboxes)
+        return self
+
+
     def insert(self, nth:int, bbox:BBox):
         '''Insert a BBox and update parent's bbox accordingly.'''
         if not bbox: return
         self._instances.insert(nth, bbox)
-        if not self._parent is None:
-            self._parent.union(bbox)
+        self._update(bbox)
 
 
     def sort_in_reading_order(self):
@@ -104,13 +118,6 @@ class Collection(IText):
             self._instances.sort(key=lambda instance: (instance.bbox.x0, instance.bbox.y0, instance.bbox.x1))
         else:
             self._instances.sort(key=lambda instance: (instance.bbox.y1, instance.bbox.x0, instance.bbox.y0))
-        return self
-
-
-    def reset(self, bboxes:list=[]):
-        '''Reset instances list.'''
-        self._instances = []
-        self.extend(bboxes)
         return self
 
 
@@ -139,7 +146,7 @@ class Collection(IText):
         index_groups = [set() for i in range(num)] # type: list[set]        
         for i, instance in enumerate(self._instances):
             # connections of current instance to all instances after it
-            for j in range(i, num):
+            for j in range(i+1, num):
                 if fun(instance, self._instances[j]):
                     index_groups[i].add(j)
                     index_groups[j].add(i)

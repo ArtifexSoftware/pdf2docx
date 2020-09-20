@@ -12,7 +12,7 @@ from ..text.TextBlock import TextBlock
 from ..common.BBox import BBox
 from ..common.utils import RGB_component
 from ..common import docx
-from ..layout import Blocks # avoid conflict
+from ..layout import Blocks # avoid import conflict
 
 
 class Cell(BBox):
@@ -20,15 +20,13 @@ class Cell(BBox):
     def __init__(self, raw:dict={}):
         if raw is None: raw = {}
         super(Cell, self).__init__(raw)
-        self.bg_color = raw.get('bg_color', None) # type: int
+        self.bg_color     = raw.get('bg_color', None) # type: int
         self.border_color = raw.get('border_color', (0,0,0,0)) # type: tuple [int]
         self.border_width = raw.get('border_width', (0,0,0,0)) # type: tuple [float]
         self.merged_cells = raw.get('merged_cells', (1,1)) # type: tuple [int]
 
         # collect blocks
-        # NOTE: The cell bbox is determined first, and then find blocks contained in this bbox.
-        # so, don't update cell bbox when appending blocks, i.e. set parent=None.
-        self.blocks = Blocks.Blocks().from_dicts(raw.get('blocks', []))
+        self.blocks = Blocks.Blocks(parent=self).from_dicts(raw.get('blocks', []))
 
 
     @property
@@ -44,21 +42,22 @@ class Cell(BBox):
               - cell: Cell instance to compare
               - threshold: two bboxes are considered same if the overlap area exceeds threshold.
         '''
+        # bbox
         res, msg = super().compare(cell, threshold)
-        if not res:
-            return res, msg
-        
+        if not res: return res, msg
+
+        # cell style        
         if self.bg_color != cell.bg_color:
-            return False, f'Inconsistent background color @ Cell {self.bbox}:\n{self.bg_color} v.s. {cell.bg_color}'
+            return False, f'Inconsistent background color @ Cell {self.bbox}:\n{self.bg_color} v.s. {cell.bg_color} (expected)'
 
         if tuple(self.border_color) != tuple(cell.border_color):
-            return False, f'Inconsistent border color @ Cell {self.bbox}:\n{self.border_color} v.s. {cell.border_color}'
+            return False, f'Inconsistent border color @ Cell {self.bbox}:\n{self.border_color} v.s. {cell.border_color} (expected)'
 
         if tuple(self.border_width) != tuple(cell.border_width):
-            return False, f'Inconsistent border width @ Cell {self.bbox}:\n{self.border_width} v.s. {cell.border_width}'
+            return False, f'Inconsistent border width @ Cell {self.bbox}:\n{self.border_width} v.s. {cell.border_width} (expected)'
 
         if tuple(self.merged_cells) != tuple(cell.merged_cells):
-            return False, f'Inconsistent count of merged cells @ Cell {self.bbox}:\n{self.merged_cells} v.s. {cell.merged_cells}'
+            return False, f'Inconsistent count of merged cells @ Cell {self.bbox}:\n{self.merged_cells} v.s. {cell.merged_cells} (expected)'
 
         return True, ''
 
@@ -171,7 +170,7 @@ class Cell(BBox):
         # But, docx requires at least one paragraph in each cell, otherwise resulting in a repair error. 
         if self.blocks:
             docx_cell._element.clear_content()
-            self.blocks.make_page(docx_cell, self.bbox)
+            self.blocks.make_page(docx_cell)
 
 
     def _set_style(self, table, indexes):

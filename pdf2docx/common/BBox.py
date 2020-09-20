@@ -53,29 +53,7 @@ class BBox(IText):
     def __bool__(self):
         '''Real object when bbox is defined.'''
         return bool(self.bbox)
-
-
-    def distance(self, bbox:tuple):
-        '''x-distance to the given bbox.
-            ---
-            Args:
-            - bbox: container bbox, e.g. the valid docx page region.
-        '''
-        # NOTE: in PyMuPDF CS, horizontal text direction is same with positive x-axis,
-        # while vertical text is on the contrarory
-        idx0, f = (0, 1) if self.is_horizontal_text else (3, -1)
-        dx = (self.bbox[idx0]-bbox[idx0]) * f
-
-        # NOTE: consider modification when exceeds right boundary.
-        # dx = max(line.bbox.x1-X1, 0)
-        idx1 = (idx0+2) % 4
-        dt = max((self.bbox[idx1]-bbox[idx1])*f, 0)
-
-        # this value is generally used to set tab stop in docx, 
-        # so prefer a lower value to avoid exceeding line width.
-        # 1 pt = 1/28.35 = 0.035 cm
-        return int(dx-dt) 
-    
+   
    
     def vertically_align_with(self, bbox, factor:float=0.0, text_direction:bool=True):
         ''' Check whether two boxes have enough intersection in vertical direction, i.e. perpendicular to reading direction.
@@ -174,10 +152,10 @@ class BBox(IText):
     def compare(self, bbox, threshold=0.9):
         '''Whether has same type and bbox.'''
         if not isinstance(bbox, self.__class__):
-            return False, f'Inconsistent type: {self.__class__.__name__} v.s. {bbox.__class__.__name__}'
+            return False, f'Inconsistent type: {self.__class__.__name__} v.s. {bbox.__class__.__name__} (expected)'
         
         if not get_main_bbox(self.bbox, bbox.bbox, threshold):
-            return False, f'Inconsistent bbox: {self.bbox} v.s. {bbox.bbox}'
+            return False, f'Inconsistent bbox: {self.bbox} v.s. {bbox.bbox}(expected)'
         
         return True, ''
 

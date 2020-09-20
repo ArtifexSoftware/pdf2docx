@@ -93,7 +93,7 @@ class TestUtility(unittest.TestCase):
             for sample_row, test_row in zip(sample_table, test_table):
                 for sample_cell, test_cell in zip(sample_row, test_row):
                     if not sample_cell: continue
-                    matched, msg = sample_cell.compare(test_cell, threshold)
+                    matched, msg = test_cell.compare(sample_cell, threshold)
                     self.assertTrue(matched, msg=f'\n{msg}')
 
 
@@ -108,7 +108,7 @@ class TestUtility(unittest.TestCase):
 
         # check each image
         for sample, test in zip(sample_image_spans, test_image_spans):
-            matched, msg = sample.compare(test, threshold)
+            matched, msg = test.compare(sample, threshold)
             self.assertTrue(matched, msg=f'\n{msg}')
 
 
@@ -128,7 +128,7 @@ class TestUtility(unittest.TestCase):
         for sample, test in zip(sample_text_blocks, test_text_blocks):
 
             # text bbox and vertical spacing
-            matched, msg = sample.compare(test, threshold)
+            matched, msg = test.compare(sample, threshold)
             self.assertTrue(matched, msg=f'\n{msg}')
 
             # text style

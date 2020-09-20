@@ -24,7 +24,7 @@ class Row(BBox):
         self.height = raw.get('height', 0.0)
 
         # cells in row
-        self._cells = Cells(None, self).from_dicts(raw.get('cells', []))
+        self._cells = Cells(parent=self).from_dicts(raw.get('cells', []))
 
 
     def __getitem__(self, idx):

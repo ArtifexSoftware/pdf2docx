@@ -17,6 +17,8 @@ from ..text.Line import Line
 from ..text.Lines import Lines
 from ..image.ImageBlock import ImageBlock
 from ..table.TableBlock import TableBlock
+from ..table.Cell import Cell
+from . import Layout
 
 
 class Blocks(Collection):
@@ -32,9 +34,15 @@ class Blocks(Collection):
         for block in instances:
             if isinstance(block, ImageBlock):
                 text_block = block.to_text_block()
-                self._instances.append(text_block)
+                self.append(text_block)
             else:
-                self._instances.append(block)
+                self.append(block)
+
+    def _update(self, block:Block):
+        ''' Override. The parent of block is generally Layout or Cell, which is not necessary to 
+            update its bbox. So, do nothing but required here.
+        '''
+        pass
 
 
     def from_dicts(self, raws:list):
@@ -128,17 +136,18 @@ class Blocks(Collection):
             lambda block: block.is_table_block(), self._instances))
 
 
-    def clean(self, page_bbox):
+    def clean(self):
         '''Preprocess blocks initialized from the raw layout.'''
 
         # filter function:
         # - remove blocks out of page
         # - remove transformed text: text direction is not (1, 0) or (0, -1)
         # - remove empty blocks
+        page_bbox = (0.0, 0.0, self.parent.width, self.parent.height)
         f = lambda block:   block.bbox.intersects(page_bbox) and \
                             block.text.strip() and (
                             block.is_horizontal_text or block.is_vertical_text)
-        self._instances = list(filter(f, self._instances))
+        self.reset(filter(f, self._instances))
            
         # merge blocks horizontally, e.g. remove overlap blocks, since no floating elements are supported
         # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
@@ -283,7 +292,7 @@ class Blocks(Collection):
         return res
 
 
-    def parse_vertical_spacing(self, bbox:tuple):
+    def parse_spacing(self):
         ''' Calculate external and internal vertical space for text blocks.
         
             - paragraph spacing is determined by the vertical distance to previous block. 
@@ -295,30 +304,51 @@ class Blocks(Collection):
                 previous block should be a paragraph).
             
             - line spacing is defined as the average line height in current block.
-
-            ---
-            Args:
-            - bbox: reference boundary of all the blocks
         '''
         if not self._instances: return
 
-        # check text direction
-        # normal reading direction by default, i.e. from left to right, 
-        # the reference boundary is top border, i.e. bbox[1].
-        # regarding vertical text direction, e.g. from bottom to top, left border bbox[0] is the reference
+        # bbox of blocks
+        # - page level, e.g. blocks in top layout
+        # - table level, e.g. blocks in table cell
+        if isinstance(self.parent, Layout.Layout): 
+            bbox = self.parent.bbox
+
+        elif isinstance(self.parent, Cell):
+            cell = self.parent
+            x0,y0,x1,y1 = cell.bbox
+            w_top, w_right, w_bottom, w_left = cell.border_width
+            bbox = (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
+        else:
+            return
+
+        # check text direction for vertical space calculation:
+        # - normal reading direction (from left to right)    -> the reference boundary is top border, i.e. bbox[1].
+        # - vertical text direction, e.g. from bottom to top -> left border bbox[0] is the reference
         idx = 1 if self.is_horizontal_text else 0
 
         ref_block = self._instances[0]
         ref_pos = bbox[idx]
 
         for block in self._instances:
+
+            #---------------------------------------------------------
+            # alignment mode and left spacing:
+            # - horizontal block -> take left boundary as reefrence
+            # - vertical block   -> take bottom boundary as reefrence
+            #---------------------------------------------------------
+            block.parse_horizontal_spacing(bbox)
+
+            #---------------------------------------------------------
+            # vertical space calculation
+            #---------------------------------------------------------
+
             # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
             # size should be excluded from the calculated vertical spacing
             if block.is_table_block():
                 dw = block[0][0].border_width[0] / 2.0 # use top border of the first cell
 
                 # calculate vertical spacing of blocks under this table
-                block.parse_vertical_spacing()
+                block.parse_spacing()
             
             else:
                 dw = 0.0
@@ -426,19 +456,18 @@ class Blocks(Collection):
 
             NOTE: `parse_text_format` must be implemented by TextBlock, ImageBlock and TableBlock.
         '''
-        flag = False
+        # parse text block style one by one
         for block in self._instances:
-            if block.parse_text_format(rects):
-                flag = True        
-        return flag    
+            block.parse_text_format(rects)
+
+        return True    
 
 
-    def make_page(self, doc, page_bbox:tuple):
+    def make_page(self, doc):
         ''' Create page based on parsed block structure. 
             ---
             Args:
             - doc: python-docx Document or _Cell object
-            - page_bbox: page bbox
         '''
         for block in self._instances:
 
@@ -446,7 +475,7 @@ class Blocks(Collection):
             if block.is_text_block():
                 # new paragraph
                 p = doc.add_paragraph()
-                block.make_docx(p, page_bbox)
+                block.make_docx(p)
             
             # make table
             elif block.is_table_block():
@@ -467,7 +496,7 @@ class Blocks(Collection):
                 table = doc.add_table(rows=block.num_rows, cols=block.num_cols)
                 table.autofit = False
                 table.allow_autofit  = False
-                block.make_docx(table, page_bbox)
+                block.make_docx(table)
                 
         # NOTE: If a table is at the end of a page, a new paragraph will be automatically 
         # added by the rending engine, e.g. MS Word, which resulting in an unexpected

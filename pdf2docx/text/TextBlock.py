@@ -19,15 +19,23 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
         # --------------------------------
         'before_space': bs,
         'after_space': as,
-        'line_space': ls
+        'line_space': ls,
+
+        'alignment': 0,
+        'left_space': 10.0,
+        'right_space': 0.0,
+
+        'tab_stops': [15.4, 35.0]
     }
 '''
 
 from docx.shared import Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+
 from .Line import Line
 from .Lines import Lines
 from ..image.ImageSpan import ImageSpan
-from ..common.base import RectType, TextDirection
+from ..common.base import RectType, TextDirection, TextAlignment
 from ..common.Block import Block
 from ..common.utils import RGB_component_from_name
 from ..common.constants import DM, DR
@@ -43,13 +51,13 @@ class TextBlock(Block):
         super(TextBlock, self).__init__(raw)
 
         # collect lines
-        self.lines = Lines(None, self).from_dicts(raw.get('lines', []))
+        self.lines = Lines(parent=self).from_dicts(raw.get('lines', []))
 
         # set type
         self.set_text_block()
 
     @property
-    def text(self) -> str:
+    def text(self):
         '''Get text content in block, joning each line with `\n`.'''
         lines_text = [line.text for line in self.lines]
         return '\n'.join(lines_text)
@@ -68,7 +76,7 @@ class TextBlock(Block):
             return TextDirection.LEFT_RIGHT
 
 
-    def store(self) -> dict:
+    def store(self):
         res = super().store()
         res.update({
             'lines': self.lines.store()
@@ -119,7 +127,7 @@ class TextBlock(Block):
                 span.plot(page, c)
 
 
-    def contains_discrete_lines(self, distance:float=25, threshold:int=2) -> bool:
+    def contains_discrete_lines(self, distance:float=25, threshold:int=2):
         ''' Check whether lines in block are discrete: 
               - the count of lines with a distance larger than `distance` is greater then `threshold`.
               - ImageSpan exists
@@ -151,7 +159,7 @@ class TextBlock(Block):
         return cnt >= threshold
 
     
-    def parse_text_format(self, rects) -> bool:
+    def parse_text_format(self, rects):
         '''parse text format with style represented by rectangles.
             ---
             Args:
@@ -193,6 +201,120 @@ class TextBlock(Block):
                 line.spans.reset(split_spans)
 
         return flag
+
+
+    def parse_horizontal_spacing(self, bbox):
+        ''' Set horizontal spacing based on lines layout and page bbox.
+            - The general spacing is determined by paragraph alignment and indentation.
+            - The detailed spacing of block lines is determined by tab stops.
+
+            Multiple alignment modes may exist in block (due to improper organized lines
+            from PyMuPDF), e.g. some lines align left, and others right. In this case,
+            LEFT alignment is set, and use TAB to position each line.
+        '''
+        # get lines in each row (an indeed line)
+        fun = lambda a,b: a.in_same_row(b)
+        rows = self.lines.group(fun)
+
+        # ------------------------------------------------------
+        # block alignment
+        # - parse alignment mode by lines layout if rows>=2, otherwise by page bbox
+        # - calculate indentation with page bbox
+        # ------------------------------------------------------
+        # NOTE: in PyMuPDF CS, horizontal text direction is same with positive x-axis,
+        # while vertical text is on the contrary, so use f = -1 here
+        idx0, idx1, f = (0, 2, 1.0) if self.is_horizontal_text else (3, 1, -1.0)
+
+        # block position in page
+        d_left   = round((self.bbox[idx0]-bbox[idx0])*f, 1) # left margin
+        d_right  = round((bbox[idx1]-self.bbox[idx1])*f, 1) # right margin
+        d_center = round((d_left-d_right)/2.0, 1)           # center margin
+        d_left = max(d_left, 0.0)
+        d_right = max(d_right, 0.0)
+
+        # First priority: 
+        # if significant distance exists in any two adjacent lines -> set LEFT alignment,
+        # then ensure the detailed line position with TAB stops further
+        def discrete_lines(threshold):
+            for row in rows:
+                if len(row)==1: continue
+                for i in range(1, len(row)):
+                    dis = (row[i].bbox[idx0]-row[i-1].bbox[idx1])*f
+                    if dis >= threshold: return True
+            return False
+
+        if discrete_lines(5.0*DM):
+            self.alignment = TextAlignment.LEFT
+
+        # check contained lines layout if the count of lines (real lines) >= 2
+        elif len(rows)>=2:
+            # contained lines layout
+            X0 = [lines[0].bbox[idx0]  for lines in rows]
+            X1 = [lines[-1].bbox[idx1] for lines in rows]
+            X  = [(x0+x1)/2.0 for (x0, x1) in zip(X0, X1)]
+
+            left_aligned   = abs(max(X0)-min(X0))<=DM*2.0
+            right_aligned  = abs(max(X1)-min(X1))<=DM*2.0
+            center_aligned = abs(max(X)-min(X))  <=DM*2.0
+
+            # consider left/center/right alignment, 2*2*2=8 cases in total, of which
+            # there cases are impossible: 0-1-1, 1-1-0, 1-0-1
+            if center_aligned and not left_aligned and not right_aligned: # 0-1-0
+                self.alignment = TextAlignment.CENTER
+
+            elif right_aligned and not left_aligned: # 0-0-1
+                self.alignment = TextAlignment.RIGHT
+
+            elif left_aligned and right_aligned: # 1-1-1
+                self.alignment = TextAlignment.JUSTIFY
+
+            # set left alignment and ensure line position with TAB stop further
+            elif not left_aligned and not right_aligned: # 0-0-0
+                self.alignment = TextAlignment.LEFT
+
+            # now, it's 1-0-0, but if remove last line, it may be 1-1-1
+            else: # 1-0-0
+                if len(rows)==2:
+                    self.alignment = TextAlignment.LEFT
+
+                # at least 2 lines excepting the last line
+                else:
+                    X1 = [lines[-1].bbox[idx1] for lines in rows[0:-1]]
+                    right_aligned  = abs(max(X1)-min(X1))<=DM*2.0
+                    if right_aligned:
+                        self.alignment = TextAlignment.JUSTIFY
+                    else:
+                        self.alignment = TextAlignment.LEFT
+
+        # otherwise, check block position to page bbox further
+        else:
+            if (self.bbox[idx1]-self.bbox[idx0])/(bbox[idx1]-bbox[idx0])>=0.9: # line is long enough
+                self.alignment = TextAlignment.LEFT
+
+            elif abs(d_center) < DM*2.0:
+                self.alignment = TextAlignment.CENTER
+
+            elif abs(d_left) <= abs(d_right):
+                self.alignment = TextAlignment.LEFT
+
+            else:
+                self.alignment = TextAlignment.RIGHT
+
+        # set horizontal space
+        self.left_space  = d_left
+        self.right_space = d_right        
+
+        # ------------------------------------------------------
+        # tab stops for block lines
+        # NOTE:
+        # relative stop position to left boundary of block is calculated,
+        # so block.left_space is required
+        # ------------------------------------------------------
+        if self.alignment != TextAlignment.LEFT: return
+
+        fun = lambda line: round((line.bbox[idx0]-self.bbox[idx0])*f, 1) # relative position to block
+        all_pos = set(map(fun, self.lines))
+        self.tab_stops = list(filter(lambda pos: pos>=DM, all_pos))        
 
 
     def parse_line_spacing(self):
@@ -239,77 +361,59 @@ class TextBlock(Block):
             self.before_space = 0.0
 
 
-    def make_docx(self, p, bbox:tuple):
-        ''' Create paragraph for a text block. Join line sets with TAB and set position according to bbox.
+    def make_docx(self, p):
+        ''' Create paragraph for a text block.
             ---
             Args:
               - p: docx paragraph instance
-              - bbox: bounding box of paragraph
 
-            Generally, a pdf block is a docx paragraph, with block|line as line in paragraph.
+            NOTE:
+            - the left position of paragraph set by paragraph indent, rather than TAB stop
+            - hard line break is used for line in block.
+
+            Generally, a pdf block is a docx paragraph, with block->line as line in paragraph.
             But without the context, it's not able to recognize a block line as word wrap, or a 
-            separate line instead. A rough rule used here:
-            
-            block line will be treated as separate line by default, except
-              - (1) this line and next line are actually in the same line (y-position)
-              - (2) if the rest space of this line can't accommodate even one span of next line, 
-                    it's supposed to be normal word wrap.
+            separate line instead. A rough rule used here: block line will be treated as separate 
+            line, except this line and next line are indeed in the same line.
 
             Refer to python-docx doc for details on text format:
-            https://python-docx.readthedocs.io/en/latest/user/text.html            
+            - https://python-docx.readthedocs.io/en/latest/user/text.html
+            - https://python-docx.readthedocs.io/en/latest/api/enum/WdAlignParagraph.html#wdparagraphalignment
         '''
-        # check text direction
-        # normal direction by default, taking left border as a reference
-        # when from bottom to top, taking bottom border as a reference
-        idx = 0 if self.is_horizontal_text else 3
+        pf = docx.reset_paragraph_format(p)
 
-        # indent and space setting
+        # vertical spacing
         before_spacing = max(round(self.before_space, 1), 0.0)
         after_spacing = max(round(self.after_space, 1), 0.0)
-        pf = docx.reset_paragraph_format(p)
+
         pf.space_before = Pt(before_spacing)
-        pf.space_after = Pt(after_spacing)
-        
-        # restore default tabs
-        pf.tab_stops.clear_all()
+        pf.space_after = Pt(after_spacing)        
 
-        # set line spacing for text paragraph
-        pf.line_spacing = Pt(round(self.line_space,1))        
+        # line spacing
+        pf.line_spacing = Pt(round(self.line_space, 1))
 
-        # set all tab stops
-        all_pos = set([line.distance(bbox) for line in self.lines])
-        for pos in all_pos:
-            if pos<=0.0: continue
-            pf.tab_stops.add_tab_stop(Pt(pos))
+        # horizontal alignment
+        if self.alignment==TextAlignment.LEFT:
+            pf.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            pf.left_indent  = Pt(self.left_space)
 
-        # add line by line
-        current_pos = 0.0
-        for i, line in enumerate(self.lines):
+            # set tab stops to ensure line position
+            for pos in self.tab_stops:
+                pf.tab_stops.add_tab_stop(Pt(self.left_space + pos))
 
-            # left indent implemented with tab
-            pos = line.distance(bbox)
-            docx.add_stop(p, Pt(pos), Pt(current_pos))
+        elif self.alignment==TextAlignment.RIGHT:
+            pf.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            pf.right_indent  = Pt(self.right_space)
 
-            # add line
-            for span in line.spans: span.make_docx(p)
+        elif self.alignment==TextAlignment.CENTER:
+            pf.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-            # break line? new line by default
-            line_break = True
-            # no more lines after last line
-            if line==self.lines[-1]: line_break = False            
-            
-            # do not break line if they're indeed in same line
-            elif line.in_same_row(self.lines[i+1]):
-                line_break = False
+        else:
+            pf.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+            pf.left_indent  = Pt(self.left_space)
+            pf.right_indent  = Pt(self.right_space)
 
-            # do not break line if no more space in this line
-            elif bbox[(idx+2)%4]-line.bbox[(idx+2)%4] < DM:
-                line_break = False
-            
-            if line_break:
-                p.add_run('\n')
-                current_pos = 0
-            else:
-                current_pos = line.distance(bbox) + line.bbox.width
+        # add lines        
+        self.lines.make_docx(p)
 
         return p

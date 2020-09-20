@@ -60,14 +60,17 @@ class TablesConstructor(TableStructure):
         return unique_tables
 
 
-    def stream_tables(self, X0:float, X1:float):
+    def stream_tables(self):
         ''' Parse table with layout of text/image blocks, and update borders with explicit borders 
-            represented by rectangle shapes.'''
+            represented by rectangle shapes.
+        '''
+        x0, _, x1, _ = self._blocks.parent.bbox
+
         # stream tables determined by outer borders
         tables = self.stream_tables_from_outer_borders()
 
         # stream tables from layout
-        tables_ = self.stream_tables_from_layout(X0, X1)
+        tables_ = self.stream_tables_from_layout(x0, x1)
         tables.extend(tables_)
 
         return tables
