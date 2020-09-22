@@ -227,11 +227,14 @@ def shapes_from_annotations(page:fitz.Page):
 
 
 def shapes_from_stream(doc:fitz.Document, page:fitz.Page):
-    ''' Get rectangle shapes, e.g. highlight, underline, table borders, from page source contents.
+    ''' Get rectangle shapes, e.g. highlight, underline and table borders, from page source contents.
         ---
         Args:
         - doc: fitz.Document representing the pdf file
         - page: fitz.Page, current page
+
+        NOTE: the purpose is to get potential highlight, underline and table borders, rather than exact 
+        path/fill/shape. So, bboxes of the real shapes are returned.
 
         The page source is represented as contents of stream object. For example,
         ```
@@ -245,6 +248,7 @@ def shapes_from_stream(doc:fitz.Document, page:fitz.Page):
             ...
             214 320 m
             249 322 l
+            426 630 425 630 422 630 c
             ...
             EMC
         ```
@@ -254,6 +258,7 @@ def shapes_from_stream(doc:fitz.Document, page:fitz.Page):
         - `rg` / `g` specify color mode: rgb / grey
         - `re`, `f` or `f*`: fill rectangle path with pre-defined color
         - `m` (move to) and `l` (line to) defines a path
+        - `c` draw cubic Bezier curve with given control points
         
         In this case,
         - a rectangle with:
@@ -262,6 +267,7 @@ def shapes_from_stream(doc:fitz.Document, page:fitz.Page):
             - width: 193.97
             - height: 13.44
         - a line from (214, 320) to (249, 322)
+        - a Bezier curve with control points (249,322), (426,630), (425,630), (422,630)
 
         Read more:        
         - https://github.com/pymupdf/PyMuPDF/issues/263
@@ -281,6 +287,9 @@ def shapes_from_stream(doc:fitz.Document, page:fitz.Page):
     xref_stream = page.readContents().decode(encoding="ISO-8859-1") 
 
     # transformation matrix for coordinate system conversion from pdf to fitz
+    # NOTE: transformation matrix converts PDF CS to UNROTATED PyMuPDF page CS, 
+    #       so need further rotation transformation to the real page CS (applied in Object BBox)
+    # https://github.com/pymupdf/PyMuPDF/issues/619
     matrix = page.transformationMatrix
 
     # Graphic States: working CS is coincident with the absolute origin (0, 0)
@@ -606,7 +615,7 @@ def _transform_path(path:list, WCS:fitz.Matrix, M0:fitz.Matrix):
         Args:
         - path: a list of (x,y) point
         - WCS: transformation matrix within pdf
-        - M0: tranformation matrix from pdf to fitz
+        - M0: tranformation matrix from pdf to fitz (unrotated page CS)
 
         ```
                               | a b 0 |
@@ -632,37 +641,38 @@ def _close_path(path:list):
         path.append(path[0])
 
 
-def _stroke_path(path:list, WCS:fitz.Matrix, color:int, width:float, page_height:float):
-    ''' Stroke path with a given width. Only horizontal/vertical paths are considered.
-    '''
+def _stroke_path(path:list, WCS:fitz.Matrix, color:int, width:float, M0:fitz.Matrix):
+    ''' Stroke path with a given width. Only horizontal/vertical paths are considered.'''
     # CS transformation
-    t_path = _transform_path(path, WCS, page_height)
+    t_path = _transform_path(path, WCS, M0)
+
+    # NOTE: the directly extracted width is affected by the transformation matrix, especially the scale components.
+    # an average width is used for simplification
+    fx, fy = WCS.a, WCS.d
+    w = width*(fx+fy)/2.0
 
     strokes = []
     for i in range(len(t_path)-1):
         # start point
         x0, y0 = t_path[i]
         # end point
-        x1, y1 = t_path[i+1]
-
-        # ensure from left to right
-        if x0>x1: x0, x1 = x1, x0
+        x1, y1 = t_path[i+1]        
 
         strokes.append({
             'start': (x0, y0),
             'end'  : (x1, y1),
-            'width': width,
+            'width': w,
             'color': color
         })
     
     return strokes
 
 
-def _fill_rect_path(path:list, WCS:fitz.Matrix, color:int, page_height:float):
+def _fill_rect_path(path:list, WCS:fitz.Matrix, color:int, M0:fitz.Matrix):
     ''' Fill bbox of path with a given color. Only horizontal/vertical paths are considered.
     '''
     # CS transformation
-    t_path = _transform_path(path, WCS, page_height)
+    t_path = _transform_path(path, WCS, M0)
 
     # find bbox of path region
     X = [p[0] for p in t_path]
