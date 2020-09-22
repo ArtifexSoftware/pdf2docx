@@ -87,8 +87,8 @@ class Converter:
         # init page layout
         self.initialize(page)
         if debug: 
-            self._layout.plot(debug_kwargs['doc'], 'Original Text Blocks', key=PlotControl.LAYOUT)
-            self._paths.plot(debug_kwargs['doc'], 'Original Shapes', self._layout.width, self._layout.height)
+            self._layout.plot(debug_kwargs['doc'], 'Source Text Blocks', key=PlotControl.LAYOUT)
+            self._paths.plot(debug_kwargs['doc'], 'Source Shapes', self._layout.width, self._layout.height)
 
         # parse and save page
         self.layout.parse(**debug_kwargs).make_page(self.doc_docx)

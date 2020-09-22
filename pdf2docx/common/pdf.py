@@ -75,7 +75,7 @@ def paths_from_annotations(page:fitz.Page):
             - https://pymupdf.readthedocs.io/en/latest/annot.html
             - https://pymupdf.readthedocs.io/en/latest/vars.html#annotation-types
     '''
-    strokes, fills = [], []
+    res = []
     for annot in page.annots():
 
         # annot type, e.g. (8, 'Highlight')
@@ -112,10 +112,11 @@ def paths_from_annotations(page:fitz.Page):
         # +----------------------------+
         # 
         if key==3: 
-            strokes.append({
-                'start': (rect.x0+1.5*w, (rect.y0+rect.y1)/2.0),
-                'end'  : (rect.x1-1.5*w, (rect.y0+rect.y1)/2.0),
-                })
+            x0 = rect.x0+1.5*w
+            x1 = rect.x1-1.5*w
+            y0 = y1 = (rect.y0+rect.y1)/2.0
+            path = _add_stroke_line((x0, y0), (x1, y1), sc, w)
+            res.append(path)
 
         # Square: a space of 0.5*w around eah border
         # border rects and filling rects are to be extracted from original square
@@ -135,35 +136,18 @@ def paths_from_annotations(page:fitz.Page):
         elif key==4:
             # stroke rectangles
             if not sc is None:
-                d = 0.5*w
-                x0, y0, x1, y1 = (
-                    rect.x0+d,
-                    rect.y0+d,
-                    rect.x1-d,
-                    rect.y1-d
-                )
-                points = [
-                    (x0  , y0+d), (x1  , y0+d), # top
-                    (x0  , y1-d), (x1  , y1-d), # bottom
-                    (x0+d, y0  ), (x0+d, y1), # left
-                    (x1-d, y0  ), (x1-d, y1)  # right
-                ]
-                for start, end in points:
-                    strokes.append({
-                        'start': start,
-                        'end'  : end
-                        })
+                x0, y0 = rect.x0+w, rect.y0+w
+                x1, y1 = rect.x1-w, rect.y1-w
+                path = _add_stroke_rect((x0, y0), (x1, y1), sc, w)
+                res.append(path)
 
             # fill rectangle
             if not fc is None:
                 d = 1.5*w
-                fills.append({
-                    'bbox': (
-                        rect.x0+d,
-                        rect.y0+d,
-                        rect.x1-d,
-                        rect.y1-d)
-                    })
+                x0, y0 = rect.x0+d, rect.y0+d
+                x1, y1 = rect.x1-d, rect.y1-d
+                path = _add_fill_rect((x0, y0), (x1, y1), fc)
+                res.append(path)
         
         # highlight, underline, strikethrough: on space
         # For these shapes, `annot.rect` is a combination of all sub-highlights, especially 
@@ -187,15 +171,13 @@ def paths_from_annotations(page:fitz.Page):
                     x1, y1 = points[4*i+3]
 
                     # NOTE: this indded a stroke for PyMuPDF -> no fill color but stroke color !!
-                    fills.append({
-                        'bbox': (x0, y0, x1, y1),
-                        'color': sc
-                        })
+                    path = _add_fill_rect((x0, y0), (x1, y1), sc)
+                    res.append(path)
 
                 else:                
                     # underline: bottom edge
                     if key==9:
-                        start, end = points[4*i+2], points[4*i+3]
+                        start, end = points[4*i+2], points[4*i+3]                        
                     
                     # strikethrough: average of top and bottom edge
                     else:
@@ -204,26 +186,10 @@ def paths_from_annotations(page:fitz.Page):
                         start = x0, y_
                         end = x1, y_
 
-                    strokes.append({
-                        'start': start,
-                        'end'  : end
-                        })
+                    path = _add_stroke_line(start, end, sc, w)
+                    res.append(path)
 
-
-        # append color/width
-        for stroke in strokes:
-            stroke.update({
-                    'width': w,
-                    'color': sc
-                })
-
-        for fill in fills:
-            if 'color' not in fill:
-                fill.update({
-                        'color': fc
-                    })
-
-    return strokes, fills
+    return res
 
 
 def paths_from_stream(doc:fitz.Document, page:fitz.Page):
@@ -474,6 +440,30 @@ def paths_from_stream(doc:fitz.Document, page:fitz.Page):
             x0, y0 = map(float, words[0:-1])
             paths[-1].append((x0, y0))
 
+        # path: c -> cubic Bezier curve with control points
+        elif op in ('c', 'v', 'y'):
+            coords = list(map(float, words[0:-1]))
+            P = [(coords[i], coords[i+1]) for i in range(0, len(coords), 2)]
+            x0, y0 = paths[-1][-1]
+
+            # x1 y1 x2 y2 x3 y3 c -> (x1,y1), (x2,y2) as control points
+            if op=='c': 
+                P.insert(0, (x0, y0))
+
+            # x2 y2 x3 y3 v -> (x0,y0), (x2,y2) as control points
+            elif op=='v': 
+                P.insert(0, (x0, y0))
+                P.insert(0, (x0, y0))
+            
+            # x1 y1 x3 y3 y -> (x1,y1), (x3,y3) as control points
+            else: 
+                P.insert(0, (x0, y0))
+                P.append(P[-1])
+            
+            # calculate points on Bezier points with parametric equation
+            bezier = _bezier_paths(P, segments=5)
+            paths[-1].extend(bezier)
+
         # close the path
         elif op=='h': 
             for path in paths: _close_path(path)
@@ -606,6 +596,28 @@ def _is_device_cs(xref, doc:fitz.Document):
     return False
 
 
+def _bezier_paths(points, segments=5):
+    '''calculate points on Bezier curve.
+        ---
+        Args:
+        - points: a list of 4 points, [P0, P1, P2, P3], of which P1 and P2 are control points
+        - segments: int, count of sample points
+    '''
+    # R(t) = (1-t)**3*P0 + 3*t*(1-t)**2*P1 + 3*t**2*(1-t)*P2 + t**3*P3  (0<=t<=1)
+    res = []
+    for i in range(1, segments+1):
+        t = i/segments
+        factors = ((1-t)**3, 3*t*(1-t)**2, 3*t**2*(1-t), t**3)
+
+        x, y = 0.0, 0.0
+        for P, f in zip(points, factors):
+            x += P[0]*f
+            y += P[1]*f
+        res.append((x,y))
+
+    return res
+
+
 def _transform_path(path:list, WCS:fitz.Matrix, M0:fitz.Matrix):
     ''' Transform path to page coordinate system. 
         ---
@@ -645,7 +657,7 @@ def _stroke_path(path:list, WCS:fitz.Matrix, color:int, width:float, M0:fitz.Mat
 
     # NOTE: the directly extracted width is affected by the transformation matrix, especially the scale components.
     # an average width is used for simplification
-    fx, fy = WCS.a, WCS.d
+    fx, fy = abs(WCS.a), abs(WCS.d) # use absolute value!!
     w = width*(fx+fy)/2.0
 
     return {
@@ -703,4 +715,41 @@ def _RGB_from_color_components(components:list, device_cs:bool=True):
     return color
 
 
+def _add_stroke_line(start:list, end:list, color:int, width:float):
+    '''add stroke line defined with start and end points.'''
+    return {
+        'stroke': True,
+        'points': [start, end],
+        'color' : color,
+        'width' : width
+        }
         
+def _add_stroke_rect(top_left:list, bottom_right:list, color:int, width:float):
+    '''add stroke lines from rect defined with top-left and bottom-right points.'''
+    x0, y0 = top_left
+    x1, y1 = bottom_right
+
+    points = [
+        (x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)
+        ]
+    return {
+        'stroke': True,
+        'points': points,
+        'color' : color,
+        'width' : width
+        }
+
+
+def _add_fill_rect(top_left:list, bottom_right:list, color:int):
+    '''add fill from rect defined with top-left and bottom-right points.'''
+    x0, y0 = top_left
+    x1, y1 = bottom_right
+
+    points = [
+        (x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)
+        ]
+    return {
+        'stroke': False,
+        'points': points,
+        'color' : color
+        }

@@ -230,7 +230,7 @@ class Layout:
         self.blocks.make_page(doc)
 
 
-    @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.LAYOUT)
+    @debug_plot('Cleaned Blocks and Shapes', plot=True, category=PlotControl.SHAPE)
     def clean(self, **kwargs):
         '''Clean blocks and rectangles, e.g. remove negative blocks, duplicated shapes.'''
         clean_blocks = self.blocks.clean()

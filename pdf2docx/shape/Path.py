@@ -21,8 +21,8 @@ class PathsExtractor:
         raw_paths = pdf.paths_from_stream(doc, page)
 
         # paths from pdf annotation
-        # _ = pdf.paths_from_annotations(page)
-        # raw_paths.extend(_)
+        _ = pdf.paths_from_annotations(page)
+        raw_paths.extend(_)
 
         self._instances = [] # type: list[Path]
         for raw_path in raw_paths:
@@ -104,4 +104,5 @@ class Path:
 
     def plot(self, page):
         color = [c/255.0 for c in RGB_component(self.color)]
-        page.drawPolyline(self.points, color=color, fill=not self.stroke, width=self.width, overlay=True)
+        fill_color = None if self.stroke else color
+        page.drawPolyline(self.points, color=color, fill=fill_color, width=self.width, overlay=True)
