@@ -61,7 +61,7 @@ def new_page_with_margin(doc, width:float, height:float, margin:tuple, title:str
     return page
 
 
-def shapes_from_annotations(page:fitz.Page):
+def paths_from_annotations(page:fitz.Page):
     ''' Get shapes, e.g. Line, Square, Highlight, from annotations(comment shapes) in PDF page.
         ---
         Args:
@@ -226,15 +226,12 @@ def shapes_from_annotations(page:fitz.Page):
     return strokes, fills
 
 
-def shapes_from_stream(doc:fitz.Document, page:fitz.Page):
-    ''' Get rectangle shapes, e.g. highlight, underline and table borders, from page source contents.
+def paths_from_stream(doc:fitz.Document, page:fitz.Page):
+    ''' Get paths, e.g. highlight, underline and table borders, from page source contents.
         ---
         Args:
         - doc: fitz.Document representing the pdf file
         - page: fitz.Page, current page
-
-        NOTE: the purpose is to get potential highlight, underline and table borders, rather than exact 
-        path/fill/shape. So, bboxes of the real shapes are returned.
 
         The page source is represented as contents of stream object. For example,
         ```
@@ -320,12 +317,12 @@ def shapes_from_stream(doc:fitz.Document, page:fitz.Page):
 
     # In addition to lines, rectangles are also processed with border path
     paths = [] # a list of path, each path is a list of points
+    res = []
 
     # Check line by line
     # Cleaned by `page.cleanContents()`, operator and operand are aligned in a same line;
     # otherwise, have to check stream contents word by word (line always changes)
     lines = xref_stream.splitlines()
-    strokes, fills = [], []
 
     for line in lines:
 
@@ -492,8 +489,8 @@ def shapes_from_stream(doc:fitz.Document, page:fitz.Page):
 
             # stroke path
             for path in paths:
-                res = _stroke_path(path, WCS, Wcs, Wd, matrix)
-                strokes.extend(res)
+                p = _stroke_path(path, WCS, Wcs, Wd, matrix)
+                res.append(p)
 
             # reset path
             paths = []
@@ -505,8 +502,8 @@ def shapes_from_stream(doc:fitz.Document, page:fitz.Page):
                 _close_path(path)
             
                 # fill path
-                res = _fill_rect_path(path, WCS, Wcf, matrix)
-                fills.append(res)
+                p = _fill_rect_path(path, WCS, Wcf, matrix)
+                res.append(p)
 
             # reset path
             paths = []
@@ -518,12 +515,12 @@ def shapes_from_stream(doc:fitz.Document, page:fitz.Page):
                 _close_path(path)
                 
                 # fill path
-                res = _fill_rect_path(path, WCS, Wcf, matrix)
-                fills.append(res)
+                p = _fill_rect_path(path, WCS, Wcf, matrix)
+                res.append(p)
 
                 # stroke path
-                res = _stroke_path(path, WCS, Wcs, Wd, matrix)
-                strokes.extend(res)
+                p = _stroke_path(path, WCS, Wcs, Wd, matrix)
+                res.append(p)
 
             # reset path
             paths = []
@@ -536,7 +533,7 @@ def shapes_from_stream(doc:fitz.Document, page:fitz.Page):
         elif op=='n':
             paths = []
 
-    return strokes, fills
+    return res
 
 
 def _check_device_cs(doc:fitz.Document, page:fitz.Page):
@@ -642,7 +639,7 @@ def _close_path(path:list):
 
 
 def _stroke_path(path:list, WCS:fitz.Matrix, color:int, width:float, M0:fitz.Matrix):
-    ''' Stroke path with a given width. Only horizontal/vertical paths are considered.'''
+    ''' Stroke path.'''
     # CS transformation
     t_path = _transform_path(path, WCS, M0)
 
@@ -651,39 +648,23 @@ def _stroke_path(path:list, WCS:fitz.Matrix, color:int, width:float, M0:fitz.Mat
     fx, fy = WCS.a, WCS.d
     w = width*(fx+fy)/2.0
 
-    strokes = []
-    for i in range(len(t_path)-1):
-        # start point
-        x0, y0 = t_path[i]
-        # end point
-        x1, y1 = t_path[i+1]        
-
-        strokes.append({
-            'start': (x0, y0),
-            'end'  : (x1, y1),
-            'width': w,
-            'color': color
-        })
-    
-    return strokes
+    return {
+        'stroke': True,
+        'points': t_path,
+        'color' : color,
+        'width' : w
+    }
 
 
 def _fill_rect_path(path:list, WCS:fitz.Matrix, color:int, M0:fitz.Matrix):
-    ''' Fill bbox of path with a given color. Only horizontal/vertical paths are considered.
-    '''
+    ''' Fill path.'''
     # CS transformation
     t_path = _transform_path(path, WCS, M0)
 
-    # find bbox of path region
-    X = [p[0] for p in t_path]
-    Y = [p[1] for p in t_path]
-    x0, x1 = min(X), max(X)
-    y0, y1 = min(Y), max(Y)
-
-    # filled rectangle
     return {
-        'bbox': (x0, y0, x1, y1), 
-        'color': color
+        'stroke': False,
+        'points': t_path,
+        'color' : color
     }
 
 

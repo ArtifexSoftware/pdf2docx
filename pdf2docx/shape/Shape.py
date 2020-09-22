@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
 '''
-Objects representing PDF path (both stroke and filling) parsed from both pdf raw streams and annotations.
+Objects representing PDF stroke and filling:
+
+- Stroke: path segment
+- Fill  : bbox of closed path filling area
 
 @created: 2020-09-15
 @author: train8808@gmail.com
@@ -73,7 +76,7 @@ class Stroke(Shape):
 
         # update bbox
         self.update(self._to_rect())
-        
+
 
     @property
     def horizontal(self): return self._start[1] == self._end[1]
@@ -133,7 +136,17 @@ class Stroke(Shape):
                 self._start = fitz.Point(x, rect.y0)
                 self._end   = fitz.Point(x, rect.y1)
 
-        return self    
+        return self
+
+
+    def store(self):
+        res = super().store()
+        res.update({
+            'start': tuple(self._start),
+            'end': tuple(self._end),
+            'width': self.width
+        })
+        return res
 
 
     def _to_rect(self):

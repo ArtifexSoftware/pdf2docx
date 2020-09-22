@@ -3,12 +3,15 @@
 import os
 import json
 from time import perf_counter
+from multiprocessing import Pool, cpu_count
+
 import fitz
 from docx import Document
 
 from .layout.Layout import Layout
 from .common.base import PlotControl
-from multiprocessing import Pool, cpu_count
+from .shape.Path import PathsExtractor
+
 
 
 class Converter:
@@ -32,6 +35,7 @@ class Converter:
         self._doc_docx = Document()
 
         # layout object: main worker
+        self._paths = None  # PathsExtractor
         self._layout = None # type: Layout        
 
 
@@ -76,7 +80,7 @@ class Converter:
         filename_json  = os.path.join(path, 'layout.json')
         debug_kwargs = {
             'debug'   : debug,
-            'doc'     : fitz.open() if debug else None,
+            'doc'     : fitz.Document() if debug else None,
             'filename': os.path.join(path, f'debug_{filename}')
         }
 
@@ -84,7 +88,7 @@ class Converter:
         self.initialize(page)
         if debug: 
             self._layout.plot(debug_kwargs['doc'], 'Original Text Blocks', key=PlotControl.LAYOUT)
-            self._layout.plot(debug_kwargs['doc'], 'Original Shapes', key=PlotControl.SHAPE)
+            self._paths.plot(debug_kwargs['doc'], 'Original Shapes', self._layout.width, self._layout.height)
 
         # parse and save page
         self.layout.parse(**debug_kwargs).make_page(self.doc_docx)
@@ -141,14 +145,13 @@ class Converter:
         # so, update page width/height to right direction in case page is rotated
         *_, w, h = page.rect # always reflecting page rotation
         raw_layout.update({ 'width' : w, 'height': h })
-        self._layout = Layout(raw_layout, page.rotationMatrix)
-        
-        # get rectangle shapes from page source
-        self._layout.shapes.from_stream(self.doc_pdf, page)
-        
-        # get annotations(comment shapes) from PDF page, e.g. 
-        # highlight, underline and strike-through-line        
-        self._layout.shapes.from_annotations(page)
+
+        # pdf paths
+        self._paths = PathsExtractor(self.doc_pdf, page)
+        raw_layout.update(self._paths.store())
+
+        # init layout
+        self._layout = Layout(raw_layout, page.rotationMatrix)    
 
         return self._layout
 
