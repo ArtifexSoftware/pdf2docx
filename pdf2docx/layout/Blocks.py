@@ -23,7 +23,7 @@ from . import Layout
 
 class Blocks(Collection):
     '''Block collections.'''
-    def __init__(self, instances:list=[], parent=None) -> None:
+    def __init__(self, instances:list=[], parent=None):
         ''' A collection of TextBlock and TableBlock instances. 
             ImageBlock is converted to ImageSpan contained in TextBlock.'''
         self._parent = parent # type: Block

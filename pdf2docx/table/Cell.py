@@ -19,7 +19,7 @@ class Cell(BBox):
     ''' Cell object.'''
     def __init__(self, raw:dict={}):
         if raw is None: raw = {}
-        super(Cell, self).__init__(raw)
+        super().__init__(raw)
         self.bg_color     = raw.get('bg_color', None) # type: int
         self.border_color = raw.get('border_color', (0,0,0,0)) # type: tuple [int]
         self.border_width = raw.get('border_width', (0,0,0,0)) # type: tuple [float]
@@ -30,7 +30,7 @@ class Cell(BBox):
 
 
     @property
-    def text(self) -> str:
+    def text(self):
         '''Text contained in this cell.'''
         return '\n'.join([block.text for block in self.blocks]) if bool(self) else None
 

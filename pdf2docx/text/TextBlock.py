@@ -44,11 +44,11 @@ from ..common import docx
 
 class TextBlock(Block):
     '''Text block.'''
-    def __init__(self, raw:dict={}) -> None:
+    def __init__(self, raw:dict={}):
         # bbox is calculated from contained lines
         # so remove key 'bbox' here
         if 'bbox' in raw: raw.pop('bbox') 
-        super(TextBlock, self).__init__(raw)
+        super().__init__(raw)
 
         # collect lines
         self.lines = Lines(parent=self).from_dicts(raw.get('lines', []))

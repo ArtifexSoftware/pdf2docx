@@ -24,8 +24,8 @@ from ..shape.Shape import Shape
 
 class Char(BBox):
     '''Object representing a character.'''
-    def __init__(self, raw:dict={}) -> None:
-        super(Char, self).__init__(raw)
+    def __init__(self, raw:dict={}):
+        super().__init__(raw)
         self.c = raw.get('c', '')
         self.origin = raw.get('origin', None)       
 
@@ -47,7 +47,7 @@ class Char(BBox):
                 return intsec.height > 0.5*self.bbox.height
 
 
-    def store(self) -> dict:
+    def store(self):
         res = super().store()
         res.update({
             'c': self.c,

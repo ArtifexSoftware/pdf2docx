@@ -30,7 +30,7 @@ class Line(BBox):
         # bbox is calculated from contained spans
         # so remove key 'bbox' here
         if 'bbox' in raw: raw.pop('bbox') 
-        super(Line, self).__init__(raw)
+        super().__init__(raw)
 
         # writing mode
         self.wmode = raw.get('wmode', 0) 

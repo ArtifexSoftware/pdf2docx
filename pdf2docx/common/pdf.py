@@ -192,11 +192,10 @@ def paths_from_annotations(page:fitz.Page):
     return res
 
 
-def paths_from_stream(doc:fitz.Document, page:fitz.Page):
+def paths_from_stream(page:fitz.Page):
     ''' Get paths, e.g. highlight, underline and table borders, from page source contents.
         ---
         Args:
-        - doc: fitz.Document representing the pdf file
         - page: fitz.Page, current page
 
         The page source is represented as contents of stream object. For example,
@@ -268,7 +267,7 @@ def paths_from_stream(doc:fitz.Document, page:fitz.Page):
     # NOTE: it should have to calculate color value under arbitrary color space, but it's really hard work for now.
     # So, consider device color space only like DeviceGray, DeviceRGB, DeviceCMYK, and set black for all others.
     device_space = True
-    color_spaces = _check_device_cs(doc, page)
+    color_spaces = _check_device_cs(page)
 
     # - stroking color
     Acs = utils.RGB_value((0.0, 0.0, 0.0)) # stored value
@@ -526,8 +525,11 @@ def paths_from_stream(doc:fitz.Document, page:fitz.Page):
     return res
 
 
-def _check_device_cs(doc:fitz.Document, page:fitz.Page):
+def _check_device_cs(page:fitz.Page):
     '''Get all color space name used in current page and check if they're device based color space.'''
+    # pdf document
+    doc = page.parent
+
     # default device based cs
     cs = {
         '/DeviceGray': True, 
@@ -723,6 +725,7 @@ def _add_stroke_line(start:list, end:list, color:int, width:float):
         'color' : color,
         'width' : width
         }
+
         
 def _add_stroke_rect(top_left:list, bottom_right:list, color:int, width:float):
     '''add stroke lines from rect defined with top-left and bottom-right points.'''

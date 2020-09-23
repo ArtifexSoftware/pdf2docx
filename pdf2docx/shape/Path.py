@@ -15,10 +15,10 @@ from ..common import pdf
 
 class PathsExtractor:
     '''Extract paths from PDF.'''
-    def __init__(self, doc:fitz.Document, page:fitz.Page):
+    def __init__(self, page:fitz.Page):
 
         # paths from pdf source
-        raw_paths = pdf.paths_from_stream(doc, page)
+        raw_paths = pdf.paths_from_stream(page)
 
         # paths from pdf annotation
         _ = pdf.paths_from_annotations(page)
@@ -33,7 +33,7 @@ class PathsExtractor:
     def __len__(self): return len(self._instances)
 
 
-    def plot(self, doc:fitz.Document, title:str, width, height):
+    def plot(self, doc:fitz.Document, title:str, width:float, height:float):
         # insert a new page
         page = pdf.new_page_with_margin(doc, width, height, None, title)
         for path in self._instances: path.plot(page)

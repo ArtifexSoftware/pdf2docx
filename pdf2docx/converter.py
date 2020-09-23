@@ -29,7 +29,7 @@ class Converter:
         if os.path.exists(self.filename_docx): os.remove(self.filename_docx)
 
         # fitz object to read pdf
-        self._doc_pdf = fitz.open(pdf_file)
+        self._doc_pdf = fitz.Document(pdf_file)
 
         # docx object to write file
         self._doc_docx = Document()
@@ -147,7 +147,7 @@ class Converter:
         raw_layout.update({ 'width' : w, 'height': h })
 
         # pdf paths
-        self._paths = PathsExtractor(self.doc_pdf, page)
+        self._paths = PathsExtractor(page)
         raw_layout.update(self._paths.store())
 
         # init layout

@@ -36,7 +36,7 @@ from ..common.constants import MAX_W_BORDER
 class Shape(BBox):
     ''' Shape object.'''
     def __init__(self, raw:dict={}):
-        super(Shape, self).__init__(raw)
+        super().__init__(raw)
         self._type = RectType.UNDEFINED # no type by default
         self.color = raw.get('color', 0)
 
@@ -120,11 +120,11 @@ class Stroke(Shape):
         if rect.getArea()==0.0:
             self._start = fitz.Point(rect[0:2])
             self._end = fitz.Point(rect[2:])
-            super(Stroke, self).update(self._to_rect())
+            super().update(self._to_rect())
 
         # a rect 
         else:
-            super(Stroke, self).update(rect)
+            super().update(rect)
 
             # suppose horizontal or vertical stroke
             if rect.width >= rect.height: # horizontal

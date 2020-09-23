@@ -18,7 +18,7 @@ from ..common.BBox import BBox
 class Row(BBox):
     '''Row in a table.'''
     def __init__(self, raw:dict={}):
-        super(Row, self).__init__(raw)
+        super().__init__(raw)
 
         # logical row height
         self.height = raw.get('height', 0.0)
@@ -48,7 +48,7 @@ class Row(BBox):
         self._cells.append(cell)
 
 
-    def store(self) -> dict:
+    def store(self):
         res = super().store()
         res.update({
             'height': self.height,
