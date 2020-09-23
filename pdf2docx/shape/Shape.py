@@ -37,21 +37,13 @@ class Shape(BBox):
     ''' Shape object.'''
     def __init__(self, raw:dict={}):
         super().__init__(raw)
-        self._type = RectType.UNDEFINED # no type by default
+        self.type = RectType.UNDEFINED # no type by default
         self.color = raw.get('color', 0)
-
-    @property
-    def type(self):
-        return self._type
-
-    @type.setter
-    def type(self, rect_type: RectType):
-        self._type = rect_type
 
     def store(self):
         res = super().store()
         res.update({
-            'type': self._type.value,
+            'type': self.type.value,
             'color': self.color
         })
         return res
@@ -72,7 +64,7 @@ class Stroke(Shape):
         # width, color
         self.width = raw.get('width', 0.0)
         self.color = raw.get('color', 0)
-        self._type = RectType.UNDEFINED # no type by default
+        self.type = RectType.UNDEFINED # no type by default
 
         # update bbox
         self.update(self._to_rect())
