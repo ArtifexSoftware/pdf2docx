@@ -255,11 +255,11 @@ def paths_from_stream(page:fitz.Page):
     matrix = page.transformationMatrix
 
     # Graphic States: working CS is coincident with the absolute origin (0, 0)
-    # Refer to PDF reference v1.7 4.2.3 Transformation Metrices
+    # Refer to PDF reference v1.7 4.2.3 Transformation Metrics
     #                        | a b 0 |
     # [a, b, c, d, e, f] =>  | c b 0 |
     #                        | e f 1 |
-    ACS = fitz.Matrix(0.0) # identity matrix
+    ACS = [fitz.Matrix(0.0)] # identity matrix
     WCS = fitz.Matrix(0.0)
 
     # Graphics color: 
@@ -270,19 +270,23 @@ def paths_from_stream(page:fitz.Page):
     color_spaces = _check_device_cs(page)
 
     # - stroking color
-    Acs = utils.RGB_value((0.0, 0.0, 0.0)) # stored value
-    Wcs = Acs                              # working value
+    Acs = [utils.RGB_value((0.0, 0.0, 0.0))] # stored value -> stack
+    Wcs = Acs[0]                             # working value
     # - filling color
-    Acf = utils.RGB_value((0.0, 0.0, 0.0))
-    Wcf = Acf
+    Acf = [utils.RGB_value((0.0, 0.0, 0.0))]
+    Wcf = Acf[0]
 
     # Stroke width
-    Ad = 0.0
-    Wd = 0.0
+    Ad = [0.0]
+    Wd = Ad[0]
 
     # In addition to lines, rectangles are also processed with border path
     paths = [] # a list of path, each path is a list of points
     res = []
+
+    # clip path
+    Acp = [] # stored clipping path
+    Wcp = [] # working clipping path
 
     # Check line by line
     # Cleaned by `page.cleanContents()`, operator and operand are aligned in a same line;
@@ -312,7 +316,7 @@ def paths_from_stream(page:fitz.Page):
         # - set color: color components under specified color space
         elif op.upper()=='SC': # c1 c2 ... cn SC
             c = _RGB_from_color_components(words[0:-1], device_space)
-            #  nonstroking color
+            #  non-stroking color
             if op=='sc':
                 Wcf = c
             # stroking color
@@ -326,7 +330,7 @@ def paths_from_stream(page:fitz.Page):
             else:
                 c = _RGB_from_color_components(words[0:-2], device_space)
 
-            #  nonstroking color
+            #  non-stroking color
             if op=='scn':
                 Wcf = c
             # stroking color
@@ -385,16 +389,18 @@ def paths_from_stream(page:fitz.Page):
         # save or restore graphics state:
         # only consider transformation and color here
         elif op=='q': # save
-            ACS = fitz.Matrix(WCS) # copy as new matrix
-            Acf = Wcf
-            Acs = Wcs
-            Ad = Wd
+            ACS.append(fitz.Matrix(WCS)) # copy as new matrix
+            Acf.append(Wcf)
+            Acs.append(Wcs)
+            Ad.append(Wd)
+            Acp.append(Wcp)
             
         elif op=='Q': # restore
-            WCS = fitz.Matrix(ACS) # copy as new matrix
-            Wcf = Acf
-            Wcs = Acs
-            Wd = Ad
+            WCS = fitz.Matrix(ACS.pop()) # copy as new matrix
+            Wcf = Acf.pop()
+            Wcs = Acs.pop()
+            Wd = Ad.pop()
+            Wcp = Acp.pop()
 
         # -----------------------------------------------
         # Path Construction Operators: PDF References Table 4.9
@@ -435,9 +441,9 @@ def paths_from_stream(page:fitz.Page):
             paths.append([(x0, y0)])
         
         # path: l -> straight line to point
-        elif op=='l': # x y l
+        elif op=='l': # x y l            
             x0, y0 = map(float, words[0:-1])
-            paths[-1].append((x0, y0))
+            paths[-1].append((x0, y0))            
 
         # path: c -> cubic Bezier curve with control points
         elif op in ('c', 'v', 'y'):
@@ -515,8 +521,10 @@ def paths_from_stream(page:fitz.Page):
             paths = []
 
         # TODO: clip the path
+        # https://stackoverflow.com/questions/17003171/how-to-identify-which-clip-paths-apply-to-a-path-or-fill-in-pdf-vector-graphics
         elif line in ('W', 'W*'):
-            pass
+            Wcp = paths[-1] if paths else []
+            paths = []
 
         # end the path without stroking or filling
         elif op=='n':
@@ -648,8 +656,7 @@ def _transform_path(path:list, WCS:fitz.Matrix, M0:fitz.Matrix):
 
 def _close_path(path:list):
     if not path: return
-    if path[-1]!=path[0]:
-        path.append(path[0])
+    if path[-1]!=path[0]: path.append(path[0])
 
 
 def _stroke_path(path:list, WCS:fitz.Matrix, color:int, width:float, M0:fitz.Matrix):
