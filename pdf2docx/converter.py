@@ -147,7 +147,9 @@ class Converter:
         raw_layout.update({ 'width' : w, 'height': h })
 
         # pdf paths
-        self._paths = PathsExtractor(page)
+        self._paths = PathsExtractor()
+        images = self._paths.parse(page).filter_pixmaps()
+        raw_layout['blocks'].extend(images)
         raw_layout.update(self._paths.store())
 
         # init layout

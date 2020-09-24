@@ -10,13 +10,11 @@ A group of instances, e.g. instances, Spans, Shapes.
 from .BBox import BBox
 from .base import IText, TextDirection
 
-class Collection(IText):
-    '''Collection of specific instances.'''
-    def __init__(self, instances:list=[], parent=None):
+class BaseCollection:
+    '''Base collection of specific instances.'''
+    def __init__(self, instances:list=[]):
         '''Init collection from a list of BBox instances.'''
         self._instances = instances if instances else [] # type: list[BBox]
-        self._parent = parent # type: BBox
-
 
     def __getitem__(self, idx):
         try:
@@ -27,13 +25,77 @@ class Collection(IText):
         else:
             return instances
 
+    def __iter__(self): return (instance for instance in self._instances)
 
-    def __iter__(self):
-        return (instance for instance in self._instances)
+    def __len__(self): return len(self._instances)
 
 
-    def __len__(self):
-        return len(self._instances)
+    def group(self, fun):
+        '''group instances according to user defined criterion.
+            ---
+            Args:
+              - fun: function with 2 parameters (BBox) representing 2 instances, and return bool
+            
+            Examples:
+            ```
+            # group instances intersected with each other
+            fun = lambda a,b: a & b
+            # group instances aligned horizontally
+            fun = lambda a,b: a.horizontally_aligned_with(b)
+            ```
+        '''
+        # build connection relation list:
+        # the i-th item is a set of indexes, which connected to the i-th instance
+        num = len(self._instances)
+        index_groups = [set() for i in range(num)] # type: list[set]        
+        for i, instance in enumerate(self._instances):
+            # connections of current instance to all instances after it
+            for j in range(i+1, num):
+                if fun(instance, self._instances[j]):
+                    index_groups[i].add(j)
+                    index_groups[j].add(i)
+
+        # combine all connected groups
+        counted_indexes = set() # type: set[int]
+        groups = []
+        for i, group in enumerate(index_groups):
+            # skip if counted
+            if i in counted_indexes: continue
+
+            # collect indexes
+            indexes = set()
+            self._group_instances(i, index_groups, indexes)
+            groups.append([self._instances[x] for x in indexes])
+
+            # update counted indexes
+            counted_indexes = counted_indexes | indexes
+
+        # final grouped instances
+        groups = [self.__class__(group) for group in groups]
+
+        return groups
+
+
+    @staticmethod
+    def _group_instances(i:int, groups:list, indexes:set):
+        '''combine group indexes.''' 
+        if i in indexes: return
+
+        # add this index
+        indexes.add(i)
+
+        # check sub-group further
+        for j in groups[i]:
+            Collection._group_instances(j, groups, indexes)
+
+
+
+class Collection(BaseCollection, IText):
+    '''Collection of specific instances.'''
+    def __init__(self, instances:list=[], parent=None):
+        '''Init collection from a list of BBox instances.'''
+        self._parent = parent # type: BBox
+        super().__init__(instances)
 
 
     @property
@@ -124,62 +186,3 @@ class Collection(IText):
     def store(self):
         '''Store attributes in json format.'''
         return [ instance.store() for instance in self._instances ]
-
-
-    def group(self, fun):
-        '''group instances according to user defined criterion.
-            ---
-            Args:
-              - fun: function with 2 parameters (BBox) representing 2 instances, and return bool
-            
-            Examples:
-            ```
-            # group instances intersected with each other
-            fun = lambda a,b: a & b
-            # group instances aligned horizontally
-            fun = lambda a,b: a.horizontally_aligned_with(b)
-            ```
-        '''
-        # build connection relation list:
-        # the i-th item is a set of indexes, which connected to the i-th instance
-        num = len(self._instances)
-        index_groups = [set() for i in range(num)] # type: list[set]        
-        for i, instance in enumerate(self._instances):
-            # connections of current instance to all instances after it
-            for j in range(i+1, num):
-                if fun(instance, self._instances[j]):
-                    index_groups[i].add(j)
-                    index_groups[j].add(i)
-
-        # combine all connected groups
-        counted_indexes = set() # type: set[int]
-        groups = []
-        for i, group in enumerate(index_groups):
-            # skip if counted
-            if i in counted_indexes: continue
-
-            # collect indexes
-            indexes = set()
-            self._group_instances(i, index_groups, indexes)
-            groups.append([self._instances[x] for x in indexes])
-
-            # update counted indexes
-            counted_indexes = counted_indexes | indexes
-
-        # final grouped instances
-        groups = [self.__class__(group) for group in groups]
-
-        return groups
-
-
-    @staticmethod
-    def _group_instances(i:int, groups:list, indexes:set):
-        '''combine group indexes.''' 
-        if i in indexes: return
-
-        # add this index
-        indexes.add(i)
-
-        # check sub-group further
-        for j in groups[i]:
-            Collection._group_instances(j, groups, indexes)

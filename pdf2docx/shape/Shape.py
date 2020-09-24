@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 '''
-Objects representing PDF stroke and filling:
+Objects representing PDF stroke and filling extracted from Path:
 
-- Stroke: path segment
+- Stroke: consider only the horizontal or vertical path segments
 - Fill  : bbox of closed path filling area
 
 @created: 2020-09-15
@@ -55,11 +55,15 @@ class Shape(BBox):
 
 
 class Stroke(Shape):
-    '''Linear stroke of a path.'''
+    '''Horizontal or vertical stroke of a path.'''
     def __init__(self, raw:dict={}):
         # convert start/end point to real page CS
         self._start = fitz.Point(raw.get('start', (0.0, 0.0))) * Stroke.ROTATION_MATRIX
         self._end = fitz.Point(raw.get('end', (0.0, 0.0))) * Stroke.ROTATION_MATRIX
+        assert self.horizontal or self.vertical, 'Supports horizontal or vertical Strokes only'
+
+        if self._start.x > self._end.x or self._start.y > self._end.y:
+            self._start, self._end = self._end, self._start
 
         # width, color
         self.width = raw.get('width', 0.0)
@@ -67,7 +71,7 @@ class Stroke(Shape):
         self.type = RectType.UNDEFINED # no type by default
 
         # update bbox
-        self.update(self._to_rect())
+        super().update(self._to_rect())
 
 
     @property
@@ -77,28 +81,16 @@ class Stroke(Shape):
     def vertical(self): return self._start[0] == self._end[0]
 
     @property
-    def x0(self):
-        if self.horizontal: return self.bbox.x0
-        if self.vertical: return (self.bbox.x0+self.bbox.x1)/2.0
-        raise Exception('Supports horizontal or vertical Strokes only.')
+    def x0(self): return self._start.x
 
     @property
-    def x1(self):
-        if self.horizontal: return self.bbox.x1
-        if self.vertical: return (self.bbox.x0+self.bbox.x1)/2.0
-        raise Exception('Supports horizontal or vertical Strokes only.')
+    def x1(self): return self._end.x
 
     @property
-    def y0(self):
-        if self.horizontal: return (self.bbox.y0+self.bbox.y1)/2.0
-        if self.vertical: return self.bbox.y0
-        raise Exception('Supports horizontal or vertical Strokes only.')
+    def y0(self): return self._start.y
 
     @property
-    def y1(self):
-        if self.horizontal: return (self.bbox.y0+self.bbox.y1)/2.0
-        if self.vertical: return self.bbox.y1
-        raise Exception('Supports horizontal or vertical Strokes only.')
+    def y1(self): return self._end.y
 
 
     def update(self, rect):
@@ -118,12 +110,14 @@ class Stroke(Shape):
         else:
             super().update(rect)
 
-            # suppose horizontal or vertical stroke
-            if rect.width >= rect.height: # horizontal
+            # horizontal stroke
+            if rect.width >= rect.height:
                 y = (rect.y0+rect.y1)/2.0
                 self._start = fitz.Point(rect.x0, y)
                 self._end   = fitz.Point(rect.x1, y)
-            else: #vertical
+
+            # vertical stroke
+            else: 
                 x = (rect.x0+rect.x1)/2.0
                 self._start = fitz.Point(x, rect.y0)
                 self._end   = fitz.Point(x, rect.y1)
@@ -145,24 +139,8 @@ class Stroke(Shape):
         ''' convert centerline to rectangle shape.'''
         h = self.width / 2.0
         x0, y0 = self._start
-        x1, y1 = self._end
-
-        if x0>x1: x0, x1 = x1, x0
-        if y0>y1: y0, y1 = y1, y0
-
-        # horizontal/vertical line
-        if abs(y0-y1)<=DM or abs(x0-x1)<=DM:
-            res = (x0-h, y0-h, x1+h, y1+h)
-        else:
-            res = (x0, y0, x1, y1)
-
-        return res
-
-
-    def plot(self, page):
-        '''Plot rectangle shapes with PyMuPDF.'''
-        color = [c/255.0 for c in RGB_component(self.color)]
-        page.drawLine(self._start, self._end, color=color, width=self.width, overlay=False)
+        x1, y1 = self._end        
+        return (x0-h, y0-h, x1+h, y1+h)
 
 
 class Fill(Shape):
