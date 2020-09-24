@@ -31,12 +31,12 @@ from ..common.utils import RGB_component
 from ..common import pdf
 from ..common.constants import DR
 
+
 class PathsExtractor(BaseCollection):
-    '''Extract paths from PDF.'''
+    '''A collection of paths extracted from PDF.'''
 
     def parse(self, page:fitz.Page):
-
-        self._doc_page = page
+        '''Extract paths from PDF page.'''
 
         # paths from pdf source
         raw_paths = pdf.paths_from_stream(page)
@@ -51,7 +51,6 @@ class PathsExtractor(BaseCollection):
             self._instances.append(path)
 
         return self
-    
 
     @property
     def bbox(self):
@@ -61,7 +60,7 @@ class PathsExtractor(BaseCollection):
         return bbox
     
 
-    def filter_pixmaps(self):
+    def filter_pixmaps(self, page:fitz.Page):
         ''' Convert vector graphics built by paths to pixmap.
             
             NOTE: the target is to extract horizontal/vertical paths for table parsing, while others
@@ -78,42 +77,36 @@ class PathsExtractor(BaseCollection):
         for group in groups:
             cnt = 0
             for path in group:
-                # if not path.is_orthogonal: cnt += 1
-                if path.is_curve: cnt += 1
+                if not path.is_orthogonal: cnt += 1
                 if cnt >= NUM: break
             
             # convert to pixmap
             if cnt>=NUM:
-                bbox = group.bbox
-                image = self._doc_page.getPixmap(clip=bbox)
-                pixmap = {
-                    'type': 1,
-                    'bbox': tuple(bbox),
-                    'ext': 'png',
-                    'width': bbox.width,
-                    'height': bbox.height,
-                    'image': image.getImageData(output="png")
-                }
-                pixmaps.append(pixmap)
+                pixmaps.append(group.to_image(page))
             
             # keep potential table border paths
             else:
-                orth_instances.extend(group)
-        
-        # remove pixmap paths
-        self._instances = orth_instances
+                orth_instances.extend(group.to_paths())        
 
-        return pixmaps
+        return pixmaps, orth_instances
 
-
-    def plot(self, doc:fitz.Document, title:str, width:float, height:float):
-        # insert a new page
-        page = pdf.new_page_with_margin(doc, width, height, None, title)
-        for path in self._instances: path.plot(page)
+    
+    def to_image(self, page:fitz.Page):
+        '''Convert to image block dict if this is a vector graphic paths.'''
+        bbox = self.bbox
+        image = page.getPixmap(clip=bbox)
+        return {
+            'type': 1,
+            'bbox': tuple(bbox),
+            'ext': 'png',
+            'width': bbox.width,
+            'height': bbox.height,
+            'image': image.getImageData(output="png")
+        }
     
 
-    def store(self):
-        '''Store all paths as DICT.'''
+    def to_paths(self):
+        '''Convert contained paths to orthogonal strokes and rectangular fills.'''
         paths = []
         for path in self._instances:
             if path.stroke:
@@ -121,7 +114,14 @@ class PathsExtractor(BaseCollection):
             else:
                 paths.append(path.to_rectangular_fill())
 
-        return { 'paths': paths }
+        return paths
+
+
+    def plot(self, doc:fitz.Document, title:str, width:float, height:float):
+        # insert a new page
+        page = pdf.new_page_with_margin(doc, width, height, None, title)
+        for path in self._instances: path.plot(page)
+
 
 
 class Path:
@@ -143,8 +143,6 @@ class Path:
 
         # width if stroke
         self.width = raw.get('width', 0.0)
-
-        self.is_curve = raw.get('curve', False)
     
 
     @property

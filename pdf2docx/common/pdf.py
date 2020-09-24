@@ -280,11 +280,8 @@ def paths_from_stream(page:fitz.Page):
     Ad = [0.0]
     Wd = Ad[0]
 
-    # collecting paths
-    # - each path is a list of points
-    # - mark each path is a curve or line?
+    # collecting paths: each path is a list of points
     paths = []           # a list of path
-    is_curve_paths = []  # len(is_curve_paths)=len(paths)
 
     # clip path
     Acp = [] # stored clipping path
@@ -437,13 +434,11 @@ def paths_from_stream(page:fitz.Page):
             path.append((x0, y0))
 
             paths.append(path)
-            is_curve_paths.append(False)
 
         # path: m -> move to point to start a path
         elif op=='m': # x y m
             x0, y0 = map(float, words[0:-1])
             paths.append([(x0, y0)])
-            is_curve_paths.append(False)
         
         # path: l -> straight line to point
         elif op=='l': # x y l            
@@ -473,7 +468,6 @@ def paths_from_stream(page:fitz.Page):
             # calculate points on Bezier points with parametric equation
             bezier = _bezier_paths(P, segments=5)
             paths[-1].extend(bezier)
-            is_curve_paths[-1] = True
 
         # close the path
         elif op=='h': 
@@ -489,52 +483,52 @@ def paths_from_stream(page:fitz.Page):
                 for path in paths: _close_path(path)
 
             # stroke path
-            for path, is_curve in zip(paths, is_curve_paths):
-                p = _stroke_path(path, WCS, Wcs, Wd, matrix, is_curve)
+            for path in paths:
+                p = _stroke_path(path, WCS, Wcs, Wd, matrix)
                 res.append(p)
 
             # reset path
-            paths, is_curve_paths = [], []
+            paths = []
 
         # fill the path
         elif line in ('f', 'F', 'f*'):            
-            for path, is_curve in zip(paths, is_curve_paths):
+            for path in paths:
                 # close the path implicitly
                 _close_path(path)
             
                 # fill path
-                p = _fill_rect_path(path, WCS, Wcf, matrix, is_curve)
+                p = _fill_rect_path(path, WCS, Wcf, matrix)
                 res.append(p)
 
             # reset path
-            paths, is_curve_paths = [], []
+            paths = []
 
         # close, fill and stroke the path
         elif op.upper() in ('B', 'B*'): 
-            for path, is_curve in zip(paths, is_curve_paths):
+            for path in paths:
                 # close path
                 _close_path(path)
                 
                 # fill path
-                p = _fill_rect_path(path, WCS, Wcf, matrix, is_curve)
+                p = _fill_rect_path(path, WCS, Wcf, matrix)
                 res.append(p)
 
                 # stroke path
-                p = _stroke_path(path, WCS, Wcs, Wd, matrix, is_curve)
+                p = _stroke_path(path, WCS, Wcs, Wd, matrix)
                 res.append(p)
 
             # reset path
-            paths, is_curve_paths = [], []
+            paths = []
 
         # TODO: clip the path
         # https://stackoverflow.com/questions/17003171/how-to-identify-which-clip-paths-apply-to-a-path-or-fill-in-pdf-vector-graphics
         elif line in ('W', 'W*'):
             Wcp = paths[-1] if paths else []
-            paths, is_curve_paths = [], []
+            paths = []
 
         # end the path without stroking or filling
         elif op=='n':
-            paths, is_curve_paths = [], []
+            paths = []
 
     return res
 
@@ -665,7 +659,7 @@ def _close_path(path:list):
     if path[-1]!=path[0]: path.append(path[0])
 
 
-def _stroke_path(path:list, WCS:fitz.Matrix, color:int, width:float, M0:fitz.Matrix, is_curve:bool=False):
+def _stroke_path(path:list, WCS:fitz.Matrix, color:int, width:float, M0:fitz.Matrix):
     ''' Stroke path.'''
     # CS transformation
     t_path = _transform_path(path, WCS, M0)
@@ -677,21 +671,19 @@ def _stroke_path(path:list, WCS:fitz.Matrix, color:int, width:float, M0:fitz.Mat
 
     return {
         'stroke': True,
-        'curve' : is_curve,
         'points': t_path,
         'color' : color,
         'width' : w
     }
 
 
-def _fill_rect_path(path:list, WCS:fitz.Matrix, color:int, M0:fitz.Matrix, is_curve:bool=False):
+def _fill_rect_path(path:list, WCS:fitz.Matrix, color:int, M0:fitz.Matrix):
     ''' Fill path.'''
     # CS transformation
     t_path = _transform_path(path, WCS, M0)
 
     return {
         'stroke': False,
-        'curve' : is_curve,
         'points': t_path,
         'color' : color
     }

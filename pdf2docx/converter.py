@@ -148,9 +148,9 @@ class Converter:
 
         # pdf paths
         self._paths = PathsExtractor()
-        images = self._paths.parse(page).filter_pixmaps()
+        images, paths = self._paths.parse(page).filter_pixmaps(page)
         raw_layout['blocks'].extend(images)
-        raw_layout.update(self._paths.store())
+        raw_layout['paths'] = paths
 
         # init layout
         self._layout = Layout(raw_layout, page.rotationMatrix)    
