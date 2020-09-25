@@ -105,16 +105,20 @@ class Layout:
             f.write(json.dumps(self.store(), indent=4))
 
 
-    def plot(self, doc, title:str, key:PlotControl=PlotControl.LAYOUT):
+    def plot(self, doc, title:str, key:PlotControl=PlotControl.BLOCK):
         '''Plot specified type of blocks layout with PyMuPDF.
             ---
             Args:
               - doc: fitz.Document object
         '''
         # get objects to plot
-        #  - all blocks
+        #  - blocks + shapes
         if key == PlotControl.LAYOUT: 
-            objects = list(self.blocks)
+            objects = list(self.blocks) + list(self.shapes)
+        
+        # - all blocks
+        elif key == PlotControl.BLOCK: 
+            objects = self.blocks
         
         #  - lattice table structure only
         elif key == PlotControl.TABLE: 
@@ -126,7 +130,7 @@ class Layout:
         
         #  - rectangle shapes
         elif key == PlotControl.SHAPE: 
-            objects = list(self.shapes)
+            objects = self.shapes
 
         else:
             objects = []
@@ -230,7 +234,7 @@ class Layout:
         self.blocks.make_page(doc)
 
 
-    @debug_plot('Cleaned Blocks and Shapes', plot=True, category=PlotControl.SHAPE)
+    @debug_plot('Cleaned Blocks and Shapes', plot=True, category=PlotControl.LAYOUT)
     def clean(self, **kwargs):
         '''Clean blocks and rectangles, e.g. remove negative blocks, duplicated shapes.'''
         clean_blocks = self.blocks.clean()
@@ -256,7 +260,7 @@ class Layout:
         return bool(tables)
 
 
-    @debug_plot('Parsed Text Blocks', plot=True, category=PlotControl.LAYOUT)
+    @debug_plot('Final Layout', plot=True, category=PlotControl.BLOCK)
     def parse_text_format(self, **kwargs):
         '''Parse text format in both page and table context.'''
         return self.blocks.parse_text_format(self.shapes)
