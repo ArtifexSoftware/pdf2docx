@@ -34,12 +34,13 @@ class BaseCollection:
         '''group instances according to user defined criterion.
             ---
             Args:
-              - fun: function with 2 parameters (BBox) representing 2 instances, and return bool
+            - fun: function with 2 arguments representing 2 instances (BBox), and return bool
             
             Examples:
             ```
             # group instances intersected with each other
-            fun = lambda a,b: a & b
+            fun = lambda a,b: a.bbox & b.bbox
+
             # group instances aligned horizontally
             fun = lambda a,b: a.horizontally_aligned_with(b)
             ```
@@ -58,7 +59,7 @@ class BaseCollection:
         # combine all connected groups
         counted_indexes = set() # type: set[int]
         groups = []
-        for i, group in enumerate(index_groups):
+        for i in range(num):
             # skip if counted
             if i in counted_indexes: continue
 

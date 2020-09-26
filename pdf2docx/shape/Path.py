@@ -29,7 +29,6 @@ import fitz
 from ..common.Collection import BaseCollection
 from ..common.utils import RGB_component
 from ..common import pdf
-from ..common.constants import DR
 
 
 class PathsExtractor(BaseCollection):
@@ -67,7 +66,10 @@ class PathsExtractor(BaseCollection):
             are converted to bitmaps.
         '''
         # group connected paths -> each group is a potential pixmap
-        fun = lambda a,b: (a.bbox+DR) & (b.bbox+DR) # NOTE: margin for h/v paths
+        # NOTE: use user defined method to detect intersection here, which has a higher performence than 
+        # fitz.Rect().intersects(), especially when the count of instances is large. For instance, it's
+        # about 4:1 with 1000 instances.
+        fun = lambda a,b: a.intersects(b)
         groups = self.group(fun)
 
         # Generally, a table region is composed of orthogonal paths, i.e. either horizontal or vertical paths.
@@ -78,15 +80,14 @@ class PathsExtractor(BaseCollection):
             cnt = 0
             for path in group:
                 if not path.is_orthogonal: cnt += 1
-                if cnt >= NUM: break
-            
-            # convert to pixmap
-            if cnt>=NUM:
-                pixmaps.append(group.to_image(page))
+                if cnt >= NUM: 
+                    # convert to pixmap
+                    pixmaps.append(group.to_image(page))
+                    break
             
             # keep potential table border paths
             else:
-                orth_instances.extend(group.to_paths())        
+                orth_instances.extend(group.to_paths())
 
         return pixmaps, orth_instances
 
@@ -127,7 +128,7 @@ class PathsExtractor(BaseCollection):
 class Path:
     '''Path extracted from PDF, either a stroke or filling.'''
 
-    __slots__ = ['points', 'stroke', 'color', 'width', 'is_curve']
+    __slots__ = ['points', 'stroke', 'color', 'width', '_bbox']
 
     def __init__(self, raw:dict={}):
         '''Init path in un-rotated page CS.'''
@@ -143,18 +144,38 @@ class Path:
 
         # width if stroke
         self.width = raw.get('width', 0.0)
+
+        self._bbox = None
     
 
     @property
     def bbox(self):
         '''Boundary box in PyMuPDF page CS (without rotation).'''
-        X = [p[0] for p in self.points]
-        Y = [p[1] for p in self.points]
-        x0, x1 = min(X), max(X)
-        y0, y1 = min(Y), max(Y)
-        return fitz.Rect(x0, y0, x1, y1)
+        if self._bbox is None:
+            X = [p[0] for p in self.points]
+            Y = [p[1] for p in self.points]
+            x0, x1 = min(X), max(X)
+            y0, y1 = min(Y), max(Y)
 
-    
+            h = self.width / 2.0
+            self._bbox = fitz.Rect(x0-h, y0-h, x1+h, y1+h) if self.stroke else fitz.Rect(x0, y0, x1, y1)
+        
+        return self._bbox
+
+
+    def intersects(self, path):
+        ''' Check if any intersection exists in two paths. 
+            Has a higner performence than fitz.Rect().intersects()
+        '''
+        x0, y0, x1, y1 = self.bbox
+        u0, v0, u1, v1 = path.bbox
+
+        if u1<x0 or u0>x1 or v1<y0 or v0>y1:
+            return False
+        else:
+            return True
+
+
     @property
     def is_orthogonal(self):
         '''Whether contains horizontal/vertical path segments only.'''
