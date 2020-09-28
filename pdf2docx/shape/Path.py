@@ -55,7 +55,7 @@ class PathsExtractor(BaseCollection):
     def bbox(self):
         bbox = fitz.Rect()
         for instance in self._instances:
-            bbox = bbox | instance.bbox
+            bbox = bbox | instance.bbox # NOTE: | support fitz.Rect and rect-like object, e.g. tuple
         return bbox
     
 
@@ -128,7 +128,7 @@ class PathsExtractor(BaseCollection):
 class Path:
     '''Path extracted from PDF, either a stroke or filling.'''
 
-    __slots__ = ['points', 'stroke', 'color', 'width', '_bbox']
+    __slots__ = ['points', 'stroke', 'color', 'width', 'bbox']
 
     def __init__(self, raw:dict={}):
         '''Init path in un-rotated page CS.'''
@@ -145,22 +145,22 @@ class Path:
         # width if stroke
         self.width = raw.get('width', 0.0)
 
-        self._bbox = None
+        self.bbox = self.fun_bbox()
     
 
-    @property
-    def bbox(self):
+    def fun_bbox(self):
         '''Boundary box in PyMuPDF page CS (without rotation).'''
-        if self._bbox is None:
-            X = [p[0] for p in self.points]
-            Y = [p[1] for p in self.points]
-            x0, x1 = min(X), max(X)
-            y0, y1 = min(Y), max(Y)
+        # if self._bbox is None:
+        X = [p[0] for p in self.points]
+        Y = [p[1] for p in self.points]
+        x0, x1 = min(X), max(X)
+        y0, y1 = min(Y), max(Y)
 
-            h = self.width / 2.0
-            self._bbox = fitz.Rect(x0-h, y0-h, x1+h, y1+h) if self.stroke else fitz.Rect(x0, y0, x1, y1)
+        h = self.width / 2.0
+        # NOTE: use tuple here has a much higher efficiency than fizt.Rect()
+        bbox = (x0-h, y0-h, x1+h, y1+h) if self.stroke else (x0, y0, x1, y1)
         
-        return self._bbox
+        return bbox
 
 
     def intersects(self, path):
@@ -169,11 +169,8 @@ class Path:
         '''
         x0, y0, x1, y1 = self.bbox
         u0, v0, u1, v1 = path.bbox
-
-        if u1<x0 or u0>x1 or v1<y0 or v0>y1:
-            return False
-        else:
-            return True
+        no_intersection = u1<x0 or u0>x1 or v1<y0 or v0>y1
+        return not no_intersection
 
 
     @property
