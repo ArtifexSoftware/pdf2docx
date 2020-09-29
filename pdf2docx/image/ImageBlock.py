@@ -33,19 +33,19 @@ from ..common import docx
 from ..common.Block import Block
 
 
-class ImageBlock(Block, Image):
+class ImageBlock(Image, Block): # to get Image.plot() in first priority
     '''Image block.'''
     def __init__(self, raw: dict):
-        super(ImageBlock, self).__init__(raw)
+        super().__init__(raw)
 
         # set type
         self.set_image_block()
 
 
     def store(self):
-        res = super(ImageBlock, self).store()
+        res = super().store()
         res.update(
-            super(ImageBlock, self).store_image()
+            super().store_image()
         )
         return res
 
@@ -56,12 +56,8 @@ class ImageBlock(Block, Image):
             Args: 
               - page: fitz.Page object
         '''
-        x0, y0, x1, y1 = self.bbox
         color = utils.RGB_component_from_name('blue')
-
-        page.drawLine((x0, y0), (x1, y1), color=color, width=1)
-        page.drawLine((x0, y1), (x1, y0), color=color, width=1)
-        page.drawRect(self.bbox, color=color, fill=None, overlay=False)
+        super().plot(page, color)
 
 
     def to_text_block(self):

@@ -27,7 +27,7 @@ class Lines(Collection):
 
     def append(self, line:Line):
         '''Override. Append a line and update line pid and parent bbox.'''
-        super(Lines, self).append(line)
+        super().append(line)
 
         # update original parent id
         if not self._parent is None:

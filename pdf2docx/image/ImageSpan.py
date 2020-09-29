@@ -14,23 +14,11 @@ from .Image import Image
 class ImageSpan(Image):
     '''Image span.'''
     def __init__(self, raw:dict={}):
-        super(ImageSpan, self).__init__(raw)
+        super().__init__(raw)
 
 
     def store(self):
-        return super(ImageSpan, self).store_image()
-
-
-    def plot(self, page, color:tuple):
-        '''Plot image bbox with diagonal lines.
-            ---
-            Args: 
-              - page: fitz.Page object
-        '''
-        x0, y0, x1, y1 = self.bbox
-        page.drawLine((x0, y0), (x1, y1), color=color, width=1)
-        page.drawLine((x0, y1), (x1, y0), color=color, width=1)
-        page.drawRect(self.bbox, color=color, fill=None, overlay=False)
+        return super().store_image()
 
 
     def intersects(self, rect):

@@ -15,7 +15,7 @@ from .constants import DM
 class Block(BBox):
     '''Text block.'''
     def __init__(self, raw:dict={}):
-        super(Block, self).__init__(raw)
+        super().__init__(raw)
         self._type = BlockType.UNDEFINED
 
         # horizontal spacing

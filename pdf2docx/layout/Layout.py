@@ -65,7 +65,7 @@ class Layout:
         self.blocks = Blocks(parent=self).from_dicts(raw.get('blocks', []))
 
         # initialize shapes: to add rectangles later
-        self.shapes = Shapes(parent=self)
+        self.shapes = Shapes(parent=self).from_dicts(raw.get('paths', []))
 
         # table parser
         self._tables_constructor = TablesConstructor(self.blocks, self.shapes)
@@ -95,7 +95,7 @@ class Layout:
             'height': self.height,
             'margin': self._margin,
             'blocks': self.blocks.store(),
-            'shapes': self.shapes.store(),
+            'paths': self.shapes.store(),
         }
 
 
@@ -230,7 +230,7 @@ class Layout:
         self.blocks.make_page(doc)
 
 
-    @debug_plot('Clean Blocks and Shapes', plot=True, category=PlotControl.LAYOUT)
+    @debug_plot('Cleaned Blocks and Shapes', plot=True, category=PlotControl.SHAPE)
     def clean(self, **kwargs):
         '''Clean blocks and rectangles, e.g. remove negative blocks, duplicated shapes.'''
         clean_blocks = self.blocks.clean()

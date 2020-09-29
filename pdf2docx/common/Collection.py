@@ -121,7 +121,7 @@ class Collection(IText):
         return self
 
 
-    def store(self) -> list:
+    def store(self):
         '''Store attributes in json format.'''
         return [ instance.store() for instance in self._instances ]
 

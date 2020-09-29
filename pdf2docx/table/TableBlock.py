@@ -43,7 +43,7 @@ from ..common import docx
 class TableBlock(Block):
     '''Text block.'''
     def __init__(self, raw:dict={}):
-        super(TableBlock, self).__init__(raw)
+        super().__init__(raw)
 
         # collect rows
         self._rows = Rows(parent=self).from_dicts(raw.get('rows', []))

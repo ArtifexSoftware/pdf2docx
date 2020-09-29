@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
 '''
-Objects representing PDF path (both stroke and filling) parsed from both pdf raw streams and annotations.
+Objects representing PDF stroke and filling:
+
+- Stroke: path segment
+- Fill  : bbox of closed path filling area
 
 @created: 2020-09-15
 @author: train8808@gmail.com
@@ -33,22 +36,14 @@ from ..common.constants import MAX_W_BORDER
 class Shape(BBox):
     ''' Shape object.'''
     def __init__(self, raw:dict={}):
-        super(Shape, self).__init__(raw)
-        self._type = RectType.UNDEFINED # no type by default
+        super().__init__(raw)
+        self.type = RectType.UNDEFINED # no type by default
         self.color = raw.get('color', 0)
-
-    @property
-    def type(self):
-        return self._type
-
-    @type.setter
-    def type(self, rect_type: RectType):
-        self._type = rect_type
 
     def store(self):
         res = super().store()
         res.update({
-            'type': self._type.value,
+            'type': self.type.value,
             'color': self.color
         })
         return res
@@ -69,11 +64,11 @@ class Stroke(Shape):
         # width, color
         self.width = raw.get('width', 0.0)
         self.color = raw.get('color', 0)
-        self._type = RectType.UNDEFINED # no type by default
+        self.type = RectType.UNDEFINED # no type by default
 
         # update bbox
         self.update(self._to_rect())
-        
+
 
     @property
     def horizontal(self): return self._start[1] == self._end[1]
@@ -117,11 +112,11 @@ class Stroke(Shape):
         if rect.getArea()==0.0:
             self._start = fitz.Point(rect[0:2])
             self._end = fitz.Point(rect[2:])
-            super(Stroke, self).update(self._to_rect())
+            super().update(self._to_rect())
 
         # a rect 
         else:
-            super(Stroke, self).update(rect)
+            super().update(rect)
 
             # suppose horizontal or vertical stroke
             if rect.width >= rect.height: # horizontal
@@ -133,7 +128,17 @@ class Stroke(Shape):
                 self._start = fitz.Point(x, rect.y0)
                 self._end   = fitz.Point(x, rect.y1)
 
-        return self    
+        return self
+
+
+    def store(self):
+        res = super().store()
+        res.update({
+            'start': tuple(self._start),
+            'end': tuple(self._end),
+            'width': self.width
+        })
+        return res
 
 
     def _to_rect(self):

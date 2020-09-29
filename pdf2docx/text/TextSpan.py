@@ -48,8 +48,8 @@ from ..shape.Shape import Shape
 
 class TextSpan(BBox):
     '''Object representing text span.'''
-    def __init__(self, raw:dict={}) -> None:
-        super(TextSpan, self).__init__(raw)
+    def __init__(self, raw:dict={}):
+        super().__init__(raw)
         self.color = raw.get('color', 0)
         self._font = raw.get('font', '')
         self.size = raw.get('size', 12.0)
@@ -149,7 +149,7 @@ class TextSpan(BBox):
         self.union(char)
 
 
-    def store(self) -> dict:
+    def store(self):
         res = super().store()
         res.update({
             'color': self.color,

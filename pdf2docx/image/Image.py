@@ -12,8 +12,8 @@ from ..common.BBox import BBox
 
 class Image(BBox):
     '''Base image object.'''
-    def __init__(self, raw:dict={}) -> None:
-        super(Image, self).__init__(raw)
+    def __init__(self, raw:dict={}):
+        super().__init__(raw)
         self.ext = raw.get('ext', 'png')
         self.width = raw.get('width', 0.0)
         self.height = raw.get('height', 0.0)
@@ -72,3 +72,15 @@ class Image(BBox):
         })
 
         return res
+
+
+    def plot(self, page, color:tuple):
+        '''Plot image bbox with diagonal lines.
+            ---
+            Args: 
+              - page: fitz.Page object
+        '''
+        x0, y0, x1, y1 = self.bbox
+        page.drawLine((x0, y0), (x1, y1), color=color, width=1)
+        page.drawLine((x0, y1), (x1, y0), color=color, width=1)
+        page.drawRect(self.bbox, color=color, fill=None, overlay=False)

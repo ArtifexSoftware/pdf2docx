@@ -11,15 +11,25 @@ from .Shape import Shape, Stroke, Fill
 from ..common.base import RectType
 from ..common.Collection import Collection
 from ..common import utils
-from ..common import pdf
-
 
 
 class Shapes(Collection):
 
+    def from_dicts(self, raws:list):
+        '''Initialize Stroke/Fill from dicts.'''
+        # distinguish Stroke and Fill: whether keys 'start' and 'end' exist in dict
+        for raw in raws:
+            shape = Stroke(raw) if 'start' in raw else Fill(raw)
+            # add to list
+            self.append(shape)
+        
+        return self
+
+
     def _update(self, shape:Shape):
         ''' override. Do nothing.'''
         pass
+
 
     @property
     def borders(self):
@@ -28,6 +38,7 @@ class Shapes(Collection):
             lambda shape: shape.type==RectType.BORDER, self._instances))
         return Shapes(instances)
 
+
     @property
     def strokes(self):
         '''Shapes in border type.'''
@@ -35,44 +46,13 @@ class Shapes(Collection):
             lambda shape: isinstance(shape, Stroke), self._instances))
         return Shapes(instances)
 
+
     @property
     def fillings(self):
         '''Shapes in border type.'''
         instances = list(filter(
             lambda shape: isinstance(shape, Fill), self._instances))
         return Shapes(instances)
-
-
-    def from_annotations(self, page):
-        ''' Get shapes, e.g. Line, Square, Highlight, from annotations(comment shapes) in PDF page.
-            ---
-            Args:
-            - page: fitz.Page, current page
-        '''
-        strokes, fills = pdf.shapes_from_annotations(page)
-        self._initialize(strokes, fills)
-        return self
-
-
-    def from_stream(self, doc, page):
-        ''' Get rectangle shapes, e.g. highlight, underline, table borders, from page source contents.
-            ---
-            Args:
-            - doc: fitz.Document representing the pdf file
-            - page: fitz.Page, current page
-        '''
-        strokes, fills = pdf.shapes_from_stream(doc, page)        
-        self._initialize(strokes, fills)
-        return self
-
-
-    def _initialize(self, strokes:list, fills:list):
-        '''Create Stroke or Fill instances with parsed shapes from PDF.'''
-        # strokes
-        for raw in strokes: self._instances.append(Stroke(raw))
-
-        # fills: may be stroke, to further process later
-        for raw in fills: self._instances.append(Fill(raw))
 
 
     def clean(self):
