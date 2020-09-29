@@ -280,9 +280,8 @@ def paths_from_stream(page:fitz.Page):
     Ad = [0.0]
     Wd = Ad[0]
 
-    # In addition to lines, rectangles are also processed with border path
-    paths = [] # a list of path, each path is a list of points
-    res = []
+    # collecting paths: each path is a list of points
+    paths = []           # a list of path
 
     # clip path
     Acp = [] # stored clipping path
@@ -293,6 +292,7 @@ def paths_from_stream(page:fitz.Page):
     # otherwise, have to check stream contents word by word (line always changes)
     lines = xref_stream.splitlines()
 
+    res = [] # final results
     for line in lines:
 
         words = line.split()
@@ -492,7 +492,7 @@ def paths_from_stream(page:fitz.Page):
 
         # fill the path
         elif line in ('f', 'F', 'f*'):            
-            for path in paths: 
+            for path in paths:
                 # close the path implicitly
                 _close_path(path)
             
@@ -505,7 +505,7 @@ def paths_from_stream(page:fitz.Page):
 
         # close, fill and stroke the path
         elif op.upper() in ('B', 'B*'): 
-            for path in paths: 
+            for path in paths:
                 # close path
                 _close_path(path)
                 

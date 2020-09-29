@@ -6,16 +6,36 @@ Objects representing PDF path (both stroke and filling) parsed from both pdf raw
 @created: 2020-09-22
 @author: train8808@gmail.com
 ---
+
+Paths are created based on DICT data extracted from `pdf2docx.common.pdf` module:
+- Stroke path:
+    {
+        'stroke': True,
+        'curve' : is_curve, # whether curve path segments exists
+        'points': t_path,
+        'color' : color,
+        'width' : w
+    }
+- Fill path:
+    {
+        'stroke': False,
+        'curve' : is_curve, # whether curve path segments exists
+        'points': t_path,
+        'color' : color
+    }
 '''
 
 import fitz
+from ..common.Collection import BaseCollection
 from ..common.utils import RGB_component
 from ..common import pdf
 
 
-class PathsExtractor:
-    '''Extract paths from PDF.'''
-    def __init__(self, page:fitz.Page):
+class PathsExtractor(BaseCollection):
+    '''A collection of paths extracted from PDF.'''
+
+    def parse(self, page:fitz.Page):
+        '''Extract paths from PDF page.'''
 
         # paths from pdf source
         raw_paths = pdf.paths_from_stream(page)
@@ -29,29 +49,87 @@ class PathsExtractor:
             path = Path(raw_path)
             self._instances.append(path)
 
+        return self
 
-    def __len__(self): return len(self._instances)
+    @property
+    def bbox(self):
+        bbox = fitz.Rect()
+        for instance in self._instances:
+            bbox = bbox | instance.bbox # NOTE: | support fitz.Rect and rect-like object, e.g. tuple
+        return bbox
+    
+
+    def filter_pixmaps(self, page:fitz.Page):
+        ''' Convert vector graphics built by paths to pixmap.
+            
+            NOTE: the target is to extract horizontal/vertical paths for table parsing, while others
+            are converted to bitmaps.
+        '''
+        # group connected paths -> each group is a potential pixmap
+        # NOTE: use user defined method to detect intersection here, which has a higher performence than 
+        # fitz.Rect().intersects(), especially when the count of instances is large. For instance, it's
+        # about 4:1 with 1000 instances.
+        fun = lambda a,b: a.intersects(b)
+        groups = self.group(fun)
+
+        # Generally, a table region is composed of orthogonal paths, i.e. either horizontal or vertical paths.
+        # Suppose it can't be a table if the count of non-orthogonal paths is larger than NUM=5.
+        orth_instances, pixmaps = [], []
+        NUM = 5 
+        for group in groups:
+            cnt = 0
+            for path in group:
+                if not path.is_orthogonal: cnt += 1
+                if cnt >= NUM: 
+                    # convert to pixmap
+                    pixmaps.append(group.to_image(page))
+                    break
+            
+            # keep potential table border paths
+            else:
+                orth_instances.extend(group.to_paths())
+
+        return pixmaps, orth_instances
+
+    
+    def to_image(self, page:fitz.Page):
+        '''Convert to image block dict if this is a vector graphic paths.'''
+        bbox = self.bbox
+        image = page.getPixmap(clip=bbox)
+        return {
+            'type': 1,
+            'bbox': tuple(bbox),
+            'ext': 'png',
+            'width': bbox.width,
+            'height': bbox.height,
+            'image': image.getImageData(output="png")
+        }
+    
+
+    def to_paths(self):
+        '''Convert contained paths to orthogonal strokes and rectangular fills.'''
+        paths = []
+        for path in self._instances:
+            if path.stroke:
+                paths.extend(path.to_orthogonal_strokes())
+            else:
+                paths.append(path.to_rectangular_fill())
+
+        return paths
 
 
     def plot(self, doc:fitz.Document, title:str, width:float, height:float):
         # insert a new page
         page = pdf.new_page_with_margin(doc, width, height, None, title)
         for path in self._instances: path.plot(page)
-    
 
-    def store(self):
-        paths = []
-        for path in self._instances:
-            if path.stroke:
-                paths.extend(path.to_strokes())
-            else:
-                paths.append(path.to_fill())
-
-        return { 'paths': paths }
 
 
 class Path:
     '''Path extracted from PDF, either a stroke or filling.'''
+
+    __slots__ = ['points', 'stroke', 'color', 'width', 'bbox']
+
     def __init__(self, raw:dict={}):
         '''Init path in un-rotated page CS.'''
         self.points = []
@@ -67,15 +145,62 @@ class Path:
         # width if stroke
         self.width = raw.get('width', 0.0)
 
+        self.bbox = self.fun_bbox()
+    
 
-    def to_strokes(self):
-        '''Convert stroke path to line segments.'''
+    def fun_bbox(self):
+        '''Boundary box in PyMuPDF page CS (without rotation).'''
+        # if self._bbox is None:
+        X = [p[0] for p in self.points]
+        Y = [p[1] for p in self.points]
+        x0, x1 = min(X), max(X)
+        y0, y1 = min(Y), max(Y)
+
+        h = self.width / 2.0
+        # NOTE: use tuple here has a much higher efficiency than fizt.Rect()
+        bbox = (x0-h, y0-h, x1+h, y1+h) if self.stroke else (x0, y0, x1, y1)
+        
+        return bbox
+
+
+    def intersects(self, path):
+        ''' Check if any intersection exists in two paths. 
+            Has a higner performence than fitz.Rect().intersects()
+        '''
+        x0, y0, x1, y1 = self.bbox
+        u0, v0, u1, v1 = path.bbox
+        no_intersection = u1<x0 or u0>x1 or v1<y0 or v0>y1
+        return not no_intersection
+
+
+    @property
+    def is_orthogonal(self):
+        '''Whether contains horizontal/vertical path segments only.'''
+        for i in range(len(self.points)-1):
+            # start point
+            x0, y0 = self.points[i]
+            # end point
+            x1, y1 = self.points[i+1]
+
+            if x0!=x1 and y0!=y1: return False
+        
+        return True
+
+
+    def to_orthogonal_strokes(self):
+        ''' Convert stroke path to line segments. 
+
+            NOTE: Consider horizontal or vertical lines only since such lines contribute to 
+            parsing table borders, text underlines.
+        '''
         strokes = []
         for i in range(len(self.points)-1):
             # start point
             x0, y0 = self.points[i]
             # end point
-            x1, y1 = self.points[i+1]        
+            x1, y1 = self.points[i+1]
+
+            if x0!=x1 and y0!=y1: continue
 
             strokes.append({
                 'start': (x0, y0),
@@ -87,17 +212,10 @@ class Path:
         return strokes
 
 
-    def to_fill(self):
-        '''Convert fill path to rectangular bbox.'''
-        # find bbox of path region
-        X = [p[0] for p in self.points]
-        Y = [p[1] for p in self.points]
-        x0, x1 = min(X), max(X)
-        y0, y1 = min(Y), max(Y)
-
-        # filled bbox, thought the real filling area is not a rectangle
+    def to_rectangular_fill(self):
+        '''Convert fill path to rectangular bbox, thought the real filling area is not a rectangle.'''
         return {
-            'bbox': (x0, y0, x1, y1), 
+            'bbox': list(self.bbox), 
             'color': self.color
         }
 

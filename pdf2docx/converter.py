@@ -9,7 +9,6 @@ import fitz
 from docx import Document
 
 from .layout.Layout import Layout
-from .common.base import PlotControl
 from .shape.Path import PathsExtractor
 
 
@@ -87,7 +86,7 @@ class Converter:
         # init page layout
         self.initialize(page)
         if debug: 
-            self._layout.plot(debug_kwargs['doc'], 'Source Text Blocks', key=PlotControl.LAYOUT)
+            self._layout.plot(debug_kwargs['doc'], 'Source Text Blocks')
             self._paths.plot(debug_kwargs['doc'], 'Source Shapes', self._layout.width, self._layout.height)
 
         # parse and save page
@@ -146,9 +145,11 @@ class Converter:
         *_, w, h = page.rect # always reflecting page rotation
         raw_layout.update({ 'width' : w, 'height': h })
 
-        # pdf paths
-        self._paths = PathsExtractor(page)
-        raw_layout.update(self._paths.store())
+        # pdf paths and converted images
+        self._paths = PathsExtractor()
+        images, paths = self._paths.parse(page).filter_pixmaps(page)
+        raw_layout['blocks'].extend(images)
+        raw_layout['paths'] = paths
 
         # init layout
         self._layout = Layout(raw_layout, page.rotationMatrix)    

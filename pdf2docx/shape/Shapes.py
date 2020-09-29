@@ -67,7 +67,7 @@ class Shapes(Collection):
         shapes = list(filter(f, self._instances))
 
         # sort in reading order
-        self.sort_in_reading_order()
+        shapes.sort(key=lambda instance: (instance.bbox.y0, instance.bbox.x0, instance.bbox.x1))
 
         # skip rectangles with both of the following two conditions satisfied:
         #  - fully or almost contained in another rectangle

@@ -79,13 +79,7 @@ class Border:
             lower_border, upper_border = None, None
         self._LBorder:Border = lower_border # left border, or top border
         self._UBorder:Border = upper_border # right border, or bottom border
-        return self
-    
-    def intersect_length(self, border):
-        '''Intersection of valid range with given Border instance.'''
-        LRange = max(self.LRange, border.LRange)
-        URange = min(self.URange, border.URange)
-        return max(URange-LRange, 0.0)
+        return self    
 
     @property
     def centerline(self):
@@ -212,11 +206,6 @@ class Borders:
         self._HBorders = [] # type: list[HBorder]
         self._VBorders = [] # type: list[VBorder]
 
-        # overlap between valid h-border ranges
-        self._dy_max, self._dy_min = 0.0, 0.0
-
-        # overlap between valid v-border ranges
-        self._dx_max, self._dx_min = 0.0, 0.0
 
     def __iter__(self):
         return (instance for instance in self._HBorders+self._VBorders)
@@ -226,21 +215,10 @@ class Borders:
     
 
     def add(self, border:Border):
-        '''Add border and update '''
+        '''Add border.'''
         if isinstance(border, HBorder):
-            # check intersection with contained h-borders
-            d_max, d_min = self._max_min_intersects(self._HBorders, border)
-            if d_max is not None:
-                self._dy_max = d_max
-                self._dy_min = d_min
-            self._HBorders.append(border)
-        
+            self._HBorders.append(border)        
         elif isinstance(border, VBorder):
-            # check intersection with contained v-borders
-            d_max, d_min = self._max_min_intersects(self._VBorders, border)
-            if d_max is not None:
-                self._dx_max = d_max
-                self._dx_min = d_min
             self._VBorders.append(border)
     
 
@@ -275,86 +253,52 @@ class Borders:
 
         # process un-finalized h-borders further
         borders = list(filter(lambda border: not border.finalized, self._HBorders))
-        self._finalize_borders(borders, self._dy_min, self._dy_max)
+        self._finalize_borders(borders)
 
         # process un-finalized v-borders further
         borders = list(filter(lambda border: not border.finalized, self._VBorders))
-        self._finalize_borders(borders, self._dx_min, self._dx_max)
-
-    
-    @staticmethod
-    def _max_min_intersects(borders, border:Border):
-        '''Get max/min intersection between `borders` and `border`. Return None if no any intersections.'''
-        intersects = list(map(
-            lambda border_: border_.intersect_length(border), borders))
-        intersects = list(filter(
-            lambda border_: border_>0, intersects
-        ))
-        if intersects:
-            return max(intersects), min(intersects)
-        else:
-            return None, None
+        self._finalize_borders(borders)
 
 
     @staticmethod
-    def _finalize_borders(borders:list, dx_min:float, dx_max:float):
+    def _finalize_borders(borders:list):
         ''' Finalize the position of all borders: align borders as more as possible to simplify the table structure.
             ---
             Args:
             - borders: a list of HBorder or VBorder instances
-            - dx_min : minimum length of intersected border range
-            - dx_max : maximum length of intersected border range
             
             Taking finalizing vertical borders for example:
-            - for each border, initialize a group of x-coordinates with spacing `dx` in its valid range
-            - for each x-coordinate, count the intersection status with all borders
-            - merge x-coordinates (using average value) passing through same borders
-            - sort x-coordinates with the count of intersections in decent order
-            - finalize borders with x-coordinate in sorting order consequently
+            - initialize a list of x-coordinates, [x0, x1, x2, ...], with the interval points of each border
+            - every two adjacent x-coordinates forms an interval for checking, [x0, x1], [x1, x2], ...
+            - for each interval, count the intersection status of center point, x=(x0+x1)/2.0, with all borders
+            - sort center point with the count of intersections in decent order
+            - finalize borders with x-coordinate of center points in sorting order consequently
             - terminate the process when all borders are finalized
         '''
-        # no intersection exists for any borders -> it can be finalized right now.
-        if dx_max == 0.0: return
-
-        # resolution 
-        dx = dx_min / 2.0
-
-        # initialize vertical lines and check intersection status
-        x_status = {} # coordinate -> status
+        # collect interval points and sort in x-increasing order
+        x_points = set()
         for border in borders:
-            x = border.LRange+dx
-            while x < border.URange:
-                # intersection status with each border
-                c = list(map(
-                    lambda border: str(int(border.is_valid(x))), borders))
-                x_status[x] = '-'.join(c) # e.g. 1-0-0-1-0-0
-
-                x += dx
-
-        # merge vertical lines if its intersection status is same
-        merged_x_status = {} # status -> coordinate
-        for k, v in x_status.items():
-            if v in merged_x_status:
-                merged_x_status[v].append(k)
-            else:
-                merged_x_status[v] = [k]
+            x_points.add(border.LRange)
+            x_points.add(border.URange)
         
-        # merge vertical lines with average x-coordinates, and
-        # calculate the count of intersected borders for merged lines
-        data = []
-        for k, v in merged_x_status.items():
-            # average coordinate
-            x = sum(v)/len(v)
-            c = list(map(float, k.split('-')))
-            data.append((x, c))
-        
-        # sort per count since preferring the position of line passing through more borders
-        data.sort(key=lambda item: (sum(item[1]), item[0]), reverse=True)
+        x_points = list(x_points)
+        x_points.sort()
+
+        # check intersection status of each intervals
+        x_status = [] # [(x, status), ...]
+        for i in range(len(x_points)-1):
+            x = (x_points[i]+x_points[i+1])/2.0 # cenper point
+            s = list(map(
+                    lambda border: int(border.is_valid(x)), borders))
+            x_status.append((x,s))
+            
+        # sort per count since preferring passing through more borders
+        x_status.sort(key=lambda item: sum(item[1]), reverse=True)
 
         # finalize borders
         num = len(borders)
         current_status = [0] * num
-        for x, status in data:
+        for x, status in x_status:
             # terminate if all borders are finalized
             if sum(current_status) == num: break
 

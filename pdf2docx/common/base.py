@@ -50,15 +50,17 @@ class TextAlignment(Enum):
 
 class PlotControl(Enum):
     ''' Control what to show when plotting blocks.
-        - layout         : plot all blocks
-        - table          : plot lattice table blocks only
+        - layout       : plot all blocks and shapes
+        - block        : plot all blocks
+        - table        : plot lattice table blocks only
         - stream_table : plot stream table blocks only
-        - shape          : plot rectangle shapes
+        - shape        : plot rectangle shapes
     '''
     LAYOUT = 0
-    TABLE = 1
-    STREAM_TABLE = 2
-    SHAPE = 3
+    BLOCK  = 1
+    TABLE  = 2
+    STREAM_TABLE = 3
+    SHAPE  = 4
 
 
 class IText:
