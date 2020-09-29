@@ -9,6 +9,8 @@ A group of instances, e.g. instances, Spans, Shapes.
 
 from .BBox import BBox
 from .base import IText, TextDirection
+from .utils import graph_BFS
+
 
 class BaseCollection:
     '''Base collection of specific instances.'''
@@ -31,7 +33,7 @@ class BaseCollection:
 
 
     def group(self, fun):
-        '''group instances according to user defined criterion.
+        ''' Group instances according to user defined criterion.
             ---
             Args:
             - fun: function with 2 arguments representing 2 instances (BBox), and return bool
@@ -44,9 +46,13 @@ class BaseCollection:
             # group instances aligned horizontally
             fun = lambda a,b: a.horizontally_aligned_with(b)
             ```
+
+            NOTE: it's equal to a GRAPH searching problem, build adjacent list, and then search graph 
+            to find all connected components.
         '''
-        # build connection relation list:
-        # the i-th item is a set of indexes, which connected to the i-th instance
+        # build adjacent list:
+        # the i-th item is a set of indexes, which connected to the i-th instance.
+        # NOTE: O(n^2) method, but it's acceptable (~0.2s) when n<1000 which is satisfied by page blocks
         num = len(self._instances)
         index_groups = [set() for i in range(num)] # type: list[set]        
         for i, instance in enumerate(self._instances):
@@ -56,38 +62,21 @@ class BaseCollection:
                     index_groups[i].add(j)
                     index_groups[j].add(i)
 
-        # combine all connected groups
+        # search graph
+        # NOTE: generally a disconnected graph
         counted_indexes = set() # type: set[int]
         groups = []
         for i in range(num):
-            # skip if counted
             if i in counted_indexes: continue
-
-            # collect indexes
-            indexes = set()
-            self._group_instances(i, index_groups, indexes)
+            # connected component starts...
+            indexes = set(graph_BFS(index_groups, i))
             groups.append([self._instances[x] for x in indexes])
-
-            # update counted indexes
             counted_indexes = counted_indexes | indexes
 
         # final grouped instances
         groups = [self.__class__(group) for group in groups]
 
         return groups
-
-
-    @staticmethod
-    def _group_instances(i:int, groups:list, indexes:set):
-        '''combine group indexes.''' 
-        if i in indexes: return
-
-        # add this index
-        indexes.add(i)
-
-        # check sub-group further
-        for j in groups[i]:
-            Collection._group_instances(j, groups, indexes)
 
 
 

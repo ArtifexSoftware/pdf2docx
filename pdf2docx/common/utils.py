@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import random
+from collections import deque
 
 import fitz
 from fitz.utils import getColorList, getColorInfoList
@@ -100,6 +101,26 @@ def debug_plot(title:str, plot:bool=True, category:PlotControl=PlotControl.LAYOU
             return layout
         return inner
     return wrapper
+
+
+def graph_BFS(graph, start):
+    '''Breadth First Search graph with start node.
+        ---
+        Args:
+        - graph: GRAPH represented by adjacent list, [set(1,2,3), set(...), ...]
+        - start: index of any start vertex
+    '''
+    search_queue = deque()
+    search_queue.append(start)
+    searched = set()
+
+    while search_queue:
+        cur_node = search_queue.popleft()
+        if cur_node not in searched:
+            yield cur_node
+            searched.add(cur_node)
+            for node in graph[cur_node]:
+                search_queue.append(node)
 
 
 def compare_layput(filename_source, filename_target, filename_output, threshold=0.7):
