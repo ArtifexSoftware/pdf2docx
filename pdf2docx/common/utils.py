@@ -102,8 +102,28 @@ def debug_plot(title:str, plot:bool=True, category:PlotControl=PlotControl.LAYOU
     return wrapper
 
 
-def graph_BFS(graph, start):
-    '''Breadth First Search graph with start node.
+def graph_BFS(graph):
+    '''Breadth First Search graph (may be disconnected graph), return a list of connected components.
+        ---
+        Args:
+        - graph: GRAPH represented by adjacent list, [set(1,2,3), set(...), ...]
+    '''
+    # search graph
+    # NOTE: generally a disconnected graph
+    counted_indexes = set() # type: set[int]
+    groups = []
+    for i in range(len(graph)):
+        if i in counted_indexes: continue
+        # connected component starts...
+        indexes = set(graph_BFS_from_node(graph, i))
+        groups.append(indexes)
+        counted_indexes.update(indexes)
+
+    return groups
+
+
+def graph_BFS_from_node(graph, start):
+    '''Breadth First Search connected graph with start node.
         ---
         Args:
         - graph: GRAPH represented by adjacent list, [set(1,2,3), set(...), ...]

@@ -28,14 +28,12 @@ Paths are created based on DICT data extracted from `pdf2docx.common.pdf` module
 import fitz
 from ..common import pdf
 from ..common.Collection import BaseCollection
-from ..common.rect_intersection import solve_rects_intersection
-from ..common.utils import RGB_component, graph_BFS
 
 
-class PathsExtractor(BaseCollection):
-    '''A collection of paths extracted from PDF.'''
+class PathsExtractor:
+    '''Extract paths from PDF.'''
 
-    def parse(self, page:fitz.Page):
+    def __init__(self, page:fitz.Page):
         '''Extract paths from PDF page.'''
 
         # paths from pdf source
@@ -45,13 +43,36 @@ class PathsExtractor(BaseCollection):
         _ = pdf.paths_from_annotations(page)
         raw_paths.extend(_)
 
-        self._instances = [] # type: list[Path]
-        for raw_path in raw_paths:
-            path = Path(raw_path)
-            self._instances.append(path)
+        # init Paths
+        self._page = page
+        self.paths = Paths([Path(raw_path) for raw_path in raw_paths])
+    
 
-        return self
+    def filter_pixmaps(self):
+        ''' Convert vector graphics built by paths to pixmap.
+            
+            NOTE: the target is to extract horizontal/vertical paths for table parsing, while others
+            are converted to bitmaps.
+        '''
+        # group connected paths -> each group is a potential pixmap
+        groups = self.paths.group_by_connectivity()
 
+        # Generally, a table region is composed of orthogonal paths, i.e. either horizontal or vertical paths.
+        orth_instances, pixmaps = [], []
+        for group in groups:
+            # can't be a table if curve path exists
+            if group.contains_curve:
+                pixmaps.append(group.to_image(self._page))            
+            # keep potential table border paths
+            else:
+                orth_instances.extend(group.to_paths())
+
+        return pixmaps, orth_instances
+    
+    
+class Paths(BaseCollection):
+    '''A collection of paths.'''    
+    
     @property
     def bbox(self):
         bbox = fitz.Rect()
@@ -60,75 +81,20 @@ class PathsExtractor(BaseCollection):
         return bbox
 
     
-    def group(self):
-        ''' Collect connected path into same group.
+    @property
+    def contains_curve(self, num=5):
+        '''Whether any curve paths exist. The criterion is the count of non-orthogonal paths.'''
+        cnt = 0
+        for path in self._instances:
+            if not path.is_orthogonal: cnt += 1
+            if cnt >= num: return True        
+        return False
 
-            NOTE:
-            - It's equal to a GRAPH traversing problem, which the critical point in building the adjacent
-            list, especially a large number of vertex (paths).
-            - Checking intersections between paths is actually a Rectangle-Intersection problem, studied
-            already in many literatures.
-        '''
-        # build the graph -> adjacent list:
-        # the i-th item is a set of indexes, which connected to the i-th instance
-        num = len(self._instances)
-        index_groups = [set() for _ in range(num)] # type: list[set]
 
-        # solve rectangle intersection problem
-        i_rect_x = []
-        i = 0
-        for rect in self._instances:
-            i_rect_x.append((i, rect, rect.x0))
-            i_rect_x.append((i+1, rect, rect.x1))
-            i += 2
-        i_rect_x.sort(key=lambda item: item[-1])
-        solve_rects_intersection(i_rect_x, 2*num, index_groups)
-
-        # traverse the graph
-        counted_indexes = set() # type: set[int]
-        groups = []
-        for i in range(num):
-            # skip if counted
-            if i in counted_indexes: continue
-
-            # a connected component of graph
-            indexes = set(graph_BFS(index_groups, i))
-            group = PathsExtractor([self._instances[x] for x in indexes])
-            groups.append(group)
-
-            # update counted indexes
-            counted_indexes = counted_indexes | indexes
-
-        return groups
-    
-
-    def filter_pixmaps(self, page:fitz.Page):
-        ''' Convert vector graphics built by paths to pixmap.
-            
-            NOTE: the target is to extract horizontal/vertical paths for table parsing, while others
-            are converted to bitmaps.
-        '''
-        # group connected paths -> each group is a potential pixmap
-        groups = self.group()
-
-        # Generally, a table region is composed of orthogonal paths, i.e. either horizontal or vertical paths.
-        # Suppose it can't be a table if the count of non-orthogonal paths is larger than NUM=5.
-        orth_instances, pixmaps = [], []
-        NUM = 5 
-        for group in groups:
-            cnt = 0
-            for path in group:
-                if not path.is_orthogonal: cnt += 1
-                if cnt >= NUM: 
-                    # convert to pixmap
-                    pixmaps.append(group.to_image(page))
-                    break
-            
-            # keep potential table border paths
-            else:
-                orth_instances.extend(group.to_paths())
-
-        return pixmaps, orth_instances
+    def plot(self, doc:fitz.Document, title:str, width:float, height:float):
+        # insert a new page
+        page = pdf.new_page_with_margin(doc, width, height, None, title)
+        for path in self._instances: path.plot(page)    
 
     
     def to_image(self, page:fitz.Page):
@@ -155,13 +121,6 @@ class PathsExtractor(BaseCollection):
                 paths.append(path.to_rectangular_fill())
 
         return paths
-
-
-    def plot(self, doc:fitz.Document, title:str, width:float, height:float):
-        # insert a new page
-        page = pdf.new_page_with_margin(doc, width, height, None, title)
-        for path in self._instances: path.plot(page)
-
 
 
 class Path:

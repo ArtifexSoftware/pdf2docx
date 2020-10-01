@@ -12,14 +12,7 @@ O(nlog n + k) time and O(n) space, where k is the count of intersection pairs
 
 - Input
 
-The rectangle is represented by its corner points, i.e. an object like
-
-```python
-class Rect:
-    def __init__(self, points):
-        assert len(points)==4, 'invalid input'
-        self.x0, self.y0, self.x1, self.y1 = points
-```
+The rectangle is represented by its corner points, (x0, y0, x1, y1)
 
 - Output
 
@@ -70,10 +63,10 @@ def solve_rects_intersection(V:list, num:int, index_groups:list):
     right = V[center_pos:]
 
     # filter rects according to their position to each intervals
-    S11 = list(filter( lambda item: item[1].x1<=X, left ))
-    S12 = list(filter( lambda item: item[1].x1>=X1, left ))
-    S22 = list(filter( lambda item: item[1].x0>X, right ))
-    S21 = list(filter( lambda item: item[1].x0<=X0, right ))
+    S11 = list(filter( lambda item: item[1][2]<=X, left ))
+    S12 = list(filter( lambda item: item[1][2]>=X1, left ))
+    S22 = list(filter( lambda item: item[1][0]>X, right ))
+    S21 = list(filter( lambda item: item[1][0]<=X0, right ))
     
     # intersection in x-direction is fullfilled, so check y-direction further
     stab(S12, S22, index_groups)
@@ -83,12 +76,6 @@ def solve_rects_intersection(V:list, num:int, index_groups:list):
     # recursive process
     solve_rects_intersection(left,  center_pos,     index_groups)
     solve_rects_intersection(right, num-center_pos, index_groups)
-
-
-def report_pair(i:int, j:int, index_groups:list):
-    '''add pair (i,j) to adjacent list.'''
-    index_groups[i].add(j)
-    index_groups[j].add(i)
 
 
 def stab(S1:list, S2:list, index_groups:list):
@@ -115,22 +102,28 @@ def stab(S1:list, S2:list, index_groups:list):
     if not S1 or not S2: return
 
     # sort
-    S1.sort(key=lambda item: item[1].y0)
-    S2.sort(key=lambda item: item[1].y0)
+    S1.sort(key=lambda item: item[1][1])
+    S2.sort(key=lambda item: item[1][1])
 
     i, j = 0, 0
     while i<len(S1) and j<len(S2):
         m, a, _ = S1[i]
         n, b, _ = S2[j]
-        if a.y0 < b.y0:
+        if a[1] < b[1]:
             k = j
-            while k<len(S2) and S2[k][1].y0 < a.y1:
+            while k<len(S2) and S2[k][1][1] < a[3]:
                 report_pair(int(m/2), int(S2[k][0]/2), index_groups)
                 k += 1
             i += 1
         else:
             k = i
-            while k<len(S1) and S1[k][1].y0 < b.y1:
+            while k<len(S1) and S1[k][1][1] < b[3]:
                 report_pair(int(S1[k][0]/2), int(n/2), index_groups)
                 k += 1
             j += 1
+
+
+def report_pair(i:int, j:int, index_groups:list):
+    '''add pair (i,j) to adjacent list.'''
+    index_groups[i].add(j)
+    index_groups[j].add(i)

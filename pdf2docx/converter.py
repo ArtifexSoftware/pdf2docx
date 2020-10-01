@@ -34,7 +34,7 @@ class Converter:
         self._doc_docx = Document()
 
         # layout object: main worker
-        self._paths = None  # PathsExtractor
+        self._paths_extractor = None  # PathsExtractor
         self._layout = None # type: Layout        
 
 
@@ -87,7 +87,7 @@ class Converter:
         self.initialize(page)
         if debug: 
             self._layout.plot(debug_kwargs['doc'], 'Source Text Blocks')
-            self._paths.plot(debug_kwargs['doc'], 'Source Shapes', self._layout.width, self._layout.height)
+            self._paths_extractor.paths.plot(debug_kwargs['doc'], 'Source Shapes', self._layout.width, self._layout.height)
 
         # parse and save page
         self.layout.parse(**debug_kwargs).make_page(self.doc_docx)
@@ -146,8 +146,8 @@ class Converter:
         raw_layout.update({ 'width' : w, 'height': h })
 
         # pdf paths and converted images
-        self._paths = PathsExtractor()
-        images, paths = self._paths.parse(page).filter_pixmaps(page)
+        self._paths_extractor = PathsExtractor(page)
+        images, paths = self._paths_extractor.filter_pixmaps()
         raw_layout['blocks'].extend(images)
         raw_layout['paths'] = paths
 
