@@ -574,8 +574,11 @@ def _check_device_cs(page:fitz.Page):
             break
 
         # now within cs block, e.g. /Cs6 14 0 R
-        cs_name, xref, *_ = line.split()
-        cs[cs_name] = _is_device_cs(int(xref), doc)
+        try:
+            cs_name, xref, *_ = line.split()
+            cs[cs_name] = _is_device_cs(int(xref), doc)
+        except:
+            pass
 
     return cs
 
