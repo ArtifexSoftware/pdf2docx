@@ -333,8 +333,8 @@ class Blocks(Collection):
 
             #---------------------------------------------------------
             # alignment mode and left spacing:
-            # - horizontal block -> take left boundary as reefrence
-            # - vertical block   -> take bottom boundary as reefrence
+            # - horizontal block -> take left boundary as reference
+            # - vertical block   -> take bottom boundary as reference
             #---------------------------------------------------------
             block.parse_horizontal_spacing(bbox)
 
@@ -383,7 +383,8 @@ class Blocks(Collection):
             # we can't set before space for table in docx, but the tricky way is to
             # create an empty paragraph and set paragraph line spacing and before space
             else:
-                block.before_space = para_space
+                block.before_space = max(para_space, DM) # let para_space>=1 Pt to accommodate the dummy paragraph
+
 
             # update reference block        
             ref_block = block

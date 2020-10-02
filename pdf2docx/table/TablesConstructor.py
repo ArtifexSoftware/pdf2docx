@@ -73,6 +73,9 @@ class TablesConstructor(TableStructure):
         tables_ = self.stream_tables_from_layout(x0, x1)
         tables.extend(tables_)
 
+        # set type: stream table
+        for table in tables: table.set_stream_table_block()
+
         return tables
 
 
@@ -108,10 +111,7 @@ class TablesConstructor(TableStructure):
             tables.append(table)
 
         # check if any intersection with previously parsed tables
-        unique_tables = self._remove_floating_tables(tables)
-        for table in unique_tables:
-            # add parsed table to page level blocks
-            table.set_stream_table_block()
+        unique_tables = self._remove_floating_tables(tables)        
 
         # assign text contents to each table
         self._blocks.assign_table_contents(unique_tables)
