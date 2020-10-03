@@ -146,8 +146,8 @@ class Converter:
         raw_layout.update({ 'width' : w, 'height': h })
 
         # pdf paths and converted images
-        self._paths_extractor = PathsExtractor(page)
-        images, paths = self._paths_extractor.filter_pixmaps()
+        self._paths_extractor = PathsExtractor()
+        images, paths = self._paths_extractor.extract_paths(page)
         raw_layout['blocks'].extend(images)
         raw_layout['paths'] = paths
 

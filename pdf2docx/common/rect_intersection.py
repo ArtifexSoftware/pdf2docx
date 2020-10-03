@@ -52,7 +52,7 @@ def solve_rects_intersection(V:list, num:int, index_groups:list):
         - detect(V1, H1, ⌊m/2⌋); detect(V2, H2, m − ⌊m/2⌋)
         ```
     '''
-    if num==1: return
+    if num < 2: return
     
     # start/end points of left/right intervals
     center_pos = int(num/2.0)

@@ -87,8 +87,8 @@ class BaseCollection:
         i_rect_x, i = [], 0
         for rect in self._instances:
             points = tuple(rect.bbox)
-            i_rect_x.append((i,   points, rect.x0))
-            i_rect_x.append((i+1, points, rect.x1))
+            i_rect_x.append((i,   points, points[0]))
+            i_rect_x.append((i+1, points, points[2]))
             i += 2
         i_rect_x.sort(key=lambda item: item[-1])
         solve_rects_intersection(i_rect_x, 2*num, index_groups)
