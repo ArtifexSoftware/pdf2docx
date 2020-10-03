@@ -76,8 +76,7 @@ class Layout:
         self._margin = raw.get('margin', None)
 
     @property
-    def margin(self):
-        return self._margin
+    def margin(self): return self._margin
 
     
     @property
@@ -104,58 +103,7 @@ class Layout:
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(json.dumps(self.store(), indent=4))
 
-
-    def plot(self, doc, title:str, key:PlotControl=PlotControl.BLOCK):
-        '''Plot specified type of blocks layout with PyMuPDF.
-            ---
-            Args:
-              - doc: fitz.Document object
-        '''
-        # get objects to plot
-        #  - blocks + shapes
-        if key == PlotControl.LAYOUT: 
-            objects = list(self.blocks) + list(self.shapes)
-        
-        # - all blocks
-        elif key == PlotControl.BLOCK: 
-            objects = self.blocks
-        
-        #  - lattice table structure only
-        elif key == PlotControl.TABLE: 
-            objects = self.blocks.lattice_table_blocks
-        
-        #  - stream table structure only
-        elif key == PlotControl.STREAM_TABLE: 
-            objects = self.blocks.stream_table_blocks
-        
-        #  - rectangle shapes
-        elif key == PlotControl.SHAPE: 
-            objects = self.shapes
-
-        else:
-            objects = []
-
-        # do nothing if no objects
-        if not objects: return
-
-        # insert a new page
-        page = new_page_with_margin(doc, self.width, self.height, self.margin, title)
-
-        # plot styled table but no text blocks in cell
-        if key==PlotControl.TABLE: 
-            for item in objects:
-                item.plot(page, content=False, style=True)
-        
-        # plot non-styled table and no text blocks in cell
-        elif key==PlotControl.STREAM_TABLE: 
-            for item in objects:
-                item.plot(page, content=False, style=False)
-        
-        else:
-            for item in objects:
-                 item.plot(page) # default args for TableBlock.plot
-
-
+    
     def parse(self, **kwargs):
         ''' Parse page layout.
             ---
@@ -323,3 +271,55 @@ class Layout:
             or table context. It'll used as paragraph spacing and line spacing when creating paragraph.
         '''
         self.blocks.parse_spacing()
+    
+
+    def plot(self, doc, title:str, key:PlotControl=PlotControl.BLOCK):
+        '''Plot specified type of blocks layout with PyMuPDF.
+            ---
+            Args:
+              - doc: fitz.Document object
+        '''
+        # get objects to plot
+        #  - blocks + shapes
+        if key == PlotControl.LAYOUT: 
+            objects = list(self.blocks) + list(self.shapes)
+        
+        # - all blocks
+        elif key == PlotControl.BLOCK: 
+            objects = self.blocks
+        
+        #  - lattice table structure only
+        elif key == PlotControl.TABLE: 
+            objects = self.blocks.lattice_table_blocks
+        
+        #  - stream table structure only
+        elif key == PlotControl.STREAM_TABLE: 
+            objects = self.blocks.stream_table_blocks
+        
+        #  - rectangle shapes
+        elif key == PlotControl.SHAPE: 
+            objects = self.shapes
+
+        else:
+            objects = []
+
+        # do nothing if no objects
+        if not objects: return
+
+        # insert a new page
+        page = new_page_with_margin(doc, self.width, self.height, self.margin, title)
+
+        # plot styled table but no text blocks in cell
+        if key==PlotControl.TABLE: 
+            for item in objects:
+                item.plot(page, content=False, style=True)
+        
+        # plot non-styled table and no text blocks in cell
+        elif key==PlotControl.STREAM_TABLE: 
+            for item in objects:
+                item.plot(page, content=False, style=False)
+        
+        else:
+            for item in objects:
+                 item.plot(page) # default args for TableBlock.plot
+

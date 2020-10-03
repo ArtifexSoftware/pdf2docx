@@ -2,7 +2,6 @@
 
 import random
 from collections import deque
-
 import fitz
 from fitz.utils import getColorList, getColorInfoList
 from .base import PlotControl
@@ -103,24 +102,44 @@ def debug_plot(title:str, plot:bool=True, category:PlotControl=PlotControl.LAYOU
     return wrapper
 
 
-def graph_BFS(graph, start):
-    '''Breadth First Search graph with start node.
+def graph_BFS(graph):
+    '''Breadth First Search graph (may be disconnected graph), return a list of connected components.
+        ---
+        Args:
+        - graph: GRAPH represented by adjacent list, [set(1,2,3), set(...), ...]
+    '''
+    # search graph
+    # NOTE: generally a disconnected graph
+    counted_indexes = set() # type: set[int]
+    groups = []
+    for i in range(len(graph)):
+        if i in counted_indexes: continue
+        # connected component starts...
+        indexes = set(graph_BFS_from_node(graph, i))
+        groups.append(indexes)
+        counted_indexes.update(indexes)
+
+    return groups
+
+
+def graph_BFS_from_node(graph, start):
+    '''Breadth First Search connected graph with start node.
         ---
         Args:
         - graph: GRAPH represented by adjacent list, [set(1,2,3), set(...), ...]
         - start: index of any start vertex
     '''
-    search_queue = deque()
-    search_queue.append(start)
+    search_queue = deque()    
     searched = set()
 
+    search_queue.append(start)
     while search_queue:
         cur_node = search_queue.popleft()
-        if cur_node not in searched:
-            yield cur_node
-            searched.add(cur_node)
-            for node in graph[cur_node]:
-                search_queue.append(node)
+        if cur_node in searched: continue
+        yield cur_node
+        searched.add(cur_node)
+        for node in graph[cur_node]:
+            search_queue.append(node)
 
 
 def compare_layput(filename_source, filename_target, filename_output, threshold=0.7):

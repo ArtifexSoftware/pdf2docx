@@ -26,17 +26,59 @@ Paths are created based on DICT data extracted from `pdf2docx.common.pdf` module
 '''
 
 import fitz
-from ..common.Collection import BaseCollection
-from ..common.utils import RGB_component
 from ..common import pdf
+from ..common.Collection import BaseCollection
+from ..common.utils import RGB_component, get_main_bbox
 
+class PathsExtractor:
+    '''Extract paths from PDF.'''
 
-class PathsExtractor(BaseCollection):
-    '''A collection of paths extracted from PDF.'''
+    def __init__(self): self.paths = Paths()
+    
 
-    def parse(self, page:fitz.Page):
+    def extract_paths(self, page:fitz.Page):
+        ''' Convert extracted paths to DICT attributes:
+            - bitmap converted from vector graphics
+            - iso-oriented paths
+            
+            NOTE: the target is to extract horizontal/vertical paths for table parsing, while others
+            are converted to bitmaps.
+        '''
+        # get raw paths
+        self._parse_page(page)
+
+        # group connected paths -> each group is a potential vector graphic
+        paths_list = self.paths.group_by_connectivity()
+
+        # ignore anything covered by vector graphic, so group paths further
+        fun = lambda a,b: get_main_bbox(a.bbox, b.bbox, 0.99)
+        paths_group_list = BaseCollection(paths_list).group(fun)
+
+        iso_paths, pixmaps = [], []
+        for paths_group in paths_group_list:
+            largest = max(paths_group, key=lambda paths: paths.bbox.getArea())
+            image = largest.to_image(page) if largest.contains_curve else None
+
+            # ignore anything behind vector graphic
+            if image:
+                pixmaps.append(image)
+                continue
+
+            # otherwise, add each paths
+            for paths in paths_group:
+                # can't be a table if curve path exists
+                if paths.contains_curve:
+                    image = paths.to_image(page)
+                    if image: pixmaps.append(image)
+                # keep potential table border paths
+                else:
+                    iso_paths.extend(paths.to_iso_paths())
+
+        return pixmaps, iso_paths
+
+    
+    def _parse_page(self, page:fitz.Page):
         '''Extract paths from PDF page.'''
-
         # paths from pdf source
         raw_paths = pdf.paths_from_stream(page)
 
@@ -44,57 +86,50 @@ class PathsExtractor(BaseCollection):
         _ = pdf.paths_from_annotations(page)
         raw_paths.extend(_)
 
-        self._instances = [] # type: list[Path]
-        for raw_path in raw_paths:
-            path = Path(raw_path)
-            self._instances.append(path)
-
-        return self
-
+        # init Paths
+        instances = [Path(raw_path) for raw_path in raw_paths]
+        self.paths.reset(instances)
+    
+    
+class Paths(BaseCollection):
+    '''A collection of paths.'''
+    
     @property
     def bbox(self):
-        bbox = fitz.Rect()
-        for instance in self._instances:
-            bbox = bbox | instance.bbox # NOTE: | support fitz.Rect and rect-like object, e.g. tuple
-        return bbox
-    
-
-    def filter_pixmaps(self, page:fitz.Page):
-        ''' Convert vector graphics built by paths to pixmap.
-            
-            NOTE: the target is to extract horizontal/vertical paths for table parsing, while others
-            are converted to bitmaps.
-        '''
-        # group connected paths -> each group is a potential pixmap
-        # NOTE: use user defined method to detect intersection here, which has a higher performence than 
-        # fitz.Rect().intersects(), especially when the count of instances is large. For instance, it's
-        # about 4:1 with 1000 instances.
-        fun = lambda a,b: a.intersects(b)
-        groups = self.group(fun)
-
-        # Generally, a table region is composed of orthogonal paths, i.e. either horizontal or vertical paths.
-        # Suppose it can't be a table if the count of non-orthogonal paths is larger than NUM=5.
-        orth_instances, pixmaps = [], []
-        NUM = 5 
-        for group in groups:
-            cnt = 0
-            for path in group:
-                if not path.is_orthogonal: cnt += 1
-                if cnt >= NUM: 
-                    # convert to pixmap
-                    pixmaps.append(group.to_image(page))
-                    break
-            
-            # keep potential table border paths
-            else:
-                orth_instances.extend(group.to_paths())
-
-        return pixmaps, orth_instances
+        if not hasattr(self, '_bbox'):
+            bbox = fitz.Rect()
+            for instance in self._instances: bbox = bbox | instance.bbox
+            self._bbox = bbox
+        return self._bbox
 
     
-    def to_image(self, page:fitz.Page):
+    @property
+    def contains_curve(self, num=5):
+        '''Whether any curve paths exist. The criterion is the count of non-iso-oriented paths.'''
+        cnt = 0
+        for path in self._instances:
+            if not path.is_iso_oriented: cnt += 1
+            if cnt >= num: return True        
+        return False
+
+    
+    def append(self, path): self._instances.append(path)
+
+    def reset(self, paths:list=[]): self._instances = paths
+
+    def plot(self, doc:fitz.Document, title:str, width:float, height:float):
+        # insert a new page
+        page = pdf.new_page_with_margin(doc, width, height, None, title)
+        for path in self._instances: path.plot(page)    
+
+    
+    def to_image(self, page:fitz.Page, ratio=0.95):
         '''Convert to image block dict if this is a vector graphic paths.'''
         bbox = self.bbox
+
+        # NOTE: the image size shouldn't exceed a limitation.
+        if bbox.getArea()/page.rect.getArea()>=ratio: return None
+
         image = page.getPixmap(clip=bbox)
         return {
             'type': 1,
@@ -106,29 +141,20 @@ class PathsExtractor(BaseCollection):
         }
     
 
-    def to_paths(self):
-        '''Convert contained paths to orthogonal strokes and rectangular fills.'''
+    def to_iso_paths(self):
+        '''Convert contained paths to iso strokes and rectangular fills.'''
         paths = []
         for path in self._instances:
             if path.stroke:
-                paths.extend(path.to_orthogonal_strokes())
+                paths.extend(path.to_iso_strokes())
             else:
                 paths.append(path.to_rectangular_fill())
 
         return paths
 
 
-    def plot(self, doc:fitz.Document, title:str, width:float, height:float):
-        # insert a new page
-        page = pdf.new_page_with_margin(doc, width, height, None, title)
-        for path in self._instances: path.plot(page)
-
-
-
 class Path:
     '''Path extracted from PDF, either a stroke or filling.'''
-
-    __slots__ = ['points', 'stroke', 'color', 'width', 'bbox']
 
     def __init__(self, raw:dict={}):
         '''Init path in un-rotated page CS.'''
@@ -158,23 +184,13 @@ class Path:
 
         h = self.width / 2.0
         # NOTE: use tuple here has a much higher efficiency than fizt.Rect()
-        bbox = (x0-h, y0-h, x1+h, y1+h) if self.stroke else (x0, y0, x1, y1)
+        bbox = fitz.Rect(x0-h, y0-h, x1+h, y1+h) if self.stroke else fitz.Rect(x0, y0, x1, y1)
         
         return bbox
 
 
-    def intersects(self, path):
-        ''' Check if any intersection exists in two paths. 
-            Has a higner performence than fitz.Rect().intersects()
-        '''
-        x0, y0, x1, y1 = self.bbox
-        u0, v0, u1, v1 = path.bbox
-        no_intersection = u1<x0 or u0>x1 or v1<y0 or v0>y1
-        return not no_intersection
-
-
     @property
-    def is_orthogonal(self):
+    def is_iso_oriented(self):
         '''Whether contains horizontal/vertical path segments only.'''
         for i in range(len(self.points)-1):
             # start point
@@ -187,7 +203,7 @@ class Path:
         return True
 
 
-    def to_orthogonal_strokes(self):
+    def to_iso_strokes(self):
         ''' Convert stroke path to line segments. 
 
             NOTE: Consider horizontal or vertical lines only since such lines contribute to 

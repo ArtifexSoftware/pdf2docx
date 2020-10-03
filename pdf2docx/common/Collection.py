@@ -10,6 +10,7 @@ A group of instances, e.g. instances, Spans, Shapes.
 from .BBox import BBox
 from .base import IText, TextDirection
 from .utils import graph_BFS
+from .rect_intersection import solve_rects_intersection
 
 
 class BaseCollection:
@@ -62,22 +63,40 @@ class BaseCollection:
                     index_groups[i].add(j)
                     index_groups[j].add(i)
 
-        # search graph
-        # NOTE: generally a disconnected graph
-        counted_indexes = set() # type: set[int]
-        groups = []
-        for i in range(num):
-            if i in counted_indexes: continue
-            # connected component starts...
-            indexes = set(graph_BFS(index_groups, i))
-            groups.append([self._instances[x] for x in indexes])
-            counted_indexes = counted_indexes | indexes
-
-        # final grouped instances
-        groups = [self.__class__(group) for group in groups]
-
+        # search graph -> grouped index of instance
+        groups = graph_BFS(index_groups)
+        groups = [self.__class__([self._instances[i] for i in group]) for group in groups]
         return groups
 
+    
+    def group_by_connectivity(self):
+        ''' Collect connected bbox into same group.
+
+            NOTE:
+            - It's equal to a GRAPH traversing problem, which the critical point in building the adjacent
+            list, especially a large number of vertex (paths).
+            - Checking intersections between paths is actually a Rectangle-Intersection problem, studied
+            already in many literatures.
+        '''
+        # build the graph -> adjacent list:
+        # the i-th item is a set of indexes, which connected to the i-th instance
+        num = len(self._instances)
+        index_groups = [set() for _ in range(num)] # type: list[set]
+
+        # solve rectangle intersection problem
+        i_rect_x, i = [], 0
+        for rect in self._instances:
+            points = tuple(rect.bbox)
+            i_rect_x.append((i,   points, points[0]))
+            i_rect_x.append((i+1, points, points[2]))
+            i += 2
+        i_rect_x.sort(key=lambda item: item[-1])
+        solve_rects_intersection(i_rect_x, 2*num, index_groups)
+
+        # search graph -> grouped index of instance
+        groups = graph_BFS(index_groups)
+        groups = [self.__class__([self._instances[i] for i in group]) for group in groups]
+        return groups
 
 
 class Collection(BaseCollection, IText):
