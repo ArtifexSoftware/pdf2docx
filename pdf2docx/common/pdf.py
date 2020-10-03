@@ -573,8 +573,15 @@ def _check_device_cs(page:fitz.Page):
         elif line=='>>':
             break
 
-        # now within cs block, e.g. /Cs6 14 0 R
+        # now within cs block
         cs_name, xref, *_ = line.split()
+
+        # check color space referring to device-dependent color space, e.g. /CSp /DeviceRGB
+        if xref in cs:
+            cs[cs_name] = cs[xref]
+            continue
+
+        # check color space definition array, e.g. /Cs6 14 0 R
         cs[cs_name] = _is_device_cs(int(xref), doc)
 
     return cs
