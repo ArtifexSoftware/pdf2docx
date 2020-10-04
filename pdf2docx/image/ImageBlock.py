@@ -1,26 +1,12 @@
 # -*- coding: utf-8 -*-
 
 '''
-Image block objects based on PDF raw dict extracted with PyMuPDF.
+Definition of Image block objects. 
+
+Note the raw image block will be merged into text block: Text > Line > Span.
 
 @created: 2020-07-22
 @author: train8808@gmail.com
----
-https://pymupdf.readthedocs.io/en/latest/textpage.html
-
-    {
-        'type': 1,
-        'bbox': (x0,y0,x1,y1),
-        'ext': 'png',
-        'width': w,
-        'height': h,
-        'image': b'',
-        'colorspace': n,
-        'xref': xref, 'yref': yref, 'bpc': bpc
-    }
-
-Note: the raw image block will be merged into text block: Text > Line > Span.
-
 '''
 
 from docx.shared import Pt
@@ -42,24 +28,6 @@ class ImageBlock(Image, Block): # to get Image.plot() in first priority
         self.set_image_block()
 
 
-    def store(self):
-        res = super().store()
-        res.update(
-            super().store_image()
-        )
-        return res
-
-
-    def plot(self, page):
-        '''Plot image bbox with diagonal lines.
-            ---
-            Args: 
-              - page: fitz.Page object
-        '''
-        color = utils.RGB_component_from_name('blue')
-        super().plot(page, color)
-
-
     def to_text_block(self):
         '''convert image block to text block: a span'''
         # image span
@@ -77,36 +45,21 @@ class ImageBlock(Image, Block): # to get Image.plot() in first priority
         block.set_text_block()
 
         return block
-        
-
-    def parse_text_format(self, rects):
-        '''parse text format with style represented by rectangles. Not necessary for image block.'''
-        return False
 
 
-    def make_docx(self, p, X0:float):
-        ''' Create paragraph for an image block.
+    def store(self):
+        res = super().store()
+        res.update(
+            super().store_image()
+        )
+        return res
+
+
+    def plot(self, page):
+        '''Plot image bbox with diagonal lines.
             ---
-            Args:
-              - p: docx paragraph instance
-              - X0: left border of the paragraph
+            Args: 
+              - page: fitz.Page object
         '''
-        # indent and space setting
-        before_spacing = max(round(self.before_space, 1), 0.0)
-        after_spacing = max(round(self.after_space, 1), 0.0)
-        pf = docx.reset_paragraph_format(p)
-        pf.space_before = Pt(before_spacing)
-        pf.space_after = Pt(after_spacing)
-        
-        # restore default tabs
-        pf.tab_stops.clear_all()
-
-        # left indent implemented with tab
-        pos = round(self.bbox.x0-X0, 2)
-        pf.tab_stops.add_tab_stop(Pt(pos))
-        docx.add_stop(p, Pt(pos), Pt(0.0))
-
-        # create image
-        docx.add_image(p, self.image, self.bbox.x1-self.bbox.x0)
-
-        return p
+        color = utils.RGB_component_from_name('blue')
+        super().plot(page, color)

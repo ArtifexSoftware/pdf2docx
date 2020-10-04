@@ -10,6 +10,7 @@ from docx import Document
 
 from .layout.Layout import Layout
 from .shape.Path import PathsExtractor
+from .image.Image import ImagesExtractor
 
 
 
@@ -135,17 +136,38 @@ class Converter:
 
     def initialize(self, page:fitz.Page):
         '''Initialize layout object.'''
+        # -----------------------------------------
         # Layout object based on raw dict
+        # -----------------------------------------
         # NOTE: all these coordinates are relative to un-rotated page
         # https://pymupdf.readthedocs.io/en/latest/page.html#modifying-pages
         raw_layout = page.getText('rawdict')
 
+        # -----------------------------------------
+        # page size
+        # -----------------------------------------
         # though 'width', 'height' are contained in `raw_dict`, they are based on un-rotated page.
         # so, update page width/height to right direction in case page is rotated
         *_, w, h = page.rect # always reflecting page rotation
         raw_layout.update({ 'width' : w, 'height': h })
 
-        # pdf paths and converted images
+        # -----------------------------------------
+        # page images
+        # -----------------------------------------
+        # image bytes from page.getText('rawdict') can't reproduce transparent images,
+        # so we re-extract page images
+        for block in raw_layout['blocks']:
+            # disable image in raw dict
+            if block['type']==1: block['type'] = -1
+        
+        # extract and recover images
+        images = ImagesExtractor().extract_images(page)        
+        raw_layout['blocks'].extend(images)
+
+        # -----------------------------------------
+        # page paths
+        # -----------------------------------------
+        # convert vector graphic paths to pixmap
         self._paths_extractor = PathsExtractor()
         images, paths = self._paths_extractor.extract_paths(page)
         raw_layout['blocks'].extend(images)

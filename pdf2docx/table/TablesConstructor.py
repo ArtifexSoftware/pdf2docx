@@ -32,8 +32,7 @@ class TablesConstructor(TableStructure):
     def lattice_tables(self):
         '''Parse table with explicit borders/shadings represented by rectangle shapes.'''
         # group stroke shapes: each group may be a potential table
-        fun = lambda a,b: a.bbox & (b.bbox+DR) # NOTE: considering margin
-        groups = self._shapes.strokes.group(fun)
+        groups = self._shapes.strokes.group_by_connectivity(dx=0.5, dy=0.5)
 
         # all filling shapes
         shadings = self._shapes.fillings
@@ -185,8 +184,8 @@ class TablesConstructor(TableStructure):
     def _remove_floating_tables(tables:Blocks):
         '''Delete table has intersection with previously parsed tables.'''
         unique_tables = []
-        fun = lambda a,b: a.bbox & b.bbox
-        for group in tables.group(fun):
+        groups = tables.group_by_connectivity(dx=0.5, dy=0.5)
+        for group in groups:
             # single table
             if len(group)==1: table = group[0]
             

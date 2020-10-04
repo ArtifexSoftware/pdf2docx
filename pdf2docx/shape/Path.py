@@ -123,21 +123,31 @@ class Paths(BaseCollection):
         for path in self._instances: path.plot(page)    
 
     
-    def to_image(self, page:fitz.Page, ratio=0.95):
-        '''Convert to image block dict if this is a vector graphic paths.'''
+    def to_image(self, page:fitz.Page, zoom:float=3.0, ratio:float=0.95):
+        '''Convert to image block dict.
+            ---
+            Args:
+            - page: current pdf page
+            - zoom: zoom in factor to improve resolution in x- abd y- direction
+            - ratio: don't convert to image if the size of image exceeds this value,
+            since we don't prefer converting the whole page to an image.
+        '''
         bbox = self.bbox
 
         # NOTE: the image size shouldn't exceed a limitation.
         if bbox.getArea()/page.rect.getArea()>=ratio: return None
 
-        image = page.getPixmap(clip=bbox)
+        # improve resolution
+        # - https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-increase-image-resolution
+        # - https://github.com/pymupdf/PyMuPDF/issues/181        
+        image = page.getPixmap(clip=bbox, matrix=fitz.Matrix(zoom, zoom))
         return {
             'type': 1,
             'bbox': tuple(bbox),
             'ext': 'png',
-            'width': bbox.width,
-            'height': bbox.height,
-            'image': image.getImageData(output="png")
+            'width': bbox.width*zoom,
+            'height': bbox.height*zoom,
+            'image': image.getPNGData()
         }
     
 

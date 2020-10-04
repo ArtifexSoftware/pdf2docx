@@ -168,8 +168,12 @@ class MainTest(TestUtility):
         self.init_test('demo-image').verify_layout(threshold=0.95)
 
     def test_vector_graphic(self):
-        '''sample file focusing on inline-image.'''
+        '''sample file focusing on vector graphic.'''
         self.init_test('demo-image-vector-graphic').verify_layout(threshold=0.95)
+
+    def test_image_cmyk(self):
+        '''sample file focusing on image in CMYK color-space.'''
+        self.init_test('demo-image-cmyk').verify_layout(threshold=0.95)
 
     def test_table_bottom(self):
         '''sample file focusing on page break due to table at the end of page.'''

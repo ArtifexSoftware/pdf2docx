@@ -13,12 +13,8 @@ from .Image import Image
 
 class ImageSpan(Image):
     '''Image span.'''
-    def __init__(self, raw:dict={}):
-        super().__init__(raw)
 
-
-    def store(self):
-        return super().store_image()
+    def store(self): return super().store_image()
 
 
     def intersects(self, rect):
@@ -32,8 +28,7 @@ class ImageSpan(Image):
             return self.copy()
         
         # otherwise, ignore image
-        else:
-            return ImageSpan()
+        return ImageSpan()
 
 
     def make_docx(self, paragraph):
