@@ -1,13 +1,67 @@
 # -*- coding: utf-8 -*-
 
 '''
-Image object.
-'''
+Extract images from PDF and define the Image object.
 
+Image properties could be extracted with PyMuPDF method `page.getText('rawdict')`:
+
+```
+# data structure defined in link: 
+# https://pymupdf.readthedocs.io/en/latest/textpage.html
+
+{
+    'type': 1,
+    'bbox': (x0,y0,x1,y1),
+    'ext': 'png',
+    'width': w,
+    'height': h,
+    'image': b'',
+
+    # --- discard properties ---
+    'colorspace': n,
+    'xref': xref, 'yref': yref, 'bpc': bpc
+}
+```
+
+But, the extracted image bytes may be different from the source images in PDF, especially
+png images with alpha channel. So, images are extracted separately, and stored in a similar
+structure.
+'''
 
 import base64
 import fitz
 from ..common.BBox import BBox
+from ..common.pdf import recover_pixmap
+from ..common.base import BlockType
+
+
+class ImagesExtractor:
+    '''Extract images from PDF.'''
+    
+    @staticmethod
+    def extract_images(page:fitz.Page):
+        '''Get images from current page.'''
+        # pdf document
+        doc = page.parent
+
+        # check each image item:
+        # (xref, smask, width, height, bpc, colorspace, ...)
+        images = []
+        for item in page.getImageList(full=True): 
+            w, h = item[2:4]
+            bbox = page.getImageBbox(item[7]) # item[7]: name entry of such an item
+            pix = recover_pixmap(doc, item)
+
+            # create an image block with a similar structure with `page.getText('rawdict')`
+            images.append({
+                'type': BlockType.IMAGE.value,
+                'bbox': tuple(bbox),
+                'ext': 'png',
+                'width': w,
+                'height': h,
+                'image': pix.getPNGData()
+            })
+        return images
 
 
 class Image(BBox):
@@ -22,27 +76,13 @@ class Image(BBox):
         # - image bytes passed from PyMuPDF -> use it directly
         # - base64 encoded string restored from json file -> encode to bytes and decode with base64 -> image bytes 
         image = raw.get('image', b'')
-        self._image = image if isinstance(image, bytes) else base64.b64decode(image.encode())
+        self.image = image if isinstance(image, bytes) else base64.b64decode(image.encode())
 
 
     @property
     def text(self):
         '''Return an image placeholder: "<image>".'''
         return '<image>'
-
-    @property
-    def image(self):
-        '''Get the image bytes converted by PyMuPDF.
-
-            The image bytes are existed already in the raw dict, but there is risk facing
-            `docx.image.exceptions.UnrecognizedImageError` when recreate image with python-docx.
-            As explained in link below:
-
-            https://stackoverflow.com/questions/56405003/unrecognizedimageerror-image-insertion-error-python-docx
-
-            The solution is to convert to bitmap with PyMuPDF in advance.
-        '''
-        return fitz.Pixmap(self._image).getImageData(output="png") # convert to png image
 
 
     def from_image(self, image):
@@ -54,7 +94,7 @@ class Image(BBox):
         self.ext = image.ext
         self.width = image.width
         self.height = image.height
-        self._image = image._image
+        self.image = image.image
         self.update(image.bbox)
         return self
 
@@ -68,7 +108,7 @@ class Image(BBox):
             'ext': self.ext,
             'width': self.width,
             'height': self.height,
-            'image': base64.b64encode(self._image).decode() # serialize image with base64
+            'image': base64.b64encode(self.image).decode() # serialize image with base64
         })
 
         return res

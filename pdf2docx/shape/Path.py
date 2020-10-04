@@ -138,15 +138,16 @@ class Paths(BaseCollection):
         if bbox.getArea()/page.rect.getArea()>=ratio: return None
 
         # improve resolution
-        # https://github.com/pymupdf/PyMuPDF/issues/181        
+        # - https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-increase-image-resolution
+        # - https://github.com/pymupdf/PyMuPDF/issues/181        
         image = page.getPixmap(clip=bbox, matrix=fitz.Matrix(zoom, zoom))
         return {
             'type': 1,
             'bbox': tuple(bbox),
             'ext': 'png',
-            'width': bbox.width,
-            'height': bbox.height,
-            'image': image.getImageData(output="png")
+            'width': bbox.width*zoom,
+            'height': bbox.height*zoom,
+            'image': image.getPNGData()
         }
     
 

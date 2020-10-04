@@ -61,6 +61,44 @@ def new_page_with_margin(doc, width:float, height:float, margin:tuple, title:str
     return page
 
 
+def recover_pixmap(doc:fitz.Document, item:list):
+    '''Restore pixmap with soft mask considered.
+        ---
+        - doc: fitz document
+        - item: an image item got from page.getImageList()
+
+        Read more:
+        - https://pymupdf.readthedocs.io/en/latest/document.html#Document.getPageImageList        
+        - https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-handle-stencil-masks
+        - https://github.com/pymupdf/PyMuPDF/issues/670
+    '''
+    # data structure of `item`:
+    # (xref, smask, width, height, bpc, colorspace, ...)
+    x = item[0]  # xref of PDF image
+    s = item[1]  # xref of its /SMask
+
+    # base image
+    pix = fitz.Pixmap(doc, x)
+
+    # reconstruct the alpha channel with the smask if exists
+    if s > 0:        
+        # copy of base image, with an alpha channel added
+        pix = fitz.Pixmap(pix, 1)  
+        
+        # create pixmap of the /SMask entry
+        ba = bytearray(fitz.Pixmap(doc, s).samples)
+        for i in range(len(ba)):
+            if ba[i] > 0: ba[i] = 255
+        pix.setAlpha(ba)
+
+    # we may need to adjust something for CMYK pixmaps here -> 
+    # recreate pixmap in RGB color space if necessary
+    if pix.colorspace and not pix.colorspace.name in (fitz.csGRAY.name, fitz.csRGB.name):
+        pix = fitz.Pixmap(fitz.csRGB, pix)
+
+    return pix
+
+
 def paths_from_annotations(page:fitz.Page):
     ''' Get shapes, e.g. Line, Square, Highlight, from annotations(comment shapes) in PDF page.
         ---
