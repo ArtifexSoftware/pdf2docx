@@ -69,8 +69,11 @@ class BaseCollection:
         return groups
 
     
-    def group_by_connectivity(self):
+    def group_by_connectivity(self, dx:float=0.5, dy:float=0.5):
         ''' Collect connected bbox into same group.
+            ---
+            Args:
+            - dx, dy: x- and y- tolerances to define connectivity
 
             NOTE:
             - It's equal to a GRAPH traversing problem, which the critical point in building the adjacent
@@ -85,8 +88,9 @@ class BaseCollection:
 
         # solve rectangle intersection problem
         i_rect_x, i = [], 0
+        d_rect = (-dx, -dy, dx, dy)
         for rect in self._instances:
-            points = tuple(rect.bbox)
+            points = [a+b for a,b in zip(rect.bbox, d_rect)] # consider tolerance
             i_rect_x.append((i,   points, points[0]))
             i_rect_x.append((i+1, points, points[2]))
             i += 2
