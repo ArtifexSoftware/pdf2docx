@@ -29,7 +29,7 @@ Consider horizontal and vertical borders only.
 from ..shape.Shapes import Shapes
 from ..shape.Shape import Stroke
 from ..common.utils import RGB_value
-from ..common.constants import HIDDEN_W_BORDER
+from ..common.constants import HIDDEN_W_BORDER, DM
 from ..common.base import RectType
 
 
@@ -59,7 +59,8 @@ class Border:
     
     def is_valid(self, x:float):
         '''Whether the given position `x` locates in the valid border range.'''
-        return self.LRange < x < self.URange
+        # consider margin here, but pay attention to underline which may be counted
+        return (self.LRange-DM) <= x <= (self.URange+DM) 
     
     def set_border_range(self, border_range):
         '''Set border valid ranges.'''
@@ -125,11 +126,13 @@ class HBorder(Border):
         x0, x1 = stroke.x0, stroke.x1
         y = stroke.y0 # equal to stroke.y1
 
+        # skip if 
+
         # skip if no intersection in y-direction
         if self.finalized or not self.is_valid(y): return self
 
-        # skip if no intersection in x-ditrection
-        if x1 <= self._LBorder.LRange or x0 >= self._UBorder.URange: return self
+        # skip if not span in x-ditrection
+        if x0 > self._LBorder.URange and x1 < self._UBorder.LRange: return self
 
         # now, it can be used to finalize current border
         self.finalize(y)
@@ -178,11 +181,11 @@ class VBorder(Border):
         y0, y1 = stroke.y0, stroke.y1
         x = stroke.x0 # or stroke.x1
 
-        # skip if no intersection in y-direction
+        # skip if no intersection in x-direction
         if self.finalized or not self.is_valid(x): return self
 
         # skip if no intersection in x-ditrection
-        if y1 <= self._LBorder.LRange or y0 >= self._UBorder.URange: return self
+        if y0 > self._LBorder.URange and y1 < self._UBorder.LRange: return self
 
         # now, it can be used to finalize current border
         self.finalize(x)
@@ -231,37 +234,60 @@ class Borders:
     @property
     def VBorders(self): return self._VBorders
 
-    def finalize(self, strokes:Shapes):
-        ''' Finalize the position of all borders: to align h-borders or v-borders as more as possible,
-            so to simplify the table structure.
+    def finalize(self, strokes:Shapes, fills:Shapes):
+        ''' Finalize the position of all borders:
+            - follow explicit stroke/border
+            - follow explicit fill/shading
+            - align h-borders or v-borders as more as possible to simplify the table structure.
             ---
             Args:
-            - strokes: a group of explicit border strokes. Stream table borders should follow these borders.
+            - strokes: a group of explicit border strokes.
+            - fills: a group of explicit cell shadings.
         '''
-        # process h- and v- strokes respectively
+        # finalize borders by explicit strokes in first priority
         h_strokes = list(filter(
             lambda stroke: stroke.horizontal, strokes))
+        v_strokes = list(filter(
+            lambda stroke: stroke.vertical, strokes))
+        self._finalize_by_strokes(h_strokes, v_strokes)
+
+        # finalize borders by explicit fillings in second priority
+        h_strokes, v_strokes = [], []
+        for fill in fills:
+            x0, y0, x1, y1 = fill.bbox
+            h_strokes.extend([
+                Stroke().update((x0, y0, x1, y0)),
+                Stroke().update((x0, y1, x1, y1))
+            ])
+            v_strokes.extend([
+                Stroke().update((x0, y0, x0, y1)),
+                Stroke().update((x1, y0, x1, y1))
+            ])
+        self._finalize_by_strokes(h_strokes, v_strokes)
+
+        # finalize borders by their layout finally
+        # un-finalized h-borders
+        borders = list(filter(lambda border: not border.finalized, self._HBorders))
+        self._finalize_by_layout(borders)
+
+        # un-finalized v-borders
+        borders = list(filter(lambda border: not border.finalized, self._VBorders))
+        self._finalize_by_layout(borders)
+
+    
+    def _finalize_by_strokes(self, h_strokes:list, v_strokes:list):
+        '''Finalize by explicit strokes.'''
         for stroke in h_strokes:
             for border in self._HBorders:            
                 border.finalize_by_stroke(stroke)
 
-        v_strokes = list(filter(
-            lambda stroke: stroke.vertical, strokes))
         for stroke in v_strokes:
             for border in self._VBorders:            
                 border.finalize_by_stroke(stroke)
 
-        # process un-finalized h-borders further
-        borders = list(filter(lambda border: not border.finalized, self._HBorders))
-        self._finalize_borders(borders)
-
-        # process un-finalized v-borders further
-        borders = list(filter(lambda border: not border.finalized, self._VBorders))
-        self._finalize_borders(borders)
-
 
     @staticmethod
-    def _finalize_borders(borders:list):
+    def _finalize_by_layout(borders:list):
         ''' Finalize the position of all borders: align borders as more as possible to simplify the table structure.
             ---
             Args:

@@ -149,8 +149,12 @@ class TextBlock(Block):
             next_line = self.lines[i+1]
 
             if line.horizontally_align_with(next_line):
+                # if two lines are intersected each other, it's of no use to detect table cells
+                if line.bbox & next_line.bbox:
+                    continue
+
                 # horizontally aligned but not in a same row -> discrete block
-                if not line.in_same_row(next_line): return True
+                elif not line.in_same_row(next_line): return True
                 
                 # otherwise, check the distance only
                 elif abs(line.bbox.x1-next_line.bbox.x0) > distance:

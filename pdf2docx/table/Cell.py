@@ -190,19 +190,21 @@ class Cell(BBox):
         # ---------------------
         # NOTE: border width is specified in eighths of a point, with a minimum value of 
         # two (1/4 of a point) and a maximum value of 96 (twelve points)
-        if self.border_width and sum(self.border_width)>0.0:
-            keys = ('top', 'end', 'bottom', 'start')
-            kwargs = {}
-            for k, w, c in zip(keys, self.border_width, self.border_color):
-                hex_c = f'#{hex(c)[2:].zfill(6)}'
-                kwargs[k] = {
-                    'sz': 8*w, 'val': 'single', 'color': hex_c.upper()
-                }
-            # merged cells are assumed to have same borders with the main cell        
-            for m in range(i, i+n_row):
-                for n in range(j, j+n_col):
-                    docx.set_cell_border(table.cell(m, n), **kwargs)
-        
+        keys = ('top', 'end', 'bottom', 'start')
+        kwargs = {}
+        for k, w, c in zip(keys, self.border_width, self.border_color):
+            # skip if width=0 -> will not show in docx
+            if not w: continue
+
+            hex_c = f'#{hex(c)[2:].zfill(6)}'
+            kwargs[k] = {
+                'sz': 8*w, 'val': 'single', 'color': hex_c.upper()
+            }
+
+        # merged cells are assumed to have same borders with the main cell        
+        for m in range(i, i+n_row):
+            for n in range(j, j+n_col):
+                docx.set_cell_border(table.cell(m, n), **kwargs)        
 
         # ---------------------
         # cell bg-color

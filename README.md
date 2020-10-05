@@ -9,22 +9,27 @@
 
 ## Features
 
-- [x] Parse and re-create text format
-	- [x] font style, e.g. font name, size, weight, italic and color
-    - [x] highlight, underline, strike-through converted from docx or PDF annotations
-    - [x] text alignment, e.g. left/right/center/adjust
-- [ ] Parse and re-create list style
+- [x] Parse and re-create paragraph
+    - [x] text in horizontal direction: from left to right
+    - [x] text in vertical direction: from bottom to top
+    - [x] font style, e.g. font name, size, weight, italic and color
+    - [x] text format, e.g. highlight, underline, strike-through
+    - [x] text alignment, e.g. left/right/center/justify
+    - [ ] list style
+    - [x] paragraph layout: horizontal alignment and vertical spacing
+
+- [x] Parse and re-create image
+	- [x] in-line image
+    - [x] image in Gray/RGB/CMYK mode
+    - [x] transparent image
+
 - [x] Parse and re-create table
     - [x] border style, e.g. width, color
     - [x] shading style, i.e. background color
     - [x] merged cells
     - [x] vertical direction cell
-    - [x] table with partly hidden borders
-- [x] Rebuild page layout in docx
-	- [x] text in horizontal direction: from left to right
-	- [x] text in vertical direction: from bottom to top
-	- [x] in-line image
-    - [x] paragraph layout: horizontal alignment and vertical spacing
+    - [x] table with partly hidden borders    
+
 - [x] Parsing pages with multi-processing
 
 *It can also be used as a tool to extract table contents since both table content and format/style is parsed.*

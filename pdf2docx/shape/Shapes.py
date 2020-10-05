@@ -118,7 +118,7 @@ class Shapes(Collection):
             - bbox: fitz.Rect
         '''
         instances = list(filter(
-            lambda shape: shape.bbox & bbox, self._instances)) # use intersection as torrence
+            lambda shape: shape.bbox & bbox, self._instances))
         return Shapes(instances)
 
 
