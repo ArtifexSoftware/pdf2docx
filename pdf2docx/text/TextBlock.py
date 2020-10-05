@@ -89,11 +89,6 @@ class TextBlock(Block):
         self.lines.append(line)
 
 
-    def join(self):
-        '''Merge contained lines horizontally.'''
-        self.lines.merge()
-
-
     def split(self):
         ''' Split contained lines vertically and create associated text blocks.'''
         blocks = [] # type: list[TextBlock]

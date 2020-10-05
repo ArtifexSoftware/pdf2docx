@@ -173,6 +173,11 @@ class Collection(BaseCollection, IText):
         self._instances.insert(nth, bbox)
         self._update(bbox)
 
+    
+    def pop(self, nth:int):
+        '''Insert a BBox and update parent's bbox accordingly.'''
+        return self._instances.pop(nth)
+
 
     def sort_in_reading_order(self):
         '''Sort collection instances in reading order (considering text direction), e.g.
