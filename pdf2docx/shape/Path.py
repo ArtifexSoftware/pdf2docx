@@ -29,6 +29,7 @@ import fitz
 from ..common import pdf
 from ..common.Collection import BaseCollection
 from ..common.utils import RGB_component, get_main_bbox
+from ..image.Image import ImagesExtractor
 
 class PathsExtractor:
     '''Extract paths from PDF.'''
@@ -101,7 +102,6 @@ class Paths(BaseCollection):
             for instance in self._instances: bbox = bbox | instance.bbox
             self._bbox = bbox
         return self._bbox
-
     
     @property
     def contains_curve(self, num=5):
@@ -111,13 +111,13 @@ class Paths(BaseCollection):
             if not path.is_iso_oriented: cnt += 1
             if cnt >= num: return True        
         return False
-
     
     def append(self, path): self._instances.append(path)
 
     def reset(self, paths:list=[]): self._instances = paths
 
     def plot(self, doc:fitz.Document, title:str, width:float, height:float):
+        if not self._instances: return
         # insert a new page
         page = pdf.new_page_with_margin(doc, width, height, None, title)
         for path in self._instances: path.plot(page)    
@@ -136,19 +136,8 @@ class Paths(BaseCollection):
 
         # NOTE: the image size shouldn't exceed a limitation.
         if bbox.getArea()/page.rect.getArea()>=ratio: return None
-
-        # improve resolution
-        # - https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-increase-image-resolution
-        # - https://github.com/pymupdf/PyMuPDF/issues/181        
-        image = page.getPixmap(clip=bbox, matrix=fitz.Matrix(zoom, zoom))
-        return {
-            'type': 1,
-            'bbox': tuple(bbox),
-            'ext': 'png',
-            'width': bbox.width*zoom,
-            'height': bbox.height*zoom,
-            'image': image.getPNGData()
-        }
+        
+        return ImagesExtractor.clip_page(page, bbox, zoom)
     
 
     def to_iso_paths(self):

@@ -9,13 +9,10 @@ Note the raw image block will be merged into text block: Text > Line > Span.
 @author: train8808@gmail.com
 '''
 
-from docx.shared import Pt
 from ..text.Line import Line
 from ..text.TextBlock import TextBlock
 from .Image import Image
 from .ImageSpan import ImageSpan
-from ..common import utils
-from ..common import docx
 from ..common.Block import Block
 
 
@@ -53,13 +50,3 @@ class ImageBlock(Image, Block): # to get Image.plot() in first priority
             super().store_image()
         )
         return res
-
-
-    def plot(self, page):
-        '''Plot image bbox with diagonal lines.
-            ---
-            Args: 
-              - page: fitz.Page object
-        '''
-        color = utils.RGB_component_from_name('blue')
-        super().plot(page, color)

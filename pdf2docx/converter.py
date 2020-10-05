@@ -161,7 +161,7 @@ class Converter:
             if block['type']==1: block['type'] = -1
         
         # extract and recover images
-        images = ImagesExtractor().extract_images(page)        
+        images = ImagesExtractor.extract_images(page)        
         raw_layout['blocks'].extend(images)
 
         # -----------------------------------------
