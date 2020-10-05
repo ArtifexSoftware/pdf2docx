@@ -127,7 +127,7 @@ class TablesConstructor(TableStructure):
             Since no cell borders exist in this case, there may be various probabilities of table structures. 
             Among which, we use the simplest one, i.e. 1-row and n-column, to make the docx look like pdf.
         '''
-        if len(self._blocks)<=1: return []      
+        if not self._blocks: return []
 
         # potential bboxes
         tables_lines = self._blocks.collect_stream_lines()

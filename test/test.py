@@ -175,6 +175,10 @@ class MainTest(TestUtility):
         '''sample file focusing on image in CMYK color-space.'''
         self.init_test('demo-image-cmyk').verify_layout(threshold=0.95)
 
+    def test_image_transparent(self):
+        '''sample file focusing on transparent images.'''
+        self.init_test('demo-image-transparent').verify_layout(threshold=0.95)
+
     def test_table_bottom(self):
         '''sample file focusing on page break due to table at the end of page.'''
         self.init_test('demo-table-bottom').verify_layout(threshold=0.95)
