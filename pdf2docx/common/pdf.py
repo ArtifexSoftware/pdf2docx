@@ -316,7 +316,7 @@ def paths_from_stream(page:fitz.Page):
     Wcf = Acf[0]
 
     # Stroke width
-    Ad = [0.0]
+    Ad = [1.0] # w=1.0 by default
     Wd = Ad[0]
 
     # collecting paths: each path is a list of points
