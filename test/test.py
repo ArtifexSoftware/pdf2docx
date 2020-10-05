@@ -163,6 +163,10 @@ class MainTest(TestUtility):
         '''sample file focusing on text format, e.g. highlight, underline, strike-through.'''
         self.init_test('demo-text').verify_layout(threshold=0.95)
 
+    def test_text_alignment(self):
+        '''sample file focusing on text alignment.'''
+        self.init_test('demo-text-alignment').verify_layout(threshold=0.95)
+
     def test_image(self):
         '''sample file focusing on inline-image.'''
         self.init_test('demo-image').verify_layout(threshold=0.95)
