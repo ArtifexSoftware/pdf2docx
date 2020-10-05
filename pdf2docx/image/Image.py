@@ -37,9 +37,30 @@ from ..common.base import BlockType
 
 class ImagesExtractor:
     '''Extract images from PDF.'''
-    
-    @staticmethod
-    def extract_images(page:fitz.Page):
+
+    @classmethod
+    def to_raw_dict(cls, image:fitz.Pixmap, bbox:fitz.Rect):
+        '''Store Pixmap to raw dict.'''
+        return {
+            'type': BlockType.IMAGE.value,
+            'bbox': tuple(bbox),
+            'ext': 'png',
+            'width': image.width,
+            'height': image.height,
+            'image': image.getPNGData()
+        }
+
+    @classmethod
+    def clip_page(cls, page:fitz.Page, bbox:fitz.Rect, zoom:float=3.0):
+        '''Clip pixmap according to bbox from page.'''
+        # improve resolution
+        # - https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-increase-image-resolution
+        # - https://github.com/pymupdf/PyMuPDF/issues/181        
+        image = page.getPixmap(clip=bbox, matrix=fitz.Matrix(zoom, zoom)) # type: fitz.Pixmap
+        return cls.to_raw_dict(image, bbox)
+
+    @classmethod
+    def extract_images(cls, page:fitz.Page):
         '''Get images from current page.'''
         # pdf document
         doc = page.parent
@@ -47,25 +68,25 @@ class ImagesExtractor:
         # check each image item:
         # (xref, smask, width, height, bpc, colorspace, ...)
         images = []
-        for item in page.getImageList(full=True): 
-            w, h = item[2:4]
-            bbox = page.getImageBbox(item[7]) # item[7]: name entry of such an item
+        for item in page.getImageList(full=True):
             pix = recover_pixmap(doc, item)
+            bbox = page.getImageBbox(item[7]) # item[7]: name entry of such an item
 
-            # create an image block with a similar structure with `page.getText('rawdict')`
-            images.append({
-                'type': BlockType.IMAGE.value,
-                'bbox': tuple(bbox),
-                'ext': 'png',
-                'width': w,
-                'height': h,
-                'image': pix.getPNGData()
-            })
+            # regarding images consist of alpha values only, i.e. colorspace is None,
+            # the turquoise color shown in the PDF is not part of the image, but part of PDF background.
+            # So, just to clip page pixmap according to the right bbox
+            # https://github.com/pymupdf/PyMuPDF/issues/677
+            if not pix.colorspace:
+                raw_dict = cls.clip_page(page, bbox, zoom=3.0)
+            else:
+                raw_dict = cls.to_raw_dict(pix, bbox)
+            images.append(raw_dict)
         return images
 
 
 class Image(BBox):
     '''Base image object.'''
+
     def __init__(self, raw:dict={}):
         super().__init__(raw)
         self.ext = raw.get('ext', 'png')

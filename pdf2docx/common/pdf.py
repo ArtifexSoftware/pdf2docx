@@ -93,6 +93,7 @@ def recover_pixmap(doc:fitz.Document, item:list):
 
     # we may need to adjust something for CMYK pixmaps here -> 
     # recreate pixmap in RGB color space if necessary
+    # NOTE: pix.colorspace may be None for images with alpha channel values only
     if pix.colorspace and not pix.colorspace.name in (fitz.csGRAY.name, fitz.csRGB.name):
         pix = fitz.Pixmap(fitz.csRGB, pix)
 

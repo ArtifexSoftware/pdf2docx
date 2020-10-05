@@ -29,6 +29,7 @@ import fitz
 from ..common import pdf
 from ..common.Collection import BaseCollection
 from ..common.utils import RGB_component, get_main_bbox
+from ..image.Image import ImagesExtractor
 
 class PathsExtractor:
     '''Extract paths from PDF.'''
@@ -135,19 +136,8 @@ class Paths(BaseCollection):
 
         # NOTE: the image size shouldn't exceed a limitation.
         if bbox.getArea()/page.rect.getArea()>=ratio: return None
-
-        # improve resolution
-        # - https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-increase-image-resolution
-        # - https://github.com/pymupdf/PyMuPDF/issues/181        
-        image = page.getPixmap(clip=bbox, matrix=fitz.Matrix(zoom, zoom))
-        return {
-            'type': 1,
-            'bbox': tuple(bbox),
-            'ext': 'png',
-            'width': bbox.width*zoom,
-            'height': bbox.height*zoom,
-            'image': image.getPNGData()
-        }
+        
+        return ImagesExtractor.clip_page(page, bbox, zoom)
     
 
     def to_iso_paths(self):
