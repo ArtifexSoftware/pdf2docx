@@ -156,7 +156,7 @@ class TableStructure:
 
 
     @staticmethod
-    def stream_borders(lines:Lines, outer_borders:tuple, showing_borders:Shapes):
+    def stream_borders(lines:Lines, outer_borders:tuple, showing_borders:Shapes, showing_shadings:Shapes):
         ''' Parsing borders mainly based on content lines contained in cells, and update borders 
             (position and style) with explicit borders represented by rectangle shapes.
             ---
@@ -164,6 +164,7 @@ class TableStructure:
             - lines: Lines, contained in table cells
             - outer_borders: (top, bottom, left, right), boundary borders of table
             - showing_borders: showing borders in a stream table; can be empty.
+            - showing_shadings: showing shadings in a stream table; can be empty.
         '''
         borders = Borders()
 
@@ -175,7 +176,7 @@ class TableStructure:
         borders.extend(inner_borders)
         
         # finalize borders
-        borders.finalize(showing_borders)
+        borders.finalize(showing_borders, showing_shadings)
 
         # all centerlines to rectangle shapes
         res = Shapes()

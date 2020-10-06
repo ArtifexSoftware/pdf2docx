@@ -65,11 +65,11 @@ class TablesConstructor(TableStructure):
         '''
         x0, _, x1, _ = self._blocks.parent.bbox
 
-        # stream tables determined by outer borders
-        tables = self.stream_tables_from_outer_borders()
+        # first priority: stream tables from block layout
+        tables = self.stream_tables_from_layout(x0, x1)
 
-        # stream tables from layout
-        tables_ = self.stream_tables_from_layout(x0, x1)
+        # then check those missing from layout, but determined by outer borders
+        tables_ = self.stream_tables_from_outer_borders()
         tables.extend(tables_)
 
         # set type: stream table
@@ -264,13 +264,13 @@ class TablesConstructor(TableStructure):
         # NOTE: not yet processed rects only
         explicit_strokes = list(filter(
             lambda shape: shape.bbox & bbox.bbox and shape.type==RectType.UNDEFINED, self._shapes.strokes))
-        
-        # parse stream borders based on contents in cell and explicit borders
-        strokes = self.stream_borders(table_lines, outer_borders, Shapes(explicit_strokes))
-        if not strokes: return None
 
         # potential shadings in this table region
         shadings = self._shapes.fillings.contained_in_bbox(bbox.bbox)
+
+        # parse stream borders based on contents in cell and explicit borders
+        strokes = self.stream_borders(table_lines, outer_borders, Shapes(explicit_strokes), shadings)
+        if not strokes: return None
 
         # parse table
         strokes.sort_in_reading_order() # required

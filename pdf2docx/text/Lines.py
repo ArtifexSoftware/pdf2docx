@@ -50,21 +50,16 @@ class Lines(Collection):
         return spans
 
 
-    def intersects(self, line:Line):
-        ''' Whether intersection exists between any line and given line.'''
+    def intersects(self, line:Line, threshold:float):
+        ''' Get the index of intersected line. Return -1 if no intersection.'''
         is_image_line = bool(line.image_spans)
-        for instance in self._instances:
 
-            # for image line, no any intersection is allowed
-            if instance.image_spans or is_image_line:
-                if instance.bbox.intersects(line.bbox):
-                    return True
-            
-            # otherwise, the overlap tolerance is larger
-            elif get_main_bbox(instance.bbox, line.bbox, threshold=0.5):
-                return True
+        for i, instance in enumerate(self._instances):
+            # for image line, reduce the intersection threshold
+            if instance.image_spans or is_image_line: threshold /= 2.0            
+            if get_main_bbox(instance.bbox, line.bbox, threshold): return i
         
-        return False
+        return -1
 
     
     def join(self):
@@ -79,12 +74,21 @@ class Lines(Collection):
         self.sort()
 
         # check each line
-        lines = Lines([self._instances[0]])
+        lines = Lines()
         for line in self._instances:
             
-            # skip if intersection exists
-            if lines.intersects(line):
+            # first line
+            if not lines:
+                lines.append(line)
                 continue
+            
+            # keep the larger line if intersection exists (with margin considered)
+            i = lines.intersects(line, threshold=0.5)
+            if i != -1:
+                if lines[i].bbox.getArea() < line.bbox.getArea():
+                    lines.pop(i)
+                    lines.append(line)
+                continue            
 
             # add line directly if not aligned horizontally with previous line
             if not line.horizontally_align_with(lines[-1]):
@@ -114,7 +118,7 @@ class Lines(Collection):
         # split vertically
         # set a non-zero but small factor to avoid just overlaping in same edge
         fun = lambda a,b: a.horizontally_align_with(b, factor=0.1)
-        groups = self.group(fun)
+        groups = self.group(fun) 
 
         # check count of lines in each group
         for group in groups:
@@ -126,6 +130,9 @@ class Lines(Collection):
         else:
             fun = lambda a,b: a.same_parent_with(b)
             groups = self.group(fun)
+
+        # NOTE: group() may destroy the order of lines, so sort in line level
+        for group in groups: group.sort()
 
         return groups
 
