@@ -38,7 +38,7 @@ from ..image.ImageSpan import ImageSpan
 from ..common.base import RectType, TextDirection, TextAlignment
 from ..common.Block import Block
 from ..common.utils import RGB_component_from_name
-from ..common.constants import DM, DR
+from ..common.constants import DM
 from ..common import docx
 
 
@@ -178,7 +178,7 @@ class TextBlock(Block):
             # yes, then go further to lines in block            
             for line in self.lines:
                 # any intersection in this line?
-                intsec = rect.bbox & ( line.bbox + DR )
+                intsec = rect.bbox & line.get_expand_bbox(0.5)
                 
                 if not intsec: 
                     if rect.bbox.y1 < line.bbox.y0: break # lines must be sorted in advance

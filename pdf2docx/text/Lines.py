@@ -198,7 +198,7 @@ class Lines(Collection):
                 cols_lines.append(Lines([line]))
                 col_line = Line() # reset
                 
-            col_line.union(line)
+            col_line.union_bbox(line)
 
         return cols_lines
 
@@ -221,7 +221,7 @@ class Lines(Collection):
                 rows.append(Lines([line]))
                 row_line = Line() # reset
 
-            row_line.union(line)
+            row_line.union_bbox(line)
         
         # further step:
         # merge rows if in same original text block

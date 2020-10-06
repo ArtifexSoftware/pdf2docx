@@ -88,7 +88,7 @@ class Border:
 
     def to_stroke(self):
         '''Convert to border stroke.'''
-        stroke = Stroke({'color': self.color, 'width': self.width}).update(self.centerline)
+        stroke = Stroke({'color': self.color, 'width': self.width}).update_bbox(self.centerline)
         stroke.type = RectType.BORDER # set border style
         
         return stroke
@@ -254,12 +254,12 @@ class Borders:
         for fill in fills:
             x0, y0, x1, y1 = fill.bbox
             h_strokes.extend([
-                Stroke().update((x0, y0, x1, y0)),
-                Stroke().update((x0, y1, x1, y1))
+                Stroke().update_bbox((x0, y0, x1, y0)),
+                Stroke().update_bbox((x0, y1, x1, y1))
             ])
             v_strokes.extend([
-                Stroke().update((x0, y0, x0, y1)),
-                Stroke().update((x1, y0, x1, y1))
+                Stroke().update_bbox((x0, y0, x0, y1)),
+                Stroke().update_bbox((x1, y0, x1, y1))
             ])
         self._finalize_by_strokes(h_strokes, v_strokes)
 

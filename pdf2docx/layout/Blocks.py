@@ -38,7 +38,7 @@ class Blocks(Collection):
             else:
                 self.append(block)
 
-    def _update(self, block:Block):
+    def _update_bbox(self, block:Block):
         ''' Override. The parent of block is generally Layout or Cell, which is not necessary to 
             update its bbox. So, do nothing but required here.
         '''
@@ -241,7 +241,7 @@ class Blocks(Collection):
 
         # get sub-lines from block
         def sub_lines(block):
-            return block.lines if block.is_text_block() else [Line().update(block.bbox)]
+            return block.lines if block.is_text_block() else [Line().update_bbox(block.bbox)]
 
         new_line = True
         num = len(self._instances)

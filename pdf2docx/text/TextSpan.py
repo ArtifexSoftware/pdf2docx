@@ -135,18 +135,18 @@ class TextSpan(BBox):
         buff = (rect.height-self.size)/2.0
         y0 = rect.y0 + buff
         y1 = rect.y1 - buff
-        self.update((x0, y0, x1, y1))
+        self.update_bbox((x0, y0, x1, y1))
 
         # update contained char bbox
         for char in self.chars:
             x0, _, x1, _ = char.bbox
-            char.update((x0, y0, x1, y1))
+            char.update_bbox((x0, y0, x1, y1))
 
 
     def add(self, char:Char):
         '''Add char and update bbox accordingly.'''
         self.chars.append(char)
-        self.union(char)
+        self.union_bbox(char)
 
 
     def store(self):
@@ -215,14 +215,14 @@ class TextSpan(BBox):
                 bbox = (self.bbox.x0, self.bbox.y0, intsec.x0, self.bbox.y1)
             else:
                 bbox = (self.bbox.x0, intsec.y1, self.bbox.x1, self.bbox.y1)
-            split_span = self.copy().update(bbox)
+            split_span = self.copy().update_bbox(bbox)
             split_span.chars = self.chars[0:pos]
             split_spans.append(split_span)
 
         # middle intersection part if exists
         if length > 0:
             bbox = (intsec.x0, intsec.y0, intsec.x1, intsec.y1)
-            split_span = self.copy().update(bbox)
+            split_span = self.copy().update_bbox(bbox)
             split_span.chars = self.chars[pos:pos_end]            
             split_span.parse_text_style(rect, horizontal)  # update style
             split_spans.append(split_span)
@@ -233,7 +233,7 @@ class TextSpan(BBox):
                 bbox = (intsec.x1, self.bbox.y0, self.bbox.x1, self.bbox.y1)
             else:
                 bbox = (self.bbox.x0, self.bbox.y0, self.bbox.x1, intsec.y0)
-            split_span = self.copy().update(bbox)
+            split_span = self.copy().update_bbox(bbox)
             split_span.chars = self.chars[pos_end:]
             split_spans.append(split_span)
 
@@ -305,12 +305,12 @@ class TextSpan(BBox):
         # furcher check chars in span
         span = self.copy()
         span.chars.clear()
-        span.update((0.0,0.0,0.0,0.0))
+        span.update_bbox((0.0,0.0,0.0,0.0))
 
         for char in self.chars:
             if utils.get_main_bbox(char.bbox, rect, 0.55): # contains at least a half part
                 span.chars.append(char)
-                span.union(char)
+                span.union_bbox(char)
 
         return span
 

@@ -26,7 +26,7 @@ class Shapes(Collection):
         return self
 
 
-    def _update(self, shape:Shape):
+    def _update_bbox(self, shape:Shape):
         ''' override. Do nothing.'''
         pass
 
@@ -92,7 +92,7 @@ class Shapes(Collection):
                     main_bbox = utils.get_main_bbox(shape.bbox, ref_shape.bbox, 0.5)
 
                 if main_bbox:
-                    ref_shape.update(main_bbox)
+                    ref_shape.update_bbox(main_bbox)
                     break            
             else:
                 shapes_unique.append(shape)

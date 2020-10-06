@@ -116,7 +116,7 @@ class TableStructure:
                 # shading rect in this cell
                 # modify the cell bbox from border center to inner region
                 inner_bbox = (bbox[0]+w_left/2.0, bbox[1]+w_top/2.0, bbox[2]-w_right/2.0, bbox[3]-w_bottom/2.0)
-                target_bbox = BBox().update(inner_bbox)
+                target_bbox = BBox().update_bbox(inner_bbox)
                 shading_rect = shadings.containing_bbox(target_bbox.bbox, threshold=0.9)
                 if shading_rect:
                     shading_rect.type = RectType.SHADING # ATTENTION: set shaing type
@@ -131,7 +131,7 @@ class TableStructure:
                     'border_color': (top.color, right.color, bottom.color, left.color),
                     'border_width': (w_top, w_right, w_bottom, w_left),
                     'merged_cells': (n_row, n_col),
-                }).update(bbox)
+                }).update_bbox(bbox)
 
                 # check cell before adding to row:
                 # no intersection with cells in previous row
@@ -237,7 +237,7 @@ class TableStructure:
             return None, None
 
         # Note: add dummy borders if no outer borders exist        
-        table_bbox = BBox().update((X0, Y0, X1, Y1)) # table bbox
+        table_bbox = BBox().update_bbox((X0, Y0, X1, Y1)) # table bbox
         TableStructure._check_outer_borders(table_bbox, h_borders, 'top')
         TableStructure._check_outer_borders(table_bbox, h_borders, 'bottom')
         TableStructure._check_outer_borders(table_bbox, v_borders, 'left')
@@ -284,7 +284,7 @@ class TableStructure:
 
         # add whole border if not exist
         if abs(target-current)>MAX_W_BORDER:
-            borders[target] = Shapes([sample_border.copy().update(bbox)])
+            borders[target] = Shapes([sample_border.copy().update_bbox(bbox)])
         
         # otherwise, check border segments
         else:
@@ -298,7 +298,7 @@ class TableStructure:
                 if abs(start-end)>DM:
                     bbox[idx_start] = start
                     bbox[idx_start+2] = end
-                    segments.append(sample_border.copy().update(bbox))
+                    segments.append(sample_border.copy().update_bbox(bbox))
                 
                 # update ref position
                 start = border.bbox[idx_start+2]

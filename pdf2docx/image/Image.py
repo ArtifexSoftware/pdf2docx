@@ -116,7 +116,7 @@ class Image(BBox):
         self.width = image.width
         self.height = image.height
         self.image = image.image
-        self.update(image.bbox)
+        self.update_bbox(image.bbox)
         return self
 
 

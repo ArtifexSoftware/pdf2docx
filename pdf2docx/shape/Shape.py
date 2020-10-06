@@ -60,7 +60,6 @@ class Stroke(Shape):
         # convert start/end point to real page CS
         self._start = fitz.Point(raw.get('start', (0.0, 0.0))) * Stroke.ROTATION_MATRIX
         self._end = fitz.Point(raw.get('end', (0.0, 0.0))) * Stroke.ROTATION_MATRIX
-        assert self.horizontal or self.vertical, 'Supports horizontal or vertical Strokes only'
 
         if self._start.x > self._end.x or self._start.y > self._end.y:
             self._start, self._end = self._end, self._start
@@ -71,7 +70,7 @@ class Stroke(Shape):
         self.type = RectType.UNDEFINED # no type by default
 
         # update bbox
-        super().update(self._to_rect())
+        super().update_bbox(self._to_rect())
 
 
     @property
@@ -93,7 +92,7 @@ class Stroke(Shape):
     def y1(self): return self._end.y
 
 
-    def update(self, rect):
+    def update_bbox(self, rect):
         '''Update stroke bbox (related to real page CS):
             - rect.area==0: start/end points
             - rect.area!=0: update bbox directly
@@ -104,11 +103,11 @@ class Stroke(Shape):
         if rect.getArea()==0.0:
             self._start = fitz.Point(rect[0:2])
             self._end = fitz.Point(rect[2:])
-            super().update(self._to_rect())
+            super().update_bbox(self._to_rect())
 
         # a rect 
         else:
-            super().update(rect)
+            super().update_bbox(rect)
 
             # horizontal stroke
             if rect.width >= rect.height:
@@ -158,4 +157,4 @@ class Fill(Shape):
         if w > MAX_W_BORDER:
             return None
         else:
-            return Stroke({'width': w, 'color': self.color}).update(self.bbox)
+            return Stroke({'width': w, 'color': self.color}).update_bbox(self.bbox)
