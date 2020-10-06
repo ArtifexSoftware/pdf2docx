@@ -10,7 +10,7 @@ A group of Line objects.
 from docx.shared import Pt
 from .Line import Line
 from ..common.utils import get_main_bbox
-from ..common.constants import DM
+from ..common import constants
 from ..common.Collection import Collection
 from ..common import docx
 
@@ -83,7 +83,7 @@ class Lines(Collection):
                 continue
             
             # keep the larger line if intersection exists (with margin considered)
-            i = lines.intersects(line, threshold=0.5)
+            i = lines.intersects(line, threshold=constants.FACTOR_A_HALF)
             if i != -1:
                 if lines[i].bbox.getArea() < line.bbox.getArea():
                     lines.pop(i)
@@ -97,7 +97,7 @@ class Lines(Collection):
 
             # if it exists x-distance obviously to previous line,
             # take it as a separate line as it is
-            if abs(line.bbox.x0-lines[-1].bbox.x1) > DM:
+            if abs(line.bbox.x0-lines[-1].bbox.x1) > constants.MINOR_DIST:
                 lines.append(line)
                 continue
 
@@ -117,7 +117,7 @@ class Lines(Collection):
         '''
         # split vertically
         # set a non-zero but small factor to avoid just overlaping in same edge
-        fun = lambda a,b: a.horizontally_align_with(b, factor=0.1)
+        fun = lambda a,b: a.horizontally_align_with(b, factor=constants.FACTOR_A_FEW)
         groups = self.group(fun) 
 
         # check count of lines in each group

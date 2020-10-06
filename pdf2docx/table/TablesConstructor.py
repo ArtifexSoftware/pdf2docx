@@ -12,6 +12,7 @@ Parsing table blocks:
 
 from ..common.BBox import BBox
 from ..common.base import RectType
+from ..common import constants
 from ..layout.Blocks import Blocks
 from ..shape.Shape import Fill
 from ..shape.Shapes import Shapes
@@ -31,7 +32,7 @@ class TablesConstructor(TableStructure):
     def lattice_tables(self):
         '''Parse table with explicit borders/shadings represented by rectangle shapes.'''
         # group stroke shapes: each group may be a potential table
-        groups = self._shapes.strokes.group_by_connectivity(dx=0.5, dy=0.5)
+        groups = self._shapes.strokes.group_by_connectivity(dx=constants.TINY_DIST, dy=constants.TINY_DIST)
 
         # all filling shapes
         shadings = self._shapes.fillings
@@ -183,7 +184,7 @@ class TablesConstructor(TableStructure):
     def _remove_floating_tables(tables:Blocks):
         '''Delete table has intersection with previously parsed tables.'''
         unique_tables = []
-        groups = tables.group_by_connectivity(dx=0.5, dy=0.5)
+        groups = tables.group_by_connectivity(dx=constants.TINY_DIST, dy=constants.TINY_DIST)
         for group in groups:
             # single table
             if len(group)==1: table = group[0]

@@ -11,6 +11,7 @@ from .Shape import Shape, Stroke, Fill
 from ..common.base import RectType
 from ..common.Collection import Collection
 from ..common import utils
+from ..common import constants
 
 
 class Shapes(Collection):
@@ -79,17 +80,17 @@ class Shapes(Collection):
                 if ref_shape.color!=shape.color: continue     
 
                 # combine two shapes in a same row if any intersection exists
-                # ideally the aligning threshold should be 1.0, but use 0.98 here to consider tolerance
-                if shape.horizontally_align_with(ref_shape, 0.98): 
+                # ideally the aligning threshold should be 1.0, tolerance is considered here
+                if shape.horizontally_align_with(ref_shape, constants.FACTOR_ALMOST): 
                     main_bbox = utils.get_main_bbox(shape.bbox, ref_shape.bbox, 0.0)
 
                 # combine two shapes in a same column if any intersection exists
-                elif shape.vertically_align_with(ref_shape, 0.98):
+                elif shape.vertically_align_with(ref_shape, constants.FACTOR_ALMOST):
                     main_bbox = utils.get_main_bbox(shape.bbox, ref_shape.bbox, 0.0)
 
                 # combine two shapes if they have a large intersection
                 else:
-                    main_bbox = utils.get_main_bbox(shape.bbox, ref_shape.bbox, 0.5)
+                    main_bbox = utils.get_main_bbox(shape.bbox, ref_shape.bbox, constants.FACTOR_A_HALF)
 
                 if main_bbox:
                     ref_shape.update_bbox(main_bbox)

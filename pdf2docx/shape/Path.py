@@ -25,10 +25,12 @@ Paths are created based on DICT data extracted from `pdf2docx.common.pdf` module
     }
 '''
 
+
 import fitz
 from ..common import pdf
 from ..common.Collection import BaseCollection
 from ..common.utils import RGB_component, get_main_bbox
+from ..common import constants
 from ..image.Image import ImagesExtractor
 
 class PathsExtractor:
@@ -39,7 +41,7 @@ class PathsExtractor:
 
     def extract_paths(self, page:fitz.Page):
         ''' Convert extracted paths to DICT attributes:
-            - bitmap converted from vector graphics
+            - bitmap converted from vector graphics if necessary
             - iso-oriented paths
             
             NOTE: the target is to extract horizontal/vertical paths for table parsing, while others
@@ -48,17 +50,30 @@ class PathsExtractor:
         # get raw paths
         self._parse_page(page)
 
+        # ------------------------------------------------------------
+        # ignore vector graphics
+        # ------------------------------------------------------------
+        if constants.IGNORE_VEC_GRAPH:
+            iso_paths = self.paths.to_iso_paths()
+            return [], iso_paths
+
+        # ------------------------------------------------------------
+        # convert vector graphics to bitmap
+        # ------------------------------------------------------------ 
         # group connected paths -> each group is a potential vector graphic
         paths_list = self.paths.group_by_connectivity()
 
         # ignore anything covered by vector graphic, so group paths further
-        fun = lambda a,b: get_main_bbox(a.bbox, b.bbox, 0.99)
+        fun = lambda a,b: get_main_bbox(a.bbox, b.bbox, constants.FACTOR_SAME)
         paths_group_list = BaseCollection(paths_list).group(fun)
 
         iso_paths, pixmaps = [], []
         for paths_group in paths_group_list:
             largest = max(paths_group, key=lambda paths: paths.bbox.getArea())
-            image = largest.to_image(page) if largest.contains_curve else None
+            if largest.contains_curve:
+                image = largest.to_image(page, constants.FACTOR_RES, constants.FACTOR_ALMOST)
+            else:
+                image = None
 
             # ignore anything behind vector graphic
             if image:
@@ -69,7 +84,7 @@ class PathsExtractor:
             for paths in paths_group:
                 # can't be a table if curve path exists
                 if paths.contains_curve:
-                    image = paths.to_image(page)
+                    image = paths.to_image(page, constants.FACTOR_RES, constants.FACTOR_ALMOST)
                     if image: pixmaps.append(image)
                 # keep potential table border paths
                 else:
@@ -104,7 +119,7 @@ class Paths(BaseCollection):
         return self._bbox
     
     @property
-    def contains_curve(self, num=5):
+    def contains_curve(self, num=2):
         '''Whether any curve paths exist. The criterion is the count of non-iso-oriented paths.'''
         cnt = 0
         for path in self._instances:
@@ -123,7 +138,7 @@ class Paths(BaseCollection):
         for path in self._instances: path.plot(page)    
 
     
-    def to_image(self, page:fitz.Page, zoom:float=3.0, ratio:float=0.95):
+    def to_image(self, page:fitz.Page, zoom:float, ratio:float):
         '''Convert to image block dict.
             ---
             Args:

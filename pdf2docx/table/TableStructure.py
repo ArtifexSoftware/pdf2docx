@@ -10,7 +10,7 @@ Parsing table structure based on borders.
 from ..common.BBox import BBox
 from ..common.base import RectType
 from ..common.utils import RGB_value
-from ..common.constants import DM, MAX_W_BORDER
+from ..common import constants
 from ..shape.Shape import Stroke
 from ..shape.Shapes import Shapes
 from ..text.Lines import Lines
@@ -117,7 +117,7 @@ class TableStructure:
                 # modify the cell bbox from border center to inner region
                 inner_bbox = (bbox[0]+w_left/2.0, bbox[1]+w_top/2.0, bbox[2]-w_right/2.0, bbox[3]-w_bottom/2.0)
                 target_bbox = BBox().update_bbox(inner_bbox)
-                shading_rect = shadings.containing_bbox(target_bbox.bbox, threshold=0.9)
+                shading_rect = shadings.containing_bbox(target_bbox.bbox, threshold=constants.FACTOR_MOST)
                 if shading_rect:
                     shading_rect.type = RectType.SHADING # ATTENTION: set shaing type
                     bg_color = shading_rect.color
@@ -201,7 +201,7 @@ class TableStructure:
 
                 # ignore minor error resulting from different border width
                 for y_ in h_borders:
-                    if abs(y-y_)<2.0*DM:
+                    if abs(y-y_)<constants.DW_BORDER:
                         y = (y_+y)/2.0 # average
                         h_borders[y] = h_borders.pop(y_)
                         h_borders[y].append(border)
@@ -220,7 +220,7 @@ class TableStructure:
                 
                 # ignore minor error resulting from different border width
                 for x_ in v_borders:
-                    if abs(x-x_)<2.0*DM:
+                    if abs(x-x_)<constants.DW_BORDER:
                         x = (x+x_)/2.0 # average
                         v_borders[x] = v_borders.pop(x_)
                         v_borders[x].append(border)
@@ -283,7 +283,7 @@ class TableStructure:
         bbox[(idx+2)%4] = target
 
         # add whole border if not exist
-        if abs(target-current)>MAX_W_BORDER:
+        if abs(target-current)>constants.MAX_W_BORDER:
             borders[target] = Shapes([sample_border.copy().update_bbox(bbox)])
         
         # otherwise, check border segments
@@ -295,7 +295,7 @@ class TableStructure:
             for border in borders[current]:
                 end = border.bbox[idx_start]
                 # not connected -> add missing border segment
-                if abs(start-end)>DM:
+                if abs(start-end)>constants.MINOR_DIST:
                     bbox[idx_start] = start
                     bbox[idx_start+2] = end
                     segments.append(sample_border.copy().update_bbox(bbox))
@@ -327,9 +327,9 @@ class TableStructure:
         for border in borders:
             bbox = (border.x0, border.y0, border.x1, border.y1)
             t0, t1 = bbox[idx], bbox[idx+2]
-            # it's the border shape if has a main intersection with cell border
+            # it's the border shape if has a major intersection with cell border
             L = min(x1, t1) - max(x0, t0)
-            if L / (x1-x0) >= 0.75:
+            if L / (x1-x0) >= constants.FACTOR_MAJOR:
                 return border
 
         return borders[0]

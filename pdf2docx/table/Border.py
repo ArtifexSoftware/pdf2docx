@@ -29,7 +29,7 @@ Consider horizontal and vertical borders only.
 from ..shape.Shapes import Shapes
 from ..shape.Shape import Stroke
 from ..common.utils import RGB_value
-from ..common.constants import HIDDEN_W_BORDER, DM
+from ..common import constants
 from ..common.base import RectType
 
 
@@ -50,7 +50,7 @@ class Border:
         self.set_boundary_borders(borders)
         
         # border style
-        self.width = HIDDEN_W_BORDER
+        self.width = constants.HIDDEN_W_BORDER
         self.color = RGB_value((1,1,1)) # white by default
 
         # whether the position is determined
@@ -60,7 +60,7 @@ class Border:
     def is_valid(self, x:float):
         '''Whether the given position `x` locates in the valid border range.'''
         # consider margin here, but pay attention to underline which may be counted
-        return (self.LRange-DM) <= x <= (self.URange+DM) 
+        return (self.LRange-constants.MINOR_DIST) <= x <= (self.URange+constants.MINOR_DIST) 
     
     def set_border_range(self, border_range):
         '''Set border valid ranges.'''

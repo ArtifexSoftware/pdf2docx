@@ -13,7 +13,7 @@ from docx.image.exceptions import UnrecognizedImageError
 from docx.table import _Cell
 
 from .utils import RGB_value
-from .constants import DM
+from . import constants
 
 
 def delete_paragraph(paragraph):
@@ -65,13 +65,13 @@ def add_stop(p, pos:float, current_pos:float):
               so tabs are added based on current position and target position.         
     '''
     # ignore small pos
-    if pos < Pt(DM): return
+    if pos < Pt(constants.MINOR_DIST): return
 
     # add tab to reach target position
     for t in p.paragraph_format.tab_stops:
         if t.position < current_pos:
             continue
-        elif t.position<pos or abs(t.position-pos)<=Pt(DM):
+        elif t.position<pos or abs(t.position-pos)<=Pt(constants.MINOR_DIST):
             p.add_run().add_tab()
         else:
             break

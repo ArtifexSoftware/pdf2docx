@@ -7,7 +7,7 @@ Image Span based on same raw data structure with image block.
 @author: train8808@gmail.com
 '''
 
-from ..common import docx, utils
+from ..common import docx, utils, constants
 from .Image import Image
 
 
@@ -24,7 +24,7 @@ class ImageSpan(Image):
               - rect: fitz.Rect, target bbox
         '''
         # add image span if most of of the image is contained in bbox
-        if utils.get_main_bbox(self.bbox, rect, 0.75):
+        if utils.get_main_bbox(self.bbox, rect, constants.FACTOR_MAJOR):
             return self.copy()
         
         # otherwise, ignore image

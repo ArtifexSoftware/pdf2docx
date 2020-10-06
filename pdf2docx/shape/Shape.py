@@ -29,8 +29,7 @@ import fitz
 from ..common.BBox import BBox
 from ..common.base import RectType
 from ..common.utils import RGB_component
-from ..common.constants import DM
-from ..common.constants import MAX_W_BORDER
+from ..common import constants
 
 
 class Shape(BBox):
@@ -154,7 +153,7 @@ class Fill(Shape):
         w = min(self.bbox.width, self.bbox.height)
 
         # not a stroke if exceed max border width
-        if w > MAX_W_BORDER:
+        if w > constants.MAX_W_BORDER:
             return None
         else:
             return Stroke({'width': w, 'color': self.color}).update_bbox(self.bbox)

@@ -7,7 +7,7 @@ A group of Text/Image or Table block.
 '''
 
 from docx.shared import Pt
-from ..common.constants import DM
+from ..common import constants
 from ..common.Collection import Collection
 from ..common.base import BlockType
 from ..common.Block import Block
@@ -263,7 +263,7 @@ class Blocks(Collection):
 
             # (b) multi-blocks are in a same row: check layout with next block?
             # yes, add both current and next blocks
-            if block.horizontally_align_with(next_block, factor=0.1):
+            if block.horizontally_align_with(next_block, factor=constants.FACTOR_A_FEW):
                 # if it's start of new table row: add the first block
                 if new_line: table_lines.extend(sub_lines(block))
                 
@@ -383,7 +383,7 @@ class Blocks(Collection):
             # we can't set before space for table in docx, but the tricky way is to
             # create an empty paragraph and set paragraph line spacing and before space
             else:
-                block.before_space = max(para_space, DM) # let para_space>=1 Pt to accommodate the dummy paragraph
+                block.before_space = max(para_space, constants.MINOR_DIST) # let para_space>=1 Pt to accommodate the dummy paragraph
 
 
             # update reference block        
@@ -396,7 +396,7 @@ class Blocks(Collection):
         # Here, reduce the last row of table.
         block = self._instances[-1]
         if block.is_table_block():
-            block[-1].height -= DM # same value used when creating docx
+            block[-1].height -= constants.MINOR_DIST # same value used when creating docx
 
 
     def join_horizontally(self, text_direction=True):
@@ -506,7 +506,7 @@ class Blocks(Collection):
         # is created.
         if bool(self) and self._instances[-1].is_table_block():
             p = doc.add_paragraph()
-            reset_paragraph_format(p, Pt(DM)) # a small line height
+            reset_paragraph_format(p, Pt(constants.MINOR_DIST)) # a small line height
 
 
     def _merge_one(self):

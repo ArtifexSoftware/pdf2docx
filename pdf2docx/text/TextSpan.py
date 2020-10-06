@@ -41,7 +41,7 @@ from docx.oxml.ns import qn
 from .Char import Char
 from ..common.BBox import BBox
 from ..common.base import RectType
-from ..common.constants import DICT_FONTS
+from ..common import constants
 from ..common import utils, docx
 from ..shape.Shape import Shape
 
@@ -79,7 +79,7 @@ class TextSpan(BBox):
 
         # mapping font name
         key = font_name.replace(' ', '').replace('-', '').replace('_', '').upper() # normalize mapping key
-        font_name = DICT_FONTS.get(key, font_name)
+        font_name = constants.DICT_FONTS.get(key, font_name)
 
         # split with upper case letters
         blank = ' '
@@ -261,7 +261,7 @@ class TextSpan(BBox):
         # highlight: both the rect height and overlap must be large enough
         if h_rect >= 0.5*h_span:
             # In general, highlight color isn't white
-            if rect.color != utils.RGB_value((1,1,1)) and utils.get_main_bbox(self.bbox, rect.bbox, 0.75): 
+            if rect.color != utils.RGB_value((1,1,1)) and utils.get_main_bbox(self.bbox, rect.bbox, constants.FACTOR_MAJOR): 
                 rect.type = RectType.HIGHLIGHT
     
         # near to bottom of span? yes, underline
@@ -308,7 +308,7 @@ class TextSpan(BBox):
         span.update_bbox((0.0,0.0,0.0,0.0))
 
         for char in self.chars:
-            if utils.get_main_bbox(char.bbox, rect, 0.55): # contains at least a half part
+            if utils.get_main_bbox(char.bbox, rect, constants.FACTOR_A_HALF): # contains at least a half part
                 span.chars.append(char)
                 span.union_bbox(char)
 
