@@ -245,10 +245,8 @@ class Borders:
             - fills: a group of explicit cell shadings.
         '''
         # finalize borders by explicit strokes in first priority
-        h_strokes = list(filter(
-            lambda stroke: stroke.horizontal, strokes))
-        v_strokes = list(filter(
-            lambda stroke: stroke.vertical, strokes))
+        h_strokes = filter(lambda stroke: stroke.horizontal, strokes)
+        v_strokes = filter(lambda stroke: stroke.vertical,   strokes)
         self._finalize_by_strokes(h_strokes, v_strokes)
 
         # finalize borders by explicit fillings in second priority

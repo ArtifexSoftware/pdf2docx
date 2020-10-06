@@ -99,7 +99,7 @@ class Paths(BaseCollection):
     def bbox(self):
         if not hasattr(self, '_bbox'):
             bbox = fitz.Rect()
-            for instance in self._instances: bbox = bbox | instance.bbox
+            for instance in self._instances: bbox |= instance.bbox
             self._bbox = bbox
         return self._bbox
     

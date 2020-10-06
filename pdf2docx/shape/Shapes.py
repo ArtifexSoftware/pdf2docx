@@ -61,17 +61,17 @@ class Shapes(Collection):
             - join intersected and horizontally aligned rectangles with same height and bg-color
             - join intersected and vertically aligned rectangles with same width and bg-color
         '''
+        # sort in reading order
+        self.sort_in_reading_order()
+
         # remove shapes out of page
         page_bbox = (0.0, 0.0, self.parent.width, self.parent.height)
         f = lambda shape: shape.bbox.intersects(page_bbox)
-        shapes = list(filter(f, self._instances))
+        shapes = filter(f, self._instances)
 
-        # sort in reading order
-        shapes.sort(key=lambda instance: (instance.bbox.y0, instance.bbox.x0, instance.bbox.x1))
-
-        # skip rectangles with both of the following two conditions satisfied:
-        #  - fully or almost contained in another rectangle
-        #  - same filling color with the containing rectangle
+        # merge shapes if:
+        # - same filling color, and
+        # - intersected in same raw/col, or overlapped significantly
         shapes_unique = [] # type: list [Shape]
         for shape in shapes:
             for ref_shape in shapes_unique:
