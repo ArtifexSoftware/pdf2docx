@@ -81,11 +81,11 @@ class Shapes(Collection):
 
                 # combine two shapes in a same row if any intersection exists
                 # ideally the aligning threshold should be 1.0, tolerance is considered here
-                if shape.horizontally_align_with(ref_shape, constants.FACTOR_ALMOST): 
+                if shape.horizontally_align_with(ref_shape, constants.FACTOR_SAME): 
                     main_bbox = utils.get_main_bbox(shape.bbox, ref_shape.bbox, 0.0)
 
                 # combine two shapes in a same column if any intersection exists
-                elif shape.vertically_align_with(ref_shape, constants.FACTOR_ALMOST):
+                elif shape.vertically_align_with(ref_shape, constants.FACTOR_SAME):
                     main_bbox = utils.get_main_bbox(shape.bbox, ref_shape.bbox, 0.0)
 
                 # combine two shapes if they have a large intersection

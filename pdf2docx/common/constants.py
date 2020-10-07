@@ -28,8 +28,10 @@ FACTOR_PAGE_MARGIN = 0.5     # page margin factor
 # -------------------------------------
 # path extracting
 # -------------------------------------
+N_BEZIER_SAMPLE = 5
 IGNORE_VEC_GRAPH = False
 FACTOR_RES = 3.0             # improve image resolution
+
 
 # -------------------------------------
 # table parsing

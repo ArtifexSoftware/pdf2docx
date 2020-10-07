@@ -69,7 +69,7 @@ class BaseCollection:
         return groups
 
     
-    def group_by_connectivity(self, dx:float=0.5, dy:float=0.5):
+    def group_by_connectivity(self, dx:float, dy:float):
         ''' Collect connected bbox into same group.
             ---
             Args:

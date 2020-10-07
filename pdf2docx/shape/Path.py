@@ -61,7 +61,7 @@ class PathsExtractor:
         # convert vector graphics to bitmap
         # ------------------------------------------------------------ 
         # group connected paths -> each group is a potential vector graphic
-        paths_list = self.paths.group_by_connectivity()
+        paths_list = self.paths.group_by_connectivity(dx=0.0, dy=0.0)
 
         # ignore anything covered by vector graphic, so group paths further
         fun = lambda a,b: get_main_bbox(a.bbox, b.bbox, constants.FACTOR_SAME)
@@ -70,7 +70,7 @@ class PathsExtractor:
         iso_paths, pixmaps = [], []
         for paths_group in paths_group_list:
             largest = max(paths_group, key=lambda paths: paths.bbox.getArea())
-            if largest.contains_curve:
+            if largest.contains_curve(constants.FACTOR_A_FEW):
                 image = largest.to_image(page, constants.FACTOR_RES, constants.FACTOR_ALMOST)
             else:
                 image = None
@@ -83,7 +83,7 @@ class PathsExtractor:
             # otherwise, add each paths
             for paths in paths_group:
                 # can't be a table if curve path exists
-                if paths.contains_curve:
+                if paths.contains_curve(constants.FACTOR_A_FEW):
                     image = paths.to_image(page, constants.FACTOR_RES, constants.FACTOR_ALMOST)
                     if image: pixmaps.append(image)
                 # keep potential table border paths
@@ -118,14 +118,15 @@ class Paths(BaseCollection):
             self._bbox = bbox
         return self._bbox
     
-    @property
-    def contains_curve(self, num=2):
-        '''Whether any curve paths exist. The criterion is the count of non-iso-oriented paths.'''
-        cnt = 0
-        for path in self._instances:
-            if not path.is_iso_oriented: cnt += 1
-            if cnt >= num: return True        
-        return False
+    def contains_curve(self, ratio:float):
+        ''' Whether any curve paths exist. 
+            The criterion: the area ratio of all non-iso-oriented paths >= `ratio`
+        '''
+        bbox = fitz.Rect()
+        for path in self._instances:            
+            if not path.is_iso_oriented: bbox |= path.bbox
+
+        return bbox.getArea()/self.bbox.getArea() >= ratio
     
     def append(self, path): self._instances.append(path)
 
@@ -212,7 +213,8 @@ class Path:
             # end point
             x1, y1 = self.points[i+1]
 
-            if x0!=x1 and y0!=y1: return False
+            if x0!=x1 and y0!=y1:
+                return False
         
         return True
 
