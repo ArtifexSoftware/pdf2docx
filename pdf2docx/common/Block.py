@@ -9,7 +9,7 @@ Base class for text/image/table blocks.
 
 from .base import BlockType, TextAlignment
 from .BBox import BBox
-from .constants import DM
+from . import constants
 
 
 class Block(BBox):
@@ -91,7 +91,7 @@ class Block(BBox):
         for key, value in self.__dict__.items():
             if not 'space' in key: continue
             target_value = getattr(block, key)
-            if abs(value-target_value)>DM/4.0:
+            if abs(value-target_value)>constants.TINY_DIST:
                 return False, f'Inconsistent {" ".join(key.split("_"))} @ {self.bbox}:\n{value} v.s. {target_value} (expected)'
 
         return True, ''

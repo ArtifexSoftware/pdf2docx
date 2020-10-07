@@ -22,4 +22,4 @@ class Cells(Collection):
     def append(self, cell:Cell):
         '''Override. Append a cell (allow empty cell, i.e. merged cells) and update bbox accordingly.'''
         self._instances.append(cell)
-        self._update(cell)
+        self._update_bbox(cell)

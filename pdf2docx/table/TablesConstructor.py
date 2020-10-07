@@ -12,7 +12,7 @@ Parsing table blocks:
 
 from ..common.BBox import BBox
 from ..common.base import RectType
-from ..common.constants import DR
+from ..common import constants
 from ..layout.Blocks import Blocks
 from ..shape.Shape import Fill
 from ..shape.Shapes import Shapes
@@ -32,7 +32,7 @@ class TablesConstructor(TableStructure):
     def lattice_tables(self):
         '''Parse table with explicit borders/shadings represented by rectangle shapes.'''
         # group stroke shapes: each group may be a potential table
-        groups = self._shapes.strokes.group_by_connectivity(dx=0.5, dy=0.5)
+        groups = self._shapes.strokes.group_by_connectivity(dx=constants.TINY_DIST, dy=constants.TINY_DIST)
 
         # all filling shapes
         shadings = self._shapes.fillings
@@ -162,7 +162,7 @@ class TablesConstructor(TableStructure):
             right.set_boundary_borders((top, bottom))
 
             # table bbox
-            rect = BBox().update((X0, y0_margin, X1, y1_margin))
+            rect = BBox().update_bbox((X0, y0_margin, X1, y1_margin))
 
             # parsing stream table
             table = self._stream_table(table_lines, rect, (top, bottom, left, right))
@@ -184,7 +184,7 @@ class TablesConstructor(TableStructure):
     def _remove_floating_tables(tables:Blocks):
         '''Delete table has intersection with previously parsed tables.'''
         unique_tables = []
-        groups = tables.group_by_connectivity(dx=0.5, dy=0.5)
+        groups = tables.group_by_connectivity(dx=constants.TINY_DIST, dy=constants.TINY_DIST)
         for group in groups:
             # single table
             if len(group)==1: table = group[0]
@@ -233,7 +233,7 @@ class TablesConstructor(TableStructure):
             # cell shading or highlight:
             # shading shape contains at least one text block
             shading = False
-            expand_bbox = shape.bbox + DR / 0.2 # expand 2.5 Pt
+            expand_bbox = shape.get_expand_bbox(2.5) # expand 2.5 Pt
             for block in self._blocks:
                 if expand_bbox.contains(block.bbox):
                     shading = True

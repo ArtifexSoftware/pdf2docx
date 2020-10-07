@@ -41,7 +41,7 @@ from docx.oxml.ns import qn
 from .Char import Char
 from ..common.BBox import BBox
 from ..common.base import RectType
-from ..common.constants import DICT_FONTS
+from ..common import constants
 from ..common import utils, docx
 from ..shape.Shape import Shape
 
@@ -79,7 +79,7 @@ class TextSpan(BBox):
 
         # mapping font name
         key = font_name.replace(' ', '').replace('-', '').replace('_', '').upper() # normalize mapping key
-        font_name = DICT_FONTS.get(key, font_name)
+        font_name = constants.DICT_FONTS.get(key, font_name)
 
         # split with upper case letters
         blank = ' '
@@ -135,18 +135,18 @@ class TextSpan(BBox):
         buff = (rect.height-self.size)/2.0
         y0 = rect.y0 + buff
         y1 = rect.y1 - buff
-        self.update((x0, y0, x1, y1))
+        self.update_bbox((x0, y0, x1, y1))
 
         # update contained char bbox
         for char in self.chars:
             x0, _, x1, _ = char.bbox
-            char.update((x0, y0, x1, y1))
+            char.update_bbox((x0, y0, x1, y1))
 
 
     def add(self, char:Char):
         '''Add char and update bbox accordingly.'''
         self.chars.append(char)
-        self.union(char)
+        self.union_bbox(char)
 
 
     def store(self):
@@ -215,14 +215,14 @@ class TextSpan(BBox):
                 bbox = (self.bbox.x0, self.bbox.y0, intsec.x0, self.bbox.y1)
             else:
                 bbox = (self.bbox.x0, intsec.y1, self.bbox.x1, self.bbox.y1)
-            split_span = self.copy().update(bbox)
+            split_span = self.copy().update_bbox(bbox)
             split_span.chars = self.chars[0:pos]
             split_spans.append(split_span)
 
         # middle intersection part if exists
         if length > 0:
             bbox = (intsec.x0, intsec.y0, intsec.x1, intsec.y1)
-            split_span = self.copy().update(bbox)
+            split_span = self.copy().update_bbox(bbox)
             split_span.chars = self.chars[pos:pos_end]            
             split_span.parse_text_style(rect, horizontal)  # update style
             split_spans.append(split_span)
@@ -233,7 +233,7 @@ class TextSpan(BBox):
                 bbox = (intsec.x1, self.bbox.y0, self.bbox.x1, self.bbox.y1)
             else:
                 bbox = (self.bbox.x0, self.bbox.y0, self.bbox.x1, intsec.y0)
-            split_span = self.copy().update(bbox)
+            split_span = self.copy().update_bbox(bbox)
             split_span.chars = self.chars[pos_end:]
             split_spans.append(split_span)
 
@@ -261,7 +261,7 @@ class TextSpan(BBox):
         # highlight: both the rect height and overlap must be large enough
         if h_rect >= 0.5*h_span:
             # In general, highlight color isn't white
-            if rect.color != utils.RGB_value((1,1,1)) and utils.get_main_bbox(self.bbox, rect.bbox, 0.75): 
+            if rect.color != utils.RGB_value((1,1,1)) and utils.get_main_bbox(self.bbox, rect.bbox, constants.FACTOR_MAJOR): 
                 rect.type = RectType.HIGHLIGHT
     
         # near to bottom of span? yes, underline
@@ -305,12 +305,12 @@ class TextSpan(BBox):
         # furcher check chars in span
         span = self.copy()
         span.chars.clear()
-        span.update((0.0,0.0,0.0,0.0))
+        span.update_bbox((0.0,0.0,0.0,0.0))
 
         for char in self.chars:
-            if utils.get_main_bbox(char.bbox, rect, 0.55): # contains at least a half part
+            if utils.get_main_bbox(char.bbox, rect, constants.FACTOR_A_HALF): # contains at least a half part
                 span.chars.append(char)
-                span.union(char)
+                span.union_bbox(char)
 
         return span
 

@@ -69,7 +69,7 @@ class BaseCollection:
         return groups
 
     
-    def group_by_connectivity(self, dx:float=0.5, dy:float=0.5):
+    def group_by_connectivity(self, dx:float, dy:float):
         ''' Collect connected bbox into same group.
             ---
             Args:
@@ -120,7 +120,7 @@ class Collection(BaseCollection, IText):
         '''bbox of combined collection.'''
         Box = BBox()
         for instance in self._instances:
-            Box.union(instance)
+            Box.union_bbox(instance)
         return Box.bbox
 
 
@@ -141,17 +141,17 @@ class Collection(BaseCollection, IText):
         raise NotImplementedError
 
 
-    def _update(self, bbox:BBox):
+    def _update_bbox(self, bbox:BBox):
         '''Update parent of bbox, and the bbox of parent.'''
         if not self._parent is None: # Note: `if self._parent` does not work here
-            self._parent.union(bbox)
+            self._parent.union_bbox(bbox)
 
 
     def append(self, bbox:BBox):
         '''Append an instance and update parent's bbox accordingly.'''
         if not bbox: return
         self._instances.append(bbox)
-        self._update(bbox)
+        self._update_bbox(bbox)
 
 
     def extend(self, bboxes:list):
@@ -171,7 +171,7 @@ class Collection(BaseCollection, IText):
         '''Insert a BBox and update parent's bbox accordingly.'''
         if not bbox: return
         self._instances.insert(nth, bbox)
-        self._update(bbox)
+        self._update_bbox(bbox)
 
     
     def pop(self, nth:int):

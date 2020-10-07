@@ -9,7 +9,7 @@ So, any instances created by this Class are always applied a rotation matrix aut
 
 In other words, the bbox parameter used to create BBox instance MUST be relative to un-rotated
 CS. If final coordinates are provided, should update it after creating an empty object, e.g.
-`BBox().update(final_bbox)`.
+`BBox().update_bbox(final_bbox)`.
 '''
 
 import copy
@@ -39,20 +39,23 @@ class BBox(IText):
 
 
     def __init__(self, raw:dict={}):
-        ''' Initialize BBox and convert to the real (rotation considered) page coordinate system.
-            NOTE: Any coordinates provided in raw is in original page CS (without considering page rotation).
-        '''
+        ''' Initialize BBox and convert to the real (rotation considered) page coordinate system.'''
+        self.bbox = fitz.Rect()
+
+        # NOTE: Any coordinates provided in raw is in original page CS (without considering page rotation).
         if 'bbox' in raw:
             rect = fitz.Rect(raw['bbox']) * BBox.ROTATION_MATRIX
-        else:
-            rect = fitz.Rect()
-        
-        self.update(rect)
+            self.update_bbox(rect)
 
 
     def __bool__(self):
         '''Real object when bbox is defined.'''
         return bool(self.bbox)
+
+    
+    def get_expand_bbox(self, dt:float):
+        '''Get expanded bbox with margin dt in both x- and y- direction. Note this method doesn't change its bbox.'''
+        return self.bbox + (-dt, -dt, dt, dt)
    
    
     def vertically_align_with(self, bbox, factor:float=0.0, text_direction:bool=True):
@@ -127,10 +130,10 @@ class BBox(IText):
 
     def copy(self):
         '''make a deep copy.'''
-        return copy.deepcopy(self)
+        return copy.deepcopy(self)    
 
 
-    def update(self, rect):
+    def update_bbox(self, rect):
         '''Update current bbox to specified `rect`.
             ---
             Args:
@@ -140,13 +143,13 @@ class BBox(IText):
         return self
 
 
-    def union(self, bbox):
+    def union_bbox(self, bbox):
         '''Update current bbox to the union with specified `rect`.
             ---
             Args:
               - bbox: BBox, the target to get union
         '''
-        return self.update(self.bbox | bbox.bbox)
+        return self.update_bbox(self.bbox | bbox.bbox)
 
 
     def compare(self, bbox, threshold=0.9):

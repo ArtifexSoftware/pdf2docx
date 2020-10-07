@@ -38,7 +38,7 @@ from ..image.ImageSpan import ImageSpan
 from ..common.base import RectType, TextDirection, TextAlignment
 from ..common.Block import Block
 from ..common.utils import RGB_component_from_name
-from ..common.constants import DM, DR
+from ..common import constants
 from ..common import docx
 
 
@@ -178,7 +178,7 @@ class TextBlock(Block):
             # yes, then go further to lines in block            
             for line in self.lines:
                 # any intersection in this line?
-                intsec = rect.bbox & ( line.bbox + DR )
+                intsec = rect.bbox & line.get_expand_bbox(constants.TINY_DIST)
                 
                 if not intsec: 
                     if rect.bbox.y1 < line.bbox.y0: break # lines must be sorted in advance
@@ -242,7 +242,7 @@ class TextBlock(Block):
                     if dis >= threshold: return True
             return False
 
-        if discrete_lines(5.0*DM):
+        if discrete_lines(constants.MAJOR_DIST):
             self.alignment = TextAlignment.LEFT
 
         # check contained lines layout if the count of lines (real lines) >= 2
@@ -252,9 +252,9 @@ class TextBlock(Block):
             X1 = [lines[-1].bbox[idx1] for lines in rows]
             X  = [(x0+x1)/2.0 for (x0, x1) in zip(X0, X1)]
 
-            left_aligned   = abs(max(X0)-min(X0))<=DM*2.0
-            right_aligned  = abs(max(X1)-min(X1))<=DM*2.0
-            center_aligned = abs(max(X)-min(X))  <=DM*2.0
+            left_aligned   = abs(max(X0)-min(X0))<=constants.MINOR_DIST
+            right_aligned  = abs(max(X1)-min(X1))<=constants.MINOR_DIST
+            center_aligned = abs(max(X)-min(X))  <=constants.MINOR_DIST
 
             # consider left/center/right alignment, 2*2*2=8 cases in total, of which
             # there cases are impossible: 0-1-1, 1-1-0, 1-0-1
@@ -279,7 +279,7 @@ class TextBlock(Block):
                 # at least 2 lines excepting the last line
                 else:
                     X1 = [lines[-1].bbox[idx1] for lines in rows[0:-1]]
-                    right_aligned  = abs(max(X1)-min(X1))<=DM*2.0
+                    right_aligned  = abs(max(X1)-min(X1))<=constants.MINOR_DIST
                     if right_aligned:
                         self.alignment = TextAlignment.JUSTIFY
                     else:
@@ -287,10 +287,10 @@ class TextBlock(Block):
 
         # otherwise, check block position to page bbox further
         else:
-            if (self.bbox[idx1]-self.bbox[idx0])/(bbox[idx1]-bbox[idx0])>=0.9: # line is long enough
+            if (self.bbox[idx1]-self.bbox[idx0])/(bbox[idx1]-bbox[idx0])>=constants.FACTOR_MOST: # line is long enough
                 self.alignment = TextAlignment.LEFT
 
-            elif abs(d_center) < DM*2.0:
+            elif abs(d_center) < constants.MINOR_DIST:
                 self.alignment = TextAlignment.CENTER
 
             elif abs(d_left) <= abs(d_right):
@@ -313,7 +313,7 @@ class TextBlock(Block):
 
         fun = lambda line: round((line.bbox[idx0]-self.bbox[idx0])*f, 1) # relative position to block
         all_pos = set(map(fun, self.lines))
-        self.tab_stops = list(filter(lambda pos: pos>=DM, all_pos))        
+        self.tab_stops = list(filter(lambda pos: pos>=constants.MINOR_DIST, all_pos))        
 
 
     def parse_line_spacing(self):

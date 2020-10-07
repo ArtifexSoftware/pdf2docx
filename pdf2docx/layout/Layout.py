@@ -40,7 +40,7 @@ from ..table.TablesConstructor import TablesConstructor
 from ..common.BBox import BBox
 from ..common.base import PlotControl
 from ..common.utils import debug_plot
-from ..common.constants import DM, ITP
+from ..common import constants
 from ..common.pdf import new_page_with_margin
 
 
@@ -229,7 +229,7 @@ class Layout:
         '''
         # return normal page margin if no blocks exist
         if not self.blocks and not self.shapes:
-            return (ITP, ) * 4                 # 1 Inch = 72 pt
+            return (constants.ITP, ) * 4                 # 1 Inch = 72 pt
 
         # consider both blocks and shapes for page margin
         list_bbox = list(map(lambda x: x.bbox, self.blocks))
@@ -241,9 +241,9 @@ class Layout:
 
         # right margin
         x_max = max(map(lambda x: x.x1, list_bbox))
-        right = self.width - x_max - DM*5.0  # consider tolerance: leave more free space
-        right = min(right, left)              # symmetry margin if necessary
-        right = max(right, 0.0)               # avoid negative margin
+        right = self.width - x_max - constants.DM_PAGE  # consider tolerance: leave more free space
+        right = min(right, left)                        # symmetry margin if necessary
+        right = max(right, 0.0)                         # avoid negative margin
 
         # top margin
         top = min(map(lambda x: x.y0, list_bbox))
@@ -254,15 +254,15 @@ class Layout:
         bottom = max(bottom, 0.0)
 
         # reduce calculated top/bottom margin to left some free space
-        top *= 0.5
-        bottom *= 0.5
+        top *= constants.FACTOR_PAGE_MARGIN
+        bottom *= constants.FACTOR_PAGE_MARGIN
 
         # use normal margin if calculated margin is large enough
         return (
-            min(ITP, left), 
-            min(ITP, right), 
-            min(ITP, top), 
-            min(ITP, bottom)
+            min(constants.ITP, left), 
+            min(constants.ITP, right), 
+            min(constants.ITP, top), 
+            min(constants.ITP, bottom)
             )
  
 
