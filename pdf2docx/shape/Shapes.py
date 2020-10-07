@@ -8,7 +8,7 @@ A group of Shape instances.
 '''
 
 from .Shape import Shape, Stroke, Fill
-from ..common.base import RectType
+from ..common.base import RectType, lazyproperty
 from ..common.Collection import Collection
 from ..common import utils
 from ..common import constants
@@ -40,17 +40,17 @@ class Shapes(Collection):
         return Shapes(instances)
 
 
-    @property
+    @lazyproperty
     def strokes(self):
-        '''Shapes in border type.'''
+        '''Stroke Shapes. Lazy property, cache it once calculated since it doesn't change generally.'''
         instances = list(filter(
             lambda shape: isinstance(shape, Stroke), self._instances))
         return Shapes(instances)
 
 
-    @property
+    @lazyproperty
     def fillings(self):
-        '''Shapes in border type.'''
+        '''Fill Shapes. Lazy property, cache it once calculated since it doesn't change generally.'''
         instances = list(filter(
             lambda shape: isinstance(shape, Fill), self._instances))
         return Shapes(instances)
@@ -135,10 +135,6 @@ class Shapes(Collection):
 
         for instance in self._instances:
             intersection = bbox & instance.bbox
-            if intersection.getArea() / s >= threshold:
-                res = instance
-                break
-        else:
-            res = None
+            if intersection.getArea() / s >= threshold: return instance
 
-        return res
+        return None

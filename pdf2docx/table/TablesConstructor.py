@@ -202,17 +202,15 @@ class TablesConstructor(TableStructure):
 
 
     def _shading_shapes(self):
-        ''' Detect shading rects.
-
-            NOTE: Shading borders are checked after parsing lattice tables.            
+        ''' Detect potential shading rects.            
             
             Note to distinguish shading shape and highlight: 
             - there exists at least one text block contained in shading rect,
             - or no any intersetions with other text blocks (empty block is deleted already);
             - otherwise, highlight rect
         '''
-        # lattice tables
-        lattice_tables = self._blocks.lattice_table_blocks
+        # needn't to consider shapes in parsed tables
+        tables = self._blocks.table_blocks
 
         # check shapes
         shading_shapes = [] # type: list[Fill]
@@ -221,8 +219,8 @@ class TablesConstructor(TableStructure):
             # focus on shape not parsed yet
             if shape.type != RectType.UNDEFINED: continue
 
-            # not in lattice table region
-            for table in lattice_tables:
+            # not in parsed table region
+            for table in tables:
                 if table.bbox.contains(shape.bbox):
                     skip = True
                     break
