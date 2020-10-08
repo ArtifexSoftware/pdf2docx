@@ -9,24 +9,22 @@ Parsing table blocks:
 @author: train8808@gmail.com
 '''
 
-
 from ..common.BBox import BBox
 from ..common.base import RectType
 from ..common import constants
 from ..layout.Blocks import Blocks
-from ..shape.Shape import Fill
 from ..shape.Shapes import Shapes
-from ..text.Lines import Lines
 from .TableStructure import TableStructure
 from .Border import HBorder, VBorder
 
 
 class TablesConstructor(TableStructure):
 
-    def __init__(self, blocks:Blocks, shapes:Shapes):
+    def __init__(self, parent):
         '''Object parsing TableBlock.'''
-        self._blocks = blocks
-        self._shapes = shapes
+        self._parent = parent # Layout
+        self._blocks = parent.blocks if parent else None # type: Blocks
+        self._shapes = parent.shapes if parent else None # type: Shapes
 
 
     def lattice_tables(self):
@@ -63,77 +61,18 @@ class TablesConstructor(TableStructure):
         ''' Parse table with layout of text/image blocks, and update borders with explicit borders 
             represented by rectangle shapes.
         '''
-        x0, _, x1, _ = self._blocks.parent.bbox
+        # all explicit borders and shadings
+        strokes = list(filter(
+            lambda shape: shape.type==RectType.UNDEFINED, self._shapes.strokes))
+        strokes = Shapes(strokes)
+        shadings = self._shapes.potential_shadings
 
-        # first priority: stream tables from block layout
-        tables = self.stream_tables_from_layout(x0, x1)
-
-        # then check those missing from layout, but determined by outer borders
-        tables_ = self.stream_tables_from_outer_borders()
-        tables.extend(tables_)
-
-        # set type: stream table
-        for table in tables: table.set_stream_table_block()
-
-        return tables
-
-
-    def stream_tables_from_outer_borders(self):
-        ''' Parse table where the main structure is determined by outer borders extracted from shading rects.            
-            This table is generally to simulate the shading shape in docx. 
-        '''
-        shading_rects = self._shading_shapes()
-
-        # table based on each shading rect
-        tables = Blocks()
-        for rect in shading_rects:
-            # boundary borders: finalized by shading edge
-            x0, y0, x1, y1 = rect.bbox
-            top = HBorder().finalize(y0)
-            bottom = HBorder().finalize(y1)
-            left = VBorder().finalize(x0)
-            right = VBorder().finalize(x1)
-
-            top.set_boundary_borders((left, right))
-            bottom.set_boundary_borders((left, right))
-            left.set_boundary_borders((top, bottom))
-            right.set_boundary_borders((top, bottom))
-
-            # lines contained in shading rect
-            table_lines = Lines()
-            for block in self._blocks:
-                if rect.bbox.contains(block.bbox):
-                    table_lines.extend(block.lines)
-            
-            # parsing stream table
-            table = self._stream_table(table_lines, rect, (top, bottom, left, right))
-            tables.append(table)
-
-        # check if any intersection with previously parsed tables
-        unique_tables = self._remove_floating_tables(tables)        
-
-        # assign text contents to each table
-        self._blocks.assign_table_contents(unique_tables)
-
-        return unique_tables
-
-
-    def stream_tables_from_layout(self, X0:float, X1:float):
-        ''' Parse table where the main structure is determined by layout of text/image blocks.
-            ---
-            Args:
-            - X0, X1: left and right boundaries of allowed table region
-
-            Since no cell borders exist in this case, there may be various probabilities of table structures. 
-            Among which, we use the simplest one, i.e. 1-row and n-column, to make the docx look like pdf.
-        '''
-        if not self._blocks: return []
-
-        # potential bboxes
-        tables_lines = self._blocks.collect_stream_lines()
+        # lines in potential stream tables
+        tables_lines = self._blocks.collect_stream_lines(shadings)
 
         # parse tables
         tables = Blocks()
+        X0, Y0, X1, Y1 = self._parent.bbox
         for table_lines in tables_lines:
             # bounding box
             x0 = min([rect.bbox.x0 for rect in table_lines])
@@ -142,7 +81,7 @@ class TablesConstructor(TableStructure):
             y1 = max([rect.bbox.y1 for rect in table_lines])
             
             # top/bottom border margin: the block before/after table
-            y0_margin, y1_margin = y0, y1
+            y0_margin, y1_margin = Y0, Y1
             for block in self._blocks:
                 if block.bbox.y1 < y0:
                     y0_margin = block.bbox.y1
@@ -151,31 +90,38 @@ class TablesConstructor(TableStructure):
                     break
 
             # boundary borders: to be finalized, so set a valid range
-            top = HBorder((y0_margin, y0))
-            bottom = HBorder((y1, y1_margin))
-            left = VBorder((X0, x0))
-            right = VBorder((x1, X1))
+            top    = HBorder(border_range=(y0_margin, y0), reference=False)
+            bottom = HBorder(border_range=(y1, y1_margin), reference=False)
+            left   = VBorder(border_range=(X0, x0), reference=False)
+            right  = VBorder(border_range=(x1, X1), reference=False)
 
             top.set_boundary_borders((left, right))
             bottom.set_boundary_borders((left, right))
             left.set_boundary_borders((top, bottom))
             right.set_boundary_borders((top, bottom))
 
-            # table bbox
+            # explicit strokes/shadings in table region
             rect = BBox().update_bbox((X0, y0_margin, X1, y1_margin))
+            explicit_strokes  = strokes.contained_in_bbox(rect.bbox) 
+            explicit_shadings = shadings.contained_in_bbox(rect.bbox)
 
-            # parsing stream table
-            table = self._stream_table(table_lines, rect, (top, bottom, left, right))
+            # parse stream borders based on lines in cell and explicit borders/shadings
+            strokes = self.stream_borders(table_lines, (top, bottom, left, right), explicit_strokes, explicit_shadings)
+            if not strokes: continue
+
+            # parse table structure
+            strokes.sort_in_reading_order() # required
+            table = self.parse_structure(strokes, explicit_shadings)
             tables.append(table)
 
         # check if any intersection with previously parsed tables
         unique_tables = self._remove_floating_tables(tables)
-        
-        # ignore table if contains only one cell since it's unnecessary for stream table
-        unique_tables = list(filter(lambda table: table.num_rows>1 or table.num_cols>1, unique_tables))
+        for table in unique_tables: 
+            # set type: stream table
+            table.set_stream_table_block()
 
         # assign text contents to each table
-        self._blocks.assign_table_contents(unique_tables)
+        self._blocks.assign_table_contents(unique_tables)        
 
         return unique_tables
 
@@ -199,83 +145,3 @@ class TablesConstructor(TableStructure):
             unique_tables.append(table)
         
         return unique_tables
-
-
-    def _shading_shapes(self):
-        ''' Detect shading rects.
-
-            NOTE: Shading borders are checked after parsing lattice tables.            
-            
-            Note to distinguish shading shape and highlight: 
-            - there exists at least one text block contained in shading rect,
-            - or no any intersetions with other text blocks (empty block is deleted already);
-            - otherwise, highlight rect
-        '''
-        # lattice tables
-        lattice_tables = self._blocks.lattice_table_blocks
-
-        # check shapes
-        shading_shapes = [] # type: list[Fill]
-        for shape in self._shapes.fillings:
-
-            # focus on shape not parsed yet
-            if shape.type != RectType.UNDEFINED: continue
-
-            # not in lattice table region
-            for table in lattice_tables:
-                if table.bbox.contains(shape.bbox):
-                    skip = True
-                    break
-            else:
-                skip = False
-            if skip: continue
-
-            # cell shading or highlight:
-            # shading shape contains at least one text block
-            shading = False
-            expand_bbox = shape.get_expand_bbox(2.5) # expand 2.5 Pt
-            for block in self._blocks:
-                if expand_bbox.contains(block.bbox):
-                    shading = True
-                    break
-
-                # do not containing but intersecting with text block -> can't be shading shape
-                elif expand_bbox.intersects(block.bbox):
-                    break
-                
-                # no chance any more
-                elif block.bbox.y0 > shape.bbox.y1: 
-                    break
-            
-            if shading: shading_shapes.append(shape)            
-
-        return shading_shapes
-
-
-    def _stream_table(self, table_lines:Lines, bbox:BBox, outer_borders:tuple):
-        '''Parsing stream table based on both block layout and parts of explicit borders.
-            ---
-            Args:
-            - table_lines: a group of Line instances representing cell contents
-            - bbox: bounding box of table
-            - outer_borders: four Border instances, (top, bottom, left, right), representing outer borders
-        '''
-        # potentail explicit borders contained in table
-        # NOTE: not yet processed rects only
-        explicit_strokes = list(filter(
-            lambda shape: shape.bbox & bbox.bbox and shape.type==RectType.UNDEFINED, self._shapes.strokes))
-
-        # potential shadings in this table region
-        shadings = self._shapes.fillings.contained_in_bbox(bbox.bbox)
-
-        # parse stream borders based on contents in cell and explicit borders
-        strokes = self.stream_borders(table_lines, outer_borders, Shapes(explicit_strokes), shadings)
-        if not strokes: return None
-
-        # parse table
-        strokes.sort_in_reading_order() # required
-        table = self.parse_structure(strokes, shadings)
-        
-        return table
-
-

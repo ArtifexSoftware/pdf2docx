@@ -35,33 +35,58 @@ from ..common.base import RectType
 
 class Border:
 
-    def __init__(self, border_range:tuple=None, borders:tuple=None):
+    def __init__(self, border_type='h', border_range:tuple=None, borders:tuple=None, reference:bool=False):
         '''Border for stream table.
             ---
             Args:
+            - border_type: 'h' - horizontal border; 'v' - vertical border
             - border_range: valid range, e.g. (x0, x1) for vertical border
-            - borders: boundary borders, e.g. top and bottom horizontal borders for current vertical
-            border; left and right vertical borders for current horizontal border. 
+            - borders: boundary borders, e.g. top and bottom horizontal borders for current vertical border; 
+            left and right vertical borders for current horizontal border. 
+            - reference: reference Border is used to show a potential case, which converts to table border when finalized;
+            otherwise, it is ignored.
+            
         '''
+        # border type
+        self.is_horizontal = border_type.upper()=='H'
+        self.finalized = False        # whether the position is determined
+        self.is_reference = reference # whether reference only border
+
         # valid range
         self.set_border_range(border_range)
 
         # boundary borders
         self.set_boundary_borders(borders)
+
+        # the position to be finalized, e.g. y-coordinate for horizontal border
+        self._value = None
         
         # border style
         self.width = constants.HIDDEN_W_BORDER
         self.color = RGB_value((1,1,1)) # white by default
-
-        # whether the position is determined
-        self.finalized = False
-
+        
     
-    def is_valid(self, x:float):
-        '''Whether the given position `x` locates in the valid border range.'''
+    @property
+    def value(self):
+        ''' Finalized position, e.g. y-coordinate of horizontal border. Average value if not finalized.'''
+        return self._value if self.finalized else (self.LRange+self.URange)/2.0
+
+
+    @property
+    def centerline(self):
+        '''Center line of this border.'''
+        if self.is_horizontal:
+            return (self._LBorder.value, self.value, self._UBorder.value, self.value)
+        else:
+            return (self.value, self._LBorder.value, self.value, self._UBorder.value)
+
+
+    def is_valid(self, value:float):
+        '''Whether the given position locates in the valid border range.'''
         # consider margin here, but pay attention to underline which may be counted
-        return (self.LRange-constants.MINOR_DIST) <= x <= (self.URange+constants.MINOR_DIST) 
-    
+        return (self.LRange-constants.MINOR_DIST) <= value <= (self.URange+constants.MINOR_DIST) 
+
+
     def set_border_range(self, border_range):
         '''Set border valid ranges.'''
         if border_range:
@@ -71,6 +96,7 @@ class Border:
         self.LRange:float = x0
         self.URange:float = x1
         return self
+
 
     def set_boundary_borders(self, borders):
         '''Set boundary borders.'''
@@ -82,157 +108,97 @@ class Border:
         self._UBorder:Border = upper_border # right border, or bottom border
         return self    
 
-    @property
-    def centerline(self):
-        raise NotImplementedError
+
+    def finalize_by_value(self, value:float):
+        ''' Finalize border with given position.'''
+        # can be finalized only one time
+        if self.finalized or not self.is_valid(value): return self
+
+        self._value = value
+        self.finalized = True
+        self.is_reference = False
+        return self
+
+
+    def finalize_by_stroke(self, stroke:Stroke):
+        ''' Finalize border with specified stroke shape, which is generally a showing border-like shape.
+             
+            NOTE:
+            - the boundary borders may also be affected by this stroke shape.
+            - border-like stroke may be an underline/strike-through.      
+        '''        
+        if self.is_horizontal:
+            # x0, x1, and y of h-stroke
+            low_pos, upper_pos = stroke.x0, stroke.x1
+            value = stroke.y0 # equal to stroke.y1
+        else:
+            # y0, y1 and x of v-stroke
+            low_pos, upper_pos = stroke.y0, stroke.y1
+            value = stroke.x0 # equal to stroke.x1
+
+        # skip if not in valid range of a border
+        if not self.is_valid(value): return
+
+        # skip if not span in the border direction
+        if low_pos > self._LBorder.URange and upper_pos < self._UBorder.LRange: return
+
+        # skip if finalized already
+        if self.finalized: return True
+
+        # now, finalize current border
+        self.finalize_by_value(value)
+        self.color = stroke.color
+        self.width = stroke.width
+
+        # and, try to finalize boundary borders
+        self._LBorder.finalize_by_value(low_pos)
+        self._UBorder.finalize_by_value(upper_pos)
+
+        # update rect type as table border
+        stroke.type = RectType.BORDER
+
 
     def to_stroke(self):
         '''Convert to border stroke.'''
+        # ignore if reference only
+        if self.is_reference: return None
+
         stroke = Stroke({'color': self.color, 'width': self.width}).update_bbox(self.centerline)
-        stroke.type = RectType.BORDER # set border style
-        
+        stroke.type = RectType.BORDER # set border style        
         return stroke
 
 
 class HBorder(Border):
-
-    def __init__(self, border_range:tuple=None, borders:tuple=None):
-        '''Horizontal border -> to determin y-coordinate.'''
-        super().__init__(border_range, borders)
-        self._y = None
-    
-    @property
-    def y(self):
-        ''' y-coordinate of horizontal border. Average value if not finalized.'''
-        return self._y if self.finalized else (self.LRange+self.URange)/2.0
-
-    @property
-    def centerline(self):
-        '''Center line of this border.'''
-        return (self._LBorder.x, self.y, self._UBorder.x, self.y)
-
-    def finalize(self, y:float):
-        ''' Finalize border with given position.'''
-        # can be finalized only one time
-        if self.finalized or not self.is_valid(y): return self
-        self._y = y
-        self.finalized = True
-        return self
-
-    def finalize_by_stroke(self, stroke:Stroke):
-        ''' Finalize border with specified horizontal stroke shape, which is generally a showing border.        
-            NOTE: the boundary borders may also be affected by this stroke shape.
-        '''
-        x0, x1 = stroke.x0, stroke.x1
-        y = stroke.y0 # equal to stroke.y1
-
-        # skip if 
-
-        # skip if no intersection in y-direction
-        if self.finalized or not self.is_valid(y): return self
-
-        # skip if not span in x-ditrection
-        if x0 > self._LBorder.URange and x1 < self._UBorder.LRange: return self
-
-        # now, it can be used to finalize current border
-        self.finalize(y)
-        self.color = stroke.color
-        self.width = stroke.width
-
-        # and, try to finalize boundary borders
-        self._LBorder.finalize(x0)
-        self._UBorder.finalize(x1)
-
-        # update rect type as table border
-        stroke.type = RectType.BORDER
-
-        return self
+    def __init__(self, border_range:tuple=None, borders:tuple=None, reference:bool=False):
+        '''Horizontal border.'''
+        super().__init__('h', border_range, borders, reference)
 
 
 class VBorder(Border):
-
-    def __init__(self, border_range:tuple=None, borders:tuple=None):
-        '''Vertical border -> to determin x-coordinate.'''
-        super().__init__(border_range, borders)
-        self._x = None
-
-    @property
-    def x(self):
-        ''' x-coordinate of vertical border. Average value if not finalized.'''
-        return self._x if self.finalized else (self.LRange+self.URange)/2.0
-
-    @property
-    def centerline(self):
-        '''Center line of this border.'''
-        return (self.x, self._LBorder.y, self.x, self._UBorder.y)  
-    
-    def finalize(self, x:float):
-        '''Finalize border with given position.'''
-        # can be finalized fo only one time
-        if self.finalized or not self.is_valid(x): return self
-        self._x = x
-        self.finalized = True
-        return self
-    
-    def finalize_by_stroke(self, stroke:Stroke):
-        ''' Finalize border with specified horizontal rect, which is generally a showing border.        
-            NOTE: the boundary borders may also be affected by this rect.
-        '''
-        y0, y1 = stroke.y0, stroke.y1
-        x = stroke.x0 # or stroke.x1
-
-        # skip if no intersection in x-direction
-        if self.finalized or not self.is_valid(x): return self
-
-        # skip if no intersection in x-ditrection
-        if y0 > self._LBorder.URange and y1 < self._UBorder.LRange: return self
-
-        # now, it can be used to finalize current border
-        self.finalize(x)
-        self.color = stroke.color
-        self.width = stroke.width
-
-        # and, try to finalize boundary borders
-        self._LBorder.finalize(y0)
-        self._UBorder.finalize(y1)
-
-        # update rect type as table border
-        stroke.type = RectType.BORDER
-
-        return self
+    def __init__(self, border_range:tuple=None, borders:tuple=None, reference:bool=False):
+        '''Vertical border.'''
+        super().__init__('v', border_range, borders, reference)
 
 
 class Borders:
     '''Collection of Border instances.'''
     def __init__(self):
         ''' Init collection with empty borders.'''
-        self._HBorders = [] # type: list[HBorder]
-        self._VBorders = [] # type: list[VBorder]
+        self._instances = [] # type: list[Border]
 
 
     def __iter__(self):
-        return (instance for instance in self._HBorders+self._VBorders)
+        return (instance for instance in self._instances)
 
     def __len__(self):
-        return len(self._HBorders) + len(self._VBorders)
+        return len(self._instances)
     
 
-    def add(self, border:Border):
-        '''Add border.'''
-        if isinstance(border, HBorder):
-            self._HBorders.append(border)        
-        elif isinstance(border, VBorder):
-            self._VBorders.append(border)
+    def add(self, border:Border): self._instances.append(border)
     
 
-    def extend(self, borders:list):
-        for border in borders: self.add(border)
+    def extend(self, borders:list): self._instances.extend(borders)
 
-    @property
-    def HBorders(self): return self._HBorders
-
-    @property
-    def VBorders(self): return self._VBorders
 
     def finalize(self, strokes:Shapes, fills:Shapes):
         ''' Finalize the position of all borders:
@@ -245,42 +211,41 @@ class Borders:
             - fills: a group of explicit cell shadings.
         '''
         # finalize borders by explicit strokes in first priority
-        h_strokes = filter(lambda stroke: stroke.horizontal, strokes)
-        v_strokes = filter(lambda stroke: stroke.vertical,   strokes)
-        self._finalize_by_strokes(h_strokes, v_strokes)
+        self._finalize_by_strokes(strokes)
 
         # finalize borders by explicit fillings in second priority
-        h_strokes, v_strokes = [], []
+        tmp_strokes = []
         for fill in fills:
             x0, y0, x1, y1 = fill.bbox
-            h_strokes.extend([
-                Stroke().update_bbox((x0, y0, x1, y0)),
-                Stroke().update_bbox((x0, y1, x1, y1))
+            tmp_strokes.extend([
+                Stroke().update_bbox((x0, y0, x1, y0)), # top
+                Stroke().update_bbox((x0, y1, x1, y1)), # bottom
+                Stroke().update_bbox((x0, y0, x0, y1)), # left
+                Stroke().update_bbox((x1, y0, x1, y1))  # right
             ])
-            v_strokes.extend([
-                Stroke().update_bbox((x0, y0, x0, y1)),
-                Stroke().update_bbox((x1, y0, x1, y1))
-            ])
-        self._finalize_by_strokes(h_strokes, v_strokes)
+        self._finalize_by_strokes(tmp_strokes)
 
-        # finalize borders by their layout finally
-        # un-finalized h-borders
-        borders = list(filter(lambda border: not border.finalized, self._HBorders))
-        self._finalize_by_layout(borders)
+        # finalize borders by their layout finally:
+        # - un-finalized, and
+        # - not reference-only borders        
+        borders = list(filter(lambda border: not (border.finalized or border.is_reference), self._instances))
 
-        # un-finalized v-borders
-        borders = list(filter(lambda border: not border.finalized, self._VBorders))
-        self._finalize_by_layout(borders)
+        #  h-borders
+        h_borders = list(filter(lambda border: border.is_horizontal, borders))
+        self._finalize_by_layout(h_borders)
+
+        # v-borders
+        v_borders = list(filter(lambda border: not border.is_horizontal, borders))
+        self._finalize_by_layout(v_borders)
 
     
-    def _finalize_by_strokes(self, h_strokes:list, v_strokes:list):
-        '''Finalize by explicit strokes.'''
-        for stroke in h_strokes:
-            for border in self._HBorders:            
-                border.finalize_by_stroke(stroke)
+    def _finalize_by_strokes(self, strokes:list):
+        '''Finalize borders by explicit strokes.'''
+        for stroke in strokes:
+            for border in self._instances:
+                # horizontal stroke can finalize horizontal border only
+                if stroke.horizontal != border.is_horizontal: continue
 
-        for stroke in v_strokes:
-            for border in self._VBorders:            
                 border.finalize_by_stroke(stroke)
 
 
@@ -337,4 +302,4 @@ class Borders:
 
             # now, finalize borders
             for border, border_status in zip(borders, status):
-                if border_status: border.finalize(x)
+                if border_status: border.finalize_by_value(x)

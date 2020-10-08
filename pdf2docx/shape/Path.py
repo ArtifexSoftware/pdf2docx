@@ -27,10 +27,10 @@ Paths are created based on DICT data extracted from `pdf2docx.common.pdf` module
 
 
 import fitz
-from ..common import pdf
+from ..common.base import lazyproperty
+from ..common import pdf, constants
 from ..common.Collection import BaseCollection
 from ..common.utils import RGB_component, get_main_bbox
-from ..common import constants
 from ..image.Image import ImagesExtractor
 
 class PathsExtractor:
@@ -110,13 +110,11 @@ class PathsExtractor:
 class Paths(BaseCollection):
     '''A collection of paths.'''
     
-    @property
+    @lazyproperty
     def bbox(self):
-        if not hasattr(self, '_bbox'):
-            bbox = fitz.Rect()
-            for instance in self._instances: bbox |= instance.bbox
-            self._bbox = bbox
-        return self._bbox
+        bbox = fitz.Rect()
+        for instance in self._instances: bbox |= instance.bbox
+        return bbox
     
     def contains_curve(self, ratio:float):
         ''' Whether any curve paths exist. 
@@ -124,7 +122,7 @@ class Paths(BaseCollection):
         '''
         bbox = fitz.Rect()
         for path in self._instances:            
-            if not path.is_iso_oriented: bbox |= path.bbox
+            if not path.is_iso_oriented(constants.FACTOR_A_FEW): bbox |= path.bbox
 
         return bbox.getArea()/self.bbox.getArea() >= ratio
     
@@ -204,19 +202,25 @@ class Path:
         return bbox
 
 
-    @property
-    def is_iso_oriented(self):
-        '''Whether contains horizontal/vertical path segments only.'''
+    def is_iso_oriented(self, ratio:float):
+        '''Whether contains only horizontal/vertical path segments.
+            Criterion: the length ratio of curved path segments.
+        '''
+        L_sum, L_curve = 1e-6, 0.0
         for i in range(len(self.points)-1):
             # start point
             x0, y0 = self.points[i]
             # end point
             x1, y1 = self.points[i+1]
 
-            if x0!=x1 and y0!=y1:
-                return False
+            # segment length
+            L = ( (y1-y0)**2 + (x1-x0)**2 ) ** 0.5
+            L_sum += L
+
+            # curved segment
+            if x0!=x1 and y0!=y1: L_curve += L
         
-        return True
+        return L_curve/L_sum < ratio
 
 
     def to_iso_strokes(self):

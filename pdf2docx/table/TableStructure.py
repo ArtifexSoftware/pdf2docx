@@ -401,74 +401,74 @@ class TableStructure:
             - parsing real borderless table
 
             It's controdictory that the former needn't to deep into row level, just 1 x N table convenient for layout recreation;
-            instead, the later should, M x N table for each cell precisely.
-            So, the principle determining borders for stream tables here:
-            - two columns: layout if the rows count in each column is different; otherwise, it's a real table
-            - otherwise: real table -> deep into rows
+            instead, the later should, M x N table for each cell precisely. So, the principle determining stream tables borders:
+            - vertical borders contributes the table structure, so border.is_reference=False
+            - horizontal borders are for reference when n_column=2, border.is_reference=True
+            - during deeper recursion, h-borders become outer borders: it turns valuable when count of detected columns >= 2 
         '''
         # trying: deep into cells        
         cols_lines = lines.group_by_columns()
         group_lines = [col_lines.group_by_rows() for col_lines in cols_lines]
 
-        # real table or just text layout?
+        # horizontal borders are for reference when n_column=2 -> consider two-columns text layout
         col_num = len(cols_lines)
-        real_table = True # table by default
-        if col_num==2:
-            # it's layout if row count is different or the count is 1
-            left_count, right_count = len(group_lines[0]), len(group_lines[1])
-            if left_count!=right_count or left_count==1:
-                real_table = False
+        is_reference = col_num==2
 
-        # detect borders based on table/layout mode
-        borders = Borders()
-        TOP, BOTTOM, LEFT, RIGHT = outer_borders 
+        # outer borders construct the table, so they're not just for reference        
+        if col_num>=2: # outer borders contribute to table structure
+            for border in outer_borders:
+                border.is_reference = False
+
+        borders = Borders() # final results
         
         # collect lines column by column
+        right = None
+        TOP, BOTTOM, LEFT, RIGHT = outer_borders 
         for i in range(col_num): 
-            # left column border
-            if i==0: left = LEFT
-
+            # left column border: after the first round the right border of the i-th column becomes 
+            # left border of the (i+1)-th column
+            left = LEFT if i==0 else right
+            
             # right column border
-            if i==col_num-1:
-                right = RIGHT
+            if i==col_num-1: right = RIGHT
             else:                
                 x0 = cols_lines[i].bbox.x1
                 x1 = cols_lines[i+1].bbox.x0
-                right = VBorder(border_range=(x0, x1), borders=(TOP, BOTTOM))
-                borders.add(right) # right border of current column
+                right = VBorder(
+                    border_range=(x0, x1), 
+                    borders=(TOP, BOTTOM), 
+                    reference=False) # vertical border always valuable
+                borders.add(right) # right border of current column            
             
             # NOTE: unnecessary to split row if the count of row is 1
             rows_lines = group_lines[i]
             row_num = len(rows_lines)
-            if row_num > 1:        
-                # collect bboxes row by row 
-                for j in range(row_num): 
+            if row_num == 1: continue
 
-                    # top row border
-                    if j==0: top = TOP
+            # collect bboxes row by row
+            bottom = None
+            for j in range(row_num):
+                # top row border, after the first round, the bottom border of the i-th row becomes 
+                # top border of the (i+1)-th row
+                top = TOP if j==0 else bottom
 
-                    # bottom row border
-                    if j==row_num-1:
-                        bottom = BOTTOM
-                    else:                
-                        y0 = rows_lines[j].bbox.y1
-                        y1 = rows_lines[j+1].bbox.y0
-                        bottom = HBorder(border_range=(y0, y1), borders=(left, right))
-                        
-                        if real_table: borders.add(bottom) # bottom border of current row
-                    
-                    # needn't go to row level if layout mode
-                    if real_table:
-                        # recursion to check borders further
-                        borders_ = TableStructure._inner_borders(rows_lines[j], (top, bottom, left, right))
-                        borders.extend(borders_)
-                    
-                    # update for next row:
-                    # the bottom border of the i-th row becomes top border of the (i+1)-th row
-                    top = bottom
-                
-            # update for next column:
-            # the right border of the i-th column becomes left border of the (i+1)-th column
-            left = right
+                # bottom row border
+                if j==row_num-1: bottom = BOTTOM
+                else:                
+                    y0 = rows_lines[j].bbox.y1
+                    y1 = rows_lines[j+1].bbox.y0
+
+                    # bottom border of current row
+                    # NOTE: for now, this horizontal border is just for reference; 
+                    # it'll becomes real border when used as an outer border
+                    bottom = HBorder(
+                        border_range=(y0, y1), 
+                        borders=(left, right), 
+                        reference=is_reference)
+                    borders.add(bottom)
+
+                # recursion to check borders further
+                borders_ = TableStructure._inner_borders(rows_lines[j], (top, bottom, left, right))
+                borders.extend(borders_)
 
         return borders

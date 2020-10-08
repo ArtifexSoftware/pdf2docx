@@ -68,7 +68,7 @@ class Layout:
         self.shapes = Shapes(parent=self).from_dicts(raw.get('paths', []))
 
         # table parser
-        self._tables_constructor = TablesConstructor(self.blocks, self.shapes)
+        self._tables_constructor = TablesConstructor(parent=self)
 
         # page margin: 
         # - dict from PyMuPDF: to calculate after cleaning blocks
@@ -82,7 +82,7 @@ class Layout:
     @property
     def bbox(self):
         if self._margin is None:
-            return (0,) * 4
+            return (0, 0, self.width, self.height)
         else:
             left, right, top, bottom = self.margin
             return (left, top, self.width-right, self.height-bottom)

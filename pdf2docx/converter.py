@@ -97,7 +97,7 @@ class Converter:
         # save debug files
         if debug:
             # save layout plotting as pdf file
-            debug_kwargs['doc'].save(debug_kwargs['filename'])
+            if len(debug_kwargs['doc']): debug_kwargs['doc'].save(debug_kwargs['filename'])
             # write layout information
             self.layout.serialize(filename_json)
 
