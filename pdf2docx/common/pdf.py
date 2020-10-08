@@ -9,6 +9,7 @@ PDF operations, e.g. extract rectangles, based on PyMuPDF
 
 import fitz
 from . import utils
+from . import constants
 
 
 def new_page_section(doc, width:float, height:float, title:str):
@@ -151,9 +152,15 @@ def paths_from_annotations(page:fitz.Page):
         # +----------------------------+
         # 
         if key==3: 
-            x0 = rect.x0+1.5*w
-            x1 = rect.x1-1.5*w
-            y0 = y1 = (rect.y0+rect.y1)/2.0
+            # horizontal line
+            if rect.width >= rect.height:
+                x0 = rect.x0+1.5*w
+                x1 = rect.x1-1.5*w
+                y0 = y1 = (rect.y0+rect.y1)/2.0
+            else:
+                y0 = rect.y0+1.5*w
+                y1 = rect.y1-1.5*w
+                x0 = x1 = (rect.x0+rect.x1)/2.0
             path = _add_stroke_line((x0, y0), (x1, y1), sc, w)
             res.append(path)
 
@@ -505,7 +512,7 @@ def paths_from_stream(page:fitz.Page):
                 P.append(P[-1])
             
             # calculate points on Bezier points with parametric equation
-            bezier = _bezier_paths(P, segments=5)
+            bezier = _bezier_paths(P, segments=constants.N_BEZIER_SAMPLE)
             paths[-1].extend(bezier)
 
         # close the path
@@ -652,7 +659,7 @@ def _is_device_cs(xref, doc:fitz.Document):
     return False
 
 
-def _bezier_paths(points, segments=5):
+def _bezier_paths(points, segments):
     '''calculate points on Bezier curve.
         ---
         Args:
