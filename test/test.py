@@ -159,6 +159,11 @@ class MainTest(TestUtility):
         if not os.path.exists(self.output_dir):
             os.mkdir(self.output_dir)
 
+    def test_blank_file(self):
+        '''sample file without any texts or images.'''
+        self.init_test('demo-blank').verify_layout(threshold=0.95)
+
+
     def test_text_format(self):
         '''sample file focusing on text format, e.g. highlight, underline, strike-through.'''
         self.init_test('demo-text').verify_layout(threshold=0.95)
