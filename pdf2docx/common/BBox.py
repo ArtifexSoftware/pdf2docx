@@ -56,6 +56,12 @@ class BBox(IText):
     def get_expand_bbox(self, dt:float):
         '''Get expanded bbox with margin dt in both x- and y- direction. Note this method doesn't change its bbox.'''
         return self.bbox + (-dt, -dt, dt, dt)
+    
+
+    def contains(self, bbox, threshold:float=0.0):
+        '''Whether given bbox is contained in this instance, with margin considered.'''
+        union = self.bbox | bbox.bbox
+        return abs(union.getArea()/self.bbox.getArea()-1.0) <= threshold
    
    
     def vertically_align_with(self, bbox, factor:float=0.0, text_direction:bool=True):

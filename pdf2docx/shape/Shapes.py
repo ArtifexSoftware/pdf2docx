@@ -32,30 +32,6 @@ class Shapes(Collection):
         pass
 
 
-    @property
-    def borders(self):
-        '''Shapes in border type.'''
-        instances = list(filter(
-            lambda shape: shape.type==RectType.BORDER, self._instances))
-        return Shapes(instances)
-
-
-    @lazyproperty
-    def strokes(self):
-        '''Stroke Shapes. Lazy property, cache it once calculated since it doesn't change generally.'''
-        instances = list(filter(
-            lambda shape: isinstance(shape, Stroke), self._instances))
-        return Shapes(instances)
-
-
-    @lazyproperty
-    def fillings(self):
-        '''Fill Shapes. Lazy property, cache it once calculated since it doesn't change generally.'''
-        instances = list(filter(
-            lambda shape: isinstance(shape, Fill), self._instances))
-        return Shapes(instances)
-
-
     def clean(self):
         '''Clean rectangles:
             - delete rectangles fully contained in another one (beside, they have same bg-color)
@@ -138,3 +114,77 @@ class Shapes(Collection):
             if intersection.getArea() / s >= threshold: return instance
 
         return None
+
+
+    @lazyproperty
+    def strokes(self):
+        '''Stroke Shapes. Lazy property, cache it once calculated since it doesn't change generally.'''
+        instances = list(filter(
+            lambda shape: isinstance(shape, Stroke), self._instances))
+        return Shapes(instances)
+
+
+    @lazyproperty
+    def fillings(self):
+        '''Fill Shapes. Lazy property, cache it once calculated since it doesn't change generally.'''
+        # white bg-color is by default, so ignore those fillings
+        instances = list(filter(
+            lambda shape: isinstance(shape, Fill) and shape.color != utils.RGB_value((1,1,1)), self._instances))
+        return Shapes(instances)
+
+
+    @property
+    def borders(self):
+        '''Parsed shapes in border type. It changes when tables are parsed.'''
+        instances = list(filter(
+            lambda shape: shape.type==RectType.BORDER, self._instances))
+        return Shapes(instances)
+
+    
+    @property
+    def shadings(self):
+        '''Parsed shapes in shading type. It changes when tables are parsed.'''
+        instances = list(filter(
+            lambda shape: shape.type==RectType.SHADING, self._instances))
+        return Shapes(instances)
+
+
+    @property
+    def potential_shadings(self):
+        ''' Potential shading shapes to process. Note to distinguish shading shape with highlight: 
+            - there exists at least one text block contained in shading rect,
+            - or no any intersetions with other text blocks (empty block is deleted already);
+            - otherwise, highlight rect
+        '''
+        # needn't to consider shapes in parsed tables
+        tables = self._parent.blocks.table_blocks
+        def shape_in_parsed_tables(shape):
+            for table in tables:
+                if table.bbox.contains(shape.bbox): return True
+            return False
+
+        # check shapes
+        shading_shapes = [] # type: list[Fill]
+        for shape in self.fillings:
+
+            # focus on shape not parsed yet
+            if shape.type != RectType.UNDEFINED: continue
+
+            # not in parsed table region
+            if shape_in_parsed_tables(shape): continue
+
+            # cell shading or highlight:
+            # shading shape contains at least one text block
+            shading = False
+            for block in self._parent.blocks:
+                if shape.contains(block, threshold=constants.FACTOR_A_FEW):
+                    shading = True
+                    break
+                
+                # no chance any more
+                elif block.bbox.y0 > shape.bbox.y1: 
+                    break
+            
+            if shading: shading_shapes.append(shape)            
+
+        return Shapes(shading_shapes)

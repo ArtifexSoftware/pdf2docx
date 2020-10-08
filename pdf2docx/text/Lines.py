@@ -108,7 +108,7 @@ class Lines(Collection):
         self.reset(lines)
 
 
-    def split(self):
+    def split(self, threshold:float):
         ''' Split vertical lines and try to make lines in same original text block grouped together.
 
             To the first priority considering docx recreation, horizontally aligned lines must be assigned to same group.
@@ -117,7 +117,7 @@ class Lines(Collection):
         '''
         # split vertically
         # set a non-zero but small factor to avoid just overlaping in same edge
-        fun = lambda a,b: a.horizontally_align_with(b, factor=constants.FACTOR_A_FEW)
+        fun = lambda a,b: a.horizontally_align_with(b, factor=threshold)
         groups = self.group(fun) 
 
         # check count of lines in each group
@@ -180,66 +180,24 @@ class Lines(Collection):
 
     def group_by_columns(self):
         ''' Group lines into columns.'''
-        # sort lines in column first: from left to right, from top to bottom
-        self.sort_in_line_order()
+        # split in columns
+        fun = lambda a,b: a.vertically_align_with(b, text_direction=False)
+        groups = self.group(fun)
         
-        #  lines list in each column
-        cols_lines = [] # type: list[Lines]
-
-        # collect lines column by column
-        col_line = Line()
-        for line in self._instances:
-            # same column group if vertically aligned
-            if col_line.vertically_align_with(line):
-                cols_lines[-1].append(line)
-            
-            # otherwise, start a new column group
-            else:
-                cols_lines.append(Lines([line]))
-                col_line = Line() # reset
-                
-            col_line.union_bbox(line)
-
-        return cols_lines
+        # NOTE: increasing in x-direction is required!
+        groups.sort(key=lambda group: group.bbox.x0)
+        return groups
 
 
     def group_by_rows(self):
         ''' Group lines into rows.'''
-        # sort lines in row first mode: from top to bottom, from left to right
-        self.sort_in_reading_order()
+        # split in rows, with original text block considered
+        groups = self.split(threshold=0.0)
 
-        # collect lines row by row
-        rows = [] # type: list[Lines]
-        row_line = Line()
-        for line in self._instances:
-            # same row group if horizontally aligned
-            if row_line.horizontally_align_with(line):
-                rows[-1].append(line)
-            
-            # otherwise, start a new row group
-            else:
-                rows.append(Lines([line]))
-                row_line = Line() # reset
+        # NOTE: increasing in y-direction is required!
+        groups.sort(key=lambda group: group.bbox.y0)
 
-            row_line.union_bbox(line)
-        
-        # further step:
-        # merge rows if in same original text block
-        lines_list = [] # type: list[Lines]
-        ref = Lines()
-        for row in rows:
-            # same parent text block: merge to previous group
-            if ref.unique_parent and row.unique_parent and row[0].same_parent_with(ref[0]):
-                lines_list[-1].extend(row)
-            
-            # otherwise, append it directly
-            else:
-                lines_list.append(row)
-            
-            # update reference
-            ref = row
-
-        return lines_list
+        return groups
 
 
     def make_docx(self, p):

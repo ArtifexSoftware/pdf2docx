@@ -226,34 +226,50 @@ class Blocks(Collection):
         self.reset(blocks).sort_in_reading_order()
 
 
-    def collect_stream_lines(self):
+    def collect_stream_lines(self, potential_shadings:list):
         ''' Collect lines of text block, which may contained in a stream table region.
+            ---
+            Args:
+            - potential_shadings: a group of shapes representing potential cell shading
 
             NOTE: PyMuPDF may group multi-lines in a row as a text block while each line belongs to different
             cell. So, deep into line level here when collecting table contents regions.
             
             Table may exist on the following conditions:
-             - (a) lines in blocks are not connected sequently -> determined by current block only
-             - (b) multi-blocks are in a same row (horizontally aligned) -> determined by two adjacent blocks
+             - (a) lines in potential shading -> determined by shapes
+             - (b) lines in blocks are not connected sequently -> determined by current block only
+             - (c) multi-blocks are in a same row (horizontally aligned) -> determined by two adjacent blocks
+             
         '''
-
-        res = [] # type: list[Lines]
-
         # get sub-lines from block
         def sub_lines(block):
             return block.lines if block.is_text_block() else [Line().update_bbox(block.bbox)]
 
+        # check block by block
+        res = [] # type: list[Lines]
+        table_lines = Lines() # potential text lines in a table
         new_line = True
-        num = len(self._instances)
-        table_lines = Lines()
-        for i in range(num):
+        num_blocks, num_shadings = len(self._instances), len(potential_shadings)
+        j = 0
+        for i in range(num_blocks):
+
             block = self._instances[i]
-            next_block = self._instances[i+1] if i<num-1 else Block()
+            next_block = self._instances[i+1] if i<num_blocks-1 else Block()
 
             table_end = False
+
+            # (a) block in potential shading?
+            if j < num_shadings:
+                shading = potential_shadings[j]
+                if shading.contains(block, threshold=constants.FACTOR_A_FEW):
+                    table_lines.extend(sub_lines(block))
+                    new_line = False
+                
+                # move to next shading
+                elif next_block.bbox.y0 > shading.bbox.y1:
+                    j += 1
             
-            # there is gap between these two criteria, so consider condition (a) only if it's the first block in new row.
-            # (a) lines in current block are connected sequently?
+            # (b) lines in current block are connected sequently?
             # yes, counted as table lines
             if new_line and block.contains_discrete_lines(): 
                 table_lines.extend(sub_lines(block))  # deep into line level
@@ -261,7 +277,7 @@ class Blocks(Collection):
                 # update line status
                 new_line = False            
 
-            # (b) multi-blocks are in a same row: check layout with next block?
+            # (c) multi-blocks are in a same row: check layout with next block?
             # yes, add both current and next blocks
             if block.horizontally_align_with(next_block, factor=constants.FACTOR_A_FEW):
                 # if it's start of new table row: add the first block
@@ -282,7 +298,7 @@ class Blocks(Collection):
                 new_line = True
 
             # NOTE: close table detecting manually if last block
-            if i==num-1: table_end = True
+            if i==num_blocks-1: table_end = True
 
             # end of current table
             if table_lines and table_end: 

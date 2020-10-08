@@ -92,7 +92,7 @@ class TextBlock(Block):
     def split(self):
         ''' Split contained lines vertically and create associated text blocks.'''
         blocks = [] # type: list[TextBlock]
-        for lines in self.lines.split():
+        for lines in self.lines.split(threshold=constants.FACTOR_A_FEW):
             text_block = TextBlock()
             text_block.lines.reset(list(lines))
             blocks.append(text_block)
