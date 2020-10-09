@@ -9,7 +9,7 @@ A group of Text/Image or Table block.
 from docx.shared import Pt
 from ..common import constants
 from ..common.Collection import Collection
-from ..common.base import BlockType
+from ..common.base import BlockType, lazyproperty
 from ..common.Block import Block
 from ..common.docx import reset_paragraph_format
 from ..text.TextBlock import TextBlock
@@ -45,29 +45,23 @@ class Blocks(Collection):
         pass
 
 
-    def from_dicts(self, raws:list):
-        for raw_block in raws:
-            block_type = raw_block.get('type', -1) # type: int
-            
-            # image block -> text block
-            if block_type==BlockType.IMAGE.value:
-                block = ImageBlock(raw_block).to_text_block()
-            
-            # text block
-            elif block_type == BlockType.TEXT.value:
-                block = TextBlock(raw_block)
+    @property
+    def lattice_table_blocks(self):
+        '''Get lattice table blocks contained in this Collection.'''
+        return list(filter(
+            lambda block: block.is_lattice_table_block(), self._instances))
 
-            # table block
-            elif block_type in (BlockType.LATTICE_TABLE.value, BlockType.STREAM_TABLE.value):
-                block = TableBlock(raw_block)
-            
-            else:
-                block = None            
-            
-            # add to list
-            self.append(block)
-        
-        return self
+    @property
+    def stream_table_blocks(self):
+        '''Get stream table blocks contained in this Collection.'''
+        return list(filter(
+            lambda block: block.is_stream_table_block(), self._instances))
+
+    @property
+    def table_blocks(self):
+        '''Get table blocks contained in this Collection.'''
+        return list(filter(
+            lambda block: block.is_table_block(), self._instances))
 
 
     def text_blocks(self, level=0):
@@ -117,26 +111,32 @@ class Blocks(Collection):
         return spans
 
 
-    @property
-    def lattice_table_blocks(self):
-        '''Get lattice table blocks contained in this Collection.'''
-        return list(filter(
-            lambda block: block.is_lattice_table_block(), self._instances))
+    def from_dicts(self, raws:list):
+        for raw_block in raws:
+            block_type = raw_block.get('type', -1) # type: int
+            
+            # image block -> text block
+            if block_type==BlockType.IMAGE.value:
+                block = ImageBlock(raw_block).to_text_block()
+            
+            # text block
+            elif block_type == BlockType.TEXT.value:
+                block = TextBlock(raw_block)
 
-    @property
-    def stream_table_blocks(self):
-        '''Get stream table blocks contained in this Collection.'''
-        return list(filter(
-            lambda block: block.is_stream_table_block(), self._instances))
+            # table block
+            elif block_type in (BlockType.LATTICE_TABLE.value, BlockType.STREAM_TABLE.value):
+                block = TableBlock(raw_block)
+            
+            else:
+                block = None            
+            
+            # add to list
+            self.append(block)
+        
+        return self
 
-    @property
-    def table_blocks(self):
-        '''Get table blocks contained in this Collection.'''
-        return list(filter(
-            lambda block: block.is_table_block(), self._instances))
 
-
-    def clean(self):
+    def clean_up(self):
         '''Preprocess blocks initialized from the raw layout.'''
 
         # filter function:
@@ -152,8 +152,6 @@ class Blocks(Collection):
         # merge blocks horizontally, e.g. remove overlap blocks, since no floating elements are supported
         # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
         self.sort_in_reading_order().join_horizontally(text_direction=False)
-
-        return True
 
 
     def assign_table_contents(self, tables):

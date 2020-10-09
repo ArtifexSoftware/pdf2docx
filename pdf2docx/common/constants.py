@@ -17,6 +17,7 @@ FACTOR_MOST = 0.90
 FACTOR_MAJOR = 0.75
 FACTOR_A_HALF = 0.5
 FACTOR_A_FEW = 0.1
+FACTOR_FEW = 0.01
 
 # -------------------------------------
 # page parameters

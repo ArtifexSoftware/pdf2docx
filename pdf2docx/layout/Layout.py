@@ -44,7 +44,6 @@ from ..common import constants
 from ..common.pdf import new_page_with_margin
 
 
-
 class Layout:
     ''' Object representing the whole page, e.g. margins, blocks, shapes, spacing.'''
 
@@ -74,6 +73,7 @@ class Layout:
         # - dict from PyMuPDF: to calculate after cleaning blocks
         # - restored from json: get margin directly
         self._margin = raw.get('margin', None)
+
 
     @property
     def margin(self): return self._margin
@@ -117,7 +117,7 @@ class Layout:
         '''
 
         # preprocessing, e.g. change block order, clean negative block
-        self.clean(**kwargs)        
+        self.clean_up(**kwargs)        
     
         # parse table blocks: 
         #  - table structure/format recognized from rectangles
@@ -183,15 +183,21 @@ class Layout:
 
 
     @debug_plot('Cleaned Blocks and Shapes', plot=True, category=PlotControl.LAYOUT)
-    def clean(self, **kwargs):
+    def clean_up(self, **kwargs):
         '''Clean blocks and rectangles, e.g. remove negative blocks, duplicated shapes.'''
-        clean_blocks = self.blocks.clean()
-        clean_shapes  = self.shapes.clean()
+        # clean up shapes and detect initial categories based on the positions to text blocks, 
+        # e.g. table border v.s. text underline, table shading v.s. text highlight
+        self.shapes.clean_up()
+        self.shapes.detect_initial_categories()
+        
+        # clean up bad blocks, e.g. overlapping, out of page
+        # NOTE: this step should come after clean up shapes since the initial layout of blocks are used
+        self.blocks.clean_up()
         
         # calculate page margin based on clean layout
         self._margin = self.page_margin()
 
-        return clean_blocks or clean_shapes
+        return True
 
 
     @debug_plot('Lattice Table Structure', plot=True, category=PlotControl.TABLE)

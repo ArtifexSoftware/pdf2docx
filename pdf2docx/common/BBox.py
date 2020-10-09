@@ -60,6 +60,7 @@ class BBox(IText):
 
     def contains(self, bbox, threshold:float=0.0):
         '''Whether given bbox is contained in this instance, with margin considered.'''
+        # A contains B => A | B = A
         union = self.bbox | bbox.bbox
         return abs(union.getArea()/self.bbox.getArea()-1.0) <= threshold
    

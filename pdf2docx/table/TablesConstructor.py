@@ -30,10 +30,10 @@ class TablesConstructor(TableStructure):
     def lattice_tables(self):
         '''Parse table with explicit borders/shadings represented by rectangle shapes.'''
         # group stroke shapes: each group may be a potential table
-        groups = self._shapes.strokes.group_by_connectivity(dx=constants.TINY_DIST, dy=constants.TINY_DIST)
+        groups = self._shapes.table_borders.group_by_connectivity(dx=constants.TINY_DIST, dy=constants.TINY_DIST)
 
         # all filling shapes
-        shadings = self._shapes.fillings
+        shadings = self._shapes.table_shadings
 
         # parse table with each group
         tables = Blocks()
