@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools wheel
+          pip install setuptools wheel pytest
 
       # build package for tags, e.g. 3.2.1 extracted from 'refs/tags/v3.2.1'
       - name: Build package
@@ -52,7 +52,7 @@ jobs:
         run: |
           pip install ./dist/*.whl
           cd test
-          python -m unittest test.py
+          pytest -v test.py
 
       # upload the artifacts for further jobs
       # - app-tag.tar.gz

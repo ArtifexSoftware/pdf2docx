@@ -24,15 +24,19 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        python-version: [3.5, 3.6, 3.7, 3.8]
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Check out code
         uses: actions/checkout@v2
 
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v1
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
         with:
-          python-version: '3.x'
+          python-version: ${{ matrix.python-version }}
 
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
@@ -41,10 +45,15 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest pytest-cov codecov
           python setup.py develop
 
-      # Run unit test
       - name: Run unit test
         run: |
-          cd test
-          python -m unittest test.py
+          pytest -v ./test/test.py --cov=./pdf2docx --cov-report=xml
+
+      - name: Upload coverage reports to Codecov
+        run: |
+          codecov
+        env: # Or as an environment variable
+          super_secret: ${{ secrets.CODECOV_TOKEN }}

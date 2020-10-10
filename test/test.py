@@ -22,7 +22,6 @@ more link:
 '''
 
 import os
-import unittest
 import json
 
 from pdf2docx import Converter, Layout
@@ -31,24 +30,20 @@ from pdf2docx.text.TextSpan import TextSpan
 
 script_path = os.path.abspath(__file__) # current script path
 
-class TestUtility(unittest.TestCase):
+class Utility:
     '''utilities related directly to the test case'''
 
     @property
-    def test_dir(self):
-        return os.path.dirname(script_path)
+    def test_dir(self): return os.path.dirname(script_path)
 
     @property
-    def layout_dir(self):
-        return os.path.join(self.test_dir, 'layouts')
+    def layout_dir(self): return os.path.join(self.test_dir, 'layouts')
 
     @property
-    def sample_dir(self):
-        return os.path.join(self.test_dir, 'samples')
+    def sample_dir(self): return os.path.join(self.test_dir, 'samples')
 
     @property
-    def output_dir(self):
-        return os.path.join(self.test_dir, 'outputs')
+    def output_dir(self): return os.path.join(self.test_dir, 'outputs')
 
     def init_test(self, filename):
         ''' Initialize parsed layout and benchmark layout.'''
@@ -86,7 +81,7 @@ class TestUtility(unittest.TestCase):
 
         # count of tables
         m, n = len(sample_tables), len(test_tables)
-        self.assertEqual(m, n, msg=f"\nThe count of parsed tables '{n}' is inconsistent with sample '{m}'")
+        assert m==n, f"\nThe count of parsed tables '{n}' is inconsistent with sample '{m}'"
 
         # check structures table by table
         for sample_table, test_table in zip(sample_tables, test_tables):
@@ -94,7 +89,7 @@ class TestUtility(unittest.TestCase):
                 for sample_cell, test_cell in zip(sample_row, test_row):
                     if not sample_cell: continue
                     matched, msg = test_cell.compare(sample_cell, threshold)
-                    self.assertTrue(matched, msg=f'\n{msg}')
+                    assert matched, f'\n{msg}'
 
 
     def _check_image_layout(self, threshold):
@@ -104,12 +99,12 @@ class TestUtility(unittest.TestCase):
 
         # count of images
         m, n = len(sample_image_spans), len(test_image_spans)
-        self.assertEqual(m, n, msg=f"\nThe count of image blocks {n} is inconsistent with sample {m}")
+        assert m==n, f"\nThe count of image blocks {n} is inconsistent with sample {m}"
 
         # check each image
         for sample, test in zip(sample_image_spans, test_image_spans):
             matched, msg = test.compare(sample, threshold)
-            self.assertTrue(matched, msg=f'\n{msg}')
+            assert matched, f'\n{msg}'
 
 
     def _check_text_layout(self, threshold):
@@ -122,14 +117,14 @@ class TestUtility(unittest.TestCase):
 
         # count of blocks
         m, n = len(sample_text_blocks), len(test_text_blocks)
-        self.assertEqual(m, n, msg=f"\nThe count of text blocks {n} is inconsistent with sample {m}")
+        assert m==n, f"\nThe count of text blocks {n} is inconsistent with sample {m}"
         
         # check layout of each block
         for sample, test in zip(sample_text_blocks, test_text_blocks):
 
             # text bbox and vertical spacing
             matched, msg = test.compare(sample, threshold)
-            self.assertTrue(matched, msg=f'\n{msg}')
+            assert matched, f'\n{msg}'
 
             # text style
             for sample_line, test_line in zip(sample.lines, test.lines):
@@ -138,23 +133,23 @@ class TestUtility(unittest.TestCase):
                     
                     # text
                     a, b = sample_span.text, test_span.text
-                    self.assertEqual(a, b, msg=f"\nApplied text '{b}' is inconsistent with sample '{a}'")
+                    assert a==b, f"\nApplied text '{b}' is inconsistent with sample '{a}'"
 
                     # style
                     m, n = len(sample_span.style), len(test_span.style)
-                    self.assertEqual(m, n, msg=f"\nThe count of applied text style {n} is inconsistent with sample {m}")
+                    assert m==n, f"\nThe count of applied text style {n} is inconsistent with sample {m}"
 
                     sample_span.style.sort(key=lambda item: item['type'])
                     test_span.style.sort(key=lambda item: item['type'])
                     for sample_dict, test_dict in zip(sample_span.style, test_span.style):
                         a, b = sample_dict['type'], test_dict['type']
-                        self.assertEqual(a, b, msg=f"\nApplied text style '{b}' is inconsistent with sample '{a}'")
+                        assert a==b, f"\nApplied text style '{b}' is inconsistent with sample '{a}'"
 
 
-class MainTest(TestUtility):
+class Test_Main(Utility):
     '''Main text class.'''
 
-    def setUp(self):
+    def setup(self):
         # create output path if not exist
         if not os.path.exists(self.output_dir):
             os.mkdir(self.output_dir)

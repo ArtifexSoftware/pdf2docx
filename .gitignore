@@ -8,6 +8,7 @@ layout.json
 # pdf testing files
 *.pdf
 !demo-*.pdf
+*coverage*
 
 issue-*/
 
