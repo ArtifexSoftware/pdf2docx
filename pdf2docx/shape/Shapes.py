@@ -161,16 +161,20 @@ class Shapes(Collection):
 
         # check positions between shapes and blocks
         for shape in self._instances:
-            # try to determin shape semantic type:
-            # - for a Stroke: whether a text style line
-            # - for a Fill:   whether a table shading
+            # try to determin shape semantic type
             rect_type = shape.semantic_type(blocks)     # type: RectType
 
             if rect_type==RectType.UNDERLINE_OR_STRIKE:
                 self._text_underlines_strikes.append(shape)
+            
+            elif rect_type==RectType.BORDER:
+                self._table_borders.append(shape)
 
             elif rect_type==RectType.SHADING:
                 self._table_shadings.append(shape)
+            
+            elif rect_type==RectType.HIGHLIGHT:
+                self._text_highlights.append(shape)
 
             # - if not determined, it should be the opposite type, e.g. table border for a Stroke, 
             # highlight for a Fill. However, condering margin, incorrectly organized blocks, let's
@@ -187,7 +191,7 @@ class Shapes(Collection):
     def plot(self, page):
         '''Plot shapes in PDF page.'''
         # different colors are used to show the shapes in detected semantic types
-        # Note the overlaps between Stroke and Fill related groups are ignored here.
+        # Due to overlaps between Stroke and Fill related groups, some shapes are plot twice.
 
         # -table shading
         color = (152/255, 251/255, 152/255)

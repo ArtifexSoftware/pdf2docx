@@ -196,7 +196,12 @@ class Layout:
         self.shapes.clean_up()
 
         # detect semantic type based on the positions to text blocks, 
-        # e.g. table border v.s. text underline, table shading v.s. text highlight
+        # e.g. table border v.s. text underline, table shading v.s. text highlight.
+        # NOTE:
+        # stroke shapes are grouped on connectivity to each other, but in some cases, 
+        # the gap between borders and underlines/strikes are very close, which leads
+        # to an incorrect table structure. So, it's required to distinguish them in
+        # advance, though we needn't to ensure 100% accuracy.
         self.shapes.detect_initial_categories()
 
         return self.shapes

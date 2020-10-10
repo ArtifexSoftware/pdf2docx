@@ -162,12 +162,12 @@ class Stroke(Shape):
         # Besides, set a tight margin for this case.
 
         # - check block first
-        if not block.bbox.contains(self.bbox): 
+        if not block.bbox.round().contains(self.bbox): 
             return RectType.UNDEFINED
 
         # - check block line for further confirmation
         for line in block.lines:            
-            if line.bbox.contains(self.bbox): return RectType.UNDERLINE_OR_STRIKE
+            if line.bbox.round().contains(self.bbox): return RectType.UNDERLINE_OR_STRIKE
         
         return RectType.UNDEFINED # can't be determined by this block
 
@@ -222,10 +222,22 @@ class Fill(Shape):
         # text blocks, a real shading may not contain any block, so need further check deepping into block line.
 
         # - check block first
-        if self.bbox.contains(block.bbox): return RectType.SHADING
-
-        # - check block line for another chance
+        if self.bbox.round().contains(block.bbox): 
+            return RectType.SHADING 
+        
+        elif not self.bbox & block.bbox:
+            return RectType.UNDEFINED
+        
+        # - not contained but intersects -> check block line for another chance
         for line in block.lines:
-            if self.bbox.contains(line.bbox): return RectType.SHADING
+            if self.bbox.round().contains(line.bbox): 
+                return RectType.SHADING
+            
+            # it can't be a shading when not contain the line in 1D -> the main direction
+            elif self.bbox & line.bbox:
+                if self.bbox.width >= self.bbox.height:
+                    if self.bbox.width <= line.bbox.width: return RectType.HIGHLIGHT
+                else:
+                    if self.bbox.height <= line.bbox.height: return RectType.HIGHLIGHT
         
         return RectType.UNDEFINED # can't be determined by this block
