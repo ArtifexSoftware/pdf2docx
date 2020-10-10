@@ -163,7 +163,6 @@ class MainTest(TestUtility):
         '''sample file without any texts or images.'''
         self.init_test('demo-blank').verify_layout(threshold=0.95)
 
-
     def test_text_format(self):
         '''sample file focusing on text format, e.g. highlight, underline, strike-through.'''
         self.init_test('demo-text').verify_layout(threshold=0.95)
@@ -201,9 +200,17 @@ class MainTest(TestUtility):
         '''
         self.init_test('demo-table').verify_layout(threshold=0.95)
 
+    def test_stream_table(self):
+        '''sample file focusing on stream structure and shading.'''
+        self.init_test('demo-table-stream').verify_layout(threshold=0.95)
+
     def test_table_shading(self):
         '''sample file focusing on simulating shape with shading cell.'''
         self.init_test('demo-table-shading').verify_layout(threshold=0.95)
+
+    def test_lattice_table(self):
+        '''sample file focusing on lattice table with very close text underlines to table borders.'''
+        self.init_test('demo-table-close-underline').verify_layout(threshold=0.95)
 
     def test_table_border_style(self):
         '''sample file focusing on border style, e.g. width, color.'''
