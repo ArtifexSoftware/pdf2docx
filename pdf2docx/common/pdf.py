@@ -353,8 +353,10 @@ def paths_from_stream(page:fitz.Page):
         #   color_space_name cs  # specify color space
         #   c1 c2 ... SC/SCN     # components under defined color space
         if op.upper()=='CS':
-            Wcs = utils.RGB_value((0.0, 0.0, 0.0))
-            Wcf = utils.RGB_value((0.0, 0.0, 0.0))
+            if op=='CS':
+                Wcs = utils.RGB_value((0.0, 0.0, 0.0))
+            else:
+                Wcf = utils.RGB_value((0.0, 0.0, 0.0))
 
             # Consider normal device cs only
             device_space = color_spaces.get(words[0], False)
@@ -537,7 +539,7 @@ def paths_from_stream(page:fitz.Page):
             paths = []
 
         # fill the path
-        elif line in ('f', 'F', 'f*'):            
+        elif line in ('f', 'F', 'f*'):
             for path in paths:
                 # close the path implicitly
                 _close_path(path)
@@ -637,7 +639,7 @@ def _is_device_cs(xref, doc:fitz.Document):
     '''Check whether object xref is a device based color space.
     '''
     # cs definition
-    obj_contents = doc.xrefObject(xref)
+    obj_contents = doc.xrefObject(xref)    
 
     # for now, just check /ICCBased CS:
     # it's treated as a device based cs if /Device[Gray|RGB|CMYK] exists in /Alternate.
