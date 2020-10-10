@@ -117,7 +117,8 @@ class Layout:
         '''
 
         # preprocessing, e.g. change block order, clean negative block
-        self.clean_up(**kwargs)        
+        self.clean_up_shapes(**kwargs)
+        self.clean_up_blocks(**kwargs)
     
         # parse table blocks: 
         #  - table structure/format recognized from rectangles
@@ -182,42 +183,56 @@ class Layout:
         self.blocks.make_page(doc)
 
 
-    @debug_plot('Cleaned Blocks and Shapes', plot=True, category=PlotControl.LAYOUT)
-    def clean_up(self, **kwargs):
-        '''Clean blocks and rectangles, e.g. remove negative blocks, duplicated shapes.'''
-        # clean up shapes and detect initial categories based on the positions to text blocks, 
-        # e.g. table border v.s. text underline, table shading v.s. text highlight
+    @debug_plot('Source Text Blocks')
+    def plot(self, **kwargs):
+        '''Plot initial blocks. It's generally called once Layout is initialized.'''
+        return self.blocks
+
+
+    @debug_plot('Cleaned Shapes')
+    def clean_up_shapes(self, **kwargs):
+        '''Clean up shapes and detect semantic types.'''
+        # clean up shapes, e.g. remove negative or duplicated instances
         self.shapes.clean_up()
+
+        # detect semantic type based on the positions to text blocks, 
+        # e.g. table border v.s. text underline, table shading v.s. text highlight
         self.shapes.detect_initial_categories()
-        
+
+        return self.shapes
+
+
+    @debug_plot('Cleaned Blocks')
+    def clean_up_blocks(self, **kwargs):
+        '''Clean up blocks and calculate page margin accordingly.'''
         # clean up bad blocks, e.g. overlapping, out of page
         # NOTE: this step should come after clean up shapes since the initial layout of blocks are used
         self.blocks.clean_up()
         
-        # calculate page margin based on clean layout
+        # calculate page margin based on cleaned layout
         self._margin = self.page_margin()
 
-        return True
+        return self.blocks
 
 
-    @debug_plot('Lattice Table Structure', plot=True, category=PlotControl.TABLE)
+    @debug_plot('Lattice Table Structure')
     def parse_lattice_tables(self, **kwargs):
-        '''parse table structure from rectangle shapes'''
-        tables = self._tables_constructor.lattice_tables()
-        return bool(tables)
+        '''Parse table structure based on explicit stroke shapes.'''
+        return self._tables_constructor.lattice_tables()
 
 
-    @debug_plot('Stream Table Structure', plot=True, category=PlotControl.STREAM_TABLE)
+    @debug_plot('Stream Table Structure')
     def parse_stream_tables(self, **kwargs):
-        ''' Parse table structure from blocks layout.'''
-        tables = self._tables_constructor.stream_tables()
-        return bool(tables)
+        '''Parse table structure based on layout of blocks.'''
+        return self._tables_constructor.stream_tables()
 
 
-    @debug_plot('Final Layout', plot=True, category=PlotControl.BLOCK)
+    @debug_plot('Final Layout')
     def parse_text_format(self, **kwargs):
         '''Parse text format in both page and table context.'''
-        return self.blocks.parse_text_format(self.shapes)
+        text_shapes = list(self.shapes.text_underlines_strikes) + list(self.shapes.text_highlights)
+        self.blocks.parse_text_format(text_shapes)
+        return self.blocks
  
 
     def page_margin(self):
@@ -277,55 +292,3 @@ class Layout:
             or table context. It'll used as paragraph spacing and line spacing when creating paragraph.
         '''
         self.blocks.parse_spacing()
-    
-
-    def plot(self, doc, title:str, key:PlotControl=PlotControl.BLOCK):
-        '''Plot specified type of blocks layout with PyMuPDF.
-            ---
-            Args:
-              - doc: fitz.Document object
-        '''
-        # get objects to plot
-        #  - blocks + shapes
-        if key == PlotControl.LAYOUT: 
-            objects = list(self.blocks) + list(self.shapes)
-        
-        # - all blocks
-        elif key == PlotControl.BLOCK: 
-            objects = self.blocks
-        
-        #  - lattice table structure only
-        elif key == PlotControl.TABLE: 
-            objects = self.blocks.lattice_table_blocks
-        
-        #  - stream table structure only
-        elif key == PlotControl.STREAM_TABLE: 
-            objects = self.blocks.stream_table_blocks
-        
-        #  - rectangle shapes
-        elif key == PlotControl.SHAPE: 
-            objects = self.shapes
-
-        else:
-            objects = []
-
-        # do nothing if no objects
-        if not objects: return
-
-        # insert a new page
-        page = new_page_with_margin(doc, self.width, self.height, self.margin, title)
-
-        # plot styled table but no text blocks in cell
-        if key==PlotControl.TABLE: 
-            for item in objects:
-                item.plot(page, content=False, style=True)
-        
-        # plot non-styled table and no text blocks in cell
-        elif key==PlotControl.STREAM_TABLE: 
-            for item in objects:
-                item.plot(page, content=False, style=False)
-        
-        else:
-            for item in objects:
-                 item.plot(page) # default args for TableBlock.plot
-

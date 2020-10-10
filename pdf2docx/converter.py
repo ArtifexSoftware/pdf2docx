@@ -4,7 +4,6 @@ import os
 import json
 from time import perf_counter
 from multiprocessing import Pool, cpu_count
-
 import fitz
 from docx import Document
 
@@ -87,8 +86,8 @@ class Converter:
         # init page layout
         self.initialize(page)
         if debug: 
-            self._layout.plot(debug_kwargs['doc'], 'Source Text Blocks')
-            self._paths_extractor.paths.plot(debug_kwargs['doc'], 'Source Shapes', self._layout.width, self._layout.height)
+            self._layout.plot(**debug_kwargs)
+            self._paths_extractor.paths.plot(debug_kwargs['doc'], 'Source Paths', self._layout.width, self._layout.height)
 
         # parse and save page
         self.layout.parse(**debug_kwargs).make_page(self.doc_docx)

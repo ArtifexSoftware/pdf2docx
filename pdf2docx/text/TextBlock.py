@@ -170,7 +170,7 @@ class TextBlock(Block):
         for rect in rects:
 
             # a same style rect applies on only one block
-            if rect.type != RectType.UNDEFINED: continue
+            if rect.is_determined: continue
 
             # any intersection with current block?
             if not self.bbox.intersects(rect.bbox): continue

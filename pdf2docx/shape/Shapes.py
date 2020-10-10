@@ -91,47 +91,6 @@ class Shapes(Collection):
         return self._text_underlines_strikes
 
 
-    @property
-    def potential_shadings(self):
-        ''' Potential shading shapes to process. Note to distinguish shading shape with highlight: 
-            - there exists at least one text block contained in shading rect,
-            - or no any intersetions with other text blocks (empty block is deleted already);
-            - otherwise, highlight rect
-        '''
-        # needn't to consider shapes in parsed tables
-        tables = self._parent.blocks.table_blocks
-        def shape_in_parsed_tables(shape):
-            for table in tables:
-                if table.bbox.contains(shape.bbox): return True
-            return False
-
-        # check shapes
-        shading_shapes = [] # type: list[Fill]
-        for shape in self.fillings:
-
-            # focus on shape not parsed yet
-            if shape.type != RectType.UNDEFINED: continue
-
-            # not in parsed table region
-            if shape_in_parsed_tables(shape): continue
-
-            # cell shading or highlight:
-            # shading shape contains at least one text block
-            shading = False
-            for block in self._parent.blocks:
-                if shape.contains(block, threshold=constants.FACTOR_A_FEW):
-                    shading = True
-                    break
-                
-                # no chance any more
-                elif block.bbox.y0 > shape.bbox.y1: 
-                    break
-            
-            if shading: shading_shapes.append(shape)            
-
-        return Shapes(shading_shapes)
-
-
     def clean_up(self):
         '''Clean rectangles:
             - delete rectangles fully contained in another one (beside, they have same bg-color)
@@ -187,18 +146,8 @@ class Shapes(Collection):
 
 
     def detect_initial_categories(self):
-        ''' Detect shape type based on the position to text blocks. It should run right after `clean_up()`.
-
-            Though looks like a line segment, difference exists between table border and text format line,
-            including underline and strike-through:
-            - underline or strike-through is always contained in a certain text block
-            - table border is never contained in a text block, though intersection exists due to incorrectly 
-            organized text blocks
-
-            Though looks like a filling area, difference exists between table shading and text highlight:
-            - table shading either contains at least one text block (with margin considered),
-            - or no any intersetions with other text blocks;
-            - otherwise, it's a text highlight
+        ''' Detect shape type based on the position to text blocks. 
+            It should run right after `clean_up()`.
         '''
         # reset all
         self._table_borders.reset()
@@ -212,44 +161,46 @@ class Shapes(Collection):
 
         # check positions between shapes and blocks
         for shape in self._instances:
-            # object type: Stroke or Fill
-            is_stroke = isinstance(shape, Stroke)
-            found = False
+            # try to determin shape semantic type:
+            # - for a Stroke: whether a text style line
+            # - for a Fill:   whether a table shading
+            rect_type = shape.semantic_type(blocks)     # type: RectType
 
-            # then, check context type
-            for block in self._parent.blocks:
-                
-                # no intersection any more since it's sorted
-                if block.bbox.y0 > shape.bbox.y1: break
+            if rect_type==RectType.UNDERLINE_OR_STRIKE:
+                self._text_underlines_strikes.append(shape)
 
-                # border v.s. underline & strike-through
-                if is_stroke:
-                    # text style line always contained in a certain block, even a block line
-                    # a very strict margin: threshold=0.0 for this case
-                    if block.contains(shape, threshold=constants.FACTOR_FEW):
-                        # deep into block line because a real border may be very close to a text block
-                        if any([line.contains(shape, threshold=constants.FACTOR_FEW) for line in block.lines]):
-                            self._text_underlines_strikes.append(shape)
-                            found = True
-                            break
+            elif rect_type==RectType.SHADING:
+                self._table_shadings.append(shape)
 
-                # shading v.s. highlight
-                else:
-                    # table shading always contains at least a text block, but considering incorrectly organized
-                    # text blocks, it contains at least a block line for conservation
-                    if not shape.contains(block, threshold=constants.FACTOR_A_FEW):
-                        if any([shape.contains(line, threshold=constants.FACTOR_A_FEW) for line in block.lines]):
-                            self._table_shadings.append(shape)
-                            found = True
-                            break            
-            
-            # now, already checked with all blocks
-            if found: continue
-            # a stroke not contained in any blocks -> table border
-            if is_stroke:
-                self._table_borders.append(shape)
-            
-            # a fill doesn't contain any blocks -> text heightlight
+            # - if not determined, it should be the opposite type, e.g. table border for a Stroke, 
+            # highlight for a Fill. However, condering margin, incorrectly organized blocks, let's
+            # add the shape to both groups for conservation.
             else:
-                self._text_highlights.append(shape)
+                if isinstance(shape, Stroke):
+                    self._table_borders.append(shape)
+                    self._text_underlines_strikes.append(shape)
+                else:
+                    self._text_highlights.append(shape)
+                    self._table_shadings.append(shape)
+    
 
+    def plot(self, page):
+        '''Plot shapes in PDF page.'''
+        # different colors are used to show the shapes in detected semantic types
+        # Note the overlaps between Stroke and Fill related groups are ignored here.
+
+        # -table shading
+        color = (152/255, 251/255, 152/255)
+        for shape in self._table_shadings: shape.plot(page, color)
+
+        # - table borders
+        color = (0, 0, 0)
+        for shape in self._table_borders: shape.plot(page, color)
+
+        # - underline and strike-through
+        color = (1, 0, 0)
+        for shape in self._text_underlines_strikes: shape.plot(page, color)
+
+        # highlight
+        color = (1, 1, 0)
+        for shape in self._text_highlights: shape.plot(page, color)

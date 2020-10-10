@@ -9,9 +9,10 @@ A group of Text/Image or Table block.
 from docx.shared import Pt
 from ..common import constants
 from ..common.Collection import Collection
-from ..common.base import BlockType, lazyproperty
+from ..common.base import BlockType
 from ..common.Block import Block
 from ..common.docx import reset_paragraph_format
+from ..common.utils import get_main_bbox
 from ..text.TextBlock import TextBlock
 from ..text.Line import Line
 from ..text.Lines import Lines
@@ -259,7 +260,7 @@ class Blocks(Collection):
             # (a) block in potential shading?
             if j < num_shadings:
                 shading = potential_shadings[j]
-                if shading.contains(block, threshold=constants.FACTOR_A_FEW):
+                if not shading.is_determined and get_main_bbox(shading.bbox, block.bbox, threshold=constants.FACTOR_MOST):
                     table_lines.extend(sub_lines(block))
                     new_line = False
                 
@@ -464,18 +465,15 @@ class Blocks(Collection):
 
 
     def parse_text_format(self, rects):
-        '''Parse text format with style represented by rectangles.
+        '''Parse text format with style represented by stroke/fill shapes.
             ---
             Args:
-              - rects: Shapes, potential styles applied on blocks
+            - rects: Shapes, potential styles applied on blocks
 
             NOTE: `parse_text_format` must be implemented by TextBlock, ImageBlock and TableBlock.
         '''
         # parse text block style one by one
-        for block in self._instances:
-            block.parse_text_format(rects)
-
-        return True    
+        for block in self._instances: block.parse_text_format(rects)
 
 
     def make_page(self, doc):
@@ -544,4 +542,22 @@ class Blocks(Collection):
         final_block.lines.join()
 
         return final_block
+
+    
+    def plot(self, page):
+        '''Plot blocks in PDF page.'''
+        # different plot options for table block:
+        #                       cell_content    border_style   border_color
+        # lattice table ONLY        N               Y               -
+        # stream table ONLY         N               N         (0.6, 0.7, 0.8)
+        # text & table blocks       Y               N         (1.0, 0.0, 0.0)
+        content = bool(self.text_blocks(level=0))
+        style   = len(self.lattice_table_blocks) == len(self)
+        color   = (1.0, 0.0, 0.0) if content else (0.6, 0.7, 0.8)
+
+        for block in self._instances:
+            if isinstance(block, TableBlock):
+                block.plot(page, content, style, color)
+            else:
+                block.plot(page)
 

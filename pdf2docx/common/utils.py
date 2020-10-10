@@ -4,7 +4,7 @@ import random
 from collections import deque
 import fitz
 from fitz.utils import getColorList, getColorInfoList
-from .base import PlotControl
+from .pdf import new_page_with_margin
 
 
 def is_number(str_number):
@@ -74,30 +74,30 @@ def get_main_bbox(bbox_1:fitz.Rect, bbox_2:fitz.Rect, threshold:float=0.95):
         return fitz.Rect()
 
 
-def debug_plot(title:str, plot:bool=True, category:PlotControl=PlotControl.LAYOUT):
-    ''' Plot layout / shapes for debug mode when the following conditions are all satisfied:
-          - plot=True
-          - layout has been changed: the return value of `func` is True
-          - debug mode: kwargs['debug']=True
-          - the pdf file to plot layout exists: kwargs['doc'] is not None        
+def debug_plot(title:str):
+    ''' Plot the returned objects of inner function.
         ---        
         Args:
-          - title: page title
-          - plot: plot layout/shape if true
-          - category: PlotControl, what to plot
+        - title: page title
     '''
     def wrapper(func):
         def inner(*args, **kwargs):
             # execute function
-            res = func(*args, **kwargs)
+            objects = func(*args, **kwargs)
 
             # check if plot layout
             debug = kwargs.get('debug', False)
             doc = kwargs.get('doc', None)
-            layout = args[0] # assert Layout object
-            if plot and res and debug and doc is not None:                
-                layout.plot(doc, title, category)
-            return layout
+            layout = args[0] # Layout object
+
+            if objects and debug and doc is not None:                
+                # create a new page
+                page = new_page_with_margin(doc, layout.width, layout.height, layout.margin, title)
+
+                # plot objects, e.g. text blocks, shapes, tables...
+                objects.plot(page)
+
+            return objects
         return inner
     return wrapper
 

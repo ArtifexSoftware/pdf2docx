@@ -10,7 +10,7 @@ Objects representing PDF stroke and filling extracted from Path:
 @author: train8808@gmail.com
 ---
 
-The context meaning of shape instance may be:
+The semantic meaning of shape instance may be:
     - strike through line of text
     - under line of text
     - highlight area of text
@@ -38,6 +38,9 @@ class Shape(BBox):
         super().__init__(raw)
         self.type = RectType.UNDEFINED # no type by default
         self.color = raw.get('color', 0)
+    
+    @property
+    def is_determined(self): return self.type != RectType.UNDEFINED
 
     def store(self):
         res = super().store()
@@ -47,14 +50,36 @@ class Shape(BBox):
         })
         return res
 
-    def plot(self, page):
+
+    def semantic_type(self, blocks:list):
+        '''Determin semantic type based on the position to text blocks.'''
+        rect_type = RectType.UNDEFINED
+        for block in blocks:
+            rect_type = self._check_semantic_type(block)
+            if rect_type != RectType.UNDEFINED: break
+
+            # no intersection any more since blocks are sorted in reading order
+            if block.bbox.y0 > self.bbox.y1: break
+        
+        return rect_type
+
+
+    def _check_semantic_type(self, block):
+        ''' Check semantic type based on the position to a text block. 
+            Return RectType.UNDEFINED if can't be determined this this text block.
+        '''
+        return RectType.UNDEFINED
+            
+
+    def plot(self, page, color):
         '''Plot rectangle shapes with PyMuPDF.'''
-        color = [c/255.0 for c in RGB_component(self.color)]
-        page.drawRect(self.bbox, color=color, fill=color, width=0, overlay=False)
+        page.drawRect(self.bbox, color=color, fill=color, width=0, overlay=True)
 
 
 class Stroke(Shape):
-    '''Horizontal or vertical stroke of a path.'''
+    ''' Horizontal or vertical stroke of a path. 
+        The semantic meaning may be table border, or text style line like underline and strike-through.
+    '''
     def __init__(self, raw:dict={}):
         # convert start/end point to real page CS
         self._start = fitz.Point(raw.get('start', (0.0, 0.0))) * Stroke.ROTATION_MATRIX
@@ -123,6 +148,30 @@ class Stroke(Shape):
         return self
 
 
+    def _check_semantic_type(self, block):
+        ''' Override. Check semantic type based on the position to a text block.
+
+            Though looks like a line segment, difference exists between table border and text format line,
+            including underline and strike-through:
+            - underline or strike-through is always contained in a certain text block
+            - table border is never contained in a text block, though intersection exists due to incorrectly 
+            organized text blocks
+        '''
+        # generally, text style line is contained in a certain block; but a real border may be very close 
+        # to a text block, which seems contained in that block, so need further check deepping into block line.
+        # Besides, set a tight margin for this case.
+
+        # - check block first
+        if not block.bbox.contains(self.bbox): 
+            return RectType.UNDEFINED
+
+        # - check block line for further confirmation
+        for line in block.lines:            
+            if line.bbox.contains(self.bbox): return RectType.UNDERLINE_OR_STRIKE
+        
+        return RectType.UNDEFINED # can't be determined by this block
+
+
     def store(self):
         res = super().store()
         res.update({
@@ -142,7 +191,9 @@ class Stroke(Shape):
 
 
 class Fill(Shape):
-    '''Rectangular (bbox) filling area of a closed path.'''
+    ''' Rectangular (bbox) filling area of a closed path.
+        The semantic meaning may be table shading, or text style like highlight.
+    '''
 
     def to_stroke(self):
         '''Convert to Stroke instance based on width criterion.
@@ -157,3 +208,24 @@ class Fill(Shape):
             return None
         else:
             return Stroke({'width': w, 'color': self.color}).update_bbox(self.bbox)
+    
+
+    def _check_semantic_type(self, block):
+        ''' Override. Check semantic type based on the position to a text block.
+
+            Though looks like a filling area, difference exists between table shading and text highlight:
+            - table shading either contains at least one text block (with margin considered), or no any 
+            intersetions with other text blocks;
+            - otherwise, it's a text highlight
+        '''
+        # generally, table shading contains at least a text block; but considering incorrectly organized 
+        # text blocks, a real shading may not contain any block, so need further check deepping into block line.
+
+        # - check block first
+        if self.bbox.contains(block.bbox): return RectType.SHADING
+
+        # - check block line for another chance
+        for line in block.lines:
+            if self.bbox.contains(line.bbox): return RectType.SHADING
+        
+        return RectType.UNDEFINED # can't be determined by this block
