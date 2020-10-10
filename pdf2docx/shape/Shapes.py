@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-A group of Shape instances.
+A group of Shape (Stroke or Fill) instances.
 
 @created: 2020-09-15
 @author: train8808@gmail.com
@@ -15,6 +15,20 @@ from ..common import constants
 
 
 class Shapes(Collection):
+
+    def __init__(self, instances:list=[], parent=None):
+        ''' A collection of Shape instances: Stroke or Fill.'''
+        super().__init__(instances, parent)
+
+        # properties for context type of shape, e.g. 
+        # a Stroke instace may be either table border or text underline or strike-through,
+        # a Fill instance may be either cell shading or text highlight.
+        self._table_borders = Collection()
+        self._table_shadings = Collection()
+
+        self._text_underlines_strikes = Collection() # they're combined at this moment
+        self._text_highlights = Collection()
+
 
     def from_dicts(self, raws:list):
         '''Initialize Stroke/Fill from dicts.'''
@@ -32,7 +46,52 @@ class Shapes(Collection):
         pass
 
 
-    def clean(self):
+    @lazyproperty
+    def strokes(self):
+        ''' Stroke Shapes. including table border, text underline and strike-through. 
+            Cache it once calculated since it doesn't change generally.
+        '''
+        instances = list(filter(
+            lambda shape: isinstance(shape, Stroke), self._instances))
+        return Shapes(instances)
+
+
+    @lazyproperty
+    def fillings(self):
+        ''' Fill Shapes, including cell shading and highlight. 
+            Cache it once calculated since it doesn't change generally.
+        '''
+        # white bg-color is by default, so ignore those fillings
+        instances = list(filter(
+            lambda shape: isinstance(shape, Fill) and shape.color != utils.RGB_value((1,1,1)), self._instances))
+        return Shapes(instances)
+
+
+    @property
+    def table_borders(self):
+        '''potential table borders.'''
+        return self._table_borders
+
+    
+    @property
+    def table_shadings(self):
+        '''potential table shadings.'''
+        return self._table_shadings
+
+
+    @property
+    def text_highlights(self):
+        '''potential text highlights.'''
+        return self._text_highlights
+
+
+    @property
+    def text_underlines_strikes(self):
+        '''potential text underlines and strike-through lines.'''
+        return self._text_underlines_strikes
+
+
+    def clean_up(self):
         '''Clean rectangles:
             - delete rectangles fully contained in another one (beside, they have same bg-color)
             - join intersected and horizontally aligned rectangles with same height and bg-color
@@ -85,106 +144,67 @@ class Shapes(Collection):
 
         self.reset(shapes)
 
-        return True
 
-
-    def contained_in_bbox(self, bbox):
-        ''' Filter shapes contained in target bbox.
-            ---
-            Args:
-            - bbox: fitz.Rect
+    def detect_initial_categories(self):
+        ''' Detect shape type based on the position to text blocks. 
+            It should run right after `clean_up()`.
         '''
-        instances = list(filter(
-            lambda shape: shape.bbox & bbox, self._instances))
-        return Shapes(instances)
+        # reset all
+        self._table_borders.reset()
+        self._table_shadings.reset()
+        self._text_underlines_strikes.reset()
+        self._text_highlights.reset()
 
+        # all blocks in page (the original blocks without any further processing)
+        blocks = self._parent.blocks
+        blocks.sort_in_reading_order()
 
-    def containing_bbox(self, bbox, threshold:float):
-        ''' Get the shape containing target bbox.
-            ---
-            Args:
-            - bbox: fitz.Rect, target bbox
-            - threshold: regard as contained if the intersection exceeds this threshold
-        '''
-        s = bbox.getArea()
-        if not s: return None
+        # check positions between shapes and blocks
+        for shape in self._instances:
+            # try to determin shape semantic type
+            rect_type = shape.semantic_type(blocks)     # type: RectType
 
-        for instance in self._instances:
-            intersection = bbox & instance.bbox
-            if intersection.getArea() / s >= threshold: return instance
-
-        return None
-
-
-    @lazyproperty
-    def strokes(self):
-        '''Stroke Shapes. Lazy property, cache it once calculated since it doesn't change generally.'''
-        instances = list(filter(
-            lambda shape: isinstance(shape, Stroke), self._instances))
-        return Shapes(instances)
-
-
-    @lazyproperty
-    def fillings(self):
-        '''Fill Shapes. Lazy property, cache it once calculated since it doesn't change generally.'''
-        # white bg-color is by default, so ignore those fillings
-        instances = list(filter(
-            lambda shape: isinstance(shape, Fill) and shape.color != utils.RGB_value((1,1,1)), self._instances))
-        return Shapes(instances)
-
-
-    @property
-    def borders(self):
-        '''Parsed shapes in border type. It changes when tables are parsed.'''
-        instances = list(filter(
-            lambda shape: shape.type==RectType.BORDER, self._instances))
-        return Shapes(instances)
-
-    
-    @property
-    def shadings(self):
-        '''Parsed shapes in shading type. It changes when tables are parsed.'''
-        instances = list(filter(
-            lambda shape: shape.type==RectType.SHADING, self._instances))
-        return Shapes(instances)
-
-
-    @property
-    def potential_shadings(self):
-        ''' Potential shading shapes to process. Note to distinguish shading shape with highlight: 
-            - there exists at least one text block contained in shading rect,
-            - or no any intersetions with other text blocks (empty block is deleted already);
-            - otherwise, highlight rect
-        '''
-        # needn't to consider shapes in parsed tables
-        tables = self._parent.blocks.table_blocks
-        def shape_in_parsed_tables(shape):
-            for table in tables:
-                if table.bbox.contains(shape.bbox): return True
-            return False
-
-        # check shapes
-        shading_shapes = [] # type: list[Fill]
-        for shape in self.fillings:
-
-            # focus on shape not parsed yet
-            if shape.type != RectType.UNDEFINED: continue
-
-            # not in parsed table region
-            if shape_in_parsed_tables(shape): continue
-
-            # cell shading or highlight:
-            # shading shape contains at least one text block
-            shading = False
-            for block in self._parent.blocks:
-                if shape.contains(block, threshold=constants.FACTOR_A_FEW):
-                    shading = True
-                    break
-                
-                # no chance any more
-                elif block.bbox.y0 > shape.bbox.y1: 
-                    break
+            if rect_type==RectType.UNDERLINE_OR_STRIKE:
+                self._text_underlines_strikes.append(shape)
             
-            if shading: shading_shapes.append(shape)            
+            elif rect_type==RectType.BORDER:
+                self._table_borders.append(shape)
 
-        return Shapes(shading_shapes)
+            elif rect_type==RectType.SHADING:
+                self._table_shadings.append(shape)
+            
+            elif rect_type==RectType.HIGHLIGHT:
+                self._text_highlights.append(shape)
+
+            # - if not determined, it should be the opposite type, e.g. table border for a Stroke, 
+            # highlight for a Fill. However, condering margin, incorrectly organized blocks, let's
+            # add the shape to both groups for conservation.
+            else:
+                if isinstance(shape, Stroke):
+                    self._table_borders.append(shape)
+                    self._text_underlines_strikes.append(shape)
+                else:
+                    self._text_highlights.append(shape)
+                    self._table_shadings.append(shape)
+    
+
+    def plot(self, page):
+        '''Plot shapes in PDF page.'''
+        # different colors are used to show the shapes in detected semantic types
+        # Due to overlaps between Stroke and Fill related groups, some shapes are plot twice.
+
+        # -table shading
+        color = (152/255, 251/255, 152/255)
+        for shape in self._table_shadings: shape.plot(page, color)
+
+        # - table borders
+        color = (0, 0, 0)
+        for shape in self._table_borders: shape.plot(page, color)
+
+        # - underline and strike-through
+        color = (1, 0, 0)
+        for shape in self._text_underlines_strikes: shape.plot(page, color)
+
+        # highlight
+        color = (1, 1, 0)
+        for shape in self._text_highlights: shape.plot(page, color)

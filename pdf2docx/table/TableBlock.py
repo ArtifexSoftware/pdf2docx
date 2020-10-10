@@ -93,23 +93,19 @@ class TableBlock(Block):
         return res
 
 
-    def plot(self, page, content=True, style=False):
+    def plot(self, page, content:bool, style:bool, color:tuple):
         '''Plot table block, i.e. cell/line/span.
             ---
             Args:
-              - page: fitz.Page object
-              - style: plot cell style if True, e.g. border width, shading
-              - content: plot text blocks if True
+            - page   : fitz.Page object
+            - content: plot text blocks contained in cells if True
+            - style  : plot cell style if True, e.g. border width, shading
+            - color  : border stroke color if style=False
         '''
         for row in self._rows:
-            for cell in row:
-                # ignore merged cells
-                if not cell: continue            
-                
-                # plot different border colors for lattice / stream tables when style=False, 
-                # i.e. table illustration, rather than real style of lattice table
-                bc = (1,0,0) if self.is_lattice_table_block() else (0.6,0.7,0.8)
-                cell.plot(page, content=content, style=style, color=bc)
+            for cell in row:                
+                if not cell: continue  # ignore merged cells   
+                cell.plot(page, content=content, style=style, color=color)
 
     
     def parse_text_format(self, rects):

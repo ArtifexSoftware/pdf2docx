@@ -60,8 +60,16 @@ class BBox(IText):
 
     def contains(self, bbox, threshold:float=0.0):
         '''Whether given bbox is contained in this instance, with margin considered.'''
+        # A contains B => A | B = A
         union = self.bbox | bbox.bbox
-        return abs(union.getArea()/self.bbox.getArea()-1.0) <= threshold
+        if abs(union.getArea()/self.bbox.getArea()-1.0) >= threshold: return False
+        
+        # it's not practical to set a general threshold, so we can set a coarse but acceptable area threshold,
+        # and check the length in main direction strictly
+        if self.bbox.width >= self.bbox.height:
+            return self.bbox.width >= bbox.bbox.width
+        else:
+            return self.bbox.height >= bbox.bbox.height
    
    
     def vertically_align_with(self, bbox, factor:float=0.0, text_direction:bool=True):

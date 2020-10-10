@@ -204,3 +204,31 @@ class Collection(BaseCollection, IText):
     def store(self):
         '''Store attributes in json format.'''
         return [ instance.store() for instance in self._instances ]
+
+    
+    def contained_in_bbox(self, bbox):
+        ''' Filter instances contained in target bbox.
+            ---
+            Args:
+            - bbox: fitz.Rect
+        '''
+        instances = list(filter(
+            lambda shape: shape.bbox & bbox, self._instances))
+        return self.__class__(instances)
+
+
+    def containing_bbox(self, bbox, threshold:float):
+        ''' Get the instance containing target bbox.
+            ---
+            Args:
+            - bbox: fitz.Rect, target bbox
+            - threshold: regard as contained if the intersection exceeds this threshold
+        '''
+        s = bbox.getArea()
+        if not s: return None
+
+        for instance in self._instances:
+            intersection = bbox & instance.bbox
+            if intersection.getArea() / s >= threshold: return instance
+
+        return None

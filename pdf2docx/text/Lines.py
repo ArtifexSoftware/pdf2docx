@@ -54,10 +54,12 @@ class Lines(Collection):
         ''' Get the index of intersected line. Return -1 if no intersection.'''
         is_image_line = bool(line.image_spans)
 
+        f = threshold
         for i, instance in enumerate(self._instances):
             # for image line, reduce the intersection threshold
-            if instance.image_spans or is_image_line: threshold /= 2.0            
-            if get_main_bbox(instance.bbox, line.bbox, threshold): return i
+            if instance.image_spans or is_image_line: f = threshold/2.0
+            
+            if get_main_bbox(instance.bbox, line.bbox, threshold=f): return i
         
         return -1
 

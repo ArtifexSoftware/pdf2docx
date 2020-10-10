@@ -216,6 +216,8 @@ class Borders:
         # finalize borders by explicit fillings in second priority
         tmp_strokes = []
         for fill in fills:
+            if fill.is_determined: continue
+
             x0, y0, x1, y1 = fill.bbox
             tmp_strokes.extend([
                 Stroke().update_bbox((x0, y0, x1, y0)), # top
@@ -242,6 +244,8 @@ class Borders:
     def _finalize_by_strokes(self, strokes:list):
         '''Finalize borders by explicit strokes.'''
         for stroke in strokes:
+            if stroke.is_determined: continue
+            
             for border in self._instances:
                 # horizontal stroke can finalize horizontal border only
                 if stroke.horizontal != border.is_horizontal: continue

@@ -30,10 +30,10 @@ class TablesConstructor(TableStructure):
     def lattice_tables(self):
         '''Parse table with explicit borders/shadings represented by rectangle shapes.'''
         # group stroke shapes: each group may be a potential table
-        groups = self._shapes.strokes.group_by_connectivity(dx=constants.TINY_DIST, dy=constants.TINY_DIST)
+        groups = self._shapes.table_borders.group_by_connectivity(dx=constants.TINY_DIST, dy=constants.TINY_DIST)
 
         # all filling shapes
-        shadings = self._shapes.fillings
+        shadings = self._shapes.table_shadings
 
         # parse table with each group
         tables = Blocks()
@@ -54,7 +54,7 @@ class TablesConstructor(TableStructure):
         # assign text contents to each table
         self._blocks.assign_table_contents(unique_tables)
 
-        return unique_tables
+        return Blocks(unique_tables)
 
 
     def stream_tables(self):
@@ -62,13 +62,11 @@ class TablesConstructor(TableStructure):
             represented by rectangle shapes.
         '''
         # all explicit borders and shadings
-        strokes = list(filter(
-            lambda shape: shape.type==RectType.UNDEFINED, self._shapes.strokes))
-        strokes = Shapes(strokes)
-        shadings = self._shapes.potential_shadings
+        table_borders = self._shapes.table_borders
+        table_shadings = self._shapes.table_shadings
 
         # lines in potential stream tables
-        tables_lines = self._blocks.collect_stream_lines(shadings)
+        tables_lines = self._blocks.collect_stream_lines(table_shadings)
 
         # parse tables
         tables = Blocks()
@@ -102,8 +100,8 @@ class TablesConstructor(TableStructure):
 
             # explicit strokes/shadings in table region
             rect = BBox().update_bbox((X0, y0_margin, X1, y1_margin))
-            explicit_strokes  = strokes.contained_in_bbox(rect.bbox) 
-            explicit_shadings = shadings.contained_in_bbox(rect.bbox)
+            explicit_strokes  = table_borders.contained_in_bbox(rect.bbox) 
+            explicit_shadings = table_shadings.contained_in_bbox(rect.bbox)
 
             # parse stream borders based on lines in cell and explicit borders/shadings
             strokes = self.stream_borders(table_lines, (top, bottom, left, right), explicit_strokes, explicit_shadings)
@@ -123,7 +121,7 @@ class TablesConstructor(TableStructure):
         # assign text contents to each table
         self._blocks.assign_table_contents(unique_tables)        
 
-        return unique_tables
+        return Blocks(unique_tables)
 
 
     @staticmethod
