@@ -188,3 +188,8 @@ class BBox(IText):
     def store(self):
         '''Store in json format.'''
         return { 'bbox': tuple([x for x in self.bbox]) }
+
+    
+    def plot(self, page, stroke:tuple=(0,0,0), width:float=0.5, fill:tuple=None):
+        '''Plot bbox in PDF page.'''
+        page.drawRect(self.bbox, color=stroke, fill=fill, width=width, overlay=False)

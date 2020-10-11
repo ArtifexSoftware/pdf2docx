@@ -109,15 +109,6 @@ class Line(BBox):
         return res
 
 
-    def plot(self, page, color:int):
-        '''Plot line border in red.
-           ---
-            Args: 
-              - page: fitz.Page object
-        '''
-        page.drawRect(self.bbox, color=color, fill=None, overlay=False)
-
-
     def add(self, span_or_list):
         '''Add span list to current Line.
             ---

@@ -4,7 +4,7 @@ import random
 from collections import deque
 import fitz
 from fitz.utils import getColorList, getColorInfoList
-from .pdf import new_page_with_margin
+from . import pdf
 
 
 def is_number(str_number):
@@ -92,7 +92,7 @@ def debug_plot(title:str):
 
             if objects and debug and doc is not None:                
                 # create a new page
-                page = new_page_with_margin(doc, layout.width, layout.height, layout.margin, title)
+                page = pdf.new_page(doc, layout.width, layout.height, title)
 
                 # plot objects, e.g. text blocks, shapes, tables...
                 objects.plot(page)

@@ -547,12 +547,12 @@ class Blocks(Collection):
     def plot(self, page):
         '''Plot blocks in PDF page.'''
         # different plot options for table block:
-        #                       cell_content    border_style   border_color
-        # lattice table ONLY        N               Y               -
-        # stream table ONLY         N               N         (0.6, 0.7, 0.8)
-        # text & table blocks       Y               N         (1.0, 0.0, 0.0)
-        content = bool(self.text_blocks(level=0))
-        style   = len(self.lattice_table_blocks) == len(self)
+        #                       cell_content    border_style   border_color         note
+        # lattice table ONLY        N               Y               -           temp Blocks with parent=None
+        # stream table ONLY         N               N         (0.6, 0.7, 0.8)   temp Blocks with parent=None
+        # text & table blocks       Y               N         (1.0, 0.0, 0.0)   layout Blocks with parent=Layout
+        content = not self._parent is None
+        style   = not content and len(self.lattice_table_blocks)
         color   = (1.0, 0.0, 0.0) if content else (0.6, 0.7, 0.8)
 
         for block in self._instances:

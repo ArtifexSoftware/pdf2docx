@@ -165,13 +165,7 @@ class TextSpan(BBox):
         return res
 
 
-    def plot(self, page, color:tuple):
-        '''Fill bbox with given color.
-           ---
-            Args: 
-              - page: fitz.Page object
-        '''
-        page.drawRect(self.bbox, color=color, fill=color, width=0, overlay=False)
+    def plot(self, page, color:tuple): super().plot(page, stroke=color, fill=color, width=0)
 
 
     def split(self, rect:Shape, horizontal:bool=True):
