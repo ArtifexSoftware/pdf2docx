@@ -120,11 +120,6 @@ class Block(BBox):
         return False
 
 
-    def plot(self, *args, **kwargs):
-        '''Plot block bbox in PDF page.'''
-        raise NotImplementedError
-
-
     def parse_text_format(self, *args, **kwargs):
         '''Parse text format.'''
         raise NotImplementedError

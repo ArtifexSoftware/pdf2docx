@@ -12,48 +12,16 @@ from . import utils
 from . import constants
 
 
-def new_page_section(doc, width:float, height:float, title:str):
-    '''New page with title shown in page center.
+def new_page(doc, width:float, height:float, title:str):
+    ''' Insert a new page with given title.
         ---
         Args:
-          - doc: fitz.Document
-          - width, height: page size
-          - title: page title shown in page
+        - doc: fitz.Document
+        - width, height: page size
+        - title: page title shown in page
     '''
     # insert a new page
-    page = doc.newPage(width=width, height=height)
-
-    # plot title in page center
-    gray = utils.RGB_component_from_name('gray')
-    f = 10.0
-    page.insertText((width/4.0, (height+height/f)/2.0), title, color=gray, fontsize=height/f)
-    return page
-
-
-def new_page_with_margin(doc, width:float, height:float, margin:tuple, title:str):
-    '''Insert a new page and plot margin borders.
-        ---
-        Args:
-          - doc: fitz.Document
-          - width, height: page size
-          - margin: page margin
-          - title: page title shown in page
-    '''
-    # insert a new page
-    page = doc.newPage(width=width, height=height)
-    
-    # plot borders if page margin is provided
-    if margin:
-        blue = utils.RGB_component_from_name('blue')
-        args = {
-            'color': blue,
-            'width': 0.5
-        }
-        dL, dR, dT, dB = margin
-        page.drawLine((dL, 0), (dL, height), **args) # left border
-        page.drawLine((width-dR, 0), (width-dR, height), **args) # right border
-        page.drawLine((0, dT), (width, dT), **args) # top
-        page.drawLine((0, height-dB), (width, height-dB), **args) # bottom
+    page = doc.newPage(width=width, height=height)    
 
     # plot title at the top-left corner
     gray = utils.RGB_component_from_name('gray')
@@ -353,8 +321,10 @@ def paths_from_stream(page:fitz.Page):
         #   color_space_name cs  # specify color space
         #   c1 c2 ... SC/SCN     # components under defined color space
         if op.upper()=='CS':
-            Wcs = utils.RGB_value((0.0, 0.0, 0.0))
-            Wcf = utils.RGB_value((0.0, 0.0, 0.0))
+            if op=='CS':
+                Wcs = utils.RGB_value((0.0, 0.0, 0.0))
+            else:
+                Wcf = utils.RGB_value((0.0, 0.0, 0.0))
 
             # Consider normal device cs only
             device_space = color_spaces.get(words[0], False)
@@ -537,7 +507,7 @@ def paths_from_stream(page:fitz.Page):
             paths = []
 
         # fill the path
-        elif line in ('f', 'F', 'f*'):            
+        elif line in ('f', 'F', 'f*'):
             for path in paths:
                 # close the path implicitly
                 _close_path(path)
@@ -637,7 +607,7 @@ def _is_device_cs(xref, doc:fitz.Document):
     '''Check whether object xref is a device based color space.
     '''
     # cs definition
-    obj_contents = doc.xrefObject(xref)
+    obj_contents = doc.xrefObject(xref)    
 
     # for now, just check /ICCBased CS:
     # it's treated as a device based cs if /Device[Gray|RGB|CMYK] exists in /Alternate.

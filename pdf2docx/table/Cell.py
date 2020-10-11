@@ -97,16 +97,14 @@ class Cell(BBox):
                 sc = [x/255.0 for x in RGB_component(self.bg_color)] 
             else:
                 sc = None
-            page.drawRect(self.bbox, color=bc, fill=sc, width=w, overlay=False)
+            super().plot(page, stroke=bc, fill=sc, width=w)
         
         # or just cell borders for illustration
         else:
-            page.drawRect(self.bbox, color=color, fill=None, width=1, overlay=False)
+            super().plot(page, stroke=color, fill=None)
 
         # plot blocks contained in cell
-        if content:
-            for block in self.blocks:
-                block.plot(page)
+        if content: self.blocks.plot(page)
 
 
     def add(self, block):

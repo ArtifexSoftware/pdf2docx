@@ -139,9 +139,9 @@ class Image(BBox):
         '''Plot image bbox with diagonal lines.
             ---
             Args: 
-              - page: fitz.Page object
+            - page: fitz.Page object
         '''
         x0, y0, x1, y1 = self.bbox
-        page.drawLine((x0, y0), (x1, y1), color=color, width=1)
-        page.drawLine((x0, y1), (x1, y0), color=color, width=1)
-        page.drawRect(self.bbox, color=color, fill=None, overlay=False)
+        page.drawLine((x0, y0), (x1, y1), color=color, width=0.5)
+        page.drawLine((x0, y1), (x1, y0), color=color, width=0.5)
+        super().plot(page, stroke=color)

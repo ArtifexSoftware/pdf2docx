@@ -133,7 +133,7 @@ class Paths(BaseCollection):
     def plot(self, doc:fitz.Document, title:str, width:float, height:float):
         if not self._instances: return
         # insert a new page
-        page = pdf.new_page_with_margin(doc, width, height, None, title)
+        page = pdf.new_page(doc, width, height, title)
         for path in self._instances: path.plot(page)    
 
     

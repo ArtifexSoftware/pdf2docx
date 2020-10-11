@@ -213,22 +213,5 @@ class Collection(BaseCollection, IText):
             - bbox: fitz.Rect
         '''
         instances = list(filter(
-            lambda shape: shape.bbox & bbox, self._instances))
+            lambda shape: bbox.contains(shape.bbox), self._instances))
         return self.__class__(instances)
-
-
-    def containing_bbox(self, bbox, threshold:float):
-        ''' Get the instance containing target bbox.
-            ---
-            Args:
-            - bbox: fitz.Rect, target bbox
-            - threshold: regard as contained if the intersection exceeds this threshold
-        '''
-        s = bbox.getArea()
-        if not s: return None
-
-        for instance in self._instances:
-            intersection = bbox & instance.bbox
-            if intersection.getArea() / s >= threshold: return instance
-
-        return None

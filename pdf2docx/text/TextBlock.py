@@ -108,18 +108,18 @@ class TextBlock(Block):
         '''
         # block border in blue
         blue = RGB_component_from_name('blue')   
-        page.drawRect(self.bbox, color=blue, fill=None, overlay=False)
+        super().plot(page, stroke=blue)
 
         # lines and spans
         for line in self.lines:
             # line border in red
             red = RGB_component_from_name('red')
-            line.plot(page, red)
+            line.plot(page, stroke=red)
 
             # span regions in random color
             for span in line.spans:
                 c = RGB_component_from_name('')                
-                span.plot(page, c)
+                span.plot(page, color=c)
 
 
     def contains_discrete_lines(self, distance:float=25, threshold:int=2):
