@@ -260,7 +260,7 @@ class Blocks(Collection):
             # (a) block in potential shading?
             if j < num_shadings:
                 shading = potential_shadings[j]
-                if not shading.is_determined and get_main_bbox(shading.bbox, block.bbox, threshold=constants.FACTOR_MOST):
+                if not shading.is_determined and shading.contains(block, threshold=constants.FACTOR_MOST):
                     table_lines.extend(sub_lines(block))
                     new_line = False
                 

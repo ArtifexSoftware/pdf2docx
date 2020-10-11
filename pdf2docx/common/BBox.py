@@ -16,6 +16,8 @@ import copy
 import fitz
 from .base import IText
 from .utils import get_main_bbox
+from . import constants
+
 
 class BBox(IText):
     '''Boundary box with attribute in fitz.Rect type.'''
@@ -58,18 +60,24 @@ class BBox(IText):
         return self.bbox + (-dt, -dt, dt, dt)
     
 
-    def contains(self, bbox, threshold:float=0.0):
+    def contains(self, bbox, threshold:float=1.0):
         '''Whether given bbox is contained in this instance, with margin considered.'''
-        # A contains B => A | B = A
-        union = self.bbox | bbox.bbox
-        if abs(union.getArea()/self.bbox.getArea()-1.0) >= threshold: return False
-        
-        # it's not practical to set a general threshold, so we can set a coarse but acceptable area threshold,
-        # and check the length in main direction strictly
+        # it's not practical to set a general threshold to consider the margin, so two steps:
+        # - set a coarse but acceptable area threshold,
+        # - check the length in main direction strictly
+
+        if not bbox: return False
+
+        # A contains B => A & B = B
+        intersection = self.bbox & bbox.bbox
+        factor = round(intersection.getArea()/bbox.bbox.getArea(), 2)
+        if factor<threshold: return False
+
+        # check length
         if self.bbox.width >= self.bbox.height:
-            return self.bbox.width >= bbox.bbox.width
+            return self.bbox.width+constants.MINOR_DIST >= bbox.bbox.width
         else:
-            return self.bbox.height >= bbox.bbox.height
+            return self.bbox.height+constants.MINOR_DIST >= bbox.bbox.height
    
    
     def vertically_align_with(self, bbox, factor:float=0.0, text_direction:bool=True):

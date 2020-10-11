@@ -176,9 +176,11 @@ class Shapes(Collection):
             elif rect_type==RectType.HIGHLIGHT:
                 self._text_highlights.append(shape)
 
-            # - if not determined, it should be the opposite type, e.g. table border for a Stroke, 
-            # highlight for a Fill. However, condering margin, incorrectly organized blocks, let's
-            # add the shape to both groups for conservation.
+            # if not determined, it should be the opposite type, e.g. table border for a Stroke, 
+            # highlight for a Fill. However, condering margin, incorrectly organized blocks, e.g.
+            # a text underline may have no intersection with the text block, so let's add the shape 
+            # to both groups for conservation. It'll finally determined when parsing table structure
+            # and text format.
             else:
                 if isinstance(shape, Stroke):
                     self._table_borders.append(shape)

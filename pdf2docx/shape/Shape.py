@@ -28,7 +28,6 @@ Data structure:
 import fitz
 from ..common.BBox import BBox
 from ..common.base import RectType
-from ..common.utils import RGB_component
 from ..common import constants
 
 
@@ -53,20 +52,26 @@ class Shape(BBox):
 
     def semantic_type(self, blocks:list):
         '''Determin semantic type based on the position to text blocks.'''
+        # NOTE: blocks must be sorted in reading order
         rect_type = RectType.UNDEFINED
         for block in blocks:
+            # not intersect yet
+            if block.bbox.y1 < self.bbox.y0: continue
+
+            # check it when intersected
             rect_type = self._check_semantic_type(block)
             if rect_type != RectType.UNDEFINED: break
 
-            # no intersection any more since blocks are sorted in reading order
+            # no intersection any more
             if block.bbox.y0 > self.bbox.y1: break
         
         return rect_type
 
 
     def _check_semantic_type(self, block):
-        ''' Check semantic type based on the position to a text block. 
+        ''' Check semantic type based on the position to a text block.
             Return RectType.UNDEFINED if can't be determined this this text block.
+            Prerequisite: intersection exists between this shape and block.
         '''
         return RectType.UNDEFINED
             
@@ -149,27 +154,29 @@ class Stroke(Shape):
 
 
     def _check_semantic_type(self, block):
-        ''' Override. Check semantic type based on the position to a text block.
+        ''' Override. Check semantic type of a Stroke: 
+            table border v.s. text style line, e.g. underline and strike-through.
 
-            Though looks like a line segment, difference exists between table border and text format line,
-            including underline and strike-through:
-            - underline or strike-through is always contained in a certain text block
-            - table border is never contained in a text block, though intersection exists due to incorrectly 
-            organized text blocks
+            Generally, text style line is contained in a certain block, while table border is never contained.
+            But in real cases, where tight layout or incorrectly organized text blocks exist,  
+            - a text style line may have no intersection with the applied text block
+            - a table border may be very close to a text block, which seems contained in that block
+            
+            Conservatively, try to determin semantic type like underline and strike-through on condition that:
+            - it's contained in a text block, AND
+            - also contained in a certain line of that text block.
+
+            NOTE: a stroke that not determined by this block, can be either table border or text style line.
+            So the returned RectType.UNDEFINED means not able to determin its type.
         '''
-        # generally, text style line is contained in a certain block; but a real border may be very close 
-        # to a text block, which seems contained in that block, so need further check deepping into block line.
-        # Besides, set a tight margin for this case.
+        # check block first
+        if not block.contains(self): return RectType.UNDEFINED
 
-        # - check block first
-        if not block.bbox.round().contains(self.bbox): 
-            return RectType.UNDEFINED
-
-        # - check block line for further confirmation
+        # check block line for further confirmation
         for line in block.lines:            
-            if line.bbox.round().contains(self.bbox): return RectType.UNDERLINE_OR_STRIKE
+            if line.contains(self): return RectType.UNDERLINE_OR_STRIKE
         
-        return RectType.UNDEFINED # can't be determined by this block
+        return RectType.UNDEFINED
 
 
     def store(self):
@@ -213,31 +220,20 @@ class Fill(Shape):
     def _check_semantic_type(self, block):
         ''' Override. Check semantic type based on the position to a text block.
 
-            Though looks like a filling area, difference exists between table shading and text highlight:
-            - table shading either contains at least one text block (with margin considered), or no any 
-            intersetions with other text blocks;
-            - otherwise, it's a text highlight
+            Generally, table shading always contains at least one block line, while text highlight doesn't
+            contain any lines. But in real cases, with margin exists, table shading may not 100% contain a
+            block line, e.g. a factor like 98% or so.
         '''
-        # generally, table shading contains at least a text block; but considering incorrectly organized 
-        # text blocks, a real shading may not contain any block, so need further check deepping into block line.
-
-        # - check block first
-        if self.bbox.round().contains(block.bbox): 
-            return RectType.SHADING 
+        # check block first
+        if self.contains(block, threshold=constants.FACTOR_ALMOST): return RectType.SHADING
         
-        elif not self.bbox & block.bbox:
-            return RectType.UNDEFINED
-        
-        # - not contained but intersects -> check block line for another chance
+        # not contain but intersects -> check block line for another chance
         for line in block.lines:
-            if self.bbox.round().contains(line.bbox): 
+            if not self.bbox & line.bbox: continue
+
+            if self.contains(line, threshold=constants.FACTOR_ALMOST): 
                 return RectType.SHADING
-            
-            # it can't be a shading when not contain the line in 1D -> the main direction
-            elif self.bbox & line.bbox:
-                if self.bbox.width >= self.bbox.height:
-                    if self.bbox.width <= line.bbox.width: return RectType.HIGHLIGHT
-                else:
-                    if self.bbox.height <= line.bbox.height: return RectType.HIGHLIGHT
+            else:
+                return RectType.HIGHLIGHT
         
         return RectType.UNDEFINED # can't be determined by this block
