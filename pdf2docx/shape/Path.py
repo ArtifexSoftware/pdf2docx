@@ -75,7 +75,7 @@ class PathsExtractor:
             else:
                 image = None
 
-            # ignore anything behind vector graphic
+            # ignore anything under vector graphic
             if image:
                 pixmaps.append(image)
                 continue
@@ -122,7 +122,8 @@ class Paths(BaseCollection):
         '''
         bbox = fitz.Rect()
         for path in self._instances:            
-            if not path.is_iso_oriented(constants.FACTOR_A_FEW): bbox |= path.bbox
+            if not path.is_iso_oriented(constants.FACTOR_A_FEW): 
+                bbox |= path.bbox
 
         return bbox.getArea()/self.bbox.getArea() >= ratio
     
@@ -146,12 +147,11 @@ class Paths(BaseCollection):
             - ratio: don't convert to image if the size of image exceeds this value,
             since we don't prefer converting the whole page to an image.
         '''
-        bbox = self.bbox
-
         # NOTE: the image size shouldn't exceed a limitation.
-        if bbox.getArea()/page.rect.getArea()>=ratio: return None
+        if self.bbox.getArea()/page.rect.getArea()>=ratio:
+            return None
         
-        return ImagesExtractor.clip_page(page, bbox, zoom)
+        return ImagesExtractor.clip_page(page, self.bbox, zoom)
     
 
     def to_iso_paths(self):
@@ -173,7 +173,8 @@ class Path:
         '''Init path in un-rotated page CS.'''
         self.points = []
         for x,y in raw.get('points', []): # [(x0,y0), (x1, y1)]
-            self.points.append((x,y))
+            round_point = (round(x,1), round(y,1))
+            self.points.append(round_point)
 
         # stroke (by default) or fill path
         self.stroke = raw.get('stroke', True)
@@ -204,7 +205,7 @@ class Path:
 
     def is_iso_oriented(self, ratio:float):
         '''Whether contains only horizontal/vertical path segments.
-            Criterion: the length ratio of curved path segments.
+            Criterion: the length ratio of curved path segments doesn't exceed the defined ratio.
         '''
         L_sum, L_curve = 1e-6, 0.0
         for i in range(len(self.points)-1):
@@ -219,7 +220,7 @@ class Path:
 
             # curved segment
             if x0!=x1 and y0!=y1: L_curve += L
-        
+
         return L_curve/L_sum < ratio
 
 
@@ -236,6 +237,7 @@ class Path:
             # end point
             x1, y1 = self.points[i+1]
 
+            # horizontal or vertical lines only
             if x0!=x1 and y0!=y1: continue
 
             strokes.append({
