@@ -154,40 +154,57 @@ class Test_Main(Utility):
         if not os.path.exists(self.output_dir):
             os.mkdir(self.output_dir)
 
+    # ------------------------------------------
+    # text styles
+    # ------------------------------------------
     def test_blank_file(self):
-        '''sample file without any texts or images.'''
+        '''test blank file without any texts or images.'''
         self.init_test('demo-blank').verify_layout(threshold=0.95)
 
     def test_text_format(self):
-        '''sample file focusing on text format, e.g. highlight, underline, strike-through.'''
+        '''test text format, e.g. highlight, underline, strike-through.'''
         self.init_test('demo-text').verify_layout(threshold=0.95)
 
     def test_text_alignment(self):
-        '''sample file focusing on text alignment.'''
+        '''test text alignment.'''
         self.init_test('demo-text-alignment').verify_layout(threshold=0.95)
+    
+    def test_unnamed_fonts(self):
+        '''test unnamed fonts which destroys span bbox, and accordingly line/block layout.'''
+        self.init_test('demo-text-unnamed-fonts').verify_layout(threshold=0.95)
 
+    def test_text_scaling(self):
+        '''test font size. In this case, the font size is set precisely with character scaling.'''
+        self.init_test('demo-text-scaling').verify_layout(threshold=0.95)
+
+    # ------------------------------------------
+    # image styles
+    # ------------------------------------------
     def test_image(self):
-        '''sample file focusing on inline-image.'''
+        '''test inline-image.'''
         self.init_test('demo-image').verify_layout(threshold=0.95)
 
     def test_vector_graphic(self):
-        '''sample file focusing on vector graphic.'''
+        '''test vector graphic.'''
         self.init_test('demo-image-vector-graphic').verify_layout(threshold=0.95)
 
     def test_image_cmyk(self):
-        '''sample file focusing on image in CMYK color-space.'''
+        '''test image in CMYK color-space.'''
         self.init_test('demo-image-cmyk').verify_layout(threshold=0.95)
 
     def test_image_transparent(self):
-        '''sample file focusing on transparent images.'''
+        '''test transparent images.'''
         self.init_test('demo-image-transparent').verify_layout(threshold=0.95)
 
+    # ------------------------------------------
+    # table styles
+    # ------------------------------------------
     def test_table_bottom(self):
-        '''sample file focusing on page break due to table at the end of page.'''
+        '''page break due to table at the end of page.'''
         self.init_test('demo-table-bottom').verify_layout(threshold=0.95)
 
     def test_table_format(self):
-        '''sample file focusing on table format, e.g. 
+        '''test table format, e.g. 
             - border and shading style
             - vertical cell
             - merged cell
@@ -196,43 +213,33 @@ class Test_Main(Utility):
         self.init_test('demo-table').verify_layout(threshold=0.95)
 
     def test_stream_table(self):
-        '''sample file focusing on stream structure and shading.'''
+        '''test stream structure and shading.'''
         self.init_test('demo-table-stream').verify_layout(threshold=0.95)
 
     def test_table_shading(self):
-        '''sample file focusing on simulating shape with shading cell.'''
+        '''test simulating shape with shading cell.'''
         self.init_test('demo-table-shading').verify_layout(threshold=0.95)
 
     def test_lattice_table(self):
-        '''sample file focusing on lattice table with very close text underlines to table borders.'''
+        '''test lattice table with very close text underlines to table borders.'''
+        self.init_test('demo-table-close-underline').verify_layout(threshold=0.95)
+
+    def test_lattice_table_invoice(self):
+        '''test invoice sample file with lattice table, vector graphic.'''
         self.init_test('demo-table-close-underline').verify_layout(threshold=0.95)
 
     def test_table_border_style(self):
-        '''sample file focusing on border style, e.g. width, color.'''
+        '''test border style, e.g. width, color.'''
         self.init_test('demo-table-border-style').verify_layout(threshold=0.95)
 
     def test_table_align_borders(self):
-        '''sample file focusing on aligning stream table borders to simplify table structure.'''
+        '''aligning stream table borders to simplify table structure.'''
         self.init_test('demo-table-align-borders').verify_layout(threshold=0.95)
 
     def test_nested_table(self):
-        '''sample file focusing on nested tables.'''
+        '''test nested tables.'''
         self.init_test('demo-table-nested').verify_layout(threshold=0.95)
 
-    def test_text_scaling(self):
-        '''sample file focusing on font size.
-            In this case, the font size is set precisely with character scaling.
-        '''
-        self.init_test('demo-text-scaling').verify_layout(threshold=0.95)
-
     def test_path_transformation(self):
-        '''sample file focusing on path transformation.
-            In this case, the (0,0) origin is out of the page.
-        '''
+        '''test path transformation. In this case, the (0,0) origin is out of the page.'''
         self.init_test('demo-path-transformation').verify_layout(threshold=0.95)
-
-    
-    def test_unnamed_fonts(self):
-        '''Unnamed fonts destroy span bbox, and accordingly line/block layout.
-        '''
-        self.init_test('demo-unnamed-fonts').verify_layout(threshold=0.95)

@@ -78,14 +78,18 @@ class Block(BBox):
         '''whether has same bbox and vertical spacing with given block.
             ---
             Args:
-              - block: instance to compare
-              - threshold: two bboxes are considered same if the overlap area exceeds threshold.
+            - block: instance to compare
+            - threshold: two bboxes are considered same if the overlap area exceeds threshold.
 
             NOTE: the vertical spacing has most important impacts on the layout of converted docx.
         '''
         # bbox
         res, msg = super().compare(block, threshold)
         if not res: return res, msg
+
+        # check text alignment
+        if self.alignment != block.alignment:
+            return False, f'Inconsistent text alignment @ {self.bbox}:\n{self.alignment} v.s. {block.alignment} (expected)'
 
         # check spacing
         for key, value in self.__dict__.items():

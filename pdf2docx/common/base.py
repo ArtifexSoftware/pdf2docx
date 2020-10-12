@@ -43,10 +43,10 @@ class TextDirection(Enum):
 
 class TextAlignment(Enum):
     '''Block types.'''
-    LEFT    = 0
-    CENTER  = 1
-    RIGHT   = 2
-    JUSTIFY = 3
+    LEFT    = 0b1000
+    CENTER  = 0b0100
+    RIGHT   = 0b0010
+    JUSTIFY = 0b0001
 
 
 class IText:

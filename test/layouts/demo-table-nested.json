@@ -16,7 +16,7 @@
                 85.2
             ],
             "type": 0,
-            "alignment": 0,
+            "alignment": 8,
             "left_space": 0.0,
             "right_space": 355.7,
             "before_space": 37.1,
@@ -364,7 +364,7 @@
                 254.1
             ],
             "type": 3,
-            "alignment": 0,
+            "alignment": 8,
             "left_space": 0.0,
             "right_space": 0.0,
             "before_space": 0.0,
@@ -414,7 +414,7 @@
                                         136.6
                                     ],
                                     "type": 2,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 0.20000000000000284,
                                     "right_space": 0.0,
                                     "before_space": 4.5,
@@ -464,7 +464,7 @@
                                                                 108.1
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 0,
+                                                            "alignment": 8,
                                                             "left_space": 5.2,
                                                             "right_space": 55.4,
                                                             "before_space": 2.1999999999999886,
@@ -566,7 +566,7 @@
                                                                 108.1
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 0,
+                                                            "alignment": 8,
                                                             "left_space": 5.2,
                                                             "right_space": 55.6,
                                                             "before_space": 2.1999999999999886,
@@ -668,7 +668,7 @@
                                                                 108.1
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 0,
+                                                            "alignment": 8,
                                                             "left_space": 5.2,
                                                             "right_space": 55.5,
                                                             "before_space": 2.1999999999999886,
@@ -781,7 +781,7 @@
                                                                 122.2
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 0,
+                                                            "alignment": 8,
                                                             "left_space": 5.2,
                                                             "right_space": 55.4,
                                                             "before_space": 2.1499999999999915,
@@ -883,7 +883,7 @@
                                                                 122.2
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 0,
+                                                            "alignment": 8,
                                                             "left_space": 5.2,
                                                             "right_space": 55.6,
                                                             "before_space": 2.1499999999999915,
@@ -985,7 +985,7 @@
                                                                 122.2
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 0,
+                                                            "alignment": 8,
                                                             "left_space": 5.2,
                                                             "right_space": 55.5,
                                                             "before_space": 2.1499999999999915,
@@ -1098,7 +1098,7 @@
                                                                 136.1
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 0,
+                                                            "alignment": 8,
                                                             "left_space": 5.2,
                                                             "right_space": 55.4,
                                                             "before_space": 2.1499999999999915,
@@ -1200,7 +1200,7 @@
                                                                 136.1
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 0,
+                                                            "alignment": 8,
                                                             "left_space": 5.2,
                                                             "right_space": 55.6,
                                                             "before_space": 2.1499999999999915,
@@ -1302,7 +1302,7 @@
                                                                 136.1
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 0,
+                                                            "alignment": 8,
                                                             "left_space": 5.2,
                                                             "right_space": 55.5,
                                                             "before_space": 2.1499999999999915,
@@ -1383,7 +1383,7 @@
                                         187.0
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 0.0,
                                     "right_space": 16.4,
                                     "before_space": 21.19999999999999,
@@ -2478,7 +2478,7 @@
                                         238.1
                                     ],
                                     "type": 0,
-                                    "alignment": 3,
+                                    "alignment": 1,
                                     "left_space": 16.5,
                                     "right_space": 2.5,
                                     "before_space": 3.2111111111111157,
@@ -8257,7 +8257,7 @@
                 311.9
             ],
             "type": 2,
-            "alignment": 0,
+            "alignment": 8,
             "left_space": 0.20000000000000284,
             "right_space": 0.0,
             "before_space": 15.750000000000028,
@@ -8307,7 +8307,7 @@
                                         283.6
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 5.2,
                                     "right_space": 136.6,
                                     "before_space": 2.25,
@@ -8409,7 +8409,7 @@
                                         283.6
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 5.1,
                                     "right_space": 136.7,
                                     "before_space": 2.25,
@@ -8511,7 +8511,7 @@
                                         283.6
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 5.1,
                                     "right_space": 136.7,
                                     "before_space": 2.25,
@@ -8624,7 +8624,7 @@
                                         297.5
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 5.2,
                                     "right_space": 136.6,
                                     "before_space": 2.1499999999999773,
@@ -8726,7 +8726,7 @@
                                         297.5
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 5.1,
                                     "right_space": 136.7,
                                     "before_space": 2.1499999999999773,
@@ -8828,7 +8828,7 @@
                                         297.5
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 5.1,
                                     "right_space": 136.7,
                                     "before_space": 2.1499999999999773,
@@ -8941,7 +8941,7 @@
                                         311.5
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 5.2,
                                     "right_space": 136.6,
                                     "before_space": 2.1999999999999886,
@@ -9043,7 +9043,7 @@
                                         311.5
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 5.1,
                                     "right_space": 136.7,
                                     "before_space": 2.1999999999999886,
@@ -9145,7 +9145,7 @@
                                         311.5
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 5.1,
                                     "right_space": 136.7,
                                     "before_space": 2.1999999999999886,
@@ -9226,7 +9226,7 @@
                 347.9
             ],
             "type": 0,
-            "alignment": 0,
+            "alignment": 8,
             "left_space": 0.0,
             "right_space": 351.0,
             "before_space": 24.75,

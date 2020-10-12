@@ -16,7 +16,7 @@
                 108.4
             ],
             "type": 0,
-            "alignment": 0,
+            "alignment": 8,
             "left_space": 9.1,
             "right_space": 5.0,
             "before_space": 23.75,
@@ -61,7 +61,7 @@
                 163.8
             ],
             "type": 0,
-            "alignment": 0,
+            "alignment": 8,
             "left_space": 0.0,
             "right_space": 26.3,
             "before_space": 32.99999999999997,
@@ -3209,7 +3209,7 @@
                 230.1
             ],
             "type": 0,
-            "alignment": 0,
+            "alignment": 8,
             "left_space": 0.0,
             "right_space": 20.0,
             "before_space": 9.92499999999999,
@@ -11068,7 +11068,7 @@
                 273.8
             ],
             "type": 0,
-            "alignment": 0,
+            "alignment": 8,
             "left_space": 0.0,
             "right_space": 34.5,
             "before_space": 9.950000000000017,
@@ -15576,7 +15576,7 @@
                 295.1
             ],
             "type": 0,
-            "alignment": 0,
+            "alignment": 8,
             "left_space": 0.0,
             "right_space": 99.4,
             "before_space": 9.899999999999977,
@@ -17136,7 +17136,7 @@
                 360.0
             ],
             "type": 0,
-            "alignment": 0,
+            "alignment": 8,
             "left_space": 73.6,
             "right_space": 219.8,
             "before_space": 53.599999999999966,
@@ -18033,7 +18033,7 @@
                 726.1
             ],
             "type": 3,
-            "alignment": 0,
+            "alignment": 8,
             "left_space": 0.0,
             "right_space": 0.0,
             "before_space": 0.0,
@@ -18083,7 +18083,7 @@
                                         657.9
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 0.0,
                                     "right_space": 34.9,
                                     "before_space": 276.29999999999995,
@@ -18172,7 +18172,7 @@
                                         615.9
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 35.7,
                                     "right_space": 1.5,
                                     "before_space": 7.2999999999999545,
@@ -29265,7 +29265,7 @@
                                         636.9
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 1.5,
                                     "right_space": 50.8,
                                     "before_space": 7.2999999999999545,
@@ -39496,7 +39496,7 @@
                                         704.1
                                     ],
                                     "type": 0,
-                                    "alignment": 1,
+                                    "alignment": 4,
                                     "left_space": 34.9,
                                     "right_space": 41.9,
                                     "before_space": 15.599999999999966,
@@ -41283,25 +41283,6 @@
         }
     ],
     "paths": [
-        {
-            "bbox": [
-                319.8,
-                507.1,
-                321.8,
-                508.1
-            ],
-            "type": -1,
-            "color": 65280,
-            "start": [
-                320.29998779296875,
-                507.5999755859375
-            ],
-            "end": [
-                321.29998779296875,
-                507.5999755859375
-            ],
-            "width": 1.0
-        },
         {
             "bbox": [
                 256.7,
