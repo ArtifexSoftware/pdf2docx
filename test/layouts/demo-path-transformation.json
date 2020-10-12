@@ -16,7 +16,7 @@
                 51.3
             ],
             "type": 0,
-            "alignment": 1,
+            "alignment": 4,
             "left_space": 32.1,
             "right_space": 34.0,
             "before_space": 12.000000000000005,
@@ -1325,7 +1325,7 @@
             "left_space": 479.0,
             "right_space": 5.3,
             "before_space": 5.800000000000004,
-            "after_space": 6.050000000000011,
+            "after_space": 6.150000000000006,
             "line_space": 10.499999999999993,
             "tab_stops": [],
             "lines": [
@@ -1540,12 +1540,12 @@
         {
             "bbox": [
                 46.5,
-                73.9,
+                74.0,
                 562.8,
                 664.2
             ],
             "type": 3,
-            "alignment": 0,
+            "alignment": 8,
             "left_space": 0.0,
             "right_space": 0.0,
             "before_space": 0.0,
@@ -1556,16 +1556,16 @@
                 {
                     "bbox": [
                         46.5,
-                        73.9,
+                        74.0,
                         562.8,
                         127.1
                     ],
-                    "height": 53.19999999999999,
+                    "height": 53.099999999999994,
                     "cells": [
                         {
                             "bbox": [
                                 46.5,
-                                73.9,
+                                74.0,
                                 144.6,
                                 127.1
                             ],
@@ -1595,10 +1595,10 @@
                                         90.9
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 65.5,
-                                    "before_space": 6.75,
+                                    "before_space": 6.650000000000006,
                                     "after_space": 0.0,
                                     "line_space": 10.0,
                                     "tab_stops": [],
@@ -1732,7 +1732,7 @@
                         {
                             "bbox": [
                                 144.6,
-                                73.9,
+                                74.0,
                                 205.0,
                                 127.1
                             ],
@@ -1762,10 +1762,10 @@
                                         112.5
                                     ],
                                     "type": 0,
-                                    "alignment": 1,
+                                    "alignment": 4,
                                     "left_space": 14.0,
                                     "right_space": 13.9,
-                                    "before_space": 5.950000000000003,
+                                    "before_space": 5.8500000000000085,
                                     "after_space": 0.0,
                                     "line_space": 10.799999999999997,
                                     "tab_stops": [],
@@ -2104,7 +2104,7 @@
                         {
                             "bbox": [
                                 205.0,
-                                73.9,
+                                74.0,
                                 243.8,
                                 127.1
                             ],
@@ -2134,15 +2134,13 @@
                                         101.7
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 4,
                                     "left_space": 4.0,
                                     "right_space": 3.3,
-                                    "before_space": 5.950000000000003,
+                                    "before_space": 5.8500000000000085,
                                     "after_space": 0.0,
                                     "line_space": 10.799999999999997,
-                                    "tab_stops": [
-                                        1.2
-                                    ],
+                                    "tab_stops": [],
                                     "lines": [
                                         {
                                             "bbox": [
@@ -2369,7 +2367,7 @@
                         {
                             "bbox": [
                                 243.8,
-                                73.9,
+                                74.0,
                                 277.9,
                                 127.1
                             ],
@@ -2399,10 +2397,10 @@
                                         90.9
                                     ],
                                     "type": 0,
-                                    "alignment": 1,
+                                    "alignment": 4,
                                     "left_space": 3.2,
                                     "right_space": 6.9,
-                                    "before_space": 6.75,
+                                    "before_space": 6.650000000000006,
                                     "after_space": 0.0,
                                     "line_space": 10.0,
                                     "tab_stops": [],
@@ -2497,7 +2495,7 @@
                         {
                             "bbox": [
                                 277.9,
-                                73.9,
+                                74.0,
                                 314.9,
                                 127.1
                             ],
@@ -2527,10 +2525,10 @@
                                         112.5
                                     ],
                                     "type": 0,
-                                    "alignment": 1,
+                                    "alignment": 4,
                                     "left_space": 5.8,
                                     "right_space": 6.5,
-                                    "before_space": 5.950000000000003,
+                                    "before_space": 5.8500000000000085,
                                     "after_space": 0.0,
                                     "line_space": 10.799999999999997,
                                     "tab_stops": [],
@@ -2791,7 +2789,7 @@
                         {
                             "bbox": [
                                 314.9,
-                                73.9,
+                                74.0,
                                 357.4,
                                 127.1
                             ],
@@ -2821,10 +2819,10 @@
                                         123.3
                                     ],
                                     "type": 0,
-                                    "alignment": 1,
+                                    "alignment": 4,
                                     "left_space": 6.1,
                                     "right_space": 6.9,
-                                    "before_space": 5.950000000000003,
+                                    "before_space": 5.8500000000000085,
                                     "after_space": 0.0,
                                     "line_space": 10.799999999999997,
                                     "tab_stops": [],
@@ -3246,7 +3244,7 @@
                         {
                             "bbox": [
                                 357.4,
-                                73.9,
+                                74.0,
                                 395.9,
                                 127.1
                             ],
@@ -3276,10 +3274,10 @@
                                         112.5
                                     ],
                                     "type": 0,
-                                    "alignment": 1,
+                                    "alignment": 4,
                                     "left_space": 3.5,
                                     "right_space": 6.0,
-                                    "before_space": 5.950000000000003,
+                                    "before_space": 5.8500000000000085,
                                     "after_space": 0.0,
                                     "line_space": 10.799999999999997,
                                     "tab_stops": [],
@@ -3566,7 +3564,7 @@
                         {
                             "bbox": [
                                 395.9,
-                                73.9,
+                                74.0,
                                 434.4,
                                 127.1
                             ],
@@ -3596,10 +3594,10 @@
                                         112.5
                                     ],
                                     "type": 0,
-                                    "alignment": 1,
+                                    "alignment": 4,
                                     "left_space": 4.7,
                                     "right_space": 4.8,
-                                    "before_space": 5.950000000000003,
+                                    "before_space": 5.8500000000000085,
                                     "after_space": 0.0,
                                     "line_space": 10.799999999999997,
                                     "tab_stops": [],
@@ -3886,7 +3884,7 @@
                         {
                             "bbox": [
                                 434.4,
-                                73.9,
+                                74.0,
                                 481.5,
                                 127.1
                             ],
@@ -3916,10 +3914,10 @@
                                         112.5
                                     ],
                                     "type": 0,
-                                    "alignment": 1,
+                                    "alignment": 4,
                                     "left_space": 3.6,
                                     "right_space": 4.6,
-                                    "before_space": 5.950000000000003,
+                                    "before_space": 5.8500000000000085,
                                     "after_space": 0.0,
                                     "line_space": 10.799999999999997,
                                     "tab_stops": [],
@@ -4245,7 +4243,7 @@
                         {
                             "bbox": [
                                 481.5,
-                                73.9,
+                                74.0,
                                 527.7,
                                 127.1
                             ],
@@ -4275,10 +4273,10 @@
                                         123.3
                                     ],
                                     "type": 0,
-                                    "alignment": 1,
+                                    "alignment": 4,
                                     "left_space": 3.1,
                                     "right_space": 3.1,
-                                    "before_space": 5.950000000000003,
+                                    "before_space": 5.8500000000000085,
                                     "after_space": 0.0,
                                     "line_space": 10.799999999999997,
                                     "tab_stops": [],
@@ -4778,7 +4776,7 @@
                         {
                             "bbox": [
                                 527.7,
-                                73.9,
+                                74.0,
                                 562.8,
                                 127.1
                             ],
@@ -4808,10 +4806,10 @@
                                         112.5
                                     ],
                                     "type": 0,
-                                    "alignment": 1,
+                                    "alignment": 4,
                                     "left_space": 3.0,
                                     "right_space": 3.1,
-                                    "before_space": 5.950000000000003,
+                                    "before_space": 5.8500000000000085,
                                     "after_space": 0.0,
                                     "line_space": 10.799999999999997,
                                     "tab_stops": [],
@@ -5115,16 +5113,16 @@
                         46.5,
                         127.1,
                         562.8,
-                        155.8
+                        155.9
                     ],
-                    "height": 28.700000000000017,
+                    "height": 28.80000000000001,
                     "cells": [
                         {
                             "bbox": [
                                 46.5,
                                 127.1,
                                 144.6,
-                                155.8
+                                155.9
                             ],
                             "bg_color": null,
                             "border_color": [
@@ -5152,7 +5150,7 @@
                                         141.2
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 90.0,
                                     "before_space": 3.8499999999999943,
@@ -5213,7 +5211,7 @@
                                 144.6,
                                 127.1,
                                 205.0,
-                                155.8
+                                155.9
                             ],
                             "bg_color": null,
                             "border_color": [
@@ -5489,7 +5487,7 @@
                                 205.0,
                                 127.1,
                                 243.8,
-                                155.8
+                                155.9
                             ],
                             "bg_color": null,
                             "border_color": [
@@ -5578,7 +5576,7 @@
                                 243.8,
                                 127.1,
                                 277.9,
-                                155.8
+                                155.9
                             ],
                             "bg_color": null,
                             "border_color": [
@@ -5667,7 +5665,7 @@
                                 277.9,
                                 127.1,
                                 314.9,
-                                155.8
+                                155.9
                             ],
                             "bg_color": null,
                             "border_color": [
@@ -5756,7 +5754,7 @@
                                 314.9,
                                 127.1,
                                 357.4,
-                                155.8
+                                155.9
                             ],
                             "bg_color": null,
                             "border_color": [
@@ -5784,7 +5782,7 @@
                                         152.0
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 3.4,
                                     "before_space": 3.049999999999983,
@@ -6021,7 +6019,7 @@
                                 357.4,
                                 127.1,
                                 395.9,
-                                155.8
+                                155.9
                             ],
                             "bg_color": null,
                             "border_color": [
@@ -6110,7 +6108,7 @@
                                 395.9,
                                 127.1,
                                 434.4,
-                                155.8
+                                155.9
                             ],
                             "bg_color": null,
                             "border_color": [
@@ -6199,7 +6197,7 @@
                                 434.4,
                                 127.1,
                                 481.5,
-                                155.8
+                                155.9
                             ],
                             "bg_color": null,
                             "border_color": [
@@ -6288,7 +6286,7 @@
                                 481.5,
                                 127.1,
                                 527.7,
-                                155.8
+                                155.9
                             ],
                             "bg_color": null,
                             "border_color": [
@@ -6390,7 +6388,7 @@
                                 527.7,
                                 127.1,
                                 562.8,
-                                155.8
+                                155.9
                             ],
                             "bg_color": null,
                             "border_color": [
@@ -6492,16 +6490,16 @@
                 {
                     "bbox": [
                         46.5,
-                        155.8,
+                        155.9,
                         562.8,
                         175.9
                     ],
-                    "height": 20.099999999999994,
+                    "height": 20.0,
                     "cells": [
                         {
                             "bbox": [
                                 46.5,
-                                155.8,
+                                155.9,
                                 144.6,
                                 175.9
                             ],
@@ -6531,10 +6529,10 @@
                                         172.7
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 30.0,
-                                    "before_space": 6.649999999999977,
+                                    "before_space": 6.549999999999983,
                                     "after_space": 0.0,
                                     "line_space": 10.0,
                                     "tab_stops": [],
@@ -6759,7 +6757,7 @@
                         {
                             "bbox": [
                                 144.6,
-                                155.8,
+                                155.9,
                                 205.0,
                                 175.9
                             ],
@@ -6792,7 +6790,7 @@
                                     "alignment": 2,
                                     "left_space": 34.5,
                                     "right_space": 4.0,
-                                    "before_space": 6.649999999999977,
+                                    "before_space": 6.549999999999983,
                                     "after_space": 0.0,
                                     "line_space": 10.0,
                                     "tab_stops": [],
@@ -6900,7 +6898,7 @@
                         {
                             "bbox": [
                                 205.0,
-                                155.8,
+                                155.9,
                                 243.8,
                                 175.9
                             ],
@@ -6930,10 +6928,10 @@
                                         172.7
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 12.7,
                                     "right_space": 3.6,
-                                    "before_space": 6.649999999999977,
+                                    "before_space": 6.549999999999983,
                                     "after_space": 0.0,
                                     "line_space": 10.0,
                                     "tab_stops": [],
@@ -7041,7 +7039,7 @@
                         {
                             "bbox": [
                                 243.8,
-                                155.8,
+                                155.9,
                                 277.9,
                                 175.9
                             ],
@@ -7074,7 +7072,7 @@
                                     "alignment": 2,
                                     "left_space": 25.3,
                                     "right_space": 5.8,
-                                    "before_space": 6.649999999999977,
+                                    "before_space": 6.549999999999983,
                                     "after_space": 0.0,
                                     "line_space": 10.0,
                                     "tab_stops": [],
@@ -7130,7 +7128,7 @@
                         {
                             "bbox": [
                                 277.9,
-                                155.8,
+                                155.9,
                                 314.9,
                                 175.9
                             ],
@@ -7163,7 +7161,7 @@
                                     "alignment": 2,
                                     "left_space": 16.4,
                                     "right_space": 3.1,
-                                    "before_space": 6.649999999999977,
+                                    "before_space": 6.549999999999983,
                                     "after_space": 0.0,
                                     "line_space": 10.0,
                                     "tab_stops": [],
@@ -7258,7 +7256,7 @@
                         {
                             "bbox": [
                                 314.9,
-                                155.8,
+                                155.9,
                                 357.4,
                                 175.9
                             ],
@@ -7291,7 +7289,7 @@
                                     "alignment": 2,
                                     "left_space": 24.1,
                                     "right_space": 5.9,
-                                    "before_space": 6.649999999999977,
+                                    "before_space": 6.549999999999983,
                                     "after_space": 0.0,
                                     "line_space": 10.0,
                                     "tab_stops": [],
@@ -7373,7 +7371,7 @@
                         {
                             "bbox": [
                                 357.4,
-                                155.8,
+                                155.9,
                                 395.9,
                                 175.9
                             ],
@@ -7406,7 +7404,7 @@
                                     "alignment": 2,
                                     "left_space": 16.3,
                                     "right_space": 4.7,
-                                    "before_space": 6.649999999999977,
+                                    "before_space": 6.549999999999983,
                                     "after_space": 0.0,
                                     "line_space": 10.0,
                                     "tab_stops": [],
@@ -7501,7 +7499,7 @@
                         {
                             "bbox": [
                                 395.9,
-                                155.8,
+                                155.9,
                                 434.4,
                                 175.9
                             ],
@@ -7534,7 +7532,7 @@
                                     "alignment": 2,
                                     "left_space": 32.0,
                                     "right_space": 3.5,
-                                    "before_space": 6.649999999999977,
+                                    "before_space": 6.549999999999983,
                                     "after_space": 0.0,
                                     "line_space": 10.0,
                                     "tab_stops": [],
@@ -7590,7 +7588,7 @@
                         {
                             "bbox": [
                                 434.4,
-                                155.8,
+                                155.9,
                                 481.5,
                                 175.9
                             ],
@@ -7623,7 +7621,7 @@
                                     "alignment": 2,
                                     "left_space": 26.4,
                                     "right_space": 3.2,
-                                    "before_space": 6.649999999999977,
+                                    "before_space": 6.549999999999983,
                                     "after_space": 0.0,
                                     "line_space": 10.0,
                                     "tab_stops": [],
@@ -7718,7 +7716,7 @@
                         {
                             "bbox": [
                                 481.5,
-                                155.8,
+                                155.9,
                                 527.7,
                                 175.9
                             ],
@@ -7751,7 +7749,7 @@
                                     "alignment": 2,
                                     "left_space": 38.1,
                                     "right_space": 5.1,
-                                    "before_space": 6.649999999999977,
+                                    "before_space": 6.549999999999983,
                                     "after_space": 0.0,
                                     "line_space": 10.0,
                                     "tab_stops": [],
@@ -7807,7 +7805,7 @@
                         {
                             "bbox": [
                                 527.7,
-                                155.8,
+                                155.9,
                                 562.8,
                                 175.9
                             ],
@@ -7840,7 +7838,7 @@
                                     "alignment": 2,
                                     "left_space": 14.5,
                                     "right_space": 3.1,
-                                    "before_space": 6.649999999999977,
+                                    "before_space": 6.549999999999983,
                                     "after_space": 0.0,
                                     "line_space": 10.0,
                                     "tab_stops": [],
@@ -7976,7 +7974,7 @@
                                         189.2
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 18.5,
                                     "before_space": 3.299999999999983,
@@ -9278,7 +9276,7 @@
                                         205.7
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 67.5,
                                     "before_space": 3.1999999999999886,
@@ -9560,7 +9558,7 @@
                                         205.7
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 12.7,
                                     "right_space": 3.6,
                                     "before_space": 3.1999999999999886,
@@ -10671,7 +10669,7 @@
                                         222.2
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 74.0,
                                     "before_space": 3.1999999999999886,
@@ -10953,7 +10951,7 @@
                                         222.2
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 12.7,
                                     "right_space": 3.6,
                                     "before_space": 3.1999999999999886,
@@ -12038,7 +12036,7 @@
                                         238.6
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 44.0,
                                     "before_space": 3.1999999999999886,
@@ -13171,7 +13169,7 @@
                                         255.1
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 78.0,
                                     "before_space": 3.299999999999983,
@@ -14369,7 +14367,7 @@
                                         271.6
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 65.5,
                                     "before_space": 3.1999999999999886,
@@ -15684,7 +15682,7 @@
                                         288.1
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 61.0,
                                     "before_space": 3.1999999999999886,
@@ -17025,7 +17023,7 @@
                                         304.5
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 21.5,
                                     "before_space": 3.1999999999999886,
@@ -18483,7 +18481,7 @@
                                         321.0
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 12.5,
                                     "before_space": 3.1999999999999886,
@@ -19928,7 +19926,7 @@
                                         337.5
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 53.0,
                                     "before_space": 3.1999999999999886,
@@ -21022,7 +21020,7 @@
                                         353.9
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 54.0,
                                     "before_space": 3.1999999999999886,
@@ -21356,7 +21354,7 @@
                                         353.9
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 12.7,
                                     "right_space": 3.6,
                                     "before_space": 3.1999999999999886,
@@ -22376,7 +22374,7 @@
                                         370.4
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 69.0,
                                     "before_space": 3.2999999999999545,
@@ -22671,7 +22669,7 @@
                                         370.4
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 9.8,
                                     "right_space": 3.5,
                                     "before_space": 3.2999999999999545,
@@ -23720,7 +23718,7 @@
                                         386.9
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 27.0,
                                     "before_space": 3.1999999999999886,
@@ -24119,7 +24117,7 @@
                                         386.9
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 12.7,
                                     "right_space": 3.6,
                                     "before_space": 3.1999999999999886,
@@ -25139,7 +25137,7 @@
                                         403.4
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 44.5,
                                     "before_space": 3.1999999999999886,
@@ -25499,7 +25497,7 @@
                                         403.4
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 12.7,
                                     "right_space": 3.6,
                                     "before_space": 3.1999999999999886,
@@ -26571,7 +26569,7 @@
                                         419.8
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 62.5,
                                     "before_space": 3.1999999999999886,
@@ -27873,7 +27871,7 @@
                                         436.3
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 51.0,
                                     "before_space": 3.1999999999999886,
@@ -29227,7 +29225,7 @@
                                         452.8
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 60.5,
                                     "before_space": 3.1999999999999886,
@@ -30529,7 +30527,7 @@
                                         469.3
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 56.5,
                                     "before_space": 3.1999999999999886,
@@ -31792,7 +31790,7 @@
                                         485.7
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 66.5,
                                     "before_space": 3.1999999999999886,
@@ -32087,7 +32085,7 @@
                                         485.7
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 12.7,
                                     "right_space": 3.6,
                                     "before_space": 3.1999999999999886,
@@ -33120,7 +33118,7 @@
                                         502.2
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 67.0,
                                     "before_space": 3.3000000000000114,
@@ -33415,7 +33413,7 @@
                                         502.2
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 12.7,
                                     "right_space": 3.6,
                                     "before_space": 3.3000000000000114,
@@ -34500,7 +34498,7 @@
                                         518.7
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 54.5,
                                     "before_space": 3.2000000000000455,
@@ -34834,7 +34832,7 @@
                                         518.7
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 12.7,
                                     "right_space": 3.6,
                                     "before_space": 3.2000000000000455,
@@ -35893,7 +35891,7 @@
                                         535.2
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 68.5,
                                     "before_space": 3.2000000000000455,
@@ -37104,7 +37102,7 @@
                                         551.6
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 50.0,
                                     "before_space": 3.2000000000000455,
@@ -37451,7 +37449,7 @@
                                         551.6
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 12.7,
                                     "right_space": 3.6,
                                     "before_space": 3.2000000000000455,
@@ -38432,7 +38430,7 @@
                                         568.1
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 66.8,
                                     "before_space": 3.2000000000000455,
@@ -39734,7 +39732,7 @@
                                         584.6
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 49.0,
                                     "before_space": 3.2000000000000455,
@@ -40854,7 +40852,7 @@
                                         601.0
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 39.5,
                                     "before_space": 3.2000000000000455,
@@ -41240,7 +41238,7 @@
                                         601.0
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 12.7,
                                     "right_space": 3.6,
                                     "before_space": 3.2000000000000455,
@@ -42338,7 +42336,7 @@
                                         617.5
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 44.1,
                                     "before_space": 3.2999999999999545,
@@ -42698,7 +42696,7 @@
                                         617.5
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 12.7,
                                     "right_space": 3.6,
                                     "before_space": 3.2999999999999545,
@@ -43718,7 +43716,7 @@
                                         634.0
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 53.7,
                                     "before_space": 3.199999999999932,
@@ -44812,7 +44810,7 @@
                                         657.5
                                     ],
                                     "type": 0,
-                                    "alignment": 0,
+                                    "alignment": 8,
                                     "left_space": 3.1,
                                     "right_space": 41.0,
                                     "before_space": 6.75,
@@ -45172,7 +45170,7 @@
                                         657.5
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 4,
                                     "left_space": 7.7,
                                     "right_space": 3.6,
                                     "before_space": 6.75,
@@ -45415,7 +45413,7 @@
                                         657.5
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 11.4,
                                     "right_space": 3.1,
                                     "before_space": 6.75,
@@ -45556,7 +45554,7 @@
                                         657.5
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 14.1,
                                     "right_space": 5.9,
                                     "before_space": 6.75,
@@ -45697,7 +45695,7 @@
                                         657.5
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 11.3,
                                     "right_space": 4.7,
                                     "before_space": 6.75,
@@ -46196,7 +46194,7 @@
                                         657.5
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
+                                    "alignment": 8,
                                     "left_space": 10.1,
                                     "right_space": 3.1,
                                     "before_space": 6.75,
@@ -46316,7 +46314,7 @@
                 682.1
             ],
             "type": 0,
-            "alignment": 0,
+            "alignment": 8,
             "left_space": 0.3,
             "right_space": 255.5,
             "before_space": 5.25,
@@ -47245,7 +47243,7 @@
                 766.3
             ],
             "type": 0,
-            "alignment": 0,
+            "alignment": 8,
             "left_space": 249.0,
             "right_space": 254.0,
             "before_space": 72.0,
@@ -47330,7 +47328,7 @@
         {
             "bbox": [
                 46.5,
-                73.7,
+                73.8,
                 562.8,
                 74.2
             ],
@@ -47338,11 +47336,11 @@
             "color": 0,
             "start": [
                 46.5,
-                73.94999694824219
+                74.0
             ],
             "end": [
                 562.7999877929688,
-                73.94999694824219
+                74.0
             ],
             "width": 0.5
         },
@@ -47368,19 +47366,19 @@
         {
             "bbox": [
                 46.5,
-                155.5,
+                155.6,
                 562.8,
-                156.0
+                156.1
             ],
             "type": 10,
             "color": 0,
             "start": [
                 46.5,
-                155.75
+                155.85000610351562
             ],
             "end": [
                 562.7999877929688,
-                155.75
+                155.85000610351562
             ],
             "width": 0.5
         },
@@ -47406,19 +47404,19 @@
         {
             "bbox": [
                 46.5,
-                663.9,
+                664.0,
                 562.8,
-                664.4
+                664.5
             ],
             "type": 10,
             "color": 0,
             "start": [
                 46.5,
-                664.1500244140625
+                664.25
             ],
             "end": [
                 562.7999877929688,
-                664.1500244140625
+                664.25
             ],
             "width": 0.5
         }
