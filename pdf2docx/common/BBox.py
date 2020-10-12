@@ -53,6 +53,9 @@ class BBox(IText):
     def __bool__(self):
         '''Real object when bbox is defined.'''
         return bool(self.bbox)
+    
+
+    def __repr__(self): return f'{self.__class__.__name__}({tuple(self.bbox)})'
 
     
     def get_expand_bbox(self, dt:float):

@@ -35,7 +35,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from .Line import Line
 from .Lines import Lines
 from ..image.ImageSpan import ImageSpan
-from ..common.base import RectType, TextDirection, TextAlignment
+from ..common.base import TextDirection, TextAlignment
 from ..common.Block import Block
 from ..common.utils import RGB_component_from_name
 from ..common import constants
@@ -211,106 +211,33 @@ class TextBlock(Block):
             from PyMuPDF), e.g. some lines align left, and others right. In this case,
             LEFT alignment is set, and use TAB to position each line.
         '''
-        # get lines in each row (an indeed line)
-        fun = lambda a,b: a.in_same_row(b)
-        rows = self.lines.group(fun)
-
-        # ------------------------------------------------------
-        # block alignment
-        # - parse alignment mode by lines layout if rows>=2, otherwise by page bbox
-        # - calculate indentation with page bbox
-        # ------------------------------------------------------
         # NOTE: in PyMuPDF CS, horizontal text direction is same with positive x-axis,
         # while vertical text is on the contrary, so use f = -1 here
         idx0, idx1, f = (0, 2, 1.0) if self.is_horizontal_text else (3, 1, -1.0)
+        
+        # the idea is to detect alignments based on internal lines and external bbox,
+        # the alignment mode fulfilled with both these two criteria is preferred.
+        int_mode = self._internal_alignments((idx0, idx1, f))
+        ext_mode = self._external_alignments(bbox, (idx0, idx1, f)) # set horizontal space additionally
+        mode = int_mode & ext_mode
 
-        # block position in page
-        d_left   = round((self.bbox[idx0]-bbox[idx0])*f, 1) # left margin
-        d_right  = round((bbox[idx1]-self.bbox[idx1])*f, 1) # right margin
-        d_center = round((d_left-d_right)/2.0, 1)           # center margin
-        d_left = max(d_left, 0.0)
-        d_right = max(d_right, 0.0)
+        # NOTE: 0b111 here means left/center/right alignment is possible, while the index for JUSTIFY 
+        # alignment is also 7. So, we have to filter this 0b111 first, e.g.
+        # for a single line, it prefers CENTER alignment, rather than JUSTIFY
+        if len(self.lines)==1 and mode==0b111: mode = 0b010
 
-        # First priority: 
-        # if significant distance exists in any two adjacent lines -> set LEFT alignment,
-        # then ensure the detailed line position with TAB stops further
-        def discrete_lines(threshold):
-            for row in rows:
-                if len(row)==1: continue
-                for i in range(1, len(row)):
-                    dis = (row[i].bbox[idx0]-row[i-1].bbox[idx1])*f
-                    if dis >= threshold: return True
-            return False
-
-        if discrete_lines(constants.MAJOR_DIST):
+        # now, decide the alignment accordingly
+        for align_mode in TextAlignment:
+            if align_mode.value==mode:
+                self.alignment = align_mode
+                break
+        else:
             self.alignment = TextAlignment.LEFT
 
-        # check contained lines layout if the count of lines (real lines) >= 2
-        elif len(rows)>=2:
-            # contained lines layout
-            X0 = [lines[0].bbox[idx0]  for lines in rows]
-            X1 = [lines[-1].bbox[idx1] for lines in rows]
-            X  = [(x0+x1)/2.0 for (x0, x1) in zip(X0, X1)]
-
-            left_aligned   = abs(max(X0)-min(X0))<=constants.MINOR_DIST
-            right_aligned  = abs(max(X1)-min(X1))<=constants.MINOR_DIST
-            center_aligned = abs(max(X)-min(X))  <=constants.MINOR_DIST
-
-            # consider left/center/right alignment, 2*2*2=8 cases in total, of which
-            # there cases are impossible: 0-1-1, 1-1-0, 1-0-1
-            if center_aligned and not left_aligned and not right_aligned: # 0-1-0
-                self.alignment = TextAlignment.CENTER
-
-            elif right_aligned and not left_aligned: # 0-0-1
-                self.alignment = TextAlignment.RIGHT
-
-            elif left_aligned and right_aligned: # 1-1-1
-                self.alignment = TextAlignment.JUSTIFY
-
-            # set left alignment and ensure line position with TAB stop further
-            elif not left_aligned and not right_aligned: # 0-0-0
-                self.alignment = TextAlignment.LEFT
-
-            # now, it's 1-0-0, but if remove last line, it may be 1-1-1
-            else: # 1-0-0
-                if len(rows)==2:
-                    self.alignment = TextAlignment.LEFT
-
-                # at least 2 lines excepting the last line
-                else:
-                    X1 = [lines[-1].bbox[idx1] for lines in rows[0:-1]]
-                    right_aligned  = abs(max(X1)-min(X1))<=constants.MINOR_DIST
-                    if right_aligned:
-                        self.alignment = TextAlignment.JUSTIFY
-                    else:
-                        self.alignment = TextAlignment.LEFT
-
-        # otherwise, check block position to page bbox further
-        else:
-            if (self.bbox[idx1]-self.bbox[idx0])/(bbox[idx1]-bbox[idx0])>=constants.FACTOR_MOST: # line is long enough
-                self.alignment = TextAlignment.LEFT
-
-            elif abs(d_center) < constants.MINOR_DIST:
-                self.alignment = TextAlignment.CENTER
-
-            elif abs(d_left) <= abs(d_right):
-                self.alignment = TextAlignment.LEFT
-
-            else:
-                self.alignment = TextAlignment.RIGHT
-
-        # set horizontal space
-        self.left_space  = d_left
-        self.right_space = d_right        
-
-        # ------------------------------------------------------
         # tab stops for block lines
-        # NOTE:
-        # relative stop position to left boundary of block is calculated,
-        # so block.left_space is required
-        # ------------------------------------------------------
         if self.alignment != TextAlignment.LEFT: return
 
+        # NOTE: relative stop position to left boundary of block is calculated, so block.left_space is required
         fun = lambda line: round((line.bbox[idx0]-self.bbox[idx0])*f, 1) # relative position to block
         all_pos = set(map(fun, self.lines))
         self.tab_stops = list(filter(lambda pos: pos>=constants.MINOR_DIST, all_pos))        
@@ -416,3 +343,97 @@ class TextBlock(Block):
         self.lines.make_docx(p)
 
         return p
+
+
+
+    def _internal_alignments(self, text_direction_param:tuple):
+        ''' Detect text alignment mode based on layout of internal lines. 
+            Return possibility of the alignments, e.g. 
+            - 4 = 0b100 = left align, but impossible to align center or right
+            - 7 = 0b111 = align left and center and right -> justify
+        '''
+        # get lines in each physical row
+        fun = lambda a,b: a.in_same_row(b)
+        rows = self.lines.group(fun)
+
+        # just one row -> can't decide -> full possibility
+        if len(rows) < 2: return 0b111
+
+        # indexes based on text direction
+        idx0, idx1, f = text_direction_param
+
+        # --------------------------------------------------------------------------
+        # First priority: significant distance exists in any two adjacent lines -> align left
+        # --------------------------------------------------------------------------
+        for row in rows:
+            if len(row)==1: continue
+            for i in range(1, len(row)):
+                dis = (row[i].bbox[idx0]-row[i-1].bbox[idx1])*f
+                if dis >= constants.MAJOR_DIST:
+                    return 0b100
+
+        # --------------------------------------------------------------------------
+        # Then check alignment of internal lines
+        # --------------------------------------------------------------------------
+        X0 = [lines[0].bbox[idx0]  for lines in rows]
+        X1 = [lines[-1].bbox[idx1] for lines in rows]
+        X  = [(x0+x1)/2.0 for (x0, x1) in zip(X0, X1)]
+
+        left_aligned   = abs(max(X0)-min(X0))<=constants.MINOR_DIST
+        right_aligned  = abs(max(X1)-min(X1))<=constants.MINOR_DIST
+        center_aligned = abs(max(X)-min(X))  <=constants.MINOR_DIST       
+
+        # consider left/center/right alignment, 2*2*2=8 cases in total.
+        # Note case 1-0-0, it may become 1-1-1 (justify) if remove last line.
+        # at least 2 lines excepting the last line
+        if left_aligned and not center_aligned and not right_aligned and len(rows)>2:
+            X1 = [lines[-1].bbox[idx1] for lines in rows[0:-1]]
+            right_aligned  = abs(max(X1)-min(X1))<=constants.MINOR_DIST
+
+            # center aligned if both left and right aligned
+            if right_aligned: center_aligned = True
+
+        # use bits to represent alignment status
+        mode = (int(left_aligned), int(center_aligned), int(right_aligned))
+        res = 0
+        for i, x in enumerate(mode):
+            res += x * 2**(2-i)
+        
+        return res
+
+
+    def _external_alignments(self, bbox:list, text_direction_param:tuple):
+        ''' Detect text alignment mode based on the position to external bbox. 
+            Return possibility of the alignments, e.g. 
+            - 4 = 0b100 = left align, but impossible to align center or right
+            - 7 = 0b111 = has a chance to align left/center/right
+            ---
+            Args:
+            - indexes: index in x-direction, e.g. (0, 2) for horizontal text, while (3, 1) for vertical text.
+            - bbox: page or cell bbox where this text block locates in.
+        '''
+        # indexes based on text direction
+        idx0, idx1, f = text_direction_param
+
+        # position to the bbox
+        d_left   = round((self.bbox[idx0]-bbox[idx0])*f, 1) # left margin
+        d_right  = round((bbox[idx1]-self.bbox[idx1])*f, 1) # right margin
+        d_center = round((d_left-d_right)/2.0, 1)           # center margin
+        d_left   = max(d_left, 0.0)
+        d_right  = max(d_right, 0.0)
+        bbox_width = round((bbox[idx1]-bbox[idx0])*f, 1)
+
+        # NOTE: set horizontal space
+        self.left_space  = d_left
+        self.right_space = d_right
+        
+        # align left/center/right precisely
+        if abs(d_center) < constants.MINOR_DIST: return 0b010
+        if abs(d_left)   < constants.MINOR_DIST: return 0b100
+        if abs(d_right)  < constants.MINOR_DIST: return 0b001
+
+        # span most of the page -> all alignments are possible
+        if abs(d_center) < 0.25*bbox_width: return 0b111
+        
+        # otherwise, near to left or right side
+        return 0b100 if abs(d_left) <= abs(d_right) else 0b001
