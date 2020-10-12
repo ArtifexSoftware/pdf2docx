@@ -221,18 +221,13 @@ class TextBlock(Block):
         ext_mode = self._external_alignments(bbox, (idx0, idx1, f)) # set horizontal space additionally
         mode = int_mode & ext_mode
 
-        # NOTE: 0b111 here means left/center/right alignment is possible, while the index for JUSTIFY 
-        # alignment is also 7. So, we have to filter this 0b111 first, e.g.
-        # for a single line, it prefers CENTER alignment, rather than JUSTIFY
-        if len(self.lines)==1 and mode==0b111: mode = 0b010
-
         # now, decide the alignment accordingly
         for align_mode in TextAlignment:
             if align_mode.value==mode:
                 self.alignment = align_mode
                 break
         else:
-            self.alignment = TextAlignment.LEFT
+            self.alignment = TextAlignment.LEFT # LEFT by default
 
         # tab stops for block lines
         if self.alignment != TextAlignment.LEFT: return
@@ -348,16 +343,21 @@ class TextBlock(Block):
 
     def _internal_alignments(self, text_direction_param:tuple):
         ''' Detect text alignment mode based on layout of internal lines. 
-            Return possibility of the alignments, e.g. 
-            - 4 = 0b100 = left align, but impossible to align center or right
-            - 7 = 0b111 = align left and center and right -> justify
+            Return possibility of the alignments, left-center-right-justify e.g. 
+            - 0b1000 = left align
+            - 0b0100 = center align
+            - 0b1111 = possible to any alignment mode
+            ---
+            Args:
+            - text_direction_param: (x0_index, x1_index, direction_factor), e.g. (0, 2, 1) for horizontal text, 
+            while (3, 1, -1) for vertical text.
         '''
         # get lines in each physical row
         fun = lambda a,b: a.in_same_row(b)
         rows = self.lines.group(fun)
 
         # just one row -> can't decide -> full possibility
-        if len(rows) < 2: return 0b111
+        if len(rows) < 2: return 0b1111
 
         # indexes based on text direction
         idx0, idx1, f = text_direction_param
@@ -370,7 +370,7 @@ class TextBlock(Block):
             for i in range(1, len(row)):
                 dis = (row[i].bbox[idx0]-row[i-1].bbox[idx1])*f
                 if dis >= constants.MAJOR_DIST:
-                    return 0b100
+                    return 0b1000
 
         # --------------------------------------------------------------------------
         # Then check alignment of internal lines
@@ -381,36 +381,33 @@ class TextBlock(Block):
 
         left_aligned   = abs(max(X0)-min(X0))<=constants.MINOR_DIST
         right_aligned  = abs(max(X1)-min(X1))<=constants.MINOR_DIST
-        center_aligned = abs(max(X)-min(X))  <=constants.MINOR_DIST       
+        center_aligned = abs(max(X)-min(X))  <=constants.MINOR_DIST * 2.0 # coarse margin ofr center alignment
 
-        # consider left/center/right alignment, 2*2*2=8 cases in total.
-        # Note case 1-0-0, it may become 1-1-1 (justify) if remove last line.
-        # at least 2 lines excepting the last line
-        if left_aligned and not center_aligned and not right_aligned and len(rows)>2:
-            X1 = [lines[-1].bbox[idx1] for lines in rows[0:-1]]
-            right_aligned  = abs(max(X1)-min(X1))<=constants.MINOR_DIST
-
-            # center aligned if both left and right aligned
-            if right_aligned: center_aligned = True
+        # Note the case that all lines aligned left, but with last line removed, it becomes justify mode.
+        if left_aligned and len(rows)>=3: # at least 2 lines excepting the last line
+            X1 = X1[0:-1]
+            right_aligned = abs(max(X1)-min(X1))<=constants.MINOR_DIST
+            if right_aligned: return 0b0001
 
         # use bits to represent alignment status
-        mode = (int(left_aligned), int(center_aligned), int(right_aligned))
+        mode = (int(left_aligned), int(center_aligned), int(right_aligned), 0)
         res = 0
-        for i, x in enumerate(mode):
-            res += x * 2**(2-i)
+        for i, x in enumerate(mode): res += x * 2**(3-i)
         
         return res
 
 
     def _external_alignments(self, bbox:list, text_direction_param:tuple):
         ''' Detect text alignment mode based on the position to external bbox. 
-            Return possibility of the alignments, e.g. 
-            - 4 = 0b100 = left align, but impossible to align center or right
-            - 7 = 0b111 = has a chance to align left/center/right
+            Return possibility of the alignments, left-center-right-justify, e.g. 
+            - 0b1000 = left align
+            - 0b0100 = center align
+            - 0b1111 = possible to any alignment mode
             ---
             Args:
-            - indexes: index in x-direction, e.g. (0, 2) for horizontal text, while (3, 1) for vertical text.
             - bbox: page or cell bbox where this text block locates in.
+            - text_direction_param: (x0_index, x1_index, direction_factor), e.g. (0, 2, 1) for horizontal text, 
+            while (3, 1, -1) for vertical text.
         '''
         # indexes based on text direction
         idx0, idx1, f = text_direction_param
@@ -421,19 +418,26 @@ class TextBlock(Block):
         d_center = round((d_left-d_right)/2.0, 1)           # center margin
         d_left   = max(d_left, 0.0)
         d_right  = max(d_right, 0.0)
-        bbox_width = round((bbox[idx1]-bbox[idx0])*f, 1)
 
         # NOTE: set horizontal space
         self.left_space  = d_left
         self.right_space = d_right
-        
-        # align left/center/right precisely
-        if abs(d_center) < constants.MINOR_DIST: return 0b010
-        if abs(d_left)   < constants.MINOR_DIST: return 0b100
-        if abs(d_right)  < constants.MINOR_DIST: return 0b001
 
-        # span most of the page -> all alignments are possible
-        if abs(d_center) < 0.25*bbox_width: return 0b111
+        # first priority -> overall layout of block and bbox: 
+        # - when the width is as long as the bbox -> we can't decide the mode
+        # - when the width is half lower than the bbox -> check close to left or right side
+        width_ratio = (self.bbox[idx1]-self.bbox[idx0]) / (bbox[idx1]-bbox[idx0])
+        if width_ratio >= constants.FACTOR_MOST: 
+            return 0b1111
         
-        # otherwise, near to left or right side
-        return 0b100 if abs(d_left) <= abs(d_right) else 0b001
+        elif width_ratio < 0.5:
+            return 0b1000 if abs(d_left) <= abs(d_right) else 0b0010
+        
+        # then, check if align center precisely
+        elif abs(d_center) < constants.MINOR_DIST * 3.0: 
+            return 0b0100
+
+        # otherwise, we can't decide it
+        else:
+            return 0b1111
+        
