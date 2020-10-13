@@ -2,15 +2,23 @@
 
 '''
 Parsing table blocks:
-- lattice table: explicit borders represented by rectangles
+- lattice table: explicit borders represented by strokes
 - stream table : borderless table recognized from layout of text blocks.
+
+Terms definition:
+- from appearance aspect, we say stroke and fill, the former looks like a line, while the later an area
+- from semantic aspect, we say border (cell border) and shading (cell shading)
+- an explicit border is determined by a certain stroke, while a stroke may also represent an underline of text
+- an explicit shading is determined by a fill, while a fill may also represent a highlight of text
+- Border object is introduced to determin borders of stream table. Border instance is a virtual border adaptive 
+  in a certain range, then converted to a stroke once finalized, and finally applied to detect table border.
+
 
 @created: 2020-08-16
 @author: train8808@gmail.com
 '''
 
 from ..common.BBox import BBox
-from ..common.base import RectType
 from ..common import constants
 from ..layout.Blocks import Blocks
 from ..shape.Shapes import Shapes
@@ -104,7 +112,7 @@ class TablesConstructor(TableStructure):
             explicit_shadings = table_shadings.contained_in_bbox(rect.bbox)
 
             # parse stream borders based on lines in cell and explicit borders/shadings
-            strokes = self.stream_borders(table_lines, (top, bottom, left, right), explicit_strokes, explicit_shadings)
+            strokes = self.stream_strokes(table_lines, (top, bottom, left, right), explicit_strokes, explicit_shadings)
             if not strokes: continue
 
             # parse table structure
