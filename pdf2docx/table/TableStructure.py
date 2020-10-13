@@ -79,24 +79,10 @@ class TableStructure:
         y_rows = sorted(h_strokes)
         x_cols = sorted(v_strokes)
 
-        # --------------------------------------------------
-        # parse table structure, especially the merged cells
-        # -------------------------------------------------- 
-        # check merged cells in each row
-        merged_cells_rows = []  # type: list[list[int]]
-        for i, row in enumerate(y_rows[0:-1]):
-            ref_y = (row+y_rows[i+1])/2.0
-            ordered_v_strokes = [v_strokes[k] for k in x_cols]
-            row_structure = TableStructure._check_merged_cells(ref_y, ordered_v_strokes, 'row')
-            merged_cells_rows.append(row_structure)
+        # check merged cells in each row / column
+        merged_cells_rows = TableStructure._merging_status(v_strokes, x_cols, y_rows, 'row')
+        merged_cells_cols = TableStructure._merging_status(h_strokes, y_rows, x_cols, 'column')
 
-        # check merged cells in each column
-        merged_cells_cols = []  # type: list[list[int]]
-        for i, col in enumerate(x_cols[0:-1]):
-            ref_x = (col+x_cols[i+1])/2.0
-            ordered_h_strokes = [h_strokes[k] for k in y_rows]
-            col_structure = TableStructure._check_merged_cells(ref_x, ordered_h_strokes, 'column')        
-            merged_cells_cols.append(col_structure)
 
         # --------------------------------------------------
         # parse table properties
@@ -361,23 +347,37 @@ class TableStructure:
 
 
     @staticmethod
-    def _check_merging_status(h_strokes:dict, v_strokes:dict, x_cols:list, y_rows:list):
-        ''''''
-        # check merged cells in each row
-        merged_cells_rows = []  # type: list[list[int]]
-        for i, row in enumerate(y_rows[0:-1]):
-            ref_y = (row+y_rows[i+1])/2.0
-            ordered_v_strokes = [v_strokes[k] for k in x_cols]
-            row_structure = TableStructure._check_merged_cells(ref_y, ordered_v_strokes, 'row')
-            merged_cells_rows.append(row_structure)
+    def _merging_status(strokes:dict, keys:list, y_rows:list, direction:str='row'):
+        ''' Check cell merging status. taking row direction for example,
+            ---
+            Args:
+            - strokes: a dict of strokes,  {x: [v_stroke1, v_stroke_2, ...]}
+            - keys: sorted keys of `strokes`
+            - y_rows: y-coordinates of row borders
+            - direction: 'row' - check merged cells in row; 'column' - check merged cells in a column
 
-        # check merged cells in each column
-        merged_cells_cols = []  # type: list[list[int]]
-        for i, col in enumerate(x_cols[0:-1]):
-            ref_x = (col+x_cols[i+1])/2.0
-            ordered_h_strokes = [h_strokes[k] for k in y_rows]
-            col_structure = TableStructure._check_merged_cells(ref_x, ordered_h_strokes, 'column')        
-            merged_cells_cols.append(col_structure)
+            ```
+                +-----+-----+-----+
+                |     |     |     |
+                |     |     |     |
+                +-----+-----------+
+                |           |     |
+            ----1-----0-----1----------> [1, 0, 1]
+                |           |     |
+                |           |     |
+                +-----------+-----+
+            ```
+        '''
+        # check merged cells in each row/col
+        merged_cells = []  # type: list[list[int]]
+
+        for i in range(len(y_rows)-1):
+            ref_y = (y_rows[i]+y_rows[i+1])/2.0
+            ordered_strokes = [strokes[k] for k in keys]
+            row_structure = TableStructure._check_merged_cells(ref_y, ordered_strokes, direction)
+            merged_cells.append(row_structure)
+        
+        return merged_cells
 
 
     @staticmethod
@@ -414,13 +414,12 @@ class TableStructure:
         ''' Check merged cells in a row/column. 
             ---
             Args:
-              - ref: y (or x) coordinate of horizontal (or vertical) passing-through line
-              - borders: list[Shapes], a list of vertical (or horizontal) rects list in a column (or row)
-              - direction: 'row' - check merged cells in row; 'column' - check merged cells in a column
+            - ref: y (or x) coordinate of horizontal (or vertical) passing-through line
+            - borders: list[Shapes], a list of vertical (or horizontal) rects list in a column (or row)
+            - direction: 'row' - check merged cells in row; 'column' - check merged cells in a column
 
-            Taking cells in a row (direction=0) for example, give a horizontal line (y=ref) passing through this row, 
-            check the intersection with vertical borders. The n-th cell is merged if no intersection with the n-th border.
-            
+            Taking cells in a row for example, give a horizontal line (y=ref) passing through this row, 
+            check the intersection with vertical borders. The n-th cell is merged if no intersection with the n-th border.            
         '''
         res = [] # type: list[int]
         for shapes in borders[0:-1]:
