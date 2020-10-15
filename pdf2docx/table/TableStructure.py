@@ -3,30 +3,118 @@
 '''
 Parsing table structure based on strokes and fills.
 
-
-
 @created: 2020-08-16
 @author: train8808@gmail.com
 '''
+
+import fitz
 
 from ..common.BBox import BBox
 from ..common.base import RectType
 from ..common.utils import RGB_value, get_main_bbox
 from ..common import constants
-from ..shape.Shape import Stroke
+from ..shape.Shape import Shape, Stroke
 from ..shape.Shapes import Shapes
-from ..text.Lines import Lines
 from .TableBlock import TableBlock
 from .Row import Row
 from .Cell import Cell
-from .Border import HBorder, VBorder, Borders
+
+
+class CellStructure:
+    def __init__(self, bbox:list):
+        # bbox
+        self.bbox = fitz.Rect(bbox) # theoretical lattice bbox
+        self.merged_bbox = fitz.Rect(bbox) # cell bbox considering merged cells
+
+        # stroke shapes around this cell: top, right, bottom, left
+        self.borders = None # type: list[Shape]
+        
+        # fill shape representing the bg-color
+        self.shading = None # type: Shape
+
+        # the count of merged cells in row and col direction:
+        # (1, 1) by default -> the cell itself -> no merged cell
+        # (3, 2) -> merge 3*2=6 cells (with itself counted as the top-left cell)
+        # (0, 0) -> it is merged by other cell
+        self.merged_cells = (1,1)
+   
+    @property
+    def is_merged(self): return self.merged_cells[0]==0 or self.merged_cells[1]==0
+
+    @property
+    def is_merging(self): return self.merged_cells[0]>1 or self.merged_cells[1]>1
+
+
+    def parse_borders(self, h_strokes:dict, v_strokes:dict):
+        '''Parse cell borders from strokes.
+            ---
+            Args:
+            - h_strokes: a dict of y-coordinate v.s. horizontal strokes, e.g. {y0: [h1,h2,..], y1: [h3,h4,...]}
+            - v_strokes: a dict of x-coordinates v.s. vertical strokes, e.g.  {x0: [v1,v2,..], x1: [v3,v4,...]}
+        '''
+        x0, y0, x1, y1 = self.merged_bbox
+        top = self._get_border_stroke(h_strokes[y0], 'row')
+        bottom = self._get_border_stroke(h_strokes[y1], 'row')
+        left = self._get_border_stroke(v_strokes[x0], 'col')
+        right = self._get_border_stroke(v_strokes[x1], 'col')
+        self.borders = (top, bottom, left, right)
+
+    
+    def parse_shading(self, fills:Shapes):
+        '''Parse cell shading from fills.
+            Args:
+            - fills  : Fill shapes representing cell shading
+        '''
+        # border width
+        top, bottom, left, right = self.borders
+        w_top = top.width
+        w_right = right.width
+        w_bottom = bottom.width
+        w_left = left.width
+
+        # modify the cell bbox from border center to inner region
+        x0, y0, x1, y1 = self.merged_bbox
+        inner_bbox = (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
+        target_bbox = fitz.Rect(inner_bbox)
+
+        # shading shape of this cell        
+        for shape in fills:
+            if get_main_bbox(shape.bbox, target_bbox, threshold=constants.FACTOR_MOST):
+                self.shading = shape
+                break
+        else:
+            self.shading = None
+
+
+    def _get_border_stroke(self, strokes:Shapes, direction:str='row'):
+        ''' Find strokes representing cell borders.
+            ---
+            Args:
+            - strokes: candidate stroke shapes for cell border
+            - direction: either 'row' or 'col'
+        '''
+        if not strokes: return Stroke()
+
+        # depends on border direction
+        idx = 0 if direction=='row' else 1
+
+        # cell range
+        x0, x1 = self.merged_bbox[idx], self.merged_bbox[idx+2]
+
+        # check strokes
+        for stroke in strokes:
+            bbox = (stroke.x0, stroke.y0, stroke.x1, stroke.y1)
+            t0, t1 = bbox[idx], bbox[idx+2]
+            # it's the border shape if has a major intersection with cell border
+            L = min(x1, t1) - max(x0, t0)
+            if L/(x1-x0) >= constants.FACTOR_MAJOR: return stroke
+
+        return strokes[0] # use the first stroke if nothing found
 
 
 class TableStructure:
-    '''Parsing table structure based on borders/shadings.'''
-
-    @staticmethod
-    def parse_structure(strokes:Shapes, shadings:Shapes):
+    '''Parsing table structure based on strokes/fills.'''
+    def __init__(self, strokes:Shapes):
         ''' Parse table structure from strokes and fills shapes.
             ---
             Args:
@@ -54,7 +142,7 @@ class TableStructure:
             1. group horizontal and vertical strokes, e.g. 
             
             ```
-                h_strokes = {
+                self.h_strokes = {
                     y0 : [h1, h2, h3],
                     y1 : [h4, h5],
                     y2 : [h6, h7]
@@ -69,80 +157,96 @@ class TableStructure:
             when y=(y1+y2)/2, it has no intersection with vertical strokes at x=x1, i.e. merging status is
             [1, 0, 1], indicating Cell(2,2) is merged into Cell(2,1).
 
-            3. use above results to construct TableBlock instance, especially the Cell instance.
-        '''        
-        # group horizontal/vertical strokes -> table structure        
-        h_strokes, v_strokes = TableStructure._group_h_v_strokes(strokes)
-        if not h_strokes or not v_strokes: return None
+            so the final merging status in this case:
+            [
+                [(1,1), (1,1), (1,1)],
+                [(1,2), (0,0), (1,1)]
+            ]
+        '''
+        # cells
+        self.cells = [] # type: list[list[CellStructure]]
 
-        # sort
-        y_rows = sorted(h_strokes)
-        x_cols = sorted(v_strokes)
+        # group horizontal/vertical strokes -> table structure dict
+        self.h_strokes, self.v_strokes = TableStructure._group_h_v_strokes(strokes)
+        if not self.h_strokes or not self.v_strokes: return
 
-        # check merged cells in each row / column
-        merged_cells_rows = TableStructure._merging_status(v_strokes, x_cols, y_rows, 'row')
-        merged_cells_cols = TableStructure._merging_status(h_strokes, y_rows, x_cols, 'column')
+        # initialize cells
+        self.cells = self._init_cells()
+        
+    
+    @property
+    def bbox(self):
+        if not self.cells: return fitz.Rect()
+        x0, y0 = self.cells[0][0].bbox.tl
+        x1, y1 = self.cells[-1][-1].bbox.br
+        return fitz.Rect(x0,y0,x1,y1)
+
+    @property
+    def num_rows(self): return len(self.cells)
+
+    @property
+    def num_cols(self): return len(self.cells[0]) if self.cells else 0
+
+    @property
+    def y_rows(self):
+        if not self.cells: return []
+        Y = [row[0].bbox.y0 for row in self.cells]
+        Y.append(self.cells[-1][0].bbox.y1)
+        return Y
+
+    @property
+    def x_cols(self):
+        if not self.cells: return []
+        X = [cell.bbox.x0 for cell in self.cells[0]]
+        X.append(self.cells[0][-1].bbox.x1)
+        return X
 
 
-        # --------------------------------------------------
-        # parse table properties
-        # --------------------------------------------------
+    def parse(self, fills:Shapes):
+        ''' Parse table structure.
+            ---
+            Args:
+            - fills  : Fill shapes representing cell shading
+        '''
+        if not self.cells: return self
+
+        # check merged cells
+        self._check_merging_status()
+
+        # check cell borders/shadings
+        for row in self.cells:
+            for cell in row:
+                if cell.is_merged: continue
+                cell.parse_borders(self.h_strokes, self.v_strokes)
+                cell.parse_shading(fills)
+        
+        return self
+
+    
+    def to_table_block(self):
+        '''Convert parsed table structure to TableBlock instance.'''
         table = TableBlock()
-        n_rows = len(merged_cells_rows)
-        n_cols = len(merged_cells_cols)
-
-        for i in range(n_rows):
+        for row_structures in self.cells:
             # row object
             row = Row()
-            row.height = y_rows[i+1]-y_rows[i]
+            row.height = row_structures[0].bbox.y1-row_structures[0].bbox.y0
             
-            for j in range(n_cols):
+            for cell_structure in row_structures:
                 # if current cell is merged horizontally or vertically, set None.
                 # actually, it will be counted in the top-left cell of the merged range.
-                if merged_cells_rows[i][j]==0 or merged_cells_cols[j][i]==0:
+                if cell_structure.is_merged:
                     row.append(Cell())
                     continue
 
-                # Now, this is the top-left cell of merged range.
-                # A separate cell without merging can also be treated as a merged range 
-                # with 1 row and 1 colum, i.e. itself.
-                #             
-                # check merged columns in horizontal direction
-                n_col = 1
-                for val in merged_cells_rows[i][j+1:]:
-                    if val==0: n_col += 1
-                    else: break
-                # check merged rows in vertical direction
-                n_row = 1
-                for val in merged_cells_cols[j][i+1:]:
-                    if val==0: n_row += 1
-                    else: break
-                
-                # cell bbox: merged cells considered
-                bbox = (x_cols[j], y_rows[i], x_cols[j+n_col], y_rows[i+n_row])
-
-                # cell border rects
-                top = TableStructure._get_border_shape(bbox, h_strokes[bbox[1]], 'row')
-                bottom = TableStructure._get_border_shape(bbox, h_strokes[bbox[3]], 'row')
-                left = TableStructure._get_border_shape(bbox, v_strokes[bbox[0]], 'col')
-                right = TableStructure._get_border_shape(bbox, v_strokes[bbox[2]], 'col')
-
+                # cell borders properties
+                top, bottom, left, right = cell_structure.borders
                 w_top = top.width
                 w_right = right.width
                 w_bottom = bottom.width
                 w_left = left.width
 
-                # shading rect in this cell
-                # modify the cell bbox from border center to inner region
-                inner_bbox = (bbox[0]+w_left/2.0, bbox[1]+w_top/2.0, bbox[2]-w_right/2.0, bbox[3]-w_bottom/2.0)
-                target_bbox = BBox().update_bbox(inner_bbox)
-                for shading in shadings:
-                    if get_main_bbox(shading.bbox, target_bbox.bbox, threshold=constants.FACTOR_MOST):
-                        shading.type = RectType.SHADING # ATTENTION: set shaing type
-                        bg_color = shading.color
-                        break
-                else:
-                    bg_color = None
+                # cell bg-color
+                bg_color = cell_structure.shading.color if cell_structure.shading else None
 
                 # Cell object
                 # Note that cell bbox is calculated under real page CS, so needn't to consider rotation.
@@ -150,60 +254,34 @@ class TableStructure:
                     'bg_color':  bg_color,
                     'border_color': (top.color, right.color, bottom.color, left.color),
                     'border_width': (w_top, w_right, w_bottom, w_left),
-                    'merged_cells': (n_row, n_col),
-                }).update_bbox(bbox)
+                    'merged_cells': cell_structure.merged_cells,
+                }).update_bbox(cell_structure.merged_bbox)
 
-                # check cell before adding to row:
-                # no intersection with cells in previous row
-                if i > 0:
-                    for pre_cell in table[i-1]:
-                        # Note the difference between methods: `intersects` and `&`
-                        if cell.bbox.intersects(pre_cell.bbox): return None
-
-                row.append(cell)
-                    
-            # check row before adding to table: row MUST NOT be empty
-            if not row: return None
-
+                # add cell to row
+                row.append(cell)                    
+            
+            # add row to table
             table.append(row)
 
-
-        # parse table successfully, so set border type explicitly
-        for border in strokes:
-            border.type = RectType.BORDER
+        # finalize table structure
+        if table: self._finalize_strokes_fills()
 
         return table
 
 
-    @staticmethod
-    def stream_strokes(lines:Lines, outer_borders:tuple, showing_borders:Shapes, showing_shadings:Shapes):
-        ''' Parsing borders mainly based on content lines contained in cells, and update borders 
-            (position and style) with explicit borders represented by rectangle shapes.
-            ---
-            Args:
-            - lines: Lines, contained in table cells
-            - outer_borders: (top, bottom, left, right), boundary borders of table
-            - showing_borders: showing borders in a stream table; can be empty.
-            - showing_shadings: showing shadings in a stream table; can be empty.
-        '''
-        borders = Borders()
-
-        # outer borders
-        borders.extend(outer_borders)
+    def _finalize_strokes_fills(self):
+        '''Finalize table structure, so set strokes and fills type as BORDER and SHADING accordingly.'''
+        # strokes -> borders
+        for k, strokes in self.h_strokes.items():
+            for stroke in strokes: stroke.type = RectType.BORDER
         
-        # inner borders
-        inner_borders = TableStructure._inner_borders(lines, outer_borders)
-        borders.extend(inner_borders)
+        for k, strokes in self.v_strokes.items():
+            for stroke in strokes: stroke.type = RectType.BORDER
         
-        # finalize borders
-        borders.finalize(showing_borders, showing_shadings)
-
-        # all centerlines to rectangle shapes
-        res = Shapes()
-        for border in borders: 
-            res.append(border.to_stroke())
-
-        return res
+        # fills -> shadings
+        for row in self.cells:
+            for cell in row:
+                if cell.shading: cell.shading.type = RectType.SHADING
 
 
     @staticmethod
@@ -286,6 +364,62 @@ class TableStructure:
         return h_strokes, v_strokes
     
 
+    def _init_cells(self):
+        '''Initialize table lattices.'''
+        # sort keys of borders -> table rows/cols coordinates
+        y_rows = sorted(self.h_strokes)
+        x_cols = sorted(self.v_strokes)
+
+        # each lattice is a cell
+        cells = []
+        for i in range(len(y_rows)-1):
+            y0, y1 = y_rows[i], y_rows[i+1]
+            cells.append([]) # append a row
+            for j in range(len(x_cols)-1):
+                x0, x1 = x_cols[j], x_cols[j+1]
+                cell = CellStructure([x0, y0, x1, y1])
+                cells[-1].append(cell)
+        
+        return cells
+
+
+    def _check_merging_status(self):
+        ''' Check cell merging status. taking row direction for example,
+            
+        '''
+        x_cols, y_rows = self.x_cols, self.y_rows
+        # check merged cells in each row
+        merged_cells_rows = []  # type: list[list[int]]
+        ordered_strokes = [self.v_strokes[k] for k in x_cols]
+        for row in self.cells:
+            ref_y = (row[0].bbox.y0+row[0].bbox.y1)/2.0            
+            row_structure = TableStructure._check_merged_cells(ref_y, ordered_strokes, 'row')
+            merged_cells_rows.append(row_structure)
+
+        # check merged cells in each column
+        merged_cells_cols = []  # type: list[list[int]]
+        ordered_strokes = [self.h_strokes[k] for k in y_rows]
+        for cell in self.cells[0]:
+            ref_x = (cell.bbox.x0+cell.bbox.x1)/2.0            
+            col_structure = TableStructure._check_merged_cells(ref_x, ordered_strokes, 'column')        
+            merged_cells_cols.append(col_structure)
+
+        # check merged cells
+        for i in range(self.num_rows):
+            for j in range(self.num_cols):
+                cell = self.cells[i][j]
+                # check merged columns/rows in row/column direction
+                n_col = TableStructure._count_merged_cells(merged_cells_rows[i][j:])
+                n_row = TableStructure._count_merged_cells(merged_cells_cols[j][i:])                
+                cell.merged_cells = (n_row, n_col)
+
+                # update merged bbox
+                # A separate cell without merging can also be treated as a merged range 
+                # with 1 row and 1 colum, i.e. itself.
+                bbox = (x_cols[j], y_rows[i], x_cols[j+n_col], y_rows[i+n_row])
+                cell.merged_bbox = fitz.Rect(bbox)
+
+    
     @staticmethod
     def _check_outer_strokes(table_bbox:BBox, borders:dict, direction:str):
         '''Add missing outer borders based on table bbox and grouped horizontal/vertical borders.
@@ -347,69 +481,6 @@ class TableStructure:
 
 
     @staticmethod
-    def _merging_status(strokes:dict, keys:list, y_rows:list, direction:str='row'):
-        ''' Check cell merging status. taking row direction for example,
-            ---
-            Args:
-            - strokes: a dict of strokes,  {x: [v_stroke1, v_stroke_2, ...]}
-            - keys: sorted keys of `strokes`
-            - y_rows: y-coordinates of row borders
-            - direction: 'row' - check merged cells in row; 'column' - check merged cells in a column
-
-            ```
-                +-----+-----+-----+
-                |     |     |     |
-                |     |     |     |
-                +-----+-----------+
-                |           |     |
-            ----1-----0-----1----------> [1, 0, 1]
-                |           |     |
-                |           |     |
-                +-----------+-----+
-            ```
-        '''
-        # check merged cells in each row/col
-        merged_cells = []  # type: list[list[int]]
-
-        for i in range(len(y_rows)-1):
-            ref_y = (y_rows[i]+y_rows[i+1])/2.0
-            ordered_strokes = [strokes[k] for k in keys]
-            row_structure = TableStructure._check_merged_cells(ref_y, ordered_strokes, direction)
-            merged_cells.append(row_structure)
-        
-        return merged_cells
-
-
-    @staticmethod
-    def _get_border_shape(cell_rect:tuple, borders:Shapes, direction:str):
-        ''' Find the rect representing current cell border.
-            ---
-            Args:
-            - cell_rect: cell bbox
-            - borders: candidate stroke shapes for cell border
-            - direction: either 'row' or 'col'
-        '''
-        if not borders: return Stroke()
-
-        # depends on border direction
-        idx = 0 if direction=='row' else 1
-
-        # cell range
-        x0, x1 = cell_rect[idx], cell_rect[idx+2]
-
-        # check borders
-        for border in borders:
-            bbox = (border.x0, border.y0, border.x1, border.y1)
-            t0, t1 = bbox[idx], bbox[idx+2]
-            # it's the border shape if has a major intersection with cell border
-            L = min(x1, t1) - max(x0, t0)
-            if L / (x1-x0) >= constants.FACTOR_MAJOR:
-                return border
-
-        return borders[0]
-
-
-    @staticmethod
     def _check_merged_cells(ref:float, borders:list, direction:str='row'):
         ''' Check merged cells in a row/column. 
             ---
@@ -419,7 +490,19 @@ class TableStructure:
             - direction: 'row' - check merged cells in row; 'column' - check merged cells in a column
 
             Taking cells in a row for example, give a horizontal line (y=ref) passing through this row, 
-            check the intersection with vertical borders. The n-th cell is merged if no intersection with the n-th border.            
+            check the intersection with vertical borders. The n-th cell is merged if no intersection with the n-th border.
+            
+            ```
+                +-----+-----+-----+
+                |     |     |     |
+                |     |     |     |
+                +-----+-----------+
+                |           |     |
+            ----1-----0-----1----------> [1,0,1]
+                |           |     |
+                |           |     |
+                +-----------+-----+
+            ```
         '''
         res = [] # type: list[int]
         for shapes in borders[0:-1]:
@@ -458,90 +541,23 @@ class TableStructure:
 
 
     @staticmethod
-    def _inner_borders(lines:Lines, outer_borders:tuple):
-        ''' Calculate the surrounding borders of given lines.
+    def _count_merged_cells(merging_status:list):
+        ''' Count merged cells, e.g. [1,0,0,1] -> the second and third cells are merged into the first one.
             ---
             Args:
-            - lines: lines in table cells
-            - outer_borders: boundary borders of table region
-
-            These borders construct table cells. Considering the re-building of cell content in docx, 
-            - only one bbox is allowed in a line;
-            - but multi-lines are allowed in a cell.
-
-            Two purposes of stream table: 
-            - rebuild layout, e.g. text layout with two columns
-            - parsing real borderless table
-
-            It's controdictory that the former needn't to deep into row level, just 1 x N table convenient for layout recreation;
-            instead, the later should, M x N table for each cell precisely. So, the principle determining stream tables borders:
-            - vertical borders contributes the table structure, so border.is_reference=False
-            - horizontal borders are for reference when n_column=2, border.is_reference=True
-            - during deeper recursion, h-borders become outer borders: it turns valuable when count of detected columns >= 2 
+            - merging_status: a list of 0-1 representing cell merging status.
         '''
-        # trying: deep into cells        
-        cols_lines = lines.group_by_columns()
-        group_lines = [col_lines.group_by_rows() for col_lines in cols_lines]
-
-        # horizontal borders are for reference when n_column=2 -> consider two-columns text layout
-        col_num = len(cols_lines)
-        is_reference = col_num==2
-
-        # outer borders construct the table, so they're not just for reference        
-        if col_num>=2: # outer borders contribute to table structure
-            for border in outer_borders:
-                border.is_reference = False
-
-        borders = Borders() # final results
+        # it's merged by other cell
+        if merging_status[0]==0: return 0
         
-        # collect lines column by column
-        right = None
-        TOP, BOTTOM, LEFT, RIGHT = outer_borders 
-        for i in range(col_num): 
-            # left column border: after the first round the right border of the i-th column becomes 
-            # left border of the (i+1)-th column
-            left = LEFT if i==0 else right
-            
-            # right column border
-            if i==col_num-1: right = RIGHT
-            else:                
-                x0 = cols_lines[i].bbox.x1
-                x1 = cols_lines[i+1].bbox.x0
-                right = VBorder(
-                    border_range=(x0, x1), 
-                    borders=(TOP, BOTTOM), 
-                    reference=False) # vertical border always valuable
-                borders.add(right) # right border of current column            
-            
-            # NOTE: unnecessary to split row if the count of row is 1
-            rows_lines = group_lines[i]
-            row_num = len(rows_lines)
-            if row_num == 1: continue
+        # check a continuous sequence of 0 status
+        num = 1
+        for val in merging_status[1:]:
+            if val==0:
+                num += 1
+            else: 
+                break            
+        return num
 
-            # collect bboxes row by row
-            bottom = None
-            for j in range(row_num):
-                # top row border, after the first round, the bottom border of the i-th row becomes 
-                # top border of the (i+1)-th row
-                top = TOP if j==0 else bottom
 
-                # bottom row border
-                if j==row_num-1: bottom = BOTTOM
-                else:                
-                    y0 = rows_lines[j].bbox.y1
-                    y1 = rows_lines[j+1].bbox.y0
-
-                    # bottom border of current row
-                    # NOTE: for now, this horizontal border is just for reference; 
-                    # it'll becomes real border when used as an outer border
-                    bottom = HBorder(
-                        border_range=(y0, y1), 
-                        borders=(left, right), 
-                        reference=is_reference)
-                    borders.add(bottom)
-
-                # recursion to check borders further
-                borders_ = TableStructure._inner_borders(rows_lines[j], (top, bottom, left, right))
-                borders.extend(borders_)
-
-        return borders
+    
