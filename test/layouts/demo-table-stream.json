@@ -19387,14 +19387,14 @@
                             "bg_color": 13882323,
                             "border_color": [
                                 0,
-                                16777215,
                                 0,
-                                16777215
+                                0,
+                                0
                             ],
                             "border_width": [
                                 0.0,
                                 0.0,
-                                1.0,
+                                0.0,
                                 0.0
                             ],
                             "merged_cells": [
@@ -19593,14 +19593,14 @@
                             "bg_color": 13882323,
                             "border_color": [
                                 0,
-                                16777215,
                                 0,
-                                16777215
+                                0,
+                                0
                             ],
                             "border_width": [
                                 0.0,
                                 0.0,
-                                1.0,
+                                0.0,
                                 0.0
                             ],
                             "merged_cells": [
@@ -19786,14 +19786,14 @@
                             "bg_color": 13882323,
                             "border_color": [
                                 0,
-                                16777215,
                                 0,
-                                16777215
+                                0,
+                                0
                             ],
                             "border_width": [
                                 0.0,
                                 0.0,
-                                1.0,
+                                0.0,
                                 0.0
                             ],
                             "merged_cells": [
@@ -19940,9 +19940,9 @@
                             "bg_color": null,
                             "border_color": [
                                 0,
-                                16777215,
-                                16777215,
-                                16777215
+                                0,
+                                0,
+                                0
                             ],
                             "border_width": [
                                 0.0,
@@ -20092,12 +20092,12 @@
                             "bg_color": null,
                             "border_color": [
                                 0,
-                                16777215,
-                                16777215,
-                                16777215
+                                0,
+                                0,
+                                0
                             ],
                             "border_width": [
-                                1.0,
+                                0.0,
                                 0.0,
                                 0.0,
                                 0.0
@@ -20118,7 +20118,7 @@
                                     "alignment": 8,
                                     "left_space": 0.0,
                                     "right_space": 36.6,
-                                    "before_space": 0.19999999999998863,
+                                    "before_space": 0.6999999999999886,
                                     "after_space": 0.0,
                                     "line_space": 12.5,
                                     "tab_stops": [],
@@ -20360,12 +20360,12 @@
                             "bg_color": null,
                             "border_color": [
                                 0,
-                                16777215,
-                                16777215,
-                                16777215
+                                0,
+                                0,
+                                0
                             ],
                             "border_width": [
-                                1.0,
+                                0.0,
                                 0.0,
                                 0.0,
                                 0.0
@@ -20386,7 +20386,7 @@
                                     "alignment": 8,
                                     "left_space": 12.6,
                                     "right_space": 48.3,
-                                    "before_space": 0.19999999999998863,
+                                    "before_space": 0.6999999999999886,
                                     "after_space": 0.0,
                                     "line_space": 12.5,
                                     "tab_stops": [],
@@ -20615,12 +20615,12 @@
                             "bg_color": null,
                             "border_color": [
                                 0,
-                                16777215,
-                                16777215,
-                                16777215
+                                0,
+                                0,
+                                0
                             ],
                             "border_width": [
-                                1.0,
+                                0.0,
                                 0.0,
                                 0.0,
                                 0.0
@@ -20641,7 +20641,7 @@
                                     "alignment": 2,
                                     "left_space": 29.7,
                                     "right_space": 18.6,
-                                    "before_space": 0.19999999999998863,
+                                    "before_space": 0.6999999999999886,
                                     "after_space": 0.0,
                                     "line_space": 12.5,
                                     "tab_stops": [],
@@ -25004,14 +25004,14 @@
                             "bg_color": 13882323,
                             "border_color": [
                                 0,
-                                16777215,
                                 0,
-                                16777215
+                                0,
+                                0
                             ],
                             "border_width": [
                                 0.0,
                                 0.0,
-                                1.0,
+                                0.0,
                                 0.0
                             ],
                             "merged_cells": [
@@ -25132,14 +25132,14 @@
                             "bg_color": 13882323,
                             "border_color": [
                                 0,
-                                16777215,
                                 0,
-                                16777215
+                                0,
+                                0
                             ],
                             "border_width": [
                                 0.0,
                                 0.0,
-                                1.0,
+                                0.0,
                                 0.0
                             ],
                             "merged_cells": [
@@ -25273,14 +25273,14 @@
                             "bg_color": 13882323,
                             "border_color": [
                                 0,
-                                16777215,
                                 0,
-                                16777215
+                                0,
+                                0
                             ],
                             "border_width": [
                                 0.0,
                                 0.0,
-                                1.0,
+                                0.0,
                                 0.0
                             ],
                             "merged_cells": [
@@ -25414,14 +25414,14 @@
                             "bg_color": 13882323,
                             "border_color": [
                                 0,
-                                16777215,
                                 0,
-                                16777215
+                                0,
+                                0
                             ],
                             "border_width": [
                                 0.0,
                                 0.0,
-                                1.0,
+                                0.0,
                                 0.0
                             ],
                             "merged_cells": [
@@ -25529,14 +25529,14 @@
                             "bg_color": 13882323,
                             "border_color": [
                                 0,
-                                16777215,
                                 0,
-                                16777215
+                                0,
+                                0
                             ],
                             "border_width": [
                                 0.0,
                                 0.0,
-                                1.0,
+                                0.0,
                                 0.0
                             ],
                             "merged_cells": [
@@ -25696,14 +25696,14 @@
                             "bg_color": 13882323,
                             "border_color": [
                                 0,
-                                16777215,
                                 0,
-                                16777215
+                                0,
+                                0
                             ],
                             "border_width": [
                                 0.0,
                                 0.0,
-                                1.0,
+                                0.0,
                                 0.0
                             ],
                             "merged_cells": [
@@ -25900,12 +25900,12 @@
                             "bg_color": null,
                             "border_color": [
                                 0,
-                                16777215,
-                                16777215,
-                                16777215
+                                0,
+                                0,
+                                0
                             ],
                             "border_width": [
-                                1.0,
+                                0.0,
                                 0.0,
                                 0.0,
                                 0.0
@@ -25926,7 +25926,7 @@
                                     "alignment": 8,
                                     "left_space": 0.0,
                                     "right_space": 16.2,
-                                    "before_space": 0.1999999999999318,
+                                    "before_space": 0.6999999999999318,
                                     "after_space": 0.0,
                                     "line_space": 12.5,
                                     "tab_stops": [],
@@ -26181,12 +26181,12 @@
                             "bg_color": null,
                             "border_color": [
                                 0,
-                                16777215,
-                                16777215,
-                                16777215
+                                0,
+                                0,
+                                0
                             ],
                             "border_width": [
-                                1.0,
+                                0.0,
                                 0.0,
                                 0.0,
                                 0.0
@@ -26207,7 +26207,7 @@
                                     "alignment": 8,
                                     "left_space": 16.2,
                                     "right_space": 28.2,
-                                    "before_space": 0.1999999999999318,
+                                    "before_space": 0.6999999999999318,
                                     "after_space": 0.0,
                                     "line_space": 12.5,
                                     "tab_stops": [],
@@ -26436,12 +26436,12 @@
                             "bg_color": null,
                             "border_color": [
                                 0,
-                                16777215,
-                                16777215,
-                                16777215
+                                0,
+                                0,
+                                0
                             ],
                             "border_width": [
-                                1.0,
+                                0.0,
                                 0.0,
                                 0.0,
                                 0.0
@@ -26462,7 +26462,7 @@
                                     "alignment": 2,
                                     "left_space": 28.2,
                                     "right_space": 12.0,
-                                    "before_space": 0.1999999999999318,
+                                    "before_space": 0.6999999999999318,
                                     "after_space": 0.0,
                                     "line_space": 12.5,
                                     "tab_stops": [],
@@ -26678,12 +26678,12 @@
                             "bg_color": null,
                             "border_color": [
                                 0,
-                                16777215,
-                                16777215,
-                                16777215
+                                0,
+                                0,
+                                0
                             ],
                             "border_width": [
-                                1.0,
+                                0.0,
                                 0.0,
                                 0.0,
                                 0.0
@@ -26704,7 +26704,7 @@
                                     "alignment": 8,
                                     "left_space": 12.0,
                                     "right_space": 5.4,
-                                    "before_space": 0.1999999999999318,
+                                    "before_space": 0.6999999999999318,
                                     "after_space": 0.0,
                                     "line_space": 12.5,
                                     "tab_stops": [],
@@ -26959,12 +26959,12 @@
                             "bg_color": null,
                             "border_color": [
                                 0,
-                                16777215,
-                                16777215,
-                                16777215
+                                0,
+                                0,
+                                0
                             ],
                             "border_width": [
-                                1.0,
+                                0.0,
                                 0.0,
                                 0.0,
                                 0.0
@@ -26985,7 +26985,7 @@
                                     "alignment": 8,
                                     "left_space": 5.4,
                                     "right_space": 14.1,
-                                    "before_space": 0.1999999999999318,
+                                    "before_space": 0.6999999999999318,
                                     "after_space": 0.0,
                                     "line_space": 12.5,
                                     "tab_stops": [],
@@ -27214,12 +27214,12 @@
                             "bg_color": null,
                             "border_color": [
                                 0,
-                                16777215,
-                                16777215,
-                                16777215
+                                0,
+                                0,
+                                0
                             ],
                             "border_width": [
-                                1.0,
+                                0.0,
                                 0.0,
                                 0.0,
                                 0.0
@@ -27240,7 +27240,7 @@
                                     "alignment": 4,
                                     "left_space": 6.3,
                                     "right_space": 6.0,
-                                    "before_space": 0.1999999999999318,
+                                    "before_space": 0.6999999999999318,
                                     "after_space": 0.0,
                                     "line_space": 12.5,
                                     "tab_stops": [],

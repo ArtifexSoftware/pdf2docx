@@ -28,7 +28,6 @@ Consider horizontal and vertical borders only.
 
 from ..shape.Shapes import Shapes
 from ..shape.Shape import Stroke
-from ..common.utils import RGB_value
 from ..common import constants
 from ..common.base import RectType
 
@@ -63,7 +62,7 @@ class Border:
         
         # border style
         self.width = constants.HIDDEN_W_BORDER
-        self.color = RGB_value((1,1,1)) # white by default
+        self.color = 0 # black by default
         
     
     @property
@@ -141,9 +140,6 @@ class Border:
 
         # skip if not span in the border direction
         if low_pos > self._LBorder.URange and upper_pos < self._UBorder.LRange: return
-
-        # skip if finalized already
-        if self.finalized: return True
 
         # now, finalize current border
         self.finalize_by_value(value)

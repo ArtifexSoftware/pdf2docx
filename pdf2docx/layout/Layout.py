@@ -136,8 +136,12 @@ class Layout:
 
     def extract_tables(self):
         '''Extract content from lattice tables.'''
-        # parsing tables
-        self.clean().parse_lattice_tables()
+        # preprocessing, e.g. change block order, clean negative block
+        self.clean_up_shapes()
+        self.clean_up_blocks()
+
+        # parsing lattice tables only
+        self.parse_lattice_tables()
 
         # check table
         tables = [] # type: list[ list[list[str]] ]
