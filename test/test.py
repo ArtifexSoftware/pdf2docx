@@ -226,7 +226,11 @@ class Test_Main(Utility):
 
     def test_lattice_table_invoice(self):
         '''test invoice sample file with lattice table, vector graphic.'''
-        self.init_test('demo-table-close-underline').verify_layout(threshold=0.95)
+        self.init_test('demo-table-lattice').verify_layout(threshold=0.95)
+
+    def test_lattice_cell(self):
+        '''test generating stream borders for lattice table cell.'''
+        self.init_test('demo-table-lattice-one-cell').verify_layout(threshold=0.95)
 
     def test_table_border_style(self):
         '''test border style, e.g. width, color.'''
