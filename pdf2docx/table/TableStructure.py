@@ -11,7 +11,7 @@ import fitz
 
 from ..common.BBox import BBox
 from ..common.base import RectType
-from ..common.utils import RGB_value, get_main_bbox
+from ..common.utils import get_main_bbox
 from ..common import constants
 from ..shape.Shape import Shape, Stroke
 from ..shape.Shapes import Shapes
@@ -37,6 +37,7 @@ class CellStructure:
         # (3, 2) -> merge 3*2=6 cells (with itself counted as the top-left cell)
         # (0, 0) -> it is merged by other cell
         self.merged_cells = (1,1)
+
    
     @property
     def is_merged(self): return self.merged_cells[0]==0 or self.merged_cells[1]==0
@@ -452,7 +453,7 @@ class TableStructure:
         target = bbox[idx]
         
         # add missing border rects
-        sample_border = Stroke({'color': RGB_value((1,1,1))})        
+        sample_border = Stroke()        
         bbox[idx] = target
         bbox[(idx+2)%4] = target
 

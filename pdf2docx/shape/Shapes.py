@@ -23,8 +23,8 @@ class Shapes(Collection):
         # properties for context type of shape, e.g. 
         # a Stroke instace may be either table border or text underline or strike-through,
         # a Fill instance may be either cell shading or text highlight.
-        self._table_borders = Collection()
-        self._table_shadings = Collection()
+        self._table_strokes = Collection()
+        self._table_fillings = Collection()
 
         self._text_underlines_strikes = Collection() # they're combined at this moment
         self._text_highlights = Collection()
@@ -68,15 +68,15 @@ class Shapes(Collection):
 
 
     @property
-    def table_borders(self):
+    def table_strokes(self):
         '''potential table borders.'''
-        return self._table_borders
+        return self._table_strokes
 
     
     @property
-    def table_shadings(self):
+    def table_fillings(self):
         '''potential table shadings.'''
-        return self._table_shadings
+        return self._table_fillings
 
 
     @property
@@ -150,8 +150,8 @@ class Shapes(Collection):
             It should run right after `clean_up()`.
         '''
         # reset all
-        self._table_borders.reset()
-        self._table_shadings.reset()
+        self._table_strokes.reset()
+        self._table_fillings.reset()
         self._text_underlines_strikes.reset()
         self._text_highlights.reset()
 
@@ -168,10 +168,10 @@ class Shapes(Collection):
                 self._text_underlines_strikes.append(shape)
             
             elif rect_type==RectType.BORDER:
-                self._table_borders.append(shape)
+                self._table_strokes.append(shape)
 
             elif rect_type==RectType.SHADING:
-                self._table_shadings.append(shape)
+                self._table_fillings.append(shape)
             
             elif rect_type==RectType.HIGHLIGHT:
                 self._text_highlights.append(shape)
@@ -183,11 +183,11 @@ class Shapes(Collection):
             # and text format.
             else:
                 if isinstance(shape, Stroke):
-                    self._table_borders.append(shape)
+                    self._table_strokes.append(shape)
                     self._text_underlines_strikes.append(shape)
                 else:
                     self._text_highlights.append(shape)
-                    self._table_shadings.append(shape)
+                    self._table_fillings.append(shape)
     
 
     def plot(self, page):
@@ -197,11 +197,11 @@ class Shapes(Collection):
 
         # -table shading
         color = (152/255, 251/255, 152/255)
-        for shape in self._table_shadings: shape.plot(page, color)
+        for shape in self._table_fillings: shape.plot(page, color)
 
         # - table borders
         color = (0, 0, 0)
-        for shape in self._table_borders: shape.plot(page, color)
+        for shape in self._table_strokes: shape.plot(page, color)
 
         # - underline and strike-through
         color = (1, 0, 0)

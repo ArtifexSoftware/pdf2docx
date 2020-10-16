@@ -23,6 +23,7 @@ from ..common import constants
 from ..layout.Blocks import Blocks
 from ..shape.Shapes import Shapes
 from ..text.Lines import Lines
+from ..text.Line import Line
 from .TableStructure import TableStructure
 from .Border import HBorder, VBorder, Borders
 
@@ -38,19 +39,19 @@ class TablesConstructor:
     def lattice_tables(self):
         '''Parse table with explicit borders/shadings represented by rectangle shapes.'''
         # group stroke shapes: each group may be a potential table
-        groups = self._shapes.table_borders.group_by_connectivity(dx=constants.TINY_DIST, dy=constants.TINY_DIST)
+        grouped_strokes = self._shapes.table_strokes.group_by_connectivity(dx=constants.TINY_DIST, dy=constants.TINY_DIST)
 
         # all filling shapes
-        shadings = self._shapes.table_shadings
+        fills = self._shapes.table_fillings
 
         # parse table with each group
         tables = Blocks()
-        for group in groups:
-            # get potential shadings in this table region
-            group_shadings = shadings.contained_in_bbox(group.bbox)
+        for strokes in grouped_strokes:
+            # potential shadings in this table region
+            group_fills = fills.contained_in_bbox(strokes.bbox)
 
-            # parse table structure based on rects in border type
-            table = TablesConstructor.parse_structure(group, group_shadings)
+            # parse table structure
+            table = self.parse_structure(strokes, group_fills, cell_adaptive=True)
             tables.append(table)
 
         # check if any intersection with previously parsed tables
@@ -70,15 +71,32 @@ class TablesConstructor:
             represented by rectangle shapes.
         '''
         # all explicit borders and shadings
-        table_borders = self._shapes.table_borders
-        table_shadings = self._shapes.table_shadings
+        table_strokes = self._shapes.table_strokes
+        table_fillings = self._shapes.table_fillings
 
         # lines in potential stream tables
-        tables_lines = self._blocks.collect_stream_lines(table_shadings)
+        tables_lines = self._blocks.collect_stream_lines(table_fillings)            
+
+        # define a function to get the vertical boundaries of given table
+        X0, Y0, X1, Y1 = self._parent.bbox
+        def top_bottom_boundaries(y0, y1):
+            '''find the vertical boundaries of table in y-range [y0, y1]:
+                - the bottom of block closest to y0
+                - the top of block closest to y1
+            '''
+            y0_, y1_ = Y0, Y1
+            for block in self._blocks:
+                # move top border
+                if block.bbox.y1 < y0: y0_ = block.bbox.y1
+
+                # reach first bottom border
+                if block.bbox.y0 > y1:
+                    y1_ = block.bbox.y0
+                    break
+            return y0_, y1_
 
         # parse tables
         tables = Blocks()
-        X0, Y0, X1, Y1 = self._parent.bbox
         for table_lines in tables_lines:
             # bounding box
             x0 = min([rect.bbox.x0 for rect in table_lines])
@@ -86,38 +104,24 @@ class TablesConstructor:
             x1 = max([rect.bbox.x1 for rect in table_lines])
             y1 = max([rect.bbox.y1 for rect in table_lines])
             
-            # top/bottom border margin: the block before/after table
-            y0_margin, y1_margin = Y0, Y1
-            for block in self._blocks:
-                if block.bbox.y1 < y0:
-                    y0_margin = block.bbox.y1
-                if block.bbox.y0 > y1:
-                    y1_margin = block.bbox.y0
-                    break
-
-            # boundary borders: to be finalized, so set a valid range
-            top    = HBorder(border_range=(y0_margin, y0), reference=False)
-            bottom = HBorder(border_range=(y1, y1_margin), reference=False)
-            left   = VBorder(border_range=(X0, x0), reference=False)
-            right  = VBorder(border_range=(x1, X1), reference=False)
-
-            top.set_boundary_borders((left, right))
-            bottom.set_boundary_borders((left, right))
-            left.set_boundary_borders((top, bottom))
-            right.set_boundary_borders((top, bottom))
+            # boundary borders to be finalized
+            y0_margin, y1_margin = top_bottom_boundaries(y0, y1)
+            inner_bbox = (x0, y0, x1, y1)
+            outer_bbox = (X0, y0_margin, X1, y1_margin)
+            outer_borders = TablesConstructor._outer_borders(inner_bbox, outer_bbox)
 
             # explicit strokes/shadings in table region
-            rect = BBox().update_bbox((X0, y0_margin, X1, y1_margin))
-            explicit_strokes  = table_borders.contained_in_bbox(rect.bbox) 
-            explicit_shadings = table_shadings.contained_in_bbox(rect.bbox)
+            rect = BBox().update_bbox(outer_bbox)
+            explicit_strokes  = table_strokes.contained_in_bbox(rect.bbox) 
+            explicit_shadings = table_fillings.contained_in_bbox(rect.bbox)
 
             # parse stream borders based on lines in cell and explicit borders/shadings
-            strokes = self.stream_strokes(table_lines, (top, bottom, left, right), explicit_strokes, explicit_shadings)
+            strokes = self.stream_strokes(table_lines, outer_borders, explicit_strokes, explicit_shadings)
             if not strokes: continue
 
             # parse table structure
             strokes.sort_in_reading_order() # required
-            table = TablesConstructor.parse_structure(strokes, explicit_shadings)
+            table = self.parse_structure(strokes, explicit_shadings, cell_adaptive=False) # needn't consider cell adaptive
             tables.append(table)
 
         # check if any intersection with previously parsed tables
@@ -132,15 +136,47 @@ class TablesConstructor:
         return Blocks(unique_tables)
 
     
-    @staticmethod
-    def parse_structure(strokes:Shapes, fills:Shapes):
+    def parse_structure(self, strokes:Shapes, fills:Shapes, cell_adaptive:bool=False):
         '''Parse table structure from strokes and fills shapes.
             ---
             Args:
             - strokes: Stroke shapes representing table border.
             - fills  : Fill shapes representing table shading.
+            - cell_adaptive: construct stream borders deep into cell level if True.
+
+            NOTE: generally, cell borders of lattice table are defined by explicit strokes surrounding the cell.
+            In case floating blocks exist in cell, set cell_adaptive=True to constrcut implicit borders deep into
+            cell level, so that only flow blocks in each sub-cell.            
         '''
+        # init table structure
         table_structure = TableStructure(strokes)
+
+        # deep into cell if necessary
+        # NOTE:
+        # Currently, `cell_adaptive` is only available for lattice table with ONE CELL, considering the balance 
+        # between accommodating the above case and efficiency.
+        if cell_adaptive and table_structure.num_rows==1 and table_structure.num_cols==1:
+            # lines in cell
+            bbox = table_structure.bbox
+            lines = Lines()
+            for block in self._blocks.contained_in_bbox(bbox):
+                if block.is_text_block():
+                    lines.extend(block.lines)
+                else:
+                    lines.append(Line().update_bbox(block.bbox))
+            
+            if len(lines)>1:
+                # boundary borders
+                d = 1
+                inner_bbox = bbox + (d, d, -d, -d)
+                outer_bbox = bbox + (-d, -d, d, d)
+                outer_borders = TablesConstructor._outer_borders(inner_bbox, outer_bbox)
+
+                # rebuild table structure
+                strokes = TablesConstructor.stream_strokes(lines, outer_borders, strokes, Shapes())
+                table_structure = TableStructure(strokes)
+        
+        # parse and convert table structure to TableBlock
         table = table_structure.parse(fills).to_table_block()
         return table
 
@@ -196,7 +232,41 @@ class TablesConstructor:
         
         return unique_tables
 
-    
+
+    @staticmethod
+    def _outer_borders(inner_bbox, outer_bbox):
+        '''Initialize outer Border instances according to lower and upper bboxes.
+            ```
+            +--------------------------------->
+            |
+            | Y0 +------------------------+     + outer bbox
+            |    |                        |     |
+            |    | y0+----------------+   |     |
+            |    |   |                |   +<----+
+            |    |   |                +<--------+ inner bbox
+            |    | y1+----------------+   |
+            |    |   x0               x1  |
+            | Y1 +------------------------+
+            |    X0                       X1
+            v
+            ```
+        '''
+        x0, y0, x1, y1 = inner_bbox
+        X0, Y0, X1, Y1 = outer_bbox
+        top    = HBorder(border_range=(Y0, y0), reference=False)
+        bottom = HBorder(border_range=(y1, Y1), reference=False)
+        left   = VBorder(border_range=(X0, x0), reference=False)
+        right  = VBorder(border_range=(x1, X1), reference=False)
+
+        # boundary borders of each border
+        top.set_boundary_borders((left, right))
+        bottom.set_boundary_borders((left, right))
+        left.set_boundary_borders((top, bottom))
+        right.set_boundary_borders((top, bottom))
+
+        return (top, bottom, left, right)
+
+
     @staticmethod
     def _inner_borders(lines:Lines, outer_borders:tuple):
         ''' Calculate the surrounding borders of given lines.
