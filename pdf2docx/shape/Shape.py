@@ -225,15 +225,11 @@ class Fill(Shape):
             block line, e.g. a factor like 98% or so.
         '''
         # check block first
-        if self.contains(block, threshold=constants.FACTOR_ALMOST): return RectType.SHADING
+        if self.contains(block, threshold=constants.FACTOR_MAJOR): return RectType.SHADING
         
         # not contain but intersects -> check block line for another chance
         for line in block.lines:
-            if not self.bbox & line.bbox: continue
-
-            if self.contains(line, threshold=constants.FACTOR_ALMOST): 
+            if self.contains(line, threshold=constants.FACTOR_MAJOR): 
                 return RectType.SHADING
-            else:
-                return RectType.HIGHLIGHT
         
         return RectType.UNDEFINED # can't be determined by this block
