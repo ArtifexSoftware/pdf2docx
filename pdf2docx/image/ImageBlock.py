@@ -18,7 +18,7 @@ from ..common.Block import Block
 
 class ImageBlock(Image, Block): # to get Image.plot() in first priority
     '''Image block.'''
-    def __init__(self, raw: dict):
+    def __init__(self, raw:dict=None):
         super().__init__(raw)
 
         # set type

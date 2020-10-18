@@ -17,9 +17,8 @@ from ..layout import Blocks # avoid import conflict
 
 class Cell(BBox):
     ''' Cell object.'''
-    def __init__(self, raw:dict={}):
-        if raw is None: raw = {}
-        super().__init__(raw)
+    def __init__(self, raw:dict=None):
+        if raw is None: raw = {}        
         self.bg_color     = raw.get('bg_color', None) # type: int
         self.border_color = raw.get('border_color', (0,0,0,0)) # type: tuple [int]
         self.border_width = raw.get('border_width', (0,0,0,0)) # type: tuple [float]
@@ -27,6 +26,8 @@ class Cell(BBox):
 
         # collect blocks
         self.blocks = Blocks.Blocks(parent=self).from_dicts(raw.get('blocks', []))
+
+        super().__init__(raw)
 
 
     @property

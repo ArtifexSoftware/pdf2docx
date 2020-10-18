@@ -87,8 +87,8 @@ class ImagesExtractor:
 class Image(BBox):
     '''Base image object.'''
 
-    def __init__(self, raw:dict={}):
-        super().__init__(raw)
+    def __init__(self, raw:dict=None):
+        if raw is None: raw = {}        
         self.ext = raw.get('ext', 'png')
         self.width = raw.get('width', 0.0)
         self.height = raw.get('height', 0.0)
@@ -98,6 +98,8 @@ class Image(BBox):
         # - base64 encoded string restored from json file -> encode to bytes and decode with base64 -> image bytes 
         image = raw.get('image', b'')
         self.image = image if isinstance(image, bytes) else base64.b64decode(image.encode())
+        
+        super().__init__(raw)
 
 
     @property

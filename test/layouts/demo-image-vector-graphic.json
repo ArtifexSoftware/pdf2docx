@@ -14538,7 +14538,7 @@
                     "bbox": [
                         36.0,
                         262.6,
-                        337.8,
+                        335.3,
                         273.8
                     ],
                     "wmode": 0,
@@ -14551,7 +14551,7 @@
                             "bbox": [
                                 36.0,
                                 262.6,
-                                337.8,
+                                335.3,
                                 273.8
                             ],
                             "color": 0,
@@ -15546,22 +15546,9 @@
                                         332.7593994140625,
                                         271.20025634765625
                                     ]
-                                },
-                                {
-                                    "bbox": [
-                                        335.3,
-                                        262.6,
-                                        337.8,
-                                        273.8
-                                    ],
-                                    "c": " ",
-                                    "origin": [
-                                        335.2793884277344,
-                                        271.20025634765625
-                                    ]
                                 }
                             ],
-                            "text": "contents and link generation; autoattach to email; stationery and stamping.  ",
+                            "text": "contents and link generation; autoattach to email; stationery and stamping. ",
                             "style": []
                         }
                     ]
@@ -29277,7 +29264,7 @@
                                             "bbox": [
                                                 325.2,
                                                 374.3,
-                                                497.6,
+                                                495.2,
                                                 384.9
                                             ],
                                             "wmode": 0,
@@ -29290,7 +29277,7 @@
                                                     "bbox": [
                                                         325.2,
                                                         374.3,
-                                                        497.6,
+                                                        495.2,
                                                         384.9
                                                     ],
                                                     "color": 10092544,
@@ -29895,22 +29882,9 @@
                                                                 492.8396911621094,
                                                                 382.440185546875
                                                             ]
-                                                        },
-                                                        {
-                                                            "bbox": [
-                                                                495.2,
-                                                                374.3,
-                                                                497.6,
-                                                                384.9
-                                                            ],
-                                                            "c": " ",
-                                                            "origin": [
-                                                                495.23968505859375,
-                                                                382.440185546875
-                                                            ]
                                                         }
                                                     ],
-                                                    "text": "Option to attach PDFs to email after creation  ",
+                                                    "text": "Option to attach PDFs to email after creation ",
                                                     "style": []
                                                 }
                                             ]

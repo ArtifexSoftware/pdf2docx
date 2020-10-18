@@ -42,7 +42,8 @@ from ..common import docx
 
 class TableBlock(Block):
     '''Text block.'''
-    def __init__(self, raw:dict={}):
+    def __init__(self, raw:dict=None):
+        if raw is None: raw = {}
         super().__init__(raw)
 
         # collect rows

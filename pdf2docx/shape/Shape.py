@@ -33,10 +33,11 @@ from ..common import constants
 
 class Shape(BBox):
     ''' Shape object.'''
-    def __init__(self, raw:dict={}):
-        super().__init__(raw)
+    def __init__(self, raw:dict=None):        
+        if raw is None: raw = {}
         self.type = RectType.UNDEFINED # no type by default
         self.color = raw.get('color', 0)
+        super().__init__(raw)
     
     @property
     def is_determined(self): return self.type != RectType.UNDEFINED

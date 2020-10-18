@@ -44,9 +44,10 @@ from ..common import docx
 
 class TextBlock(Block):
     '''Text block.'''
-    def __init__(self, raw:dict={}):
-        # bbox is calculated from contained lines
-        # so remove key 'bbox' here
+    def __init__(self, raw:dict=None):
+        if raw is None: raw = {}
+        
+        # remove key 'bbox' since it is calculated from contained lines
         if 'bbox' in raw: raw.pop('bbox') 
         super().__init__(raw)
 
@@ -54,7 +55,8 @@ class TextBlock(Block):
         self.lines = Lines(parent=self).from_dicts(raw.get('lines', []))
 
         # set type
-        self.set_text_block()
+        self.set_text_block()        
+
 
     @property
     def text(self):
@@ -98,6 +100,11 @@ class TextBlock(Block):
             blocks.append(text_block)
         
         return blocks
+
+
+    def strip(self):
+        '''strip each Line instance.'''
+        self.lines.strip()
 
 
     def plot(self, page):
