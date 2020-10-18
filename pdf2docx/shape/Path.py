@@ -129,7 +129,7 @@ class Paths(BaseCollection):
     
     def append(self, path): self._instances.append(path)
 
-    def reset(self, paths:list=[]): self._instances = paths
+    def reset(self, paths:list): self._instances = paths
 
     def plot(self, doc:fitz.Document, title:str, width:float, height:float):
         if not self._instances: return

@@ -48,8 +48,8 @@ from ..shape.Shape import Shape
 
 class TextSpan(BBox):
     '''Object representing text span.'''
-    def __init__(self, raw:dict={}):
-        super().__init__(raw)
+    def __init__(self, raw:dict=None):
+        if raw is None: raw = {}
         self.color = raw.get('color', 0)
         self._font = raw.get('font', '')
         self.size = raw.get('size', 12.0)
@@ -59,9 +59,12 @@ class TextSpan(BBox):
         # introduced attributes
         # a list of dict: { 'type': int, 'color': int }
         self.style = raw.get('style', [])
+        
+        # init bbox
+        super().__init__(raw)
 
         # update bbox if no font is set
-        if 'UNNAMED' in self.font.upper(): self.set_font('Arial')
+        if 'UNNAMED' in self.font.upper(): self.set_font('Arial')        
 
 
     @property
@@ -81,12 +84,8 @@ class TextSpan(BBox):
         key = font_name.replace(' ', '').replace('-', '').replace('_', '').upper() # normalize mapping key
         font_name = constants.DICT_FONTS.get(key, font_name)
 
-        # split with upper case letters
-        blank = ' '
-        # font_name = ''.join(f'{blank}{x}' if x.isupper() else x for x in font_name).strip(blank)
-
         # replace ','
-        font_name = font_name.replace(',', blank)
+        font_name = font_name.replace(',', ' ')
 
         return font_name
 

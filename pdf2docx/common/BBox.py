@@ -40,11 +40,12 @@ class BBox(IText):
         return fitz.Matrix(a,b,c,d,0,0)
 
 
-    def __init__(self, raw:dict={}):
-        ''' Initialize BBox and convert to the real (rotation considered) page coordinate system.'''
+    def __init__(self, raw:dict=None):
+        ''' Initialize BBox and convert to the real (rotation considered) page coordinate system.'''        
         self.bbox = fitz.Rect()
 
         # NOTE: Any coordinates provided in raw is in original page CS (without considering page rotation).
+        if raw is None: raw = {}
         if 'bbox' in raw:
             rect = fitz.Rect(raw['bbox']) * BBox.ROTATION_MATRIX
             self.update_bbox(rect)

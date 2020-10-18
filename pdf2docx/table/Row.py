@@ -17,7 +17,8 @@ from ..common.BBox import BBox
 
 class Row(BBox):
     '''Row in a table.'''
-    def __init__(self, raw:dict={}):
+    def __init__(self, raw:dict=None):
+        if raw is None: raw = {}
         super().__init__(raw)
 
         # logical row height

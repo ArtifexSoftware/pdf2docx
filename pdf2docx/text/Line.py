@@ -26,11 +26,8 @@ from ..image.ImageSpan import ImageSpan
 
 class Line(BBox):
     '''Object representing a line in text block.'''
-    def __init__(self, raw:dict={}):
-        # bbox is calculated from contained spans
-        # so remove key 'bbox' here
-        if 'bbox' in raw: raw.pop('bbox') 
-        super().__init__(raw)
+    def __init__(self, raw:dict=None):
+        if raw is None: raw = {}
 
         # writing mode
         self.wmode = raw.get('wmode', 0) 
@@ -45,9 +42,13 @@ class Line(BBox):
         # This ID can't be changed once set -> record the original parent extracted from PDF, 
         # so that we can determin whether two lines belong to a same original text block.
         self._pid = None
+        
+        # remove key 'bbox' since it is calculated from contained spans
+        if 'bbox' in raw: raw.pop('bbox') 
+        super().__init__(raw)
 
         # collect spans
-        self.spans = Spans(parent=self).from_dicts(raw.get('spans', []))
+        self.spans = Spans(parent=self).from_dicts(raw.get('spans', []))        
 
     
     @property

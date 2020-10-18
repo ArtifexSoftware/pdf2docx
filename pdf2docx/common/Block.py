@@ -14,11 +14,11 @@ from . import constants
 
 class Block(BBox):
     '''Text block.'''
-    def __init__(self, raw:dict={}):
-        super().__init__(raw)
+    def __init__(self, raw:dict=None):        
         self._type = BlockType.UNDEFINED
 
         # horizontal spacing
+        if raw is None: raw = {}
         self.alignment = self.get_alignment(raw.get('alignment', 0))
         self.left_space = raw.get('left_space', 0.0)
         self.right_space = raw.get('right_space', 0.0)
@@ -30,6 +30,8 @@ class Block(BBox):
         self.before_space = raw.get('before_space', 0.0)
         self.after_space = raw.get('after_space', 0.0)        
         self.line_space = raw.get('line_space', 0.0)
+
+        super().__init__(raw)
 
 
     def is_text_block(self):

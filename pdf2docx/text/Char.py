@@ -24,10 +24,11 @@ from ..shape.Shape import Shape
 
 class Char(BBox):
     '''Object representing a character.'''
-    def __init__(self, raw:dict={}):
-        super().__init__(raw)
+    def __init__(self, raw:dict=None):
+        if raw is None: raw = {}
         self.c = raw.get('c', '')
-        self.origin = raw.get('origin', None)       
+        self.origin = raw.get('origin', None)
+        super().__init__(raw)
 
 
     def contained_in_rect(self, rect:Shape, horizontal:bool=True):
