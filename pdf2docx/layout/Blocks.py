@@ -152,7 +152,16 @@ class Blocks(Collection):
            
         # merge blocks horizontally, e.g. remove overlap blocks, since no floating elements are supported
         # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
-        self.sort_in_reading_order().join_horizontally(text_direction=False)
+        self.strip().sort_in_reading_order().join_horizontally(text_direction=False)
+
+    
+    def strip(self):
+        ''' Remove redundant blanks exist in text block lines. 
+            Note these redundant blanks may affect bbox of text block.
+        '''
+        for block in self._instances:
+            if block.is_text_block(): block.strip()
+        return self
 
 
     def assign_table_contents(self, tables):

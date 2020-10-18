@@ -33,3 +33,22 @@ class Spans(Collection):
             lambda span: isinstance(span, ImageSpan), self._instances
         ))
         return Spans(spans)
+
+
+    def strip(self):
+        '''remove redundant blanks at the begin/end span.'''
+        stripped = False
+        if not self._instances: return stripped
+        
+        # left strip the first span
+        left_span = self._instances[0]
+        if isinstance(left_span, TextSpan): stripped = stripped or left_span.lstrip() 
+
+        # right strip the last span
+        right_span = self._instances[-1]
+        if isinstance(right_span, TextSpan): stripped = stripped or right_span.rstrip()
+
+        # update bbox
+        if stripped: self._parent.update_bbox(self.bbox)
+
+        return stripped

@@ -96,6 +96,13 @@ class TextSpan(BBox):
         chars = [char.c for char in self.chars]        
         return ''.join(chars)
 
+    
+    def cal_bbox(self):
+        '''calculate bbox based on contained instances.'''
+        bbox = fitz.Rect()
+        for char in self.chars: bbox |= char.bbox
+        return bbox
+
 
     def set_font(self, fontname):
         ''' Set new font, and update font size, span/char bbox accordingly.
@@ -146,6 +153,30 @@ class TextSpan(BBox):
         '''Add char and update bbox accordingly.'''
         self.chars.append(char)
         self.union_bbox(char)
+
+    
+    def lstrip(self):
+        '''remove blanks at the left side, but keep one blank.'''
+        original_text = self.text
+        if not original_text.startswith(' '*2): return False
+
+        # keep one blank
+        num_blanks = len(original_text) - len(original_text.lstrip())
+        self.chars = self.chars[num_blanks-1:]
+        self.update_bbox(rect=self.cal_bbox())
+        return True
+    
+
+    def rstrip(self):
+        '''remove blanks at the right side, but keep one blank.'''
+        original_text = self.text
+        if not original_text.endswith(' '*2): return False
+
+        # keep one blank
+        num_blanks = len(original_text) - len(original_text.rstrip())
+        self.chars = self.chars[:1-num_blanks]
+        self.update_bbox(rect=self.cal_bbox())
+        return True
 
 
     def store(self):

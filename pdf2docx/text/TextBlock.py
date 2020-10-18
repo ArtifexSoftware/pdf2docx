@@ -102,6 +102,11 @@ class TextBlock(Block):
         return blocks
 
 
+    def strip(self):
+        '''strip each Line instance.'''
+        self.lines.strip()
+
+
     def plot(self, page):
         '''Plot block/line/span area, in PDF page.
            ---

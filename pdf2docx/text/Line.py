@@ -89,6 +89,11 @@ class Line(BBox):
             self._pid = int(pid)
 
 
+    def strip(self):
+        '''remove redundant blanks at the begin/end span.'''
+        return self.spans.strip()
+
+
     def same_parent_with(self, line):
         '''Check if has same parent ID.'''
         if self.pid is None:

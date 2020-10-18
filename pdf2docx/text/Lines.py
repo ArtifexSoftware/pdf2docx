@@ -25,6 +25,7 @@ class Lines(Collection):
         first_line = self._instances[0]
         return all(line.same_parent_with(first_line) for line in self._instances)
 
+
     def append(self, line:Line):
         '''Override. Append a line and update line pid and parent bbox.'''
         super().append(line)
@@ -40,6 +41,7 @@ class Lines(Collection):
             line = Line(raw)
             self.append(line)
         return self
+
 
     @property
     def image_spans(self):
@@ -137,6 +139,18 @@ class Lines(Collection):
         for group in groups: group.sort()
 
         return groups
+
+
+    def strip(self):
+        '''remove redundant blanks of each line.'''
+        # strip each line
+        status = [line.strip() for line in self._instances]
+
+        # update bbox
+        stripped = any(status)
+        if stripped: self._parent.update_bbox(self.bbox)
+
+        return stripped
 
 
     def sort(self):
