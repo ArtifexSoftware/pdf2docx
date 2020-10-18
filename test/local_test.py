@@ -53,7 +53,6 @@ def compare_layput(filename_source, filename_target, filename_output, threshold=
         if len(source_words) != len(target_words):
             msg='Words count is inconsistent with source file.'
             print(msg)
-            return False
 
         # check each word and bbox
         for sample, test in zip(source_words, target_words):
@@ -194,7 +193,7 @@ if __name__ == '__main__':
         'demo-table-stream'
     ]
 
-    filename = 'demo-table-shading-highlight'
-    local_test(filename, compare=False, make_test_case=True)
+    filename = 'demo-table-align-borders'
+    local_test(filename, compare=False, make_test_case=False)
 
     # for filename in filenames: local_test(filename, compare=True, make_test_case=True)
