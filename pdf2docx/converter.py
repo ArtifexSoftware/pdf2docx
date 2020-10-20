@@ -68,71 +68,6 @@ class Converter:
     def close(self): self._doc_pdf.close()
 
 
-    def make_page(self, page:fitz.Page, debug=True):
-        ''' Parse and create single page.
-            If debug=True, illustration pdf will be created during parsing the raw pdf layout.
-        '''
-        # debug information
-        # fitz object in debug mode: plot page layout
-        # file path for this debug pdf: demo.pdf -> debug_demo.pdf
-        path, filename = os.path.split(self.filename_pdf)
-        filename_json  = os.path.join(path, 'layout.json')
-        debug_kwargs = {
-            'debug'   : debug,
-            'doc'     : fitz.Document() if debug else None,
-            'filename': os.path.join(path, f'debug_{filename}')
-        }
-
-        # init page layout
-        self.initialize(page)
-        if debug: 
-            self._layout.plot(**debug_kwargs)
-            self._paths_extractor.paths.plot(debug_kwargs['doc'], 'Source Paths', self._layout.width, self._layout.height)
-
-        # parse and save page
-        self.layout.parse(**debug_kwargs).make_page(self.doc_docx)
-        self.save()
-
-        # save debug files
-        if debug:
-            # save layout plotting as pdf file
-            if len(debug_kwargs['doc']): debug_kwargs['doc'].save(debug_kwargs['filename'])
-            # write layout information
-            self.layout.serialize(filename_json)
-
-        return self
-
-
-    def make_docx(self, page_indexes:list, multi_processing=False):
-        '''Parse and create a list of pages.
-            ---
-            Args:
-            - page_indexes    : list[int], page indexes to parse
-            - multi_processing: bool, multi-processing mode if True
-        '''
-        t0 = perf_counter()
-        if multi_processing:
-            self._make_docx_multi_processing(page_indexes)
-        else:
-            self._make_docx(page_indexes)
-        
-        print(f'\n{"-"*50}\nTerminated in {perf_counter()-t0}s.')
-
-
-    def extract_tables(self, page_indexes:list):
-        '''Extract table contents.'''
-        tables = []
-        num_pages = len(page_indexes)
-        # process page by page        
-        for i in page_indexes:
-            print(f'\rProcessing Pages: {i+1}/{num_pages}...')
-            page = self.doc_pdf[i]
-            page_tables = self.initialize(page).extract_tables()
-            tables.extend(page_tables)
-
-        return tables
-
-
     def initialize(self, page:fitz.Page):
         '''Initialize layout object.'''
         # -----------------------------------------
@@ -176,6 +111,68 @@ class Converter:
         self._layout = Layout(raw_layout, page.rotationMatrix)    
 
         return self._layout
+
+
+    def debug_page(self, page:fitz.Page):
+        ''' Parse, create and plot single page for debug purpose.
+            Illustration pdf will be created during parsing the raw pdf layout.
+        '''
+        # debug information
+        # fitz object in debug mode: plot page layout
+        # file path for this debug pdf: demo.pdf -> debug_demo.pdf
+        path, filename = os.path.split(self.filename_pdf)
+        filename_json  = os.path.join(path, 'layout.json')
+        debug_kwargs = {
+            'debug'   : True,
+            'doc'     : fitz.Document(),
+            'filename': os.path.join(path, f'debug_{filename}')
+        }
+
+        # init page layout
+        self.initialize(page)
+        self._layout.plot(**debug_kwargs)
+        self._paths_extractor.paths.plot(debug_kwargs['doc'], 'Source Paths', self._layout.width, self._layout.height)
+
+        # parse and save debug files
+        self.layout.parse(**debug_kwargs)        
+        if len(debug_kwargs['doc']): debug_kwargs['doc'].save(debug_kwargs['filename']) # layout plotting        
+        self.layout.serialize(filename_json) # layout information
+        
+        # make docx page
+        self._layout.make_page(self.doc_docx)
+        self.save()
+
+        return self
+
+
+    def make_docx(self, page_indexes:list, multi_processing=False):
+        '''Parse and create a list of pages.
+            ---
+            Args:
+            - page_indexes    : list[int], page indexes to parse
+            - multi_processing: bool, multi-processing mode if True
+        '''
+        t0 = perf_counter()
+        if multi_processing:
+            self._make_docx_multi_processing(page_indexes)
+        else:
+            self._make_docx(page_indexes)
+        
+        print(f'\n{"-"*50}\nTerminated in {perf_counter()-t0}s.')
+
+
+    def extract_tables(self, page_indexes:list):
+        '''Extract table contents.'''
+        tables = []
+        num_pages = len(page_indexes)
+        # process page by page        
+        for i in page_indexes:
+            print(f'\rProcessing Pages: {i+1}/{num_pages}...')
+            page = self.doc_pdf[i]
+            page_tables = self.initialize(page).extract_tables()
+            tables.extend(page_tables)
+
+        return tables
 
 
     def _make_docx(self, page_indexes:list):
