@@ -61,7 +61,11 @@ class ImagesExtractor:
 
     @classmethod
     def extract_images(cls, page:fitz.Page):
-        '''Get images from current page.'''
+        ''' Get images dict based on image contents from `Page.getImageList()`.
+
+            NOTE: Page.getImageList() contains each image only once, which may less than the real
+            count if images in a page.
+        '''
         # pdf document
         doc = page.parent
 
