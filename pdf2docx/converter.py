@@ -2,6 +2,7 @@
 
 import os
 import json
+from collections import defaultdict
 from time import perf_counter
 from multiprocessing import Pool, cpu_count
 import fitz
@@ -68,9 +69,41 @@ class Converter:
     def close(self): self._doc_pdf.close()
 
 
-    def make_page(self, page:fitz.Page, debug=True):
-        ''' Parse and create single page.
-            If debug=True, illustration pdf will be created during parsing the raw pdf layout.
+    def initialize(self, page:fitz.Page):
+        '''Initialize layout object.'''
+        # -----------------------------------------
+        # Layout blocks with image blocks updated
+        # -----------------------------------------
+        # NOTE: all these coordinates are relative to un-rotated page
+        # https://pymupdf.readthedocs.io/en/latest/page.html#modifying-pages
+        raw_layout = self._page_blocks(page)
+
+        # -----------------------------------------
+        # page size
+        # -----------------------------------------
+        # though 'width', 'height' are contained in `raw_dict`, they are based on un-rotated page.
+        # so, update page width/height to right direction in case page is rotated
+        *_, w, h = page.rect # always reflecting page rotation
+        raw_layout.update({ 'width' : w, 'height': h })
+        
+        # -----------------------------------------
+        # page paths
+        # -----------------------------------------
+        # convert vector graphic paths to pixmap
+        self._paths_extractor = PathsExtractor()
+        images, paths = self._paths_extractor.extract_paths(page)
+        raw_layout['blocks'].extend(images)
+        raw_layout['paths'] = paths
+
+        # init layout
+        self._layout = Layout(raw_layout, page.rotationMatrix)    
+
+        return self._layout
+
+
+    def debug_page(self, page:fitz.Page):
+        ''' Parse, create and plot single page for debug purpose.
+            Illustration pdf will be created during parsing the raw pdf layout.
         '''
         # debug information
         # fitz object in debug mode: plot page layout
@@ -78,27 +111,24 @@ class Converter:
         path, filename = os.path.split(self.filename_pdf)
         filename_json  = os.path.join(path, 'layout.json')
         debug_kwargs = {
-            'debug'   : debug,
-            'doc'     : fitz.Document() if debug else None,
+            'debug'   : True,
+            'doc'     : fitz.Document(),
             'filename': os.path.join(path, f'debug_{filename}')
         }
 
         # init page layout
         self.initialize(page)
-        if debug: 
-            self._layout.plot(**debug_kwargs)
-            self._paths_extractor.paths.plot(debug_kwargs['doc'], 'Source Paths', self._layout.width, self._layout.height)
+        self._layout.plot(**debug_kwargs)
+        self._paths_extractor.paths.plot(debug_kwargs['doc'], 'Source Paths', self._layout.width, self._layout.height)
 
-        # parse and save page
-        self.layout.parse(**debug_kwargs).make_page(self.doc_docx)
+        # parse and save debug files
+        self.layout.parse(**debug_kwargs)
+        if len(debug_kwargs['doc']): debug_kwargs['doc'].save(debug_kwargs['filename']) # layout plotting        
+        self.layout.serialize(filename_json) # layout information
+        
+        # make docx page
+        self._layout.make_page(self.doc_docx)
         self.save()
-
-        # save debug files
-        if debug:
-            # save layout plotting as pdf file
-            if len(debug_kwargs['doc']): debug_kwargs['doc'].save(debug_kwargs['filename'])
-            # write layout information
-            self.layout.serialize(filename_json)
 
         return self
 
@@ -133,49 +163,47 @@ class Converter:
         return tables
 
 
-    def initialize(self, page:fitz.Page):
-        '''Initialize layout object.'''
-        # -----------------------------------------
-        # Layout object based on raw dict
-        # -----------------------------------------
+    @staticmethod
+    def _page_blocks(page:fitz.Page):
+        '''Get page blocks and adjust image blocks.'''
+        # Layout object based on raw dict:
         # NOTE: all these coordinates are relative to un-rotated page
         # https://pymupdf.readthedocs.io/en/latest/page.html#modifying-pages
         raw_layout = page.getText('rawdict')
 
-        # -----------------------------------------
-        # page size
-        # -----------------------------------------
-        # though 'width', 'height' are contained in `raw_dict`, they are based on un-rotated page.
-        # so, update page width/height to right direction in case page is rotated
-        *_, w, h = page.rect # always reflecting page rotation
-        raw_layout.update({ 'width' : w, 'height': h })
-
-        # -----------------------------------------
-        # page images
-        # -----------------------------------------
-        # image bytes from page.getText('rawdict') can't reproduce transparent images,
-        # so we re-extract page images
-        for block in raw_layout['blocks']:
-            # disable image in raw dict
-            if block['type']==1: block['type'] = -1
-        
+        # Adjust image blocks:
+        # Image blocks are generated for every image location – whether or not there are any duplicates. 
+        # This is in contrast to Page.getImageList(), which will contain each image only once.
+        # https://pymupdf.readthedocs.io/en/latest/textpage.html#dictionary-structure-of-extractdict-and-extractrawdict
+        # 
+        # So, a compromise:
+        # - get image contents with `page.getImageList`
+        # - get image location with `page.getText('rawdict')`
+        # 
         # extract and recover images
-        images = ImagesExtractor.extract_images(page)        
-        raw_layout['blocks'].extend(images)
+        recovered_images = ImagesExtractor.extract_images(page)
 
-        # -----------------------------------------
-        # page paths
-        # -----------------------------------------
-        # convert vector graphic paths to pixmap
-        self._paths_extractor = PathsExtractor()
-        images, paths = self._paths_extractor.extract_paths(page)
-        raw_layout['blocks'].extend(images)
-        raw_layout['paths'] = paths
+        # group original image blocks by image contents
+        image_blocks_group = defaultdict(list)
+        for block in raw_layout['blocks']:
+            if block['type'] != 1: continue
+            image_blocks_group[hash(block['image'])].append(block)
 
-        # init layout
-        self._layout = Layout(raw_layout, page.rotationMatrix)    
+        # update raw layout blocks
+        def same_images(img, img_list):
+            bbox = list(map(round, img['bbox']))
+            for _img in img_list:
+                if list(map(round, _img['bbox']))==bbox: return True
+            return False
 
-        return self._layout
+        for k, image_blocks in image_blocks_group.items():
+            for image in recovered_images:
+                if not same_images(image, image_blocks): continue
+                for image_block in image_blocks: image_block['image'] = image['image']
+                raw_layout['blocks'].extend(image_blocks)
+                break
+
+        return raw_layout
 
 
     def _make_docx(self, page_indexes:list):

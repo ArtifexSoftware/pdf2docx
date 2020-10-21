@@ -61,7 +61,11 @@ class ImagesExtractor:
 
     @classmethod
     def extract_images(cls, page:fitz.Page):
-        '''Get images from current page.'''
+        ''' Get images dict based on image contents from `Page.getImageList()`.
+
+            NOTE: Page.getImageList() contains each image only once, which may less than the real
+            count if images in a page.
+        '''
         # pdf document
         doc = page.parent
 
@@ -69,8 +73,15 @@ class ImagesExtractor:
         # (xref, smask, width, height, bpc, colorspace, ...)
         images = []
         for item in page.getImageList(full=True):
+            
+            # should always wrap getImageBbox in a try-except clause, per
+            # https://github.com/pymupdf/PyMuPDF/issues/487
+            try:
+                bbox = page.getImageBbox(item[7]) # item[7]: name entry of such an item
+            except ValueError:
+                continue
+
             pix = recover_pixmap(doc, item)
-            bbox = page.getImageBbox(item[7]) # item[7]: name entry of such an item
 
             # regarding images consist of alpha values only, i.e. colorspace is None,
             # the turquoise color shown in the PDF is not part of the image, but part of PDF background.

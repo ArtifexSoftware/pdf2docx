@@ -152,7 +152,7 @@ def local_test(filename, compare=False, make_test_case=False):
         #     f.write(page.getSVGimage(text_as_path=False))
         
         # parse layout
-        cv.make_page(page)
+        cv.debug_page(page)
         
         # # extract tables
         # tables = cv.extract_tables(page)
@@ -193,7 +193,7 @@ if __name__ == '__main__':
         'demo-table-stream'
     ]
 
-    filename = 'demo-table-align-borders'
+    filename = 't4'
     local_test(filename, compare=False, make_test_case=False)
 
     # for filename in filenames: local_test(filename, compare=True, make_test_case=True)
