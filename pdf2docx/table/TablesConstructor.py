@@ -84,7 +84,7 @@ class TablesConstructor:
                 - the bottom of block closest to y0
                 - the top of block closest to y1
             '''
-            y0_, y1_ = Y0, Y1
+            y0_, y1_ = Y0, Y1-constants.MINOR_DIST
             for block in self._blocks:
                 # move top border
                 if block.bbox.y1 < y0: y0_ = block.bbox.y1
