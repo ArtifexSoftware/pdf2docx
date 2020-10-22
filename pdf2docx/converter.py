@@ -196,12 +196,16 @@ class Converter:
                 if list(map(round, _img['bbox']))==bbox: return True
             return False
 
-        for k, image_blocks in image_blocks_group.items():
-            for image in recovered_images:
+        for image in recovered_images:
+            for k, image_blocks in image_blocks_group.items():
                 if not same_images(image, image_blocks): continue
                 for image_block in image_blocks: image_block['image'] = image['image']
                 raw_layout['blocks'].extend(image_blocks)
                 break
+
+            # an image outside the page is not counted in page.getText(), so let's add it here
+            else:
+                raw_layout['blocks'].append(image)
 
         return raw_layout
 

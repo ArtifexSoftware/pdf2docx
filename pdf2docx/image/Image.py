@@ -73,13 +73,17 @@ class ImagesExtractor:
         # (xref, smask, width, height, bpc, colorspace, ...)
         images = []
         for item in page.getImageList(full=True):
-            
             # should always wrap getImageBbox in a try-except clause, per
             # https://github.com/pymupdf/PyMuPDF/issues/487
             try:
-                bbox = page.getImageBbox(item[7]) # item[7]: name entry of such an item
+                # item = list(item)
+                # item[-1] = 0
+                bbox = page.getImageBbox(item) # item[7]: name entry of such an item
             except ValueError:
                 continue
+
+            # ignore images outside page
+            if not bbox.intersects(page.rect): continue
 
             pix = recover_pixmap(doc, item)
 
