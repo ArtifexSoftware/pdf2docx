@@ -9,7 +9,6 @@ A group of Line objects.
 
 from docx.shared import Pt
 from .Line import Line
-from ..common.utils import get_main_bbox
 from ..common import constants
 from ..common.Collection import Collection
 from ..common import docx
@@ -51,25 +50,9 @@ class Lines(Collection):
             spans.extend(line.image_spans)
         return spans
 
-
-    def intersects(self, line:Line, threshold:float):
-        ''' Get the index of intersected line. Return -1 if no intersection.'''
-        is_image_line = bool(line.image_spans)
-
-        f = threshold
-        for i, instance in enumerate(self._instances):
-            # for image line, reduce the intersection threshold
-            if instance.image_spans or is_image_line: f = threshold/2.0
-            
-            if get_main_bbox(instance.bbox, line.bbox, threshold=f): return i
-        
-        return -1
-
     
     def join(self):
-        ''' Merge lines aligned horizontally in a block. The main purposes:
-            - remove overlapped lines, e.g. floating images
-            - make inline image as a span in text line logically
+        ''' Merge lines aligned horizontally, e.g. make inline image as a span in text line.
         '''
         # skip if empty
         if not self._instances: return self
@@ -80,33 +63,22 @@ class Lines(Collection):
         # check each line
         lines = Lines()
         for line in self._instances:
-            
+
             # first line
-            if not lines:
-                lines.append(line)
-                continue
-            
-            # keep the larger line if intersection exists (with margin considered)
-            i = lines.intersects(line, threshold=constants.FACTOR_A_HALF)
-            if i != -1:
-                if lines[i].bbox.getArea() < line.bbox.getArea():
-                    lines.pop(i)
-                    lines.append(line)
-                continue            
+            if not lines: lines.append(line)      
 
             # add line directly if not aligned horizontally with previous line
-            if not line.horizontally_align_with(lines[-1]):
+            elif not line.horizontally_align_with(lines[-1]):
                 lines.append(line)
-                continue
 
             # if it exists x-distance obviously to previous line,
             # take it as a separate line as it is
-            if abs(line.bbox.x0-lines[-1].bbox.x1) > constants.MINOR_DIST:
+            elif abs(line.bbox.x0-lines[-1].bbox.x1) > constants.MINOR_DIST:
                 lines.append(line)
-                continue
 
             # now, this line will be append to previous line as a span
-            lines[-1].add(list(line.spans))
+            else:
+                lines[-1].add(list(line.spans))
 
         # update lines in block
         self.reset(lines)

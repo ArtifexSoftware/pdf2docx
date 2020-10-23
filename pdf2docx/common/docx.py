@@ -145,7 +145,7 @@ def add_image(p, image_path_or_stream, width):
         Args:
           - p: docx paragraph instance
           - image_path_or_stream: image path or stream
-          - width: image width
+          - width: image width in Pt
     '''
     docx_span = p.add_run()
     try:
@@ -202,10 +202,10 @@ class CT_Anchor(BaseOxmlElement):
             '           behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1" \n'
             '           %s>\n'
             '  <wp:simplePos x="0" y="0"/>\n'
-            '  <wp:positionH relativeFrom="column">\n'
+            '  <wp:positionH relativeFrom="page">\n'
             '    <wp:posOffset>%d</wp:posOffset>\n'
             '  </wp:positionH>\n'
-            '  <wp:positionV relativeFrom="line">\n'
+            '  <wp:positionV relativeFrom="page">\n'
             '    <wp:posOffset>%d</wp:posOffset>\n'
             '  </wp:positionV>\n'                    
             '  <wp:extent cx="914400" cy="914400"/>\n'
@@ -223,21 +223,21 @@ class CT_Anchor(BaseOxmlElement):
 register_element_cls('wp:anchor', CT_Anchor)
 
 
-def add_float_image(p, image_path_or_stream, width=None, height=None, pos_x=None, pos_y=None):
+def add_float_image(p, image_path_or_stream, width, pos_x=None, pos_y=None):
     ''' Add float image behind text.
         ---
         Args:
         - p: docx Paragraph object this picture belongs to
         - image_path_or_stream: image path or stream
-        - width, height: displaying width, height of picture
+        - width, height: displaying width, height of picture, in unit Pt
         - pos_x, pos_y: positions (English Metric Units) to the top-left point of page valid region
     '''
     run = p.add_run()
     # parameters for picture, e.g. id, name
     rId, image = run.part.get_or_add_image(image_path_or_stream)
-    cx, cy = image.scaled_dimensions(width, height)
+    cx, cy = image.scaled_dimensions(Pt(width), None)
     shape_id, filename = run.part.next_id, image.filename
-    anchor = CT_Anchor.new_pic_anchor(shape_id, rId, filename, cx, cy, pos_x, pos_y)
+    anchor = CT_Anchor.new_pic_anchor(shape_id, rId, filename, cx, cy, Pt(pos_x), Pt(pos_y))
     run._r.add_drawing(anchor)
 
 

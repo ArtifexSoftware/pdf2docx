@@ -87,6 +87,9 @@ class Layout:
 
 
     def store(self):
+        # combine inline and floating objects
+        self.blocks.combine_floating_objects()
+        
         return {
             'width': self.width,
             'height': self.height,
