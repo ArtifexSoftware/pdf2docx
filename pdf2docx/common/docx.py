@@ -4,10 +4,11 @@
 docx operation methods based on python-docx.
 '''
 
-from io import BytesIO
 from docx.shared import Pt
-from docx.oxml import OxmlElement, parse_xml
+from docx.oxml import OxmlElement, parse_xml, register_element_cls
 from docx.oxml.ns import qn, nsdecls
+from docx.oxml.shape import CT_Picture
+from docx.oxml.xmlchemy import BaseOxmlElement, OneAndOnlyOne
 from docx.enum.text import WD_COLOR_INDEX
 from docx.image.exceptions import UnrecognizedImageError
 from docx.table import _Cell
@@ -16,6 +17,9 @@ from .utils import RGB_value
 from . import constants
 
 
+# ---------------------------------------------------------
+# paragraph
+# ---------------------------------------------------------
 def delete_paragraph(paragraph):
     ''' Refer to:
         https://github.com/python-openxml/python-docx/issues/33#issuecomment-77661907
@@ -53,6 +57,9 @@ def reset_paragraph_format(p, line_spacing:float=1.05):
     return pf
 
 
+# ---------------------------------------------------------
+# text properties
+# ---------------------------------------------------------
 def add_stop(p, pos:float, current_pos:float):
     ''' Set horizontal position in current position with tab stop.
         ---
@@ -75,25 +82,6 @@ def add_stop(p, pos:float, current_pos:float):
             p.add_run().add_tab()
         else:
             break
-
-
-def add_image(p, byte_image, width):
-    ''' Add image to paragraph.
-        ---
-        Args:
-          - p: docx paragraph instance
-          - byte_image: bytes for image source
-          - width: image width
-    '''
-    docx_span = p.add_run()
-    try:
-        docx_span.add_picture(BytesIO(byte_image), width=Pt(width))
-    except UnrecognizedImageError:
-        print('Unrecognized Image.')
-        return
-    
-    # exactly line spacing will destroy image display, so set single line spacing instead
-    p.paragraph_format.line_spacing = 1.00
 
 
 def set_char_scaling(p_run, scale:float=1.0):
@@ -148,6 +136,114 @@ def set_char_underline(p_run, srgb:int):
     p_run._r.get_or_add_rPr().insert(0, parse_xml(xml))
 
 
+# ---------------------------------------------------------
+# image properties
+# ---------------------------------------------------------
+def add_image(p, image_path_or_stream, width):
+    ''' Add image to paragraph.
+        ---
+        Args:
+          - p: docx paragraph instance
+          - image_path_or_stream: image path or stream
+          - width: image width
+    '''
+    docx_span = p.add_run()
+    try:
+        docx_span.add_picture(image_path_or_stream, width=Pt(width))
+    except UnrecognizedImageError:
+        print('Unrecognized Image.')
+        return
+    
+    # exactly line spacing will destroy image display, so set single line spacing instead
+    p.paragraph_format.line_spacing = 1.00
+
+
+class CT_Anchor(BaseOxmlElement):
+    """
+    ``<w:anchor>`` element, container for a floating image.
+    """
+    extent = OneAndOnlyOne('wp:extent')
+    docPr = OneAndOnlyOne('wp:docPr')
+    graphic = OneAndOnlyOne('a:graphic')
+
+    @classmethod
+    def new(cls, cx, cy, shape_id, pic, pos_x, pos_y):
+        """
+        Return a new ``<wp:anchor>`` element populated with the values passed
+        as parameters.
+        """
+        anchor = parse_xml(cls._anchor_xml(pos_x, pos_y))
+        anchor.extent.cx = cx
+        anchor.extent.cy = cy
+        anchor.docPr.id = shape_id
+        anchor.docPr.name = 'Picture %d' % shape_id
+        anchor.graphic.graphicData.uri = (
+            'http://schemas.openxmlformats.org/drawingml/2006/picture'
+        )
+        anchor.graphic.graphicData._insert_pic(pic)
+        return anchor
+
+    @classmethod
+    def new_pic_anchor(cls, shape_id, rId, filename, cx, cy, pos_x, pos_y):
+        """
+        Return a new `wp:anchor` element containing the `pic:pic` element
+        specified by the argument values.
+        """
+        pic_id = 0  # Word doesn't seem to use this, but does not omit it
+        pic = CT_Picture.new(pic_id, filename, rId, cx, cy)
+        anchor = cls.new(cx, cy, shape_id, pic, pos_x, pos_y)
+        anchor.graphic.graphicData._insert_pic(pic)
+        return anchor
+
+    @classmethod
+    def _anchor_xml(cls, pos_x, pos_y):
+        return (
+            '<wp:anchor distT="0" distB="0" distL="0" distR="0" simplePos="0" relativeHeight="0" \n'
+            '           behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1" \n'
+            '           %s>\n'
+            '  <wp:simplePos x="0" y="0"/>\n'
+            '  <wp:positionH relativeFrom="column">\n'
+            '    <wp:posOffset>%d</wp:posOffset>\n'
+            '  </wp:positionH>\n'
+            '  <wp:positionV relativeFrom="line">\n'
+            '    <wp:posOffset>%d</wp:posOffset>\n'
+            '  </wp:positionV>\n'                    
+            '  <wp:extent cx="914400" cy="914400"/>\n'
+            '  <wp:wrapNone/>\n'
+            '  <wp:docPr id="666" name="unnamed"/>\n'
+            '  <wp:cNvGraphicFramePr>\n'
+            '    <a:graphicFrameLocks noChangeAspect="1"/>\n'
+            '  </wp:cNvGraphicFramePr>\n'
+            '  <a:graphic>\n'
+            '    <a:graphicData uri="URI not set"/>\n'
+            '  </a:graphic>\n'
+            '</wp:anchor>' % ( nsdecls('wp', 'a', 'pic', 'r'), int(pos_x), int(pos_y) )
+        )
+
+register_element_cls('wp:anchor', CT_Anchor)
+
+
+def add_float_image(p, image_path_or_stream, width=None, height=None, pos_x=None, pos_y=None):
+    ''' Add float image behind text.
+        ---
+        Args:
+        - p: docx Paragraph object this picture belongs to
+        - image_path_or_stream: image path or stream
+        - width, height: displaying width, height of picture
+        - pos_x, pos_y: positions (English Metric Units) to the top-left point of page valid region
+    '''
+    run = p.add_run()
+    # parameters for picture, e.g. id, name
+    rId, image = run.part.get_or_add_image(image_path_or_stream)
+    cx, cy = image.scaled_dimensions(width, height)
+    shape_id, filename = run.part.next_id, image.filename
+    anchor = CT_Anchor.new_pic_anchor(shape_id, rId, filename, cx, cy, pos_x, pos_y)
+    run._r.add_drawing(anchor)
+
+
+# ---------------------------------------------------------
+# table properties
+# ---------------------------------------------------------
 def indent_table(table, indent:float):
     ''' indent table.
         ---

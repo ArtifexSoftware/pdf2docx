@@ -76,8 +76,8 @@ class ImagesExtractor:
             # should always wrap getImageBbox in a try-except clause, per
             # https://github.com/pymupdf/PyMuPDF/issues/487
             try:
-                # item = list(item)
-                # item[-1] = 0
+                item = list(item)
+                item[-1] = 0
                 bbox = page.getImageBbox(item) # item[7]: name entry of such an item
             except ValueError:
                 continue
