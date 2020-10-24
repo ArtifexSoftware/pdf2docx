@@ -591,7 +591,14 @@ class Blocks(Collection):
         # page break. The solution is to never put a table at the end of a page, so add
         # an empty paragraph and reset its format, particularly line spacing, when a table
         # is created.
-        if bool(self) and self._instances[-1].is_table_block():
+        for block in self._instances[::-1]:
+            # ignore float image block
+            if block.is_float_image_block(): continue
+
+            # nothing to do if not end with table block
+            if not block.is_table_block(): break
+
+            # otherwise, add a small paragraph
             p = doc.add_paragraph()
             reset_paragraph_format(p, Pt(constants.MINOR_DIST)) # a small line height
 
