@@ -11,6 +11,7 @@ layout.json
 *coverage*
 
 issue-*/
+feature-*/
 
 # building dir
 build/

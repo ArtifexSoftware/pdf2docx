@@ -14,6 +14,7 @@ class BlockType(Enum):
     IMAGE = 1
     LATTICE_TABLE = 2
     STREAM_TABLE = 3
+    FLOAT_IMAGE = 4
 
 
 class RectType(Enum):

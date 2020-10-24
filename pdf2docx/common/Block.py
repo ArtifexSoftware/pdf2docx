@@ -38,7 +38,13 @@ class Block(BBox):
         return self._type==BlockType.TEXT
 
     def is_image_block(self):
+        return self.is_inline_image_block() or self.is_float_image_block()
+    
+    def is_inline_image_block(self):
         return self._type==BlockType.IMAGE
+    
+    def is_float_image_block(self):
+        return self._type==BlockType.FLOAT_IMAGE
 
     def is_lattice_table_block(self):
         return self._type==BlockType.LATTICE_TABLE
@@ -52,8 +58,11 @@ class Block(BBox):
     def set_text_block(self):
         self._type = BlockType.TEXT
 
-    def set_image_block(self):
+    def set_inline_image_block(self):
         self._type = BlockType.IMAGE
+
+    def set_float_image_block(self):
+        self._type = BlockType.FLOAT_IMAGE
 
     def set_lattice_table_block(self):
         self._type = BlockType.LATTICE_TABLE

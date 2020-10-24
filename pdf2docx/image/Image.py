@@ -52,10 +52,22 @@ class ImagesExtractor:
 
     @classmethod
     def clip_page(cls, page:fitz.Page, bbox:fitz.Rect, zoom:float=3.0):
-        '''Clip pixmap according to bbox from page.'''
+        '''Clip pixmap (without text) according to bbox from page.
+        '''
+        # hide text before clip the image only
+        # render Tr: set the text rendering mode
+        # - 3: neither fill nor stroke the text -> invisible
+        # read more:
+        # - https://github.com/pymupdf/PyMuPDF/issues/257
+        # - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/pdf_reference_archives/PDFReference.pdf
+        doc = page.parent
+        for xref in page._getContents():
+            stream = doc._getXrefStream(xref).replace(b'BT', b' BT 3 Tr')
+            doc._updateStream(xref, stream)
+        
         # improve resolution
         # - https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-increase-image-resolution
-        # - https://github.com/pymupdf/PyMuPDF/issues/181        
+        # - https://github.com/pymupdf/PyMuPDF/issues/181
         image = page.getPixmap(clip=bbox, matrix=fitz.Matrix(zoom, zoom)) # type: fitz.Pixmap
         return cls.to_raw_dict(image, bbox)
 
@@ -73,13 +85,17 @@ class ImagesExtractor:
         # (xref, smask, width, height, bpc, colorspace, ...)
         images = []
         for item in page.getImageList(full=True):
-            
             # should always wrap getImageBbox in a try-except clause, per
             # https://github.com/pymupdf/PyMuPDF/issues/487
             try:
-                bbox = page.getImageBbox(item[7]) # item[7]: name entry of such an item
+                item = list(item)
+                item[-1] = 0
+                bbox = page.getImageBbox(item) # item[7]: name entry of such an item
             except ValueError:
                 continue
+
+            # ignore images outside page
+            if not bbox.intersects(page.rect): continue
 
             pix = recover_pixmap(doc, item)
 

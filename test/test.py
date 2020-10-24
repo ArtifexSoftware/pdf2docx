@@ -67,7 +67,8 @@ class Utility:
     def verify_layout(self, threshold=0.95):
         ''' Check layout between benchmark and parsed one.'''
         self._check_text_layout(threshold)
-        self._check_image_layout(threshold)
+        self._check_inline_image_layout(threshold)
+        self._check_float_image_layout(threshold)
         self._check_table_layout(threshold)
 
 
@@ -92,7 +93,7 @@ class Utility:
                     assert matched, f'\n{msg}'
 
 
-    def _check_image_layout(self, threshold):
+    def _check_inline_image_layout(self, threshold):
         '''Check image layout: bbox and vertical spacing.'''
         sample_image_spans = self.sample.blocks.image_spans(level=1)
         test_image_spans = self.test.blocks.image_spans(level=1)
@@ -103,6 +104,21 @@ class Utility:
 
         # check each image
         for sample, test in zip(sample_image_spans, test_image_spans):
+            matched, msg = test.compare(sample, threshold)
+            assert matched, f'\n{msg}'
+    
+
+    def _check_float_image_layout(self, threshold):
+        '''Check image layout: bbox and vertical spacing.'''
+        sample_float_images = self.sample.blocks.floating_image_blocks
+        test_float_images = self.test.blocks.floating_image_blocks
+
+        # count of images
+        m, n = len(sample_float_images), len(test_float_images)
+        assert m==n, f"\nThe count of image blocks {n} is inconsistent with sample {m}"
+
+        # check each image
+        for sample, test in zip(sample_float_images, test_float_images):
             matched, msg = test.compare(sample, threshold)
             assert matched, f'\n{msg}'
 
