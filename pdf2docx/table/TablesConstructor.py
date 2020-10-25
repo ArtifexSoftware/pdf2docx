@@ -51,7 +51,7 @@ class TablesConstructor:
             group_fills = fills.contained_in_bbox(strokes.bbox)
 
             # parse table structure
-            table = self.parse_structure(strokes, group_fills, cell_adaptive=True)
+            table = TableStructure(strokes).parse(group_fills).to_table_block()
             tables.append(table)
 
         # check if any intersection with previously parsed tables
@@ -121,7 +121,7 @@ class TablesConstructor:
 
             # parse table structure
             strokes.sort_in_reading_order() # required
-            table = self.parse_structure(strokes, explicit_shadings, cell_adaptive=False) # needn't consider cell adaptive
+            table = TableStructure(strokes).parse(explicit_shadings).to_table_block()
             tables.append(table)
 
         # check if any intersection with previously parsed tables
@@ -131,54 +131,9 @@ class TablesConstructor:
             table.set_stream_table_block()
 
         # assign text contents to each table
-        self._blocks.assign_table_contents(unique_tables)        
+        self._blocks.assign_table_contents(unique_tables)
 
         return Blocks(unique_tables)
-
-    
-    def parse_structure(self, strokes:Shapes, fills:Shapes, cell_adaptive:bool=False):
-        '''Parse table structure from strokes and fills shapes.
-            ---
-            Args:
-            - strokes: Stroke shapes representing table border.
-            - fills  : Fill shapes representing table shading.
-            - cell_adaptive: construct stream borders deep into cell level if True.
-
-            NOTE: generally, cell borders of lattice table are defined by explicit strokes surrounding the cell.
-            In case floating blocks exist in cell, set cell_adaptive=True to constrcut implicit borders deep into
-            cell level, so that only flow blocks in each sub-cell.            
-        '''
-        # init table structure
-        table_structure = TableStructure(strokes)
-
-        # deep into cell if necessary
-        # NOTE:
-        # Currently, `cell_adaptive` is only available for lattice table with ONE CELL, considering the balance 
-        # between accommodating the above case and efficiency.
-        if cell_adaptive and table_structure.num_rows==1 and table_structure.num_cols==1:
-            # lines in cell
-            bbox = table_structure.bbox
-            lines = Lines()
-            for block in self._blocks.contained_in_bbox(bbox):
-                if block.is_text_block():
-                    lines.extend(block.lines)
-                else:
-                    lines.append(Line().update_bbox(block.bbox))
-            
-            if len(lines)>1:
-                # boundary borders
-                d = 1
-                inner_bbox = bbox + (d, d, -d, -d)
-                outer_bbox = bbox + (-d, -d, d, d)
-                outer_borders = TablesConstructor._outer_borders(inner_bbox, outer_bbox)
-
-                # rebuild table structure
-                strokes = TablesConstructor.stream_strokes(lines, outer_borders, strokes, Shapes())
-                table_structure = TableStructure(strokes)
-        
-        # parse and convert table structure to TableBlock
-        table = table_structure.parse(fills).to_table_block()
-        return table
 
 
     @staticmethod

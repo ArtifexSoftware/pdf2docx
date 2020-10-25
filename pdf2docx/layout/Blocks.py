@@ -18,7 +18,6 @@ from ..text.Lines import Lines
 from ..image.ImageBlock import FloatImageBlock, ImageBlock
 from ..table.TableBlock import TableBlock
 from ..table.Cell import Cell
-from . import Layout
 
 
 class Blocks(Collection):
@@ -217,70 +216,21 @@ class Blocks(Collection):
         return self
 
 
-    def assign_table_contents(self, tables):
+    def assign_table_contents(self, tables:list):
         '''Add Text/Image/table block lines to associated cells of given tables.'''
         if not tables: return
 
-        # collect text blocks in table region        
+        # assign blocks to table region        
         blocks_in_tables = [[] for _ in tables] # type: list[list[Block]]
         blocks = []   # type: list[Block]
         for block in self._instances:
-
-            # lines in block for further check if necessary
-            lines = block.lines if block.is_text_block() else []
-
-            # collect blocks contained in table region
-            # NOTE: there is a probability that only a part of a text block is contained in table region, 
-            # while the rest is in normal block region.
-            for table, blocks_in_table in zip(tables, blocks_in_tables):
-
-                # fully contained in one table
-                if table.bbox.contains(block.bbox):
-                    blocks_in_table.append(block)
-                    break
-                
-                # not possible in current table, then check next table
-                elif not table.bbox.intersects(block.bbox): continue
-                
-                # deep into line level for text block
-                elif block.is_text_block():
-                    text_block = TextBlock()
-                    rest_lines = []
-                    for line in lines:
-                        if table.bbox.intersects(line.bbox):
-                            text_block.add(line)
-                        else:
-                            rest_lines.append(line)
-                    
-                    # summary
-                    blocks_in_table.append(text_block)
-                    if rest_lines:
-                        lines = rest_lines # for forther check
-                    else:
-                        break # no more lines
+            self._assign_block_to_tables(block, tables, blocks_in_tables, blocks)
             
-            # Now, this block (or part of it) belongs to previous layout
-            else:
-                if block.is_table_block():
-                    blocks.append(block)
-                else:
-                    text_block = TextBlock()
-                    for line in lines:
-                        text_block.add(line)
-                    blocks.append(text_block)
-
         # assign blocks to associated cells
         for table, blocks_in_table in zip(tables, blocks_in_tables):
             # no contents for this table
             if not blocks_in_table: continue
-            for row in table:
-                for cell in row:
-                    if not cell: continue
-                    # check candidate blocks
-                    for block in blocks_in_table:
-                        cell.add(block)
-                    # process cell blocks further: ensure converting float layout to flow layout
-                    cell.blocks.join_horizontally().split_vertically()
+            table.set_table_contents(blocks_in_table)
 
         # sort in natural reading order and update layout blocks
         blocks.extend(tables)
@@ -387,16 +337,13 @@ class Blocks(Collection):
         # bbox of blocks
         # - page level, e.g. blocks in top layout
         # - table level, e.g. blocks in table cell
-        if isinstance(self.parent, Layout.Layout): 
-            bbox = self.parent.bbox
-
-        elif isinstance(self.parent, Cell):
+        if isinstance(self.parent, Cell):
             cell = self.parent
             x0,y0,x1,y1 = cell.bbox
             w_top, w_right, w_bottom, w_left = cell.border_width
-            bbox = (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
+            bbox = (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)        
         else:
-            return
+             bbox = self.parent.bbox
 
         # check text direction for vertical space calculation:
         # - normal reading direction (from left to right)    -> the reference boundary is top border, i.e. bbox[1].
@@ -433,7 +380,7 @@ class Blocks(Collection):
             start_pos = block.bbox[idx] - dw
             para_space = start_pos-ref_pos
 
-            # modify vertical space in case the block is out of bootom boundary
+            # modify vertical space in case the block is out of bottom boundary
             dy = max(block.bbox[idx+2]-bbox[idx+2], 0.0)
             para_space -= dy
             para_space = max(para_space, 0.0) # ignore negative value
@@ -460,8 +407,8 @@ class Blocks(Collection):
             # we can't set before space for table in docx, but the tricky way is to
             # create an empty paragraph and set paragraph line spacing and before space
             else:
-                block.before_space = max(para_space, constants.MINOR_DIST) # let para_space>=1 Pt to accommodate the dummy paragraph
-
+                # let para_space>=1 Pt to accommodate the dummy paragraph if not the first block
+                block.before_space = max(para_space, int(block!=self._instances[0])*constants.MINOR_DIST)
 
             # update reference block        
             ref_block = block
@@ -498,8 +445,7 @@ class Blocks(Collection):
             final_block = TextBlock()
             for block in blocks_collection:
                 if not block.is_text_block(): continue
-                for line in block.lines:
-                    final_block.add(line) # keep empty line, may help to identify table layout
+                final_block.add(block.lines) # keep empty line, may help to identify table layout
 
             # merge lines/spans contained in this text block
             # NOTE:            
@@ -585,13 +531,23 @@ class Blocks(Collection):
                 table.autofit = False
                 table.allow_autofit  = False
                 block.make_docx(table)
-                
+
+        # below table processing is necessary for page level
+        if isinstance(self.parent, Cell): return
+        
         # NOTE: If a table is at the end of a page, a new paragraph will be automatically 
         # added by the rending engine, e.g. MS Word, which resulting in an unexpected
         # page break. The solution is to never put a table at the end of a page, so add
         # an empty paragraph and reset its format, particularly line spacing, when a table
         # is created.
-        if bool(self) and self._instances[-1].is_table_block():
+        for block in self._instances[::-1]:
+            # ignore float image block
+            if block.is_float_image_block(): continue
+
+            # nothing to do if not end with table block
+            if not block.is_table_block(): break
+
+            # otherwise, add a small paragraph
             p = doc.add_paragraph()
             reset_paragraph_format(p, Pt(constants.MINOR_DIST)) # a small line height
 
@@ -617,4 +573,49 @@ class Blocks(Collection):
                 block.plot(page, content, style, color)
             else:
                 block.plot(page)
+
+
+    @staticmethod
+    def _assign_block_to_tables(block:Block, tables:list, blocks_in_tables:list, blocks:list):
+        '''Collect blocks contained in table region `blocks_in_tables` and rest text blocks in `blocks`.'''
+        # lines in block for further check if necessary
+        lines = block.lines if block.is_text_block() else Lines()
+
+        # collect blocks contained in table region
+        # NOTE: there is a probability that only a part of a text block is contained in table region, 
+        # while the rest is in normal block region.
+        for table, blocks_in_table in zip(tables, blocks_in_tables):
+
+            # fully contained in one table
+            if table.bbox.contains(block.bbox):
+                blocks_in_table.append(block)
+                break
+            
+            # not possible in current table, then check next table
+            elif not table.bbox.intersects(block.bbox): continue
+            
+            # deep into line level for text block
+            elif block.is_text_block():
+                table_lines, not_table_lines = lines.split_with_intersection(table.bbox)
+
+                # add lines to table
+                text_block = TextBlock()
+                text_block.add(table_lines)
+                blocks_in_table.append(text_block)
+
+                # lines not in table for further check
+                if not_table_lines:
+                    lines = not_table_lines
+                else:
+                    break # no more lines
+        
+        # Now, this block (or part of it) belongs to previous layout
+        else:
+            if block.is_table_block():
+                blocks.append(block)
+            else:
+                text_block = TextBlock()
+                text_block.add(lines)
+                blocks.append(text_block)
+
 

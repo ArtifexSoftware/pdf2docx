@@ -136,6 +136,15 @@ class Collection(BaseCollection, IText):
         return TextDirection.LEFT_RIGHT 
 
 
+    @property
+    def is_flow_layout(self):
+        '''Check if flow layout.'''
+        # not flow layout if exist two instances that horizontally aligned but not in same row
+        fun = lambda a, b: a.horizontally_align_with(b) and not a.in_same_row(b)
+        groups = self.group(fun)
+        return len(groups) == len(self)
+
+
     def from_dicts(self, *args, **kwargs):
         '''Construct Collection from a list of dict.'''
         raise NotImplementedError
@@ -213,5 +222,20 @@ class Collection(BaseCollection, IText):
             - bbox: fitz.Rect
         '''
         instances = list(filter(
-            lambda shape: bbox.contains(shape.bbox), self._instances))
+            lambda instance: bbox.contains(instance.bbox), self._instances))
         return self.__class__(instances)
+
+
+    def split_with_intersection(self, bbox):
+        ''' Split instances into two groups: one intersects with `bbox`, the other not.
+            ---
+            Args:
+            - bbox: fitz.Rect
+        '''
+        intersection, no_intersection = [], []
+        for instance in self._instances:
+            if bbox.intersects(instance.bbox):
+                intersection.append(instance)
+            else:
+                no_intersection.append(instance)
+        return self.__class__(intersection), self.__class__(no_intersection)

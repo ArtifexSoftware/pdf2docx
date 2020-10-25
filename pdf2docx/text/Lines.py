@@ -11,7 +11,8 @@ from docx.shared import Pt
 from .Line import Line
 from ..common import constants
 from ..common.Collection import Collection
-from ..common import docx
+from ..common.docx import add_stop
+from ..common.utils import get_main_bbox
 
 class Lines(Collection):
     '''Text line list.'''
@@ -65,16 +66,20 @@ class Lines(Collection):
         for line in self._instances:
 
             # first line
-            if not lines: lines.append(line)      
+            if not lines: lines.append(line)
+            
+            # ignore this line if overlap with previous line
+            elif get_main_bbox(lines[-1].bbox, line.bbox, threshold=constants.FACTOR_MOST):
+                print(f'Ignore Line "{line.text}" due to overlap')
 
             # add line directly if not aligned horizontally with previous line
-            elif not line.horizontally_align_with(lines[-1]):
+            elif not line.in_same_row(lines[-1]):
                 lines.append(line)
 
             # if it exists x-distance obviously to previous line,
             # take it as a separate line as it is
             elif abs(line.bbox.x0-lines[-1].bbox.x1) > constants.MINOR_DIST:
-                lines.append(line)
+                lines.append(line) 
 
             # now, this line will be append to previous line as a span
             else:
@@ -199,7 +204,7 @@ class Lines(Collection):
             # left indentation implemented with tab
             pos = block.left_space + (line.bbox[idx]-block.bbox[idx])
             if pos>block.left_space:
-                docx.add_stop(p, Pt(pos), Pt(current_pos))
+                add_stop(p, Pt(pos), Pt(current_pos))
 
             # add line
             line.make_docx(p)
