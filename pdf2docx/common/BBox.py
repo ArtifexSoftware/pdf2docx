@@ -154,6 +154,30 @@ class BBox(IText):
         return L1+L2-L>=factor*max(L1,L2)
 
 
+    def in_same_row(self, bbox):
+        ''' Check whether in same row/line with specified BBox instance. Note text direction.
+
+            taking horizontal text as an example:
+            - yes: the bottom edge of each box is lower than the centerline of the other one;
+            - otherwise, not in same row.
+
+            Note the difference with method `horizontally_align_with`. They may not in same line, though
+            aligned horizontally.
+        '''
+        if not bbox or self.text_direction != bbox.text_direction:
+            return False
+
+        # normal reading direction by default
+        idx = 1 if self.is_horizontal_text else 0
+
+        c1 = (self.bbox[idx] + self.bbox[idx+2]) / 2.0
+        c2 = (bbox.bbox[idx] + bbox.bbox[idx+2]) / 2.0
+
+        # Note y direction under PyMuPDF context
+        res = c1<=bbox.bbox[idx+2] and c2<=self.bbox[idx+2]
+        return res
+
+
     def copy(self):
         '''make a deep copy.'''
         return copy.deepcopy(self)    

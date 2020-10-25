@@ -13,6 +13,8 @@ from ..common.BBox import BBox
 from ..common.utils import RGB_component
 from ..common import docx
 from ..layout import Blocks # avoid import conflict
+from ..text.Line import Line
+from ..text.Lines import Lines
 
 
 class Cell(BBox):
@@ -129,10 +131,40 @@ class Cell(BBox):
         
         # NOTE: add each line as a single text block to avoid overlap between table block and combined lines
         split_block = TextBlock()
-        for line in block.lines:
-            L = line.intersects(self.bbox)
-            split_block.add(L)
+        lines = [line.intersects(self.bbox) for line in block.lines]
+        split_block.add(lines)
         self.blocks.append(split_block)
+
+
+    def set_stream_table_layout(self):
+        '''Set stream table layout to ensure any float layout converted to flow layout.'''
+        # create nest table if float layout still exists
+        from .TablesConstructor import TablesConstructor
+        from .TableStructure import TableStructure
+
+        # bbox range of stream table
+        inner_bbox, outer_bbox = self.bbox, self.bbox
+        outer_borders = TablesConstructor._outer_borders(inner_bbox, outer_bbox)
+
+        # stream table contents        
+        def sub_lines(block): # get sub-lines from block
+            return block.lines if block.is_text_block() else [Line().update_bbox(block.bbox)]
+        table_lines = Lines()
+        for block in self.blocks:
+            table_lines.extend(sub_lines(block))
+
+        # parse stream borders
+        strokes = TablesConstructor.stream_strokes(table_lines, outer_borders, showing_borders=[], showing_shadings=[])
+        if not strokes: return
+
+        # parse table structure
+        strokes.sort_in_reading_order() # required
+        table = TableStructure(strokes).parse(fills=[]).to_table_block()
+        if not table: return
+
+        # parse table content
+        table.set_stream_table_block()
+        self.blocks.assign_table_contents([table])
 
 
     def make_docx(self, table, indexes):
