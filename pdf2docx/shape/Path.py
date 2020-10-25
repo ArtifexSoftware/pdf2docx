@@ -7,258 +7,182 @@ Objects representing PDF path (both stroke and filling) parsed from both pdf raw
 @author: train8808@gmail.com
 ---
 
-Paths are created based on DICT data extracted from `pdf2docx.common.pdf` module:
-- Stroke path:
-    {
-        'stroke': True,
-        'curve' : is_curve, # whether curve path segments exists
-        'points': t_path,
-        'color' : color,
-        'width' : w
-    }
-- Fill path:
-    {
-        'stroke': False,
-        'curve' : is_curve, # whether curve path segments exists
-        'points': t_path,
-        'color' : color
-    }
+Paths are created based on DICT data extracted by `page.getDrawings()` (PyMuPDF >= 1.18.0)
+- https://pymupdf.readthedocs.io/en/latest/page.html#Page.getDrawings
+- https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
+
+{
+    'color': (x,x,x) or None,  # stroke color
+    'fill' : (x,x,x) or None,  # fill color
+    'width': float,            # line width
+    'closePath': bool,         # whether to connect last and first point
+    'rect' : rect,             # page area covered by this path
+    'items': [                 # list of draw commands: lines, rectangle or curves.
+        ("l", p1, p2),         # a line from p1 to p2
+        ("c", p1, p2, p3, p4), # cubic Bézier curve from p1 to p4, p2 and p3 are the control points
+        ("re", rect),          # a rect
+    ],
+    ...
+}
 '''
 
 
 import fitz
-from ..common.base import lazyproperty
-from ..common import pdf, constants
-from ..common.Collection import BaseCollection
-from ..common.utils import RGB_component, get_main_bbox
-from ..image.Image import ImagesExtractor
+from ..common.utils import RGB_value
 
-class PathsExtractor:
-    '''Extract paths from PDF.'''
 
-    def __init__(self): self.paths = Paths()
+class L:
+    '''Line path with source ("l", p1, p2)'''
+    def __init__(self, item):
+        self.p1, self.p2 = item[1:]    
+
+    @property
+    def is_iso_oriented(self):
+        x0, y0 = self.p1
+        x1, y1 = self.p2
+        return abs(x1-x0)<=1e-3 or abs(y1-y0)<=1e-3
+
+    def to_strokes(self, width:float, color:list):
+        strokes = []
+        strokes.append({
+                'start': tuple(self.p1),
+                'end'  : tuple(self.p2),
+                'width': width,
+                'color': RGB_value(color)
+            })
+        return strokes
+
+class R:
+    '''Rect path with source ("re", rect)'''
+    def __init__(self, item):
+        self.rect = item[1]
+
+    @property
+    def is_iso_oriented(self): return True
+
+    def to_strokes(self, width:float, color:list):
+        # corner points
+        x0, y0, x1, y1 = self.rect
+        points = [
+            (x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)
+            ]
+        # connect each line
+        strokes = []
+        for i in range(len(points)-1):
+            strokes.append({
+                    'start': points[i],
+                    'end'  : points[i+1],
+                    'width': width,
+                    'color': RGB_value(color)
+                })
+        return strokes
     
 
-    def extract_paths(self, page:fitz.Page):
-        ''' Convert extracted paths to DICT attributes:
-            - bitmap converted from vector graphics if necessary
-            - iso-oriented paths
-            
-            NOTE: the target is to extract horizontal/vertical paths for table parsing, while others
-            are converted to bitmaps.
-        '''
-        # get raw paths
-        self._parse_page(page)
-
-        # ------------------------------------------------------------
-        # ignore vector graphics
-        # ------------------------------------------------------------
-        if constants.IGNORE_VEC_GRAPH:
-            iso_paths = self.paths.to_iso_paths()
-            return [], iso_paths
-
-        # ------------------------------------------------------------
-        # convert vector graphics to bitmap
-        # ------------------------------------------------------------ 
-        # group connected paths -> each group is a potential vector graphic
-        paths_list = self.paths.group_by_connectivity(dx=0.0, dy=0.0)
-
-        # ignore anything covered by vector graphic, so group paths further
-        fun = lambda a,b: get_main_bbox(a.bbox, b.bbox, constants.FACTOR_SAME)
-        paths_group_list = BaseCollection(paths_list).group(fun)
-
-        iso_paths, pixmaps = [], []
-        for paths_group in paths_group_list:
-            largest = max(paths_group, key=lambda paths: paths.bbox.getArea())
-            if largest.contains_curve(constants.FACTOR_A_FEW):
-                image = largest.to_image(page, constants.FACTOR_RES, constants.FACTOR_ALMOST)
-            else:
-                image = None
-
-            # ignore anything under vector graphic
-            if image:
-                pixmaps.append(image)
-                continue
-
-            # otherwise, add each paths
-            for paths in paths_group:
-                # can't be a table if curve path exists
-                if paths.contains_curve(constants.FACTOR_A_FEW):
-                    image = paths.to_image(page, constants.FACTOR_RES, constants.FACTOR_ALMOST)
-                    if image: pixmaps.append(image)
-                # keep potential table border paths
-                else:
-                    iso_paths.extend(paths.to_iso_paths())
-
-        return pixmaps, iso_paths
-
+class C:
+    '''Bezier curve path with source ("c", p1, p2, p3, p4)'''
+    def __init__(self, item):
+        self.p1, self.p2, self.p3, self.p4 = item[1:]
     
-    def _parse_page(self, page:fitz.Page):
-        '''Extract paths from PDF page.'''
-        # paths from pdf source
-        raw_paths = pdf.paths_from_stream(page)
+    @property
+    def is_iso_oriented(self): return False
 
-        # paths from pdf annotation
-        _ = pdf.paths_from_annotations(page)
-        raw_paths.extend(_)
-
-        # init Paths
-        instances = [Path(raw_path) for raw_path in raw_paths]
-        self.paths.reset(instances)
-    
-    
-class Paths(BaseCollection):
-    '''A collection of paths.'''
-    
-    @lazyproperty
-    def bbox(self):
-        bbox = fitz.Rect()
-        for instance in self._instances: bbox |= instance.bbox
-        return bbox
-    
-    def contains_curve(self, ratio:float):
-        ''' Whether any curve paths exist. 
-            The criterion: the area ratio of all non-iso-oriented paths >= `ratio`
-        '''
-        bbox = fitz.Rect()
-        for path in self._instances:            
-            if not path.is_iso_oriented(constants.FACTOR_A_FEW): 
-                bbox |= path.bbox
-
-        return bbox.getArea()/self.bbox.getArea() >= ratio
-    
-    def append(self, path): self._instances.append(path)
-
-    def reset(self, paths:list): self._instances = paths
-
-    def plot(self, doc:fitz.Document, title:str, width:float, height:float):
-        if not self._instances: return
-        # insert a new page
-        page = pdf.new_page(doc, width, height, title)
-        for path in self._instances: path.plot(page)    
-
-    
-    def to_image(self, page:fitz.Page, zoom:float, ratio:float):
-        '''Convert to image block dict.
-            ---
-            Args:
-            - page: current pdf page
-            - zoom: zoom in factor to improve resolution in x- abd y- direction
-            - ratio: don't convert to image if the size of image exceeds this value,
-            since we don't prefer converting the whole page to an image.
-        '''
-        # NOTE: the image size shouldn't exceed a limitation.
-        if self.bbox.getArea()/page.rect.getArea()>=ratio:
-            return None
-        
-        return ImagesExtractor.clip_page(page, self.bbox, zoom)
-    
-
-    def to_iso_paths(self):
-        '''Convert contained paths to iso strokes and rectangular fills.'''
-        paths = []
-        for path in self._instances:
-            if path.stroke:
-                paths.extend(path.to_iso_strokes())
-            else:
-                paths.append(path.to_rectangular_fill())
-
-        return paths
+    def to_strokes(self, width:float, color:list):
+        '''Curve path doesn't contribute to table parsing.'''
+        return None   
 
 
 class Path:
     '''Path extracted from PDF, either a stroke or filling.'''
 
-    def __init__(self, raw:dict={}):
+    def __init__(self, raw:dict=None):
         '''Init path in un-rotated page CS.'''
-        self.points = []
-        for x,y in raw.get('points', []): # [(x0,y0), (x1, y1)]
-            round_point = (round(x,1), round(y,1))
-            self.points.append(round_point)
+        # all path properties
+        self.raw = raw if raw else {}
 
-        # stroke (by default) or fill path
-        self.stroke = raw.get('stroke', True)
+        # path area
+        self.bbox = self.raw.get('rect', fitz.Rect())
 
-        # stroke/fill color
-        self.color = raw.get('color', 0)
-
-        # width if stroke
-        self.width = raw.get('width', 0.0)
-
-        self.bbox = self.fun_bbox()
-    
-
-    def fun_bbox(self):
-        '''Boundary box in PyMuPDF page CS (without rotation).'''
-        # if self._bbox is None:
-        X = [p[0] for p in self.points]
-        Y = [p[1] for p in self.points]
-        x0, x1 = min(X), max(X)
-        y0, y1 = min(Y), max(Y)
-
-        h = self.width / 2.0
-        # NOTE: use tuple here has a much higher efficiency than fizt.Rect()
-        bbox = fitz.Rect(x0-h, y0-h, x1+h, y1+h) if self.stroke else fitz.Rect(x0, y0, x1, y1)
-        
-        return bbox
+        # command list
+        self.items = [] # type: list[L or R or C]
+        for item in self.raw.get('items', []):
+            if item[0] == 'l':
+                self.items.append(L(item))
+            elif item[0] == 're':
+                self.items.append(R(item))
+            elif item[0] == 'c':
+                self.items.append(C(item))
 
 
-    def is_iso_oriented(self, ratio:float):
-        '''Whether contains only horizontal/vertical path segments.
-            Criterion: the length ratio of curved path segments doesn't exceed the defined ratio.
-        '''
-        L_sum, L_curve = 1e-6, 0.0
-        for i in range(len(self.points)-1):
-            # start point
-            x0, y0 = self.points[i]
-            # end point
-            x1, y1 = self.points[i+1]
+    @property
+    def is_stroke(self): self.raw.get('color', None) is not None
 
-            # segment length
-            L = ( (y1-y0)**2 + (x1-x0)**2 ) ** 0.5
-            L_sum += L
+    @property
+    def is_fill(self): self.raw.get('fill', None) is not None
 
-            # curved segment
-            if x0!=x1 and y0!=y1: L_curve += L
-
-        return L_curve/L_sum < ratio
+    @property
+    def is_iso_oriented(self):
+        for item in self.items:
+            if not item.is_iso_oriented: return False
+        return True
 
 
-    def to_iso_strokes(self):
-        ''' Convert stroke path to line segments. 
+    def to_shapes(self):
+        '''Convert path to shapes: stroke or fill.'''
+        stroke_color = self.raw.get('color', None)
+        fill_color = self.raw.get('fill', None)
+        width = self.raw.get('width', 0.0)
 
-            NOTE: Consider horizontal or vertical lines only since such lines contribute to 
-            parsing table borders, text underlines.
-        '''
-        strokes = []
-        for i in range(len(self.points)-1):
-            # start point
-            x0, y0 = self.points[i]
-            # end point
-            x1, y1 = self.points[i+1]
+        iso_shapes = []
 
-            # horizontal or vertical lines only
-            if x0!=x1 and y0!=y1: continue
+        # convert to strokes
+        if not stroke_color is None:
+            iso_shapes.extend(self.to_strokes(width, stroke_color))
 
-            strokes.append({
-                'start': (x0, y0),
-                'end'  : (x1, y1),
-                'width': self.width,
-                'color': self.color
-            })
-        
+        # convert to rectangular fill
+        if not fill_color is None:
+            iso_shapes.append(self.to_fill(fill_color))
+
+        return iso_shapes
+
+
+    def to_strokes(self, width:float, color:list):
+        '''Convert path segments to strokes.'''
+        strokes = []        
+        for segment in self.items:
+            strokes.extend(segment.to_strokes(width, color))        
         return strokes
 
 
-    def to_rectangular_fill(self):
+    def to_fill(self, color:list):
         '''Convert fill path to rectangular bbox, thought the real filling area is not a rectangle.'''
         return {
             'bbox': list(self.bbox), 
-            'color': self.color
+            'color': RGB_value(color)
         }
 
 
-    def plot(self, page):
-        color = [c/255.0 for c in RGB_component(self.color)]
-        fill_color = None if self.stroke else color
-        page.drawPolyline(self.points, color=color, fill=fill_color, width=self.width, overlay=True)
+    def plot(self, canvas):
+        ''' Plot path https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
+        '''
+        for item in self.raw.get('items', []):
+            # draw each entry of the 'items' list
+            if item[0] == "l":  # line
+                canvas.drawLine(item[1], item[2])
+            elif item[0] == "re":  # rectangle
+                canvas.drawRect(item[1])
+            elif item[0] == "c":  # curve
+                canvas.drawBezier(item[1], item[2], item[3], item[4])
+
+            # now apply the common properties to finish the path
+            canvas.finish(
+                fill=self.raw["fill"],  # fill color
+                color=self.raw["color"],  # line color
+                dashes=self.raw["dashes"],  # line dashing
+                even_odd=self.raw["even_odd"],  # control color of overlaps
+                closePath=self.raw["closePath"],  # whether to connect last and first point
+                lineJoin=self.raw["lineJoin"],  # how line joins should look like
+                lineCap=max(self.raw["lineCap"]),  # how line ends should look like
+                width=self.raw["width"],  # line width
+                stroke_opacity=self.raw["opacity"],  # same value for both
+                fill_opacity=self.raw["opacity"],  # opacity parameters
+                )

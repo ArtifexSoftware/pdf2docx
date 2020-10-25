@@ -9,7 +9,7 @@ import fitz
 from docx import Document
 
 from .layout.Layout import Layout
-from .shape.Path import PathsExtractor
+from .shape.Paths import PathsExtractor
 from .image.Image import ImagesExtractor
 
 

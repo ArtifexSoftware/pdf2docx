@@ -37,7 +37,7 @@ def RGB_component(srgb:int):
     return [int(s[i:i+2], 16) for i in [0, 2, 4]]
 
 
-def RGB_value(rgb:list):
+def RGB_to_value(rgb:list):
     '''RGB components to decimal value, e.g. (1,0,0) -> 16711680'''
     res = 0
     for (i,x) in enumerate(rgb):
@@ -50,8 +50,29 @@ def CMYK_to_RGB(c:float, m:float, y:float, k:float, cmyk_scale:float=100):
     r = (1.0 - c / float(cmyk_scale)) * (1.0 - k / float(cmyk_scale))
     g = (1.0 - m / float(cmyk_scale)) * (1.0 - k / float(cmyk_scale))
     b = (1.0 - y / float(cmyk_scale)) * (1.0 - k / float(cmyk_scale))
-    res = RGB_value((r, g, b)) # type: int
+    res = RGB_to_value([r, g, b]) # type: int
     return res
+
+
+def RGB_value(components:list):
+    '''Gray/RGB/CMYK mode components to color value.'''
+    num = len(components)
+    # CMYK mode
+    if num==4:
+        c, m, y, k = map(float, components)
+        color = CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)
+    # RGB mode
+    elif num==3:
+        r, g, b = map(float, components)
+        color = RGB_to_value([r, g, b])
+    # gray mode
+    elif num==1:
+        g = float(components[0])
+        color = RGB_to_value([g,g,g])    
+    else:
+        color = 0
+
+    return color
 
 
 def get_main_bbox(bbox_1:fitz.Rect, bbox_2:fitz.Rect, threshold:float=0.95):

@@ -104,10 +104,10 @@ class Stroke(Shape):
 
 
     @property
-    def horizontal(self): return self._start[1] == self._end[1]
+    def horizontal(self): return abs(self._start[1]-self._end[1])<1e-3
 
     @property
-    def vertical(self): return self._start[0] == self._end[0]
+    def vertical(self): return abs(self._start[0]-self._end[0])<1e-3
 
     @property
     def x0(self): return self._start.x
