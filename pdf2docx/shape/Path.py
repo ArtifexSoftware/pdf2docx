@@ -7,10 +7,7 @@ Objects representing PDF path (both stroke and filling) parsed from both pdf raw
 @author: train8808@gmail.com
 ---
 
-Paths are created based on DICT data extracted by `page.getDrawings()` (PyMuPDF >= 1.18.0)
-- https://pymupdf.readthedocs.io/en/latest/page.html#Page.getDrawings
-- https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
-
+Data structure based on results of `page.getDrawings()`:
 {
     'color': (x,x,x) or None,  # stroke color
     'fill' : (x,x,x) or None,  # fill color
@@ -26,8 +23,6 @@ Paths are created based on DICT data extracted by `page.getDrawings()` (PyMuPDF 
 }
 '''
 
-
-import fitz
 from ..common.utils import RGB_value
 
 
@@ -93,7 +88,7 @@ class C:
 
 
 class Path:
-    '''Path extracted from PDF, either a stroke or filling.'''
+    '''Path extracted from PDF, either/both a stroke or/and a filling.'''
 
     def __init__(self, raw:dict=None):
         '''Init path in un-rotated page CS.'''
@@ -101,11 +96,11 @@ class Path:
         self.raw = raw if raw else {}
 
         # path area
-        self.bbox = self.raw.get('rect', fitz.Rect())
+        self.bbox = self.raw['rect']
 
         # command list
         self.items = [] # type: list[L or R or C]
-        for item in self.raw.get('items', []):
+        for item in self.raw['items']:
             if item[0] == 'l':
                 self.items.append(L(item))
             elif item[0] == 're':
@@ -128,7 +123,7 @@ class Path:
 
 
     def to_shapes(self):
-        '''Convert path to shapes: stroke or fill.'''
+        ''' Convert path to shapes: stroke or fill.'''
         stroke_color = self.raw.get('color', None)
         fill_color = self.raw.get('fill', None)
         width = self.raw.get('width', 0.0)
@@ -155,7 +150,7 @@ class Path:
 
 
     def to_fill(self, color:list):
-        '''Convert fill path to rectangular bbox, thought the real filling area is not a rectangle.'''
+        '''Convert fill path to rectangular bbox, though the real filling area is not a rectangle.'''
         return {
             'bbox': list(self.bbox), 
             'color': RGB_value(color)
@@ -176,14 +171,14 @@ class Path:
 
         # now apply the common properties to finish the path
         canvas.finish(
-            fill=self.raw["fill"],  # fill color
-            color=self.raw["color"],  # line color
-            dashes=self.raw["dashes"],  # line dashing
-            even_odd=self.raw["even_odd"],  # control color of overlaps
-            closePath=self.raw["closePath"],  # whether to connect last and first point
-            lineJoin=self.raw["lineJoin"],  # how line joins should look like
-            lineCap=max(self.raw["lineCap"]),  # how line ends should look like
-            width=self.raw["width"],  # line width
-            stroke_opacity=self.raw["opacity"],  # same value for both
-            fill_opacity=self.raw["opacity"]  # opacity parameters
+            fill=self.raw.get("fill", None),  # fill color
+            color=self.raw.get("color", None),  # line color
+            dashes=self.raw.get("dashes", None),  # line dashing
+            even_odd=self.raw.get("even_odd", False),  # control color of overlaps
+            closePath=self.raw.get("closePath", True),  # whether to connect last and first point
+            lineJoin=self.raw.get("lineJoin", 0),  # how line joins should look like
+            lineCap=max(self.raw["lineCap"]) if "lineCap" in self.raw else 0,  # how line ends should look like
+            width=self.raw.get("width", 1),  # line width
+            stroke_opacity=self.raw.get("opacity", 1),  # same value for both
+            fill_opacity=self.raw.get("opacity", 1)  # opacity parameters
             )

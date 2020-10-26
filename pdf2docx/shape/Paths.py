@@ -1,29 +1,20 @@
 # -*- coding: utf-8 -*-
 
 '''
-Objects representing PDF path (both stroke and filling) parsed from both pdf raw streams and annotations.
+Objects representing PDF path (both stroke and filling) parsed from:
+- Source paths extracted by `page.getDrawings()` (PyMuPDF >= 1.18.0)
+- Annotation paths like Line, Square and Highlight
+
+Regarding extracting source path:
+- https://pymupdf.readthedocs.io/en/latest/page.html#Page.getDrawings
+- https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
+
+Regarding annotation path:
+- https://pymupdf.readthedocs.io/en/latest/annot.html
+- https://pymupdf.readthedocs.io/en/latest/vars.html#annotation-types
 
 @created: 2020-09-22
 @author: train8808@gmail.com
----
-
-Paths are created based on DICT data extracted by `page.getDrawings()` (PyMuPDF >= 1.18.0)
-- https://pymupdf.readthedocs.io/en/latest/page.html#Page.getDrawings
-- https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings-
-
-{
-    'color': (x,x,x) or None,  # stroke color
-    'fill' : (x,x,x) or None,  # fill color
-    'width': float,            # line width
-    'closePath': bool,         # whether to connect last and first point
-    'rect' : rect,             # page area covered by this path
-    'items': [                 # list of draw commands: lines, rectangle or curves.
-        ("l", p1, p2),         # a line from p1 to p2
-        ("c", p1, p2, p3, p4), # cubic Bézier curve from p1 to p4, p2 and p3 are the control points
-        ("re", rect),          # a rect
-    ],
-    ...
-}
 '''
 
 
@@ -34,7 +25,7 @@ from ..common.Collection import BaseCollection
 from ..common.utils import get_main_bbox
 from ..image.Image import ImagesExtractor
 from .Path import Path
-
+from .Annot import Annot
 
 class PathsExtractor:
     '''Extract paths from PDF.'''
@@ -51,7 +42,7 @@ class PathsExtractor:
             are converted to bitmaps.
         '''
         # get raw paths
-        self._parse_page(page)
+        self.parse_page(page)
 
         # ------------------------------------------------------------
         # ignore vector graphics
@@ -96,7 +87,7 @@ class PathsExtractor:
         return pixmaps, iso_paths
 
     
-    def _parse_page(self, page:fitz.Page):
+    def parse_page(self, page:fitz.Page):
         '''Extract paths from PDF page.'''
         # extract paths from pdf source: PyMuPDF >= 1.18.0
         # Currently no clip path considered, so may exist paths out of page, which is to be processed
@@ -104,12 +95,19 @@ class PathsExtractor:
         raw_paths = page.getDrawings()
 
         # paths from pdf annotation
-        # _ = pdf.paths_from_annotations(page)
-        # raw_paths.extend(_)
+        raw_paths.extend(self.annotation_to_paths(page))
 
         # init Paths
         instances = [Path(raw_path) for raw_path in raw_paths]
         self.paths.reset(instances)
+    
+
+    @staticmethod
+    def annotation_to_paths(page):
+        ''' Extract paths from annotation, e.g. Line, Square, Highlight.'''
+        paths = []
+        for annot in page.annots(): paths.extend(Annot(annot).to_paths())
+        return paths
     
     
 class Paths(BaseCollection):
