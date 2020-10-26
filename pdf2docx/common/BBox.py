@@ -218,6 +218,6 @@ class BBox(IText):
         return { 'bbox': tuple([x for x in self.bbox]) }
 
     
-    def plot(self, page, stroke:tuple=(0,0,0), width:float=0.5, fill:tuple=None):
+    def plot(self, page, stroke:tuple=(0,0,0), width:float=0.5, fill:tuple=None, dashes:str=None):
         '''Plot bbox in PDF page.'''
-        page.drawRect(self.bbox, color=stroke, fill=fill, width=width, overlay=False)
+        page.drawRect(self.bbox, color=stroke, fill=fill, width=width, dashes=dashes, overlay=False, fill_opacity=0.5)

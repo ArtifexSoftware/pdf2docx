@@ -119,7 +119,7 @@ class TextBlock(Block):
         '''
         # block border in blue
         blue = RGB_component_from_name('blue')   
-        super().plot(page, stroke=blue)
+        super().plot(page, stroke=blue, dashes='[3.0 3.0] 0')
 
         # lines and spans
         for line in self.lines:
