@@ -16,7 +16,8 @@ import fitz
 from ..common.base import lazyproperty
 from ..common import constants
 from ..common.Collection import BaseCollection
-from ..common.utils import get_main_bbox, new_page
+from ..common.utils import new_page
+from ..common.BBox import BBox
 from ..image.Image import ImagesExtractor
 from .Path import Path
 
@@ -52,7 +53,7 @@ class PathsExtractor:
         paths_list = self.paths.group_by_connectivity(dx=0.0, dy=0.0)
 
         # ignore anything covered by vector graphic, so group paths further
-        fun = lambda a,b: get_main_bbox(a.bbox, b.bbox, constants.FACTOR_SAME)
+        fun = lambda a,b: BBox().update_bbox(a.bbox).get_main_bbox(b, constants.FACTOR_SAME)
         paths_group_list = BaseCollection(paths_list).group(fun)
 
         iso_paths, pixmaps = [], []

@@ -285,7 +285,7 @@ class TextSpan(BBox):
         # highlight: both the rect height and overlap must be large enough
         if h_rect >= 0.5*h_span:
             # In general, highlight color isn't white
-            if rect.color != utils.RGB_value((1,1,1)) and utils.get_main_bbox(self.bbox, rect.bbox, constants.FACTOR_MAJOR): 
+            if rect.color != utils.RGB_value((1,1,1)) and self.get_main_bbox(rect, constants.FACTOR_MAJOR): 
                 rect.type = RectType.HIGHLIGHT
     
         # near to bottom of span? yes, underline
@@ -332,7 +332,7 @@ class TextSpan(BBox):
         span.update_bbox((0.0,0.0,0.0,0.0))
 
         for char in self.chars:
-            if utils.get_main_bbox(char.bbox, rect, constants.FACTOR_A_HALF): # contains at least a half part
+            if char.get_main_bbox(rect, constants.FACTOR_A_HALF): # contains at least a half part
                 span.chars.append(char)
                 span.union_bbox(char)
 

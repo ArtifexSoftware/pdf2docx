@@ -2,7 +2,6 @@
 
 import random
 from collections import deque
-import fitz
 from fitz.utils import getColorList, getColorInfoList
 
 
@@ -97,26 +96,6 @@ def new_page(doc, width:float, height:float, title:str):
     page.insertText((5, 16), title, color=gray, fontsize=15)
     
     return page
-
-
-def get_main_bbox(bbox_1:fitz.Rect, bbox_2:fitz.Rect, threshold:float=0.95):
-    ''' If the intersection of bbox_1 and bbox_2 exceeds the threshold, return the union of
-        these two bbox-es; else return None.
-    '''
-    # areas
-    b = bbox_1 & bbox_2
-    a1, a2, a = bbox_1.getArea(), bbox_2.getArea(), b.getArea()
-
-    # no intersection
-    if not b: return fitz.Rect()
-
-    # Note: if bbox_1 and bbox_2 intersects with only an edge, b is not empty but b.getArea()=0
-    # so give a small value when they're intersected but the area is zero
-    factor = a/min(a1,a2) if a else 1e-6
-    if factor >= threshold:
-        return bbox_1 | bbox_2
-    else:
-        return fitz.Rect()
 
 
 def debug_plot(title:str):

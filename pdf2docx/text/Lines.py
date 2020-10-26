@@ -12,7 +12,7 @@ from .Line import Line
 from ..common import constants
 from ..common.Collection import Collection
 from ..common.docx import add_stop
-from ..common.utils import get_main_bbox
+
 
 class Lines(Collection):
     '''Text line list.'''
@@ -69,7 +69,7 @@ class Lines(Collection):
             if not lines: lines.append(line)
             
             # ignore this line if overlap with previous line
-            elif get_main_bbox(lines[-1].bbox, line.bbox, threshold=constants.FACTOR_MOST):
+            elif line.get_main_bbox(lines[-1], threshold=constants.FACTOR_MOST):
                 print(f'Ignore Line "{line.text}" due to overlap')
 
             # add line directly if not aligned horizontally with previous line
