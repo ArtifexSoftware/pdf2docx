@@ -62,6 +62,7 @@ class R:
 
     def to_strokes(self, width:float, color:list):
         # corner points
+        # NOTE: center line of path without stroke width considered
         x0, y0, x1, y1 = self.rect
         points = [
             (x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)
@@ -72,7 +73,7 @@ class R:
             strokes.append({
                     'start': points[i],
                     'end'  : points[i+1],
-                    'width': width,
+                    'width': width * 2.0, # seems need adjustment by * 2.0
                     'color': RGB_value(color)
                 })
         return strokes
@@ -164,8 +165,8 @@ class Path:
     def plot(self, canvas):
         ''' Plot path https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
         '''
+        # draw each entry of the 'items' list
         for item in self.raw.get('items', []):
-            # draw each entry of the 'items' list
             if item[0] == "l":  # line
                 canvas.drawLine(item[1], item[2])
             elif item[0] == "re":  # rectangle
@@ -173,16 +174,16 @@ class Path:
             elif item[0] == "c":  # curve
                 canvas.drawBezier(item[1], item[2], item[3], item[4])
 
-            # now apply the common properties to finish the path
-            canvas.finish(
-                fill=self.raw["fill"],  # fill color
-                color=self.raw["color"],  # line color
-                dashes=self.raw["dashes"],  # line dashing
-                even_odd=self.raw["even_odd"],  # control color of overlaps
-                closePath=self.raw["closePath"],  # whether to connect last and first point
-                lineJoin=self.raw["lineJoin"],  # how line joins should look like
-                lineCap=max(self.raw["lineCap"]),  # how line ends should look like
-                width=self.raw["width"],  # line width
-                stroke_opacity=self.raw["opacity"],  # same value for both
-                fill_opacity=self.raw["opacity"],  # opacity parameters
-                )
+        # now apply the common properties to finish the path
+        canvas.finish(
+            fill=self.raw["fill"],  # fill color
+            color=self.raw["color"],  # line color
+            dashes=self.raw["dashes"],  # line dashing
+            even_odd=self.raw["even_odd"],  # control color of overlaps
+            closePath=self.raw["closePath"],  # whether to connect last and first point
+            lineJoin=self.raw["lineJoin"],  # how line joins should look like
+            lineCap=max(self.raw["lineCap"]),  # how line ends should look like
+            width=self.raw["width"],  # line width
+            stroke_opacity=self.raw["opacity"],  # same value for both
+            fill_opacity=self.raw["opacity"]  # opacity parameters
+            )

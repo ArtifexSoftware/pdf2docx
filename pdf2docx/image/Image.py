@@ -62,7 +62,9 @@ class ImagesExtractor:
         # - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/pdf_reference_archives/PDFReference.pdf
         doc = page.parent
         for xref in page._getContents():
-            stream = doc._getXrefStream(xref).replace(b'BT', b' BT 3 Tr')
+            stream = doc._getXrefStream(xref).replace(b'BT', b'BT 3 Tr') \
+                                             .replace(b'Tm', b'Tm 3 Tr') \
+                                             .replace(b'Td', b'Td 3 Tr')
             doc._updateStream(xref, stream)
         
         # improve resolution

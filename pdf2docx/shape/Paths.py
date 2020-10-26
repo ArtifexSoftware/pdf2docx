@@ -99,6 +99,8 @@ class PathsExtractor:
     def _parse_page(self, page:fitz.Page):
         '''Extract paths from PDF page.'''
         # extract paths from pdf source: PyMuPDF >= 1.18.0
+        # Currently no clip path considered, so may exist paths out of page, which is to be processed
+        # after converting to real page CS (non-rotation page now). 
         raw_paths = page.getDrawings()
 
         # paths from pdf annotation
@@ -107,9 +109,6 @@ class PathsExtractor:
 
         # init Paths
         instances = [Path(raw_path) for raw_path in raw_paths]
-        instances = list(filter(
-            lambda path: page.rect.contains(path.bbox), instances
-        ))
         self.paths.reset(instances)
     
     
@@ -145,7 +144,7 @@ class Paths(BaseCollection):
         page = pdf.new_page(doc, width, height, title)
         
         # make a drawing canvas and plot path
-        canvas = page.newShape()        
+        canvas = page.newShape()
         for path in self._instances: path.plot(canvas)
         canvas.commit() # commit the drawing shapes to page
 

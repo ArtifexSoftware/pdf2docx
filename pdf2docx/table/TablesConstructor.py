@@ -83,17 +83,33 @@ class TablesConstructor:
             '''find the vertical boundaries of table in y-range [y0, y1]:
                 - the bottom of block closest to y0
                 - the top of block closest to y1
+
+                ```
+                +-------------------------+  <- Y0
+
+                +--------------+
+                +--------------+  <- y_lower
+
+                +------------------------+  <- y0
+                |         table          |
+                +------------------------+  <- y1
+
+                +-------------------------+ <- y_upper
+                +-------------------------+
+
+                +---------------------------+ <- Y1
+                ```
             '''
-            y0_, y1_ = Y0, Y1-constants.MINOR_DIST
+            y_lower, y_upper = Y0, Y1-constants.MINOR_DIST
             for block in self._blocks:
                 # move top border
-                if block.bbox.y1 < y0: y0_ = block.bbox.y1
+                if block.bbox.y1 < y0: y_lower = block.bbox.y1
 
                 # reach first bottom border
                 if block.bbox.y0 > y1:
-                    y1_ = block.bbox.y0
+                    y_upper = block.bbox.y0
                     break
-            return y0_, y1_
+            return y_lower, y_upper
 
         # parse tables
         tables = Blocks()
