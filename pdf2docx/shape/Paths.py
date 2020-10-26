@@ -1,31 +1,25 @@
 # -*- coding: utf-8 -*-
 
 '''
-Objects representing PDF path (both stroke and filling) parsed from:
-- Source paths extracted by `page.getDrawings()` (PyMuPDF >= 1.18.0)
-- Annotation paths like Line, Square and Highlight
+Objects representing PDF path (both stroke and filling) extracted by `page.getDrawings()`.
+This method is new since PyMuPDF 1.18.0, with both pdf raw path and annotations  like Line, 
+Square and Highlight considered.
 
-Regarding extracting source path:
 - https://pymupdf.readthedocs.io/en/latest/page.html#Page.getDrawings
 - https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
-
-Regarding annotation path:
-- https://pymupdf.readthedocs.io/en/latest/annot.html
-- https://pymupdf.readthedocs.io/en/latest/vars.html#annotation-types
 
 @created: 2020-09-22
 @author: train8808@gmail.com
 '''
 
-
 import fitz
 from ..common.base import lazyproperty
-from ..common import pdf, constants
+from ..common import constants
 from ..common.Collection import BaseCollection
-from ..common.utils import get_main_bbox
+from ..common.utils import get_main_bbox, new_page
 from ..image.Image import ImagesExtractor
 from .Path import Path
-from .Annot import Annot
+
 
 class PathsExtractor:
     '''Extract paths from PDF.'''
@@ -94,21 +88,10 @@ class PathsExtractor:
         # after converting to real page CS (non-rotation page now). 
         raw_paths = page.getDrawings()
 
-        # paths from pdf annotation
-        raw_paths.extend(self.annotation_to_paths(page))
-
         # init Paths
         instances = [Path(raw_path) for raw_path in raw_paths]
         self.paths.reset(instances)
-    
 
-    @staticmethod
-    def annotation_to_paths(page):
-        ''' Extract paths from annotation, e.g. Line, Square, Highlight.'''
-        paths = []
-        for annot in page.annots(): paths.extend(Annot(annot).to_paths())
-        return paths
-    
     
 class Paths(BaseCollection):
     '''A collection of paths.'''    
@@ -139,7 +122,7 @@ class Paths(BaseCollection):
     def plot(self, doc:fitz.Document, title:str, width:float, height:float):
         if not self._instances: return
         # insert a new page
-        page = pdf.new_page(doc, width, height, title)
+        page = new_page(doc, width, height, title)
         
         # make a drawing canvas and plot path
         canvas = page.newShape()

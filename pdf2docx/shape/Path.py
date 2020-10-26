@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-Objects representing PDF path (both stroke and filling) parsed from both pdf raw streams and annotations.
+Objects representing PDF path (both stroke and filling) extracted from both pdf drawings and annotations.
 
 @created: 2020-09-22
 @author: train8808@gmail.com
@@ -23,31 +23,41 @@ Data structure based on results of `page.getDrawings()`:
 }
 '''
 
+import fitz
 from ..common.utils import RGB_value
 
 
-class L:
-    '''Line path with source ("l", p1, p2)'''
+class Segment:
+    '''A segment of path, e.g. a line or a rectangle or a curve.'''
     def __init__(self, item):
-        self.p1, self.p2 = item[1:]    
+        self.points = item[1:]
 
     @property
+    def is_iso_oriented(self): return False
+
+    def to_strokes(self, width:float, color:list): return []   
+
+
+class L(Segment):
+    '''Line path with source ("l", p1, p2)'''
+    @property
     def is_iso_oriented(self):
-        x0, y0 = self.p1
-        x1, y1 = self.p2
+        x0, y0 = self.points[0]
+        x1, y1 = self.points[1]
         return abs(x1-x0)<=1e-3 or abs(y1-y0)<=1e-3
 
     def to_strokes(self, width:float, color:list):
         strokes = []
         strokes.append({
-                'start': tuple(self.p1),
-                'end'  : tuple(self.p2),
+                'start': tuple(self.points[0]),
+                'end'  : tuple(self.points[1]),
                 'width': width,
                 'color': RGB_value(color)
             })
         return strokes
 
-class R:
+
+class R(Segment):
     '''Rect path with source ("re", rect)'''
     def __init__(self, item):
         self.rect = item[1]
@@ -72,42 +82,116 @@ class R:
                     'color': RGB_value(color)
                 })
         return strokes
-    
 
-class C:
+
+class C(Segment):
     '''Bezier curve path with source ("c", p1, p2, p3, p4)'''
-    def __init__(self, item):
-        self.p1, self.p2, self.p3, self.p4 = item[1:]
+    pass
+
+
+class Segments:
+    '''A sub-path composed of one or more segments.'''
+    def __init__(self, items:list, close_path=False): 
+        self._instances = [] # type: list[Segment]
+        for item in items:
+            if   item[0] == 'l' : self._instances.append(L(item))
+            elif item[0] == 'c' : self._instances.append(C(item))
+            elif item[0] == 're': self._instances.append(R(item))
+        
+        # close path
+        if close_path and len(items)>=2:
+            item = ('l', items[-1][-1], items[0][1])
+            self._instances.append(L(item))
+
+        # calculate bbox
+        self.bbox = self.cal_bbox()
     
-    @property
-    def is_iso_oriented(self): return False
+    def __iter__(self): return (instance for instance in self._instances)
+
+    def cal_bbox(self):
+        # rectangle area
+        if len(self._instances)==1 and isinstance(self._instances[0], R):
+            return self._instances[0].rect
+        
+        # calculate bbox of lines and curves area
+        points = []
+        for segment in self._instances: points.extend(segment.points)
+        x0 = min(points, key=lambda point: point[0])[0]
+        y0 = min(points, key=lambda point: point[1])[1]
+        x1 = max(points, key=lambda point: point[0])[0]
+        y1 = max(points, key=lambda point: point[1])[1]
+        return fitz.Rect(x0, y0, x1, y1)
+
 
     def to_strokes(self, width:float, color:list):
-        '''Curve path doesn't contribute to table parsing.'''
-        return None   
+        '''Convert each segment to a stroke.'''
+        strokes = []
+        for segment in self._instances: 
+            strokes.extend(segment.to_strokes(width, color))
+        return strokes
+    
 
+    def to_fill(self, color:list):
+        '''Convert segment closed area to a fill.'''
+        return {
+            'bbox' : list(self.bbox), 
+            'color': RGB_value(color)
+        }
 
 class Path:
-    '''Path extracted from PDF, either/both a stroke or/and a filling.'''
+    '''Path extracted from PDF, consist of one or more segments.'''
 
-    def __init__(self, raw:dict=None):
+    def __init__(self, raw:dict):
         '''Init path in un-rotated page CS.'''
         # all path properties
-        self.raw = raw if raw else {}
+        self.raw = raw
 
-        # path area
-        self.bbox = self.raw['rect']
+        # path segments
+        close_path = raw.get("closePath", False)
+        self.items = [] # type: list[Segments]
+        self.bbox = fitz.Rect()
+        for segments in self.group_segments(raw['items']):
+            S = Segments(segments, close_path)
+            self.bbox |= S.bbox
+            self.items.append(S)        
 
-        # command list
-        self.items = [] # type: list[L or R or C]
-        for item in self.raw['items']:
-            if item[0] == 'l':
-                self.items.append(L(item))
+
+    @staticmethod
+    def group_segments(items):
+        segments, segments_list = [], []
+        cursor = None
+        for item in items:
+            # line or curve segment
+            if item[0] in ('l', 'c'):
+                start, end = item[1], item[-1]
+                # add to segments if:
+                # - first point of segments, or
+                # - connected to previous segment
+                if not segments or start==cursor:
+                    segments.append(item)                    
+                
+                # otherwise, close current segments and start a new one
+                else:
+                    segments_list.append(segments)
+                    segments = [item] 
+                
+                # update current point
+                cursor = end
+
+            # rectangle as a separate segments group
             elif item[0] == 're':
-                self.items.append(R(item))
-            elif item[0] == 'c':
-                self.items.append(C(item))
+                # close current segments
+                if segments:
+                    segments_list.append(segments)
+                    segments = []
+                # add this segment
+                segments_list.append([item])
+        
+        # add last segments if exists
+        if segments: segments_list.append(segments)
 
+        return segments_list
+                
 
     @property
     def is_stroke(self): self.raw.get('color', None) is not None
@@ -117,9 +201,19 @@ class Path:
 
     @property
     def is_iso_oriented(self):
-        for item in self.items:
-            if not item.is_iso_oriented: return False
-        return True
+        '''It is iso-oriented on condition that:
+            - at least one Line
+            - all Lines are iso-oriented
+            - no requirements on curves
+        '''
+        cnt = 0
+        for segments in self.items:
+            for segment in segments:
+                if isinstance(segment, C): continue
+                elif isinstance(segment, R): cnt += 1
+                elif not segment.is_iso_oriented: return False
+                else: cnt += 1
+        return cnt >= 1
 
 
     def to_shapes(self):
@@ -136,7 +230,7 @@ class Path:
 
         # convert to rectangular fill
         if not fill_color is None:
-            iso_shapes.append(self.to_fill(fill_color))
+            iso_shapes.extend(self.to_fills(fill_color))
 
         return iso_shapes
 
@@ -144,17 +238,17 @@ class Path:
     def to_strokes(self, width:float, color:list):
         '''Convert path segments to strokes.'''
         strokes = []        
-        for segment in self.items:
-            strokes.extend(segment.to_strokes(width, color))        
+        for segments in self.items:
+            strokes.extend(segments.to_strokes(width, color))        
         return strokes
 
 
-    def to_fill(self, color:list):
+    def to_fills(self, color:list):
         '''Convert fill path to rectangular bbox, though the real filling area is not a rectangle.'''
-        return {
-            'bbox': list(self.bbox), 
-            'color': RGB_value(color)
-        }
+        fills = []        
+        for segments in self.items:
+            fills.append(segments.to_fill(color))        
+        return fills
 
 
     def plot(self, canvas):

@@ -4,7 +4,6 @@ import random
 from collections import deque
 import fitz
 from fitz.utils import getColorList, getColorInfoList
-from . import pdf
 
 
 def is_number(str_number):
@@ -15,6 +14,10 @@ def is_number(str_number):
     else:
         return True
 
+
+# -------------------------
+# color methods
+# -------------------------
 def RGB_component_from_name(name:str=''):
     '''Get a named RGB color (or random color) from fitz predefined colors, e.g. 'red' -> (1.0,0.0,0.0).'''
     # get color index
@@ -75,6 +78,27 @@ def RGB_value(components:list):
     return color
 
 
+# -------------------------
+# pdf plot
+# -------------------------
+def new_page(doc, width:float, height:float, title:str):
+    ''' Insert a new page with given title.
+        ---
+        Args:
+        - doc: fitz.Document
+        - width, height: page size
+        - title: page title shown in page
+    '''
+    # insert a new page
+    page = doc.newPage(width=width, height=height)    
+
+    # plot title at the top-left corner
+    gray = RGB_component_from_name('gray')
+    page.insertText((5, 16), title, color=gray, fontsize=15)
+    
+    return page
+
+
 def get_main_bbox(bbox_1:fitz.Rect, bbox_2:fitz.Rect, threshold:float=0.95):
     ''' If the intersection of bbox_1 and bbox_2 exceeds the threshold, return the union of
         these two bbox-es; else return None.
@@ -113,7 +137,7 @@ def debug_plot(title:str):
 
             if objects and debug and doc is not None:                
                 # create a new page
-                page = pdf.new_page(doc, layout.width, layout.height, title)
+                page = new_page(doc, layout.width, layout.height, title)
 
                 # plot objects, e.g. text blocks, shapes, tables...
                 objects.plot(page)
@@ -123,6 +147,9 @@ def debug_plot(title:str):
     return wrapper
 
 
+# --------------------------
+# graph
+# --------------------------
 def graph_BFS(graph):
     '''Breadth First Search graph (may be disconnected graph), return a list of connected components.
         ---
