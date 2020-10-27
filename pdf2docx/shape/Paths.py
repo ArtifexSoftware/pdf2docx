@@ -16,7 +16,7 @@ Square and Highlight considered.
 import fitz
 from ..common.base import lazyproperty
 from ..common import constants
-from ..common.Collection import BaseCollection
+from ..common.Collection import Collection
 from ..common.utils import new_page
 from ..image.Image import ImagesExtractor
 from .Path import Path
@@ -43,27 +43,42 @@ class PathsExtractor:
         if constants.IGNORE_VEC_GRAPH: return [], self.paths.to_iso_paths()
         
         # group connected paths -> each group is a potential vector graphic
+        from collections.abc import Iterable
+        def flatten(items):
+            """Yield items from any nested iterable; see REF."""
+            for x in items:
+                if isinstance(x, Iterable) and not isinstance(x, Paths):
+                    yield from flatten(x)
+                else:
+                    yield x
         paths_list = self.paths.group_by_connectivity(dx=0.0, dy=0.0)
         num = 0
         while num!=len(paths_list)>0:
             num = len(paths_list)
-            res = BaseCollection(paths_list).group_by_connectivity(dx=0.0, dy=0.0)
+            res = Collection(paths_list).group_by_connectivity(dx=0.0, dy=0.0)
             paths_list = []
             for paths_group in res:
-                paths = Paths()
-                for paths_ in paths_group: paths.extend(paths_)
-                paths_list.append(paths)
+                collection = Collection(list(flatten(paths_group)))                
+                paths_list.append(collection)
 
         # convert vector graphics to bitmap
         iso_paths, pixmaps = [], []
-        for paths in paths_list:
-            # can't be a table if curve path exists
-            if paths.contains_curve(constants.FACTOR_A_FEW):
-                image = paths.to_image(page, constants.FACTOR_RES)
+        for collection in paths_list:
+            combined_paths = Paths()
+            for paths in collection: combined_paths.extend(list(paths))
+            # print(combined_paths.curve_area/combined_paths.bbox.getArea())
+            if combined_paths.contains_curve(0.2):
+                image = combined_paths.to_image(page, constants.FACTOR_RES)
                 if image: pixmaps.append(image)
-            # keep potential table border paths
             else:
-                iso_paths.extend(paths.to_iso_paths())
+                for paths in collection:                    
+                    # can't be a table if curve path exists
+                    if paths.contains_curve(0.2):
+                        image = paths.to_image(page, constants.FACTOR_RES)
+                        if image: pixmaps.append(image)
+                    # keep potential table border paths
+                    else:
+                        iso_paths.extend(paths.to_iso_paths())
 
         return pixmaps, iso_paths
 
@@ -84,7 +99,7 @@ class PathsExtractor:
             self.paths.append(path)
 
     
-class Paths(BaseCollection):
+class Paths(Collection):
     '''A collection of paths.'''    
     @lazyproperty
     def bbox(self):
