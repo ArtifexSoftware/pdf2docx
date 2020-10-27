@@ -10,7 +10,7 @@ import shutil
 import fitz
 
 from pdf2docx import Converter
-from pdf2docx.common.utils import get_main_bbox
+from pdf2docx.common.BBox import BBox
 
 script_path = os.path.abspath(__file__) # current script path
 output = os.path.dirname(script_path)
@@ -39,7 +39,7 @@ def compare_layput(filename_source, filename_target, filename_output, threshold=
     
     flag = True
     errs = []
-    for i, (source_page, target_page) in enumerate(zip(source, target)):
+    for source_page, target_page in zip(source, target):
 
         # check position of each word
         # ---------------------------
@@ -63,7 +63,7 @@ def compare_layput(filename_source, filename_target, filename_output, threshold=
             source_page.drawRect(target_rect, color=(1,0,0), overlay=True) # current position
 
             # check bbox word by word: ignore small bbox, e.g. single letter bbox
-            if not get_main_bbox(source_rect, target_rect, threshold):
+            if not BBox().update_bbox(source_rect).get_main_bbox(target_rect, threshold):
                 flag = False
                 errs.append((f'{sample[4]} ===> {test[4]}', target_rect, source_rect))
         
@@ -86,13 +86,9 @@ def docx2pdf(docx_file, pdf_file):
         return False
 
     # convert pdf with command line
-    cmd = f'OfficeToPDF "{docx_file}" "{pdf_file}"'
-    try:
-        os.system(cmd)
-    except:
-        return False
-    else:
-        return True
+    cmd = f'OfficeToPDF333 "{docx_file}" "{pdf_file}"'
+    res = os.system(cmd)
+    return res==0
 
 
 def check_result(pdf_file, docx_file, compare_file_name, make_test_case):
@@ -195,8 +191,9 @@ if __name__ == '__main__':
         'demo-table-stream'
     ]
 
-    sub_path = 'samples'
-    filename = 'demo-table-close-underline'
-    local_test(sub_path, filename, compare=True, make_test_case=True)
+    # single sample
+    sub_path, filename = sys.argv[1:]
+    local_test(sub_path, filename, compare=False, make_test_case=False)
 
+    # batch mode
     # for filename in filenames: local_test(filename, compare=True, make_test_case=True)

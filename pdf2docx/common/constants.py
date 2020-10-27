@@ -42,7 +42,7 @@ MAX_W_BORDER = 6.0
 MIN_W_BORDER = 0.25
 HIDDEN_W_BORDER = 0.0   # do not show border
 DW_BORDER = 2.0         # width difference of two connected borders
-
+MIN_LINE_SPACING = 0.7  # minimum line spacing available in MS word
 
 # -------------------------------------
 # font name mapping

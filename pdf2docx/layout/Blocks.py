@@ -419,8 +419,7 @@ class Blocks(Collection):
         # must be remove in other place, especially the page space is run out.
         # Here, reduce the last row of table.
         block = self._instances[-1]
-        if block.is_table_block():
-            block[-1].height -= constants.MINOR_DIST # same value used when creating docx
+        if block.is_table_block(): block[-1].height -= constants.MINOR_DIST
 
 
     def join_horizontally(self, text_direction=True):
@@ -549,7 +548,7 @@ class Blocks(Collection):
 
             # otherwise, add a small paragraph
             p = doc.add_paragraph()
-            reset_paragraph_format(p, Pt(constants.MINOR_DIST)) # a small line height
+            reset_paragraph_format(p, Pt(constants.MIN_LINE_SPACING)) # a small line height
 
         # Finally, add floating image to last paragraph
         p = doc.add_paragraph() if not doc.paragraphs else doc.paragraphs[0]

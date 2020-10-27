@@ -23,7 +23,6 @@ from ..common import constants
 from ..layout.Blocks import Blocks
 from ..shape.Shapes import Shapes
 from ..text.Lines import Lines
-from ..text.Line import Line
 from .TableStructure import TableStructure
 from .Border import HBorder, VBorder, Borders
 
@@ -100,7 +99,7 @@ class TablesConstructor:
                 +---------------------------+ <- Y1
                 ```
             '''
-            y_lower, y_upper = Y0, Y1-constants.MINOR_DIST
+            y_lower, y_upper = Y0, Y1
             for block in self._blocks:
                 # move top border
                 if block.bbox.y1 < y0: y_lower = block.bbox.y1
@@ -128,8 +127,9 @@ class TablesConstructor:
 
             # explicit strokes/shadings in table region
             rect = BBox().update_bbox(outer_bbox)
-            explicit_strokes  = table_strokes.contained_in_bbox(rect.bbox) 
-            explicit_shadings = table_fillings.contained_in_bbox(rect.bbox)
+            explicit_strokes  = table_strokes.contained_in_bbox(rect.bbox)
+            # NOTE: shading with any intersections should be counted to avoid missing any candidates
+            explicit_shadings, _ = table_fillings.split_with_intersection(rect.bbox) 
 
             # parse stream borders based on lines in cell and explicit borders/shadings
             strokes = self.stream_strokes(table_lines, outer_borders, explicit_strokes, explicit_shadings)
