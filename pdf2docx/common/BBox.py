@@ -59,11 +59,16 @@ class BBox(IText):
 
 
     # ------------------------------------------------
-    # update bbox
+    # bbox operations
     # ------------------------------------------------
     def copy(self):
         '''make a deep copy.'''
-        return copy.deepcopy(self)    
+        return copy.deepcopy(self)
+
+
+    def get_expand_bbox(self, dt:float):
+        '''Get expanded bbox with margin dt in both x- and y- direction. Note this method doesn't change its bbox.'''
+        return self.bbox + (-dt, -dt, dt, dt)
 
 
     def update_bbox(self, rect):
@@ -87,12 +92,7 @@ class BBox(IText):
 
     # --------------------------------------------
     # location relationship to other Bbox
-    # --------------------------------------------
-    def get_expand_bbox(self, dt:float):
-        '''Get expanded bbox with margin dt in both x- and y- direction. Note this method doesn't change its bbox.'''
-        return self.bbox + (-dt, -dt, dt, dt)
-    
-
+    # -------------------------------------------- 
     def contains(self, bbox, threshold:float=1.0):
         '''Whether given bbox is contained in this instance, with margin considered.'''
         # it's not practical to set a general threshold to consider the margin, so two steps:

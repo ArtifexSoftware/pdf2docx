@@ -50,8 +50,8 @@ class ImagesExtractor:
         }
 
     @classmethod
-    def clip_page(cls, page:fitz.Page, bbox:fitz.Rect, zoom:float=3.0):
-        '''Clip pixmap (without text) according to bbox from page.
+    def clip_page(cls, page:fitz.Page, bbox:fitz.Rect=None, zoom:float=3.0):
+        '''Clip page pixmap (without text) according to `bbox` (entire page by default).
         '''
         # hide text before clip the image only
         # render Tr: set the text rendering mode
@@ -69,6 +69,7 @@ class ImagesExtractor:
         # improve resolution
         # - https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-increase-image-resolution
         # - https://github.com/pymupdf/PyMuPDF/issues/181
+        if bbox is None: bbox = page.rect
         image = page.getPixmap(clip=bbox, matrix=fitz.Matrix(zoom, zoom)) # type: fitz.Pixmap
         return cls.to_raw_dict(image, bbox)
 

@@ -105,10 +105,17 @@ class Segments:
 
         # calculate bbox
         self.bbox = self.cal_bbox()
+
     
     def __iter__(self): return (instance for instance in self._instances)
 
+
+    @property
+    def is_iso_oriented_line(self): return bool(self.bbox) and not bool(self.bbox.getArea())
+
+
     def cal_bbox(self):
+        '''bbox of Segments. Note for iso-oriented segments, bbox.getArea()==0.'''
         # rectangle area
         if len(self._instances)==1 and isinstance(self._instances[0], R):
             return self._instances[0].rect
@@ -138,6 +145,7 @@ class Segments:
             'color': RGB_value(color)
         }
 
+
 class Path:
     '''Path extracted from PDF, consist of one or more segments.'''
 
@@ -147,13 +155,19 @@ class Path:
         self.raw = raw
 
         # path segments
-        close_path = raw.get("closePath", False)
         self.items = [] # type: list[Segments]
         self.bbox = fitz.Rect()
+        close_path, w = raw['closePath'], raw['width']
         for segments in self.group_segments(raw['items']):
             S = Segments(segments, close_path)
-            self.bbox |= S.bbox
-            self.items.append(S)        
+            self.items.append(S)
+
+            # update bbox: note iso-oriented line segments, e.g. S.bbox.getArea()==0
+            rect = S.bbox
+            if S.is_iso_oriented_line: 
+                print(S.bbox, w)
+                rect += (-w, -w, w, w)
+            self.bbox |= rect
 
 
     @staticmethod
