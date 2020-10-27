@@ -109,7 +109,7 @@ class TableBlock(Block):
                 cell.plot(page, content=content, style=style, color=color)
 
 
-    def set_table_contents(self, blocks:list):
+    def set_table_contents(self, blocks:list, settings:dict):
         '''Assign `blocks` to associated cell.'''
         for row in self._rows:
             for cell in row:
@@ -122,7 +122,7 @@ class TableBlock(Block):
 
                 # for lattice table, check cell blocks layout further
                 if self.is_lattice_table_block() and not cell.blocks.is_flow_layout: 
-                    cell.set_stream_table_layout()                
+                    cell.set_stream_table_layout(settings)                
 
 
     def parse_text_format(self, rects):

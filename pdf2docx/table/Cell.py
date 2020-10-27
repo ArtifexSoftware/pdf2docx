@@ -136,7 +136,7 @@ class Cell(BBox):
         self.blocks.append(split_block)
 
 
-    def set_stream_table_layout(self):
+    def set_stream_table_layout(self, settings:dict):
         '''Set stream table layout to ensure any float layout converted to flow layout.'''
         # create nest table if float layout still exists
         from .TablesConstructor import TablesConstructor
@@ -159,12 +159,12 @@ class Cell(BBox):
 
         # parse table structure
         strokes.sort_in_reading_order() # required
-        table = TableStructure(strokes).parse(fills=[]).to_table_block()
+        table = TableStructure(strokes, settings).parse(fills=[]).to_table_block()
         if not table: return
 
         # parse table content
         table.set_stream_table_block()
-        self.blocks.assign_table_contents([table])
+        self.blocks.assign_table_contents([table], settings)
 
 
     def make_docx(self, table, indexes):

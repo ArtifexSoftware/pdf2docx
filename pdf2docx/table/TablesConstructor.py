@@ -35,22 +35,30 @@ class TablesConstructor:
         self._shapes = parent.shapes if parent else None # type: Shapes
 
 
-    def lattice_tables(self):
+    def lattice_tables(self, 
+                    connected_border_tolerance:float, # two borders are intersected if the gap lower than this value
+                    min_border_clearance:float,       # the minimum allowable clearance of two borders
+                    max_border_width:float            # max border width
+                    ):
         '''Parse table with explicit borders/shadings represented by rectangle shapes.'''
         # group stroke shapes: each group may be a potential table
-        grouped_strokes = self._shapes.table_strokes.group_by_connectivity(dx=constants.TINY_DIST, dy=constants.TINY_DIST)
+        grouped_strokes = self._shapes.table_strokes.group_by_connectivity(dx=connected_border_tolerance, dy=connected_border_tolerance)
 
         # all filling shapes
         fills = self._shapes.table_fillings
 
         # parse table with each group
         tables = Blocks()
+        settings = {
+            'min_border_clearance': min_border_clearance,
+            'max_border_width': max_border_width
+        }
         for strokes in grouped_strokes:
             # potential shadings in this table region
             group_fills = fills.contained_in_bbox(strokes.bbox)
 
             # parse table structure
-            table = TableStructure(strokes).parse(group_fills).to_table_block()
+            table = TableStructure(strokes, settings).parse(group_fills).to_table_block()
             tables.append(table)
 
         # check if any intersection with previously parsed tables
@@ -60,12 +68,15 @@ class TablesConstructor:
             table.set_lattice_table_block()
 
         # assign text contents to each table
-        self._blocks.assign_table_contents(unique_tables)
+        self._blocks.assign_table_contents(unique_tables, settings)
 
         return Blocks(unique_tables)
 
 
-    def stream_tables(self):
+    def stream_tables(self, 
+                min_border_clearance:float, 
+                max_border_width:float
+            ):
         ''' Parse table with layout of text/image blocks, and update borders with explicit borders 
             represented by rectangle shapes.
         '''
@@ -112,6 +123,10 @@ class TablesConstructor:
 
         # parse tables
         tables = Blocks()
+        settings = {
+            'min_border_clearance': min_border_clearance,
+            'max_border_width': max_border_width
+        }
         for table_lines in tables_lines:
             # bounding box
             x0 = min([rect.bbox.x0 for rect in table_lines])
@@ -137,7 +152,7 @@ class TablesConstructor:
 
             # parse table structure
             strokes.sort_in_reading_order() # required
-            table = TableStructure(strokes).parse(explicit_shadings).to_table_block()
+            table = TableStructure(strokes, settings).parse(explicit_shadings).to_table_block()
             tables.append(table)
 
         # check if any intersection with previously parsed tables
@@ -147,7 +162,7 @@ class TablesConstructor:
             table.set_stream_table_block()
 
         # assign text contents to each table
-        self._blocks.assign_table_contents(unique_tables)
+        self._blocks.assign_table_contents(unique_tables, settings)
 
         return Blocks(unique_tables)
 

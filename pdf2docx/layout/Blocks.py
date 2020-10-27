@@ -161,7 +161,7 @@ class Blocks(Collection):
         return self
 
 
-    def clean_up(self):
+    def clean_up(self, float_image_ignorable_gap:float):
         ''' Preprocess blocks initialized from the raw layout.
 
             NOTE: this method works ONLY for layout initialized from raw dict extracted by `page.getText()`.
@@ -182,7 +182,7 @@ class Blocks(Collection):
         # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
         self.strip() \
             .sort_in_reading_order() \
-            .identify_floating_images() \
+            .identify_floating_images(float_image_ignorable_gap) \
             .join_horizontally(text_direction=False)
 
     
@@ -194,14 +194,14 @@ class Blocks(Collection):
         return self
 
 
-    def identify_floating_images(self):
+    def identify_floating_images(self, float_image_ignorable_gap:float):
         ''' Identify floating image lines and convert to ImageBlock.'''
         lines = Lines()
         for block in self._instances: # Note contain only text blocks
             lines.extend(block.lines)
         
         # group by connectivity
-        groups = lines.group_by_connectivity(dx=-constants.MAJOR_DIST, dy=-constants.MAJOR_DIST)
+        groups = lines.group_by_connectivity(dx=-float_image_ignorable_gap, dy=-float_image_ignorable_gap)
         
         # identify floating objects
         # ASSUMPTION: no overlaps between text lines
@@ -216,7 +216,7 @@ class Blocks(Collection):
         return self
 
 
-    def assign_table_contents(self, tables:list):
+    def assign_table_contents(self, tables:list, settings:dict):
         '''Add Text/Image/table block lines to associated cells of given tables.'''
         if not tables: return
 
@@ -230,7 +230,7 @@ class Blocks(Collection):
         for table, blocks_in_table in zip(tables, blocks_in_tables):
             # no contents for this table
             if not blocks_in_table: continue
-            table.set_table_contents(blocks_in_table)
+            table.set_table_contents(blocks_in_table, settings)
 
         # sort in natural reading order and update layout blocks
         blocks.extend(tables)

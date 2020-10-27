@@ -114,7 +114,7 @@ class CellStructure:
 
 class TableStructure:
     '''Parsing table structure based on strokes/fills.'''
-    def __init__(self, strokes:Shapes):
+    def __init__(self, strokes:Shapes, settings:dict):
         ''' Parse table structure from strokes and fills shapes.
             ---
             Args:
@@ -166,8 +166,10 @@ class TableStructure:
         # cells
         self.cells = [] # type: list[list[CellStructure]]
 
-        # group horizontal/vertical strokes -> table structure dict
-        self.h_strokes, self.v_strokes = TableStructure._group_h_v_strokes(strokes)
+        # group horizontal/vertical strokes -> table structure dict        
+        self.h_strokes, self.v_strokes = TableStructure._group_h_v_strokes(strokes, 
+                        settings['min_border_clearance'], 
+                        settings['max_border_width'])
         if not self.h_strokes or not self.v_strokes: return
 
         # initialize cells
@@ -285,7 +287,7 @@ class TableStructure:
 
 
     @staticmethod
-    def _group_h_v_strokes(strokes:Shapes):
+    def _group_h_v_strokes(strokes:Shapes, min_border_clearance:float, max_border_width:float):
         ''' Split strokes in horizontal and vertical groups respectively.
 
             According to strokes below, the grouped h-strokes looks like
@@ -321,7 +323,7 @@ class TableStructure:
 
                 # ignore minor error resulting from different stroke width
                 for y_ in h_strokes:
-                    if abs(y-y_)>constants.DW_BORDER: continue
+                    if abs(y-y_)>min_border_clearance: continue
                     y = (y_+y)/2.0 # average
                     h_strokes[y] = h_strokes.pop(y_)
                     h_strokes[y].append(stroke)
@@ -339,7 +341,7 @@ class TableStructure:
                 
                 # ignore minor error resulting from different stroke width
                 for x_ in v_strokes:
-                    if abs(x-x_)>constants.DW_BORDER: continue
+                    if abs(x-x_)>min_border_clearance: continue
                     x = (x+x_)/2.0 # average
                     v_strokes[x] = v_strokes.pop(x_)
                     v_strokes[x].append(stroke)
@@ -356,10 +358,10 @@ class TableStructure:
 
         # Note: add dummy strokes if no outer strokes exist        
         table_bbox = BBox().update_bbox((X0, Y0, X1, Y1)) # table bbox
-        TableStructure._check_outer_strokes(table_bbox, h_strokes, 'top')
-        TableStructure._check_outer_strokes(table_bbox, h_strokes, 'bottom')
-        TableStructure._check_outer_strokes(table_bbox, v_strokes, 'left')
-        TableStructure._check_outer_strokes(table_bbox, v_strokes, 'right')
+        TableStructure._check_outer_strokes(table_bbox, h_strokes, 'top', max_border_width)
+        TableStructure._check_outer_strokes(table_bbox, h_strokes, 'bottom', max_border_width)
+        TableStructure._check_outer_strokes(table_bbox, v_strokes, 'left', max_border_width)
+        TableStructure._check_outer_strokes(table_bbox, v_strokes, 'right', max_border_width)
 
         return h_strokes, v_strokes
     
@@ -421,7 +423,7 @@ class TableStructure:
 
     
     @staticmethod
-    def _check_outer_strokes(table_bbox:BBox, borders:dict, direction:str):
+    def _check_outer_strokes(table_bbox:BBox, borders:dict, direction:str, max_border_width:float):
         '''Add missing outer borders based on table bbox and grouped horizontal/vertical borders.
             ---
             Args:
@@ -457,7 +459,7 @@ class TableStructure:
         bbox[(idx+2)%4] = target
 
         # add whole border if not exist
-        if abs(target-current)>constants.MAX_W_BORDER:
+        if abs(target-current)>max_border_width:
             borders[target] = Shapes([sample_border.copy().update_bbox(bbox)])
         
         # otherwise, check border segments

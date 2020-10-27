@@ -203,7 +203,7 @@ class Fill(Shape):
         The semantic meaning may be table shading, or text style like highlight.
     '''
 
-    def to_stroke(self):
+    def to_stroke(self, max_border_width:float):
         '''Convert to Stroke instance based on width criterion.
 
             NOTE: a Fill from shape point of view may be a Stroke from content point of view.
@@ -212,7 +212,7 @@ class Fill(Shape):
         w = min(self.bbox.width, self.bbox.height)
 
         # not a stroke if exceed max border width
-        if w > constants.MAX_W_BORDER:
+        if w > max_border_width:
             return None
         else:
             return Stroke({'width': w, 'color': self.color}).update_bbox(self.bbox)

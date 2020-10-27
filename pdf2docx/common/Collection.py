@@ -32,6 +32,15 @@ class BaseCollection:
     def __len__(self): return len(self._instances)
 
 
+    @property
+    def bbox(self):
+        '''bbox of combined collection.'''
+        res = BBox()
+        for instance in self._instances:
+            res.union_bbox(instance)
+        return res.bbox
+
+
     def group(self, fun):
         ''' Group instances according to user defined criterion.
             ---
@@ -112,15 +121,6 @@ class Collection(BaseCollection, IText):
 
     @property
     def parent(self): return self._parent   
-
-
-    @property
-    def bbox(self):
-        '''bbox of combined collection.'''
-        Box = BBox()
-        for instance in self._instances:
-            Box.union_bbox(instance)
-        return Box.bbox
 
 
     @property

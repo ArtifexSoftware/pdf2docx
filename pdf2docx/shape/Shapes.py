@@ -91,7 +91,7 @@ class Shapes(Collection):
         return self._text_underlines_strikes
 
 
-    def clean_up(self):
+    def clean_up(self, max_border_width:float):
         '''Clean rectangles:
             - delete rectangles fully contained in another one (beside, they have same bg-color)
             - join intersected and horizontally aligned rectangles with same height and bg-color
@@ -139,7 +139,7 @@ class Shapes(Collection):
             if isinstance(shape, Stroke):
                 shapes.append(shape)
             else:
-                stroke = shape.to_stroke()
+                stroke = shape.to_stroke(max_border_width)
                 shapes.append(stroke if stroke else shape)
 
         self.reset(shapes)

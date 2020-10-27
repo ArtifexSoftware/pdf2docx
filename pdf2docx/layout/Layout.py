@@ -45,13 +45,16 @@ from ..common import constants
 class Layout:
     ''' Object representing the whole page, e.g. margins, blocks, shapes, spacing.'''
 
-    def __init__(self, raw:dict, rotation_matrix=None):
+    def __init__(self, raw:dict, rotation_matrix=None, settings:dict=None):
         ''' Initialize page layout.
             ---
             Args:
             - raw: raw dict representing page blocks, shape
             - rotation_matrix: fitz.Matrix representing page rotation
         '''
+        # dict configuration parameters
+        self.settings = self._init_settings(settings)
+
         self.width = raw.get('width', 0.0)
         self.height = raw.get('height', 0.0)
 
@@ -71,6 +74,18 @@ class Layout:
         # - dict from PyMuPDF: to calculate after cleaning blocks
         # - restored from json: get margin directly
         self._margin = raw.get('margin', None)
+
+
+    @staticmethod
+    def _init_settings(settings:dict):
+        default = {            
+            'connected_border_tolerance'   : constants.TINY_DIST,
+            'max_border_width'             : constants.MAX_W_BORDER,            
+            'min_border_clearance'         : constants.DW_BORDER,
+            'float_image_ignorable_gap'    : constants.MAJOR_DIST,
+        }
+        if settings: default.update(settings)
+        return default
 
 
     @property
@@ -198,7 +213,7 @@ class Layout:
     def clean_up_shapes(self, **kwargs):
         '''Clean up shapes and detect semantic types.'''
         # clean up shapes, e.g. remove negative or duplicated instances
-        self.shapes.clean_up()
+        self.shapes.clean_up(self.settings['max_border_width'])
 
         # detect semantic type based on the positions to text blocks, 
         # e.g. table border v.s. text underline, table shading v.s. text highlight.
@@ -216,7 +231,7 @@ class Layout:
     def clean_up_blocks(self, **kwargs):
         '''Clean up blocks and calculate page margin accordingly.'''
         # clean up bad blocks, e.g. overlapping, out of page
-        self.blocks.clean_up()
+        self.blocks.clean_up(self.settings['float_image_ignorable_gap'])
         
         # calculate page margin based on cleaned layout
         self._margin = self.page_margin()
@@ -227,13 +242,20 @@ class Layout:
     @debug_plot('Lattice Table Structure')
     def parse_lattice_tables(self, **kwargs):
         '''Parse table structure based on explicit stroke shapes.'''
-        return self._tables_constructor.lattice_tables()
+        return self._tables_constructor \
+                .lattice_tables(self.settings['connected_border_tolerance'],
+                                self.settings['min_border_clearance'],
+                                self.settings['max_border_width']
+                            )
 
 
     @debug_plot('Stream Table Structure')
     def parse_stream_tables(self, **kwargs):
         '''Parse table structure based on layout of blocks.'''
-        return self._tables_constructor.stream_tables()
+        return self._tables_constructor \
+                .stream_tables(self.settings['min_border_clearance'],
+                                self.settings['max_border_width']
+                            )
 
 
     @debug_plot('Final Layout')

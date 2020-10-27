@@ -2,6 +2,7 @@
 
 import random
 from collections import deque
+from collections.abc import Iterable
 from fitz.utils import getColorList, getColorInfoList
 
 
@@ -12,6 +13,15 @@ def is_number(str_number):
         return False
     else:
         return True
+
+
+def flatten(items, klass):
+    '''Yield items from any nested iterable.'''
+    for item in items:
+        if isinstance(item, Iterable) and not isinstance(item, klass):
+            yield from flatten(item, klass)
+        else:
+            yield item
 
 
 # -------------------------
