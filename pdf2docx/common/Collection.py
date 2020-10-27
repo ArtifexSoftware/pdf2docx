@@ -9,8 +9,7 @@ A group of instances, e.g. instances, Spans, Shapes.
 
 from .BBox import BBox
 from .base import IText, TextDirection
-from .utils import graph_BFS
-from .rect_intersection import solve_rects_intersection
+from .utils import solve_rects_intersection, graph_BFS
 
 
 class BaseCollection:
