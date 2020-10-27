@@ -49,6 +49,7 @@ class ImagesExtractor:
             'image': image.getPNGData()
         }
 
+
     @classmethod
     def clip_page(cls, page:fitz.Page, bbox:fitz.Rect=None, zoom:float=3.0):
         '''Clip page pixmap (without text) according to `bbox` (entire page by default).
@@ -69,9 +70,10 @@ class ImagesExtractor:
         # improve resolution
         # - https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-increase-image-resolution
         # - https://github.com/pymupdf/PyMuPDF/issues/181
-        if bbox is None: bbox = page.rect
+        bbox = page.rect if bbox is None else bbox & page.rect
         image = page.getPixmap(clip=bbox, matrix=fitz.Matrix(zoom, zoom)) # type: fitz.Pixmap
         return cls.to_raw_dict(image, bbox)
+
 
     @classmethod
     def extract_images(cls, page:fitz.Page):
@@ -111,7 +113,7 @@ class ImagesExtractor:
                 raw_dict = cls.to_raw_dict(pix, bbox)
             images.append(raw_dict)
         return images
-    
+
 
     @staticmethod
     def recover_pixmap(doc:fitz.Document, item:list):

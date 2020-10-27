@@ -187,6 +187,7 @@ class Converter:
         image_blocks_group = defaultdict(list)
         for block in raw_layout['blocks']:
             if block['type'] != 1: continue
+            block['type'] = -1 # "delete" it temporally
             image_blocks_group[hash(block['image'])].append(block)
 
         # update raw layout blocks
@@ -196,10 +197,18 @@ class Converter:
                 if list(map(round, _img['bbox']))==bbox: return True
             return False
 
+        # An example to show complicated things here:
+        # - images in `page.getImageList`: [a, b, c]
+        # - images in `page.getText`     : [a1, a2, b, d]
+        # (1) a -> a1, a2: an image in page maps to multi-instances in raw dict
+        # (2) c: an image in page may not exist in raw dict -> so, add it
+        # (3) d: an image in raw dict may not exist in page -> so, delete it
         for image in recovered_images:
             for k, image_blocks in image_blocks_group.items():
                 if not same_images(image, image_blocks): continue
-                for image_block in image_blocks: image_block['image'] = image['image']
+                for image_block in image_blocks:
+                    image_block['type'] = 1 # add it back
+                    image_block['image'] = image['image']
                 break
 
             # an image outside the page is not counted in page.getText(), so let's add it here

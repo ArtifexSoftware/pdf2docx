@@ -164,9 +164,7 @@ class Path:
 
             # update bbox: note iso-oriented line segments, e.g. S.bbox.getArea()==0
             rect = S.bbox
-            if S.is_iso_oriented_line: 
-                print(S.bbox, w)
-                rect += (-w, -w, w, w)
+            if S.is_iso_oriented_line: rect += (-w, -w, w, w)
             self.bbox |= rect
 
 

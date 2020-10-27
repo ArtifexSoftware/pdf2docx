@@ -12,12 +12,12 @@ Square and Highlight considered.
 @author: train8808@gmail.com
 '''
 
+
 import fitz
 from ..common.base import lazyproperty
 from ..common import constants
 from ..common.Collection import BaseCollection
 from ..common.utils import new_page
-from ..common.BBox import BBox
 from ..image.Image import ImagesExtractor
 from .Path import Path
 
@@ -39,45 +39,31 @@ class PathsExtractor:
         # get raw paths
         self.parse_page(page)
 
-        # ------------------------------------------------------------
         # ignore vector graphics
-        # ------------------------------------------------------------
-        if constants.IGNORE_VEC_GRAPH:
-            iso_paths = self.paths.to_iso_paths()
-            return [], iso_paths
-
-        # ------------------------------------------------------------
-        # convert vector graphics to bitmap
-        # ------------------------------------------------------------ 
+        if constants.IGNORE_VEC_GRAPH: return [], self.paths.to_iso_paths()
+        
         # group connected paths -> each group is a potential vector graphic
         paths_list = self.paths.group_by_connectivity(dx=0.0, dy=0.0)
+        num = 0
+        while num!=len(paths_list)>0:
+            num = len(paths_list)
+            res = BaseCollection(paths_list).group_by_connectivity(dx=0.0, dy=0.0)
+            paths_list = []
+            for paths_group in res:
+                paths = Paths()
+                for paths_ in paths_group: paths.extend(paths_)
+                paths_list.append(paths)
 
-        # ignore anything covered by vector graphic, so group paths further
-        fun = lambda a,b: BBox().update_bbox(a.bbox).get_main_bbox(b, constants.FACTOR_SAME)
-        paths_group_list = BaseCollection(paths_list).group(fun)
-
+        # convert vector graphics to bitmap
         iso_paths, pixmaps = [], []
-        for paths_group in paths_group_list:
-            largest = max(paths_group, key=lambda paths: paths.bbox.getArea()) # type: Paths
-            if largest.contains_curve(constants.FACTOR_A_FEW):
-                image = largest.to_image(page, constants.FACTOR_RES, constants.FACTOR_ALMOST)
+        for paths in paths_list:
+            # can't be a table if curve path exists
+            if paths.contains_curve(constants.FACTOR_A_FEW):
+                image = paths.to_image(page, constants.FACTOR_RES)
+                if image: pixmaps.append(image)
+            # keep potential table border paths
             else:
-                image = None
-
-            # ignore anything under vector graphic
-            if image:
-                pixmaps.append(image)
-                continue
-
-            # otherwise, add each paths
-            for paths in paths_group:
-                # can't be a table if curve path exists
-                if paths.contains_curve(constants.FACTOR_A_FEW):
-                    image = paths.to_image(page, constants.FACTOR_RES, constants.FACTOR_ALMOST)
-                    if image: pixmaps.append(image)
-                # keep potential table border paths
-                else:
-                    iso_paths.extend(paths.to_iso_paths())
+                iso_paths.extend(paths.to_iso_paths())
 
         return pixmaps, iso_paths
 
@@ -94,7 +80,7 @@ class PathsExtractor:
         for raw_path in raw_paths:
             path = Path(raw_path)
             # ignore path out of page
-            if path.bbox and not path.bbox.intersects(page.rect): continue
+            if not path.bbox.intersects(page.rect): continue
             self.paths.append(path)
 
     
@@ -105,20 +91,28 @@ class Paths(BaseCollection):
         bbox = fitz.Rect()
         for instance in self._instances: bbox |= instance.bbox
         return bbox
-    
+
+
+    @lazyproperty
+    def curve_area(self):
+        '''Sum of curve path area.'''
+        curved_areas = [path.bbox.getArea() for path in self._instances if not path.is_iso_oriented]
+        return sum(curved_areas) if curved_areas else 0.0
+
+
     def contains_curve(self, ratio:float):
         ''' Whether any curve paths exist. 
             The criterion: the area ratio of all non-iso-oriented paths >= `ratio`
         '''
-        if not self.bbox.getArea(): return False
-
-        bbox = fitz.Rect()
-        for path in self._instances:            
-            if not path.is_iso_oriented: bbox |= path.bbox
-        return bbox.getArea()/self.bbox.getArea() >= ratio
+        area = self.bbox.getArea()
+        return self.curve_area/area >= ratio if area else False
 
 
     def append(self, path): self._instances.append(path)
+
+
+    def extend(self, paths):
+        for path in paths: self.append(path)
 
 
     def reset(self, paths:list): self._instances = paths
@@ -135,7 +129,7 @@ class Paths(BaseCollection):
         canvas.commit() # commit the drawing shapes to page
 
 
-    def to_image(self, page:fitz.Page, zoom:float, ratio:float):
+    def to_image(self, page:fitz.Page, zoom:float):
         '''Convert to image block dict.
             ---
             Args:
@@ -146,10 +140,6 @@ class Paths(BaseCollection):
         '''
         # ignore images outside page
         if not self.bbox.intersects(page.rect): return None
-
-        # NOTE: the image size shouldn't exceed a limitation.
-        # if self.bbox.getArea()/page.rect.getArea()>=ratio: return None
-
         return ImagesExtractor.clip_page(page, self.bbox, zoom)
     
 
