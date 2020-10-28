@@ -101,15 +101,31 @@ class CellStructure:
         # cell range
         x0, x1 = self.merged_bbox[idx], self.merged_bbox[idx+2]
 
-        # check strokes
+        # check all candidate strokes
+        L = 0.0
+        border_strokes = []
         for stroke in strokes:
             bbox = (stroke.x0, stroke.y0, stroke.x1, stroke.y1)
             t0, t1 = bbox[idx], bbox[idx+2]
-            # it's the border shape if has a major intersection with cell border
-            L = min(x1, t1) - max(x0, t0)
-            if L/(x1-x0) >= constants.FACTOR_MAJOR: return stroke
+            if t1 <= x0: continue
+            if t0 >= x1: break
+            # intersection length
+            dl = min(x1, t1) - max(x0, t0)
+            # NOTE to ignore small intersection on end point
+            if dl < constants.MAJOR_DIST: continue 
+            L += dl
+            border_strokes.append(stroke)
+        
+        # use an empty stroke if nothing found, especially for merged cells.
+        # no worry since the border style will be set correctly by adjacent separate cells.
+        if L/(x1-x0) < constants.FACTOR_MAJOR: return Stroke()
 
-        return strokes[0] # use the first stroke if nothing found
+        # the entire border of merged cell must have same property, i.e. width and color
+        # otherwise, set empty stroke here and let adjacent cells set the correct style separately
+        if len(border_strokes)==1: return border_strokes[0]
+
+        properties = set([stroke.color for stroke in border_strokes])
+        return border_strokes[0] if len(properties)==1 else Stroke()
 
 
 class TableStructure:
@@ -385,9 +401,7 @@ class TableStructure:
 
 
     def _check_merging_status(self):
-        ''' Check cell merging status. taking row direction for example,
-            
-        '''
+        ''' Check cell merging status. '''
         x_cols, y_rows = self.x_cols, self.y_rows
         # check merged cells in each row
         merged_cells_rows = []  # type: list[list[int]]
@@ -464,11 +478,15 @@ class TableStructure:
         # otherwise, check border segments
         else:
             idx_start = (idx+1)%2 # 0, 1
-            start = table_bbox.bbox[idx_start]
+            idx_end = idx_start+2
 
+            occupied = [(border.bbox[idx_start], 
+                        border.bbox[idx_end]) for border in borders[current]]
+            occupied.append((bbox[idx_end], None)) # end point
+            start = bbox[idx_start] # start point
             segments = []
-            for border in borders[current]:
-                end = border.bbox[idx_start]
+            for (left, right) in occupied:
+                end = left
                 # not connected -> add missing border segment
                 if abs(start-end)>constants.MINOR_DIST:
                     bbox[idx_start] = start
@@ -476,9 +494,15 @@ class TableStructure:
                     segments.append(sample_border.copy().update_bbox(bbox))
                 
                 # update ref position
-                start = border.bbox[idx_start+2]
+                start = right
             
             borders[current].extend(segments)
+
+            # sort due to added segments
+            if direction in ('top', 'bottom'):
+                borders[current].sort_in_line_order()
+            else:
+                borders[current].sort_in_reading_order()                
 
 
     @staticmethod
@@ -510,7 +534,6 @@ class TableStructure:
             # NOTE: shapes MUST be sorted in reading order!!
             # multi-lines exist in a row/column
             for border in shapes:
-
                 # reference coordinates depending on checking direction
                 if direction=='row':
                     ref0, ref1 = border.y0, border.y1

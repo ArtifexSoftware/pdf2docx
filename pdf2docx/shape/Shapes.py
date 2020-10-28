@@ -91,7 +91,7 @@ class Shapes(Collection):
         return self._text_underlines_strikes
 
 
-    def clean_up(self, max_border_width:float, shape_merging_threshold:float):
+    def clean_up(self, max_border_width:float, shape_merging_threshold:float, shape_min_dimension:float):
         '''Clean rectangles:
             - delete rectangles fully contained in another one (beside, they have same bg-color)
             - join intersected and horizontally aligned rectangles with same height and bg-color
@@ -100,9 +100,12 @@ class Shapes(Collection):
         # sort in reading order
         self.sort_in_reading_order()
 
-        # remove shapes out of page
+        # clean up shapes:
+        # - remove shapes out of page
+        # - remove small shapes
         page_bbox = (0.0, 0.0, self.parent.width, self.parent.height)
-        f = lambda shape: shape.bbox.intersects(page_bbox)
+        f = lambda shape: shape.bbox.intersects(page_bbox) and \
+                        (shape.bbox.width>=shape_min_dimension or shape.bbox.height>=shape_min_dimension)
         shapes = filter(f, self._instances)
 
         # merge shapes if:

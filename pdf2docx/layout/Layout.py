@@ -88,6 +88,7 @@ class Layout:
             'page_margin_factor_top'         : 0.5, # [0,1] reduce top margin by factor
             'page_margin_factor_bottom'      : 0.5, # [0,1] reduce bottom margin by factor
             'shape_merging_threshold'        : 0.5, # [0,1] merge shape if the intersection exceeds this value
+            'shape_min_dimension'            : 2.0, # ignore shape if both width and height is lower than this value
             'line_overlap_threshold'         : 0.9, # [0,1] delete line if the intersection to other lines exceeds this value
             'line_merging_threshold'         : 2.0, # combine two lines if the x-distance is lower than this value
             'line_separate_threshold'        : 5.0, # two separate lines if the x-distance exceeds this value
@@ -230,7 +231,8 @@ class Layout:
         '''Clean up shapes and detect semantic types.'''
         # clean up shapes, e.g. remove negative or duplicated instances
         self.shapes.clean_up(self.settings['max_border_width'], 
-                            self.settings['shape_merging_threshold'])
+                            self.settings['shape_merging_threshold'],
+                            self.settings['shape_min_dimension'])
 
         # detect semantic type based on the positions to text blocks, 
         # e.g. table border v.s. text underline, table shading v.s. text highlight.
