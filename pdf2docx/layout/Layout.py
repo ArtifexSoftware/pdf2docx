@@ -83,6 +83,7 @@ class Layout:
             'max_border_width'             : constants.MAX_W_BORDER,            
             'min_border_clearance'         : constants.DW_BORDER,
             'float_image_ignorable_gap'    : constants.MAJOR_DIST,
+            'flow_layout_tolerance'        : constants.TINY_DIST,
         }
         if settings: default.update(settings)
         return default
@@ -209,6 +210,9 @@ class Layout:
         return self.blocks
 
 
+    # ----------------------------------------------------
+    # wraping Blocks and Shapes methods
+    # ----------------------------------------------------
     @debug_plot('Cleaned Shapes')
     def clean_up_shapes(self, **kwargs):
         '''Clean up shapes and detect semantic types.'''
@@ -245,7 +249,8 @@ class Layout:
         return self._tables_constructor \
                 .lattice_tables(self.settings['connected_border_tolerance'],
                                 self.settings['min_border_clearance'],
-                                self.settings['max_border_width']
+                                self.settings['max_border_width'],
+                                self.settings['flow_layout_tolerance']
                             )
 
 
@@ -254,7 +259,8 @@ class Layout:
         '''Parse table structure based on layout of blocks.'''
         return self._tables_constructor \
                 .stream_tables(self.settings['min_border_clearance'],
-                                self.settings['max_border_width']
+                                self.settings['max_border_width'],
+                                self.settings['flow_layout_tolerance']
                             )
 
 

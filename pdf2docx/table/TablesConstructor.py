@@ -36,13 +36,15 @@ class TablesConstructor:
 
 
     def lattice_tables(self, 
-                    connected_border_tolerance:float, # two borders are intersected if the gap lower than this value
-                    min_border_clearance:float,       # the minimum allowable clearance of two borders
-                    max_border_width:float            # max border width
-                    ):
+            connected_border_tolerance:float, # two borders are intersected if the gap lower than this value
+            min_border_clearance:float,       # the minimum allowable clearance of two borders
+            max_border_width:float,           # max border width
+            flow_layout_tolerance:float       # [0, 1] the larger of this value, the more tolerable of flow layout
+            ):
         '''Parse table with explicit borders/shadings represented by rectangle shapes.'''
         # group stroke shapes: each group may be a potential table
-        grouped_strokes = self._shapes.table_strokes.group_by_connectivity(dx=connected_border_tolerance, dy=connected_border_tolerance)
+        grouped_strokes = self._shapes.table_strokes \
+            .group_by_connectivity(dx=connected_border_tolerance, dy=connected_border_tolerance)
 
         # all filling shapes
         fills = self._shapes.table_fillings
@@ -51,7 +53,8 @@ class TablesConstructor:
         tables = Blocks()
         settings = {
             'min_border_clearance': min_border_clearance,
-            'max_border_width': max_border_width
+            'max_border_width': max_border_width,
+            'flow_layout_tolerance': flow_layout_tolerance
         }
         for strokes in grouped_strokes:
             # potential shadings in this table region
@@ -75,7 +78,8 @@ class TablesConstructor:
 
     def stream_tables(self, 
                 min_border_clearance:float, 
-                max_border_width:float
+                max_border_width:float,
+                flow_layout_tolerance:float
             ):
         ''' Parse table with layout of text/image blocks, and update borders with explicit borders 
             represented by rectangle shapes.
@@ -125,7 +129,8 @@ class TablesConstructor:
         tables = Blocks()
         settings = {
             'min_border_clearance': min_border_clearance,
-            'max_border_width': max_border_width
+            'max_border_width': max_border_width,
+            'flow_layout_tolerance': flow_layout_tolerance
         }
         for table_lines in tables_lines:
             # bounding box

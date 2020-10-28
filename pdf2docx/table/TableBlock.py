@@ -121,7 +121,7 @@ class TableBlock(Block):
                 cell.blocks.join_horizontally().split_vertically()
 
                 # for lattice table, check cell blocks layout further
-                if self.is_lattice_table_block() and not cell.blocks.is_flow_layout: 
+                if self.is_lattice_table_block() and not cell.blocks.is_flow_layout(settings['flow_layout_tolerance']): 
                     cell.set_stream_table_layout(settings)                
 
 
