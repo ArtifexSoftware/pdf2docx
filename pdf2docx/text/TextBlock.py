@@ -86,9 +86,13 @@ class TextBlock(Block):
         return res
 
 
-    def add(self, line:Line):
-        '''Add line to TextBlock.'''
-        self.lines.append(line)
+    def add(self, line_or_lines):
+        '''Add line or lines to TextBlock.'''        
+        if isinstance(line_or_lines, (Lines, list, tuple)):
+            for line in line_or_lines:
+                self.lines.append(line)
+        else:
+            self.lines.append(line_or_lines)
 
 
     def split(self):
@@ -115,7 +119,7 @@ class TextBlock(Block):
         '''
         # block border in blue
         blue = RGB_component_from_name('blue')   
-        super().plot(page, stroke=blue)
+        super().plot(page, stroke=blue, dashes='[3.0 3.0] 0')
 
         # lines and spans
         for line in self.lines:

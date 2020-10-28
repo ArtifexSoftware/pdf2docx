@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ''' local test file for developing, with pdf2docx installed by
-    `python setpy.py develop`
+    `python setup.py develop`
 '''
 
 import os
@@ -116,7 +116,7 @@ def check_result(pdf_file, docx_file, compare_file_name, make_test_case):
         if make_test_case:
             layout_file = filename.replace('.pdf', '.json')
             print(f'Copy to {layout_file}...')
-            shutil.move(os.path.join(output, 'layout.json'), os.path.join(output, 'layouts', layout_file))
+            shutil.move(os.path.join(os.path.dirname(pdf_file), 'layout.json'), os.path.join(output, 'layouts', layout_file))
 
         print()
 
@@ -124,9 +124,9 @@ def check_result(pdf_file, docx_file, compare_file_name, make_test_case):
         print(f'Please convert {docx_file} to {docx_pdf_file} in advance.')
 
 
-def local_test(filename, compare=False, make_test_case=False):
-    pdf_file = os.path.join(output, f'{filename}.pdf')
-    docx_file = os.path.join(output, f'{filename}.docx')
+def local_test(sub_path, filename, compare=False, make_test_case=False):
+    pdf_file = os.path.join(output, sub_path, f'{filename}.pdf')
+    docx_file = os.path.join(output, sub_path, f'{filename}.docx')
 
     cv = Converter(pdf_file, docx_file)
 
@@ -146,7 +146,9 @@ def local_test(filename, compare=False, make_test_case=False):
         # with open('c.txt', 'w') as f:
         #     f.write(c)
         
-        # print(cv.doc_pdf.xrefObject(94))
+        # print(cv.doc_pdf.xrefObject(6))
+        # print(cv.doc_pdf._getXrefString(7))
+
 
         # with open('x.svg', 'w') as f:
         #     f.write(page.getSVGimage(text_as_path=False))
@@ -193,7 +195,8 @@ if __name__ == '__main__':
         'demo-table-stream'
     ]
 
-    filename = 't4'
-    local_test(filename, compare=False, make_test_case=False)
+    sub_path = 'samples'
+    filename = 'demo-table-close-underline'
+    local_test(sub_path, filename, compare=True, make_test_case=True)
 
     # for filename in filenames: local_test(filename, compare=True, make_test_case=True)

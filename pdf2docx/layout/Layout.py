@@ -115,8 +115,8 @@ class Layout:
         '''
 
         # preprocessing, e.g. change block order, clean negative block
-        self.clean_up_shapes(**kwargs)
         self.clean_up_blocks(**kwargs)
+        self.clean_up_shapes(**kwargs) # based on cleaned blocks
     
         # parse table blocks: 
         #  - table structure/format recognized from rectangles
@@ -130,6 +130,9 @@ class Layout:
         
         # paragraph / line spacing        
         self.parse_spacing()
+
+        # combine inline and floating objects
+        self.blocks.combine_floating_objects()
 
         return self
 
@@ -213,7 +216,6 @@ class Layout:
     def clean_up_blocks(self, **kwargs):
         '''Clean up blocks and calculate page margin accordingly.'''
         # clean up bad blocks, e.g. overlapping, out of page
-        # NOTE: this step should come after clean up shapes since the initial layout of blocks are used
         self.blocks.clean_up()
         
         # calculate page margin based on cleaned layout

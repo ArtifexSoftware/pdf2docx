@@ -41,7 +41,7 @@ from ..common import docx
 
 
 class TableBlock(Block):
-    '''Text block.'''
+    '''Table block.'''
     def __init__(self, raw:dict=None):
         if raw is None: raw = {}
         super().__init__(raw)
@@ -108,7 +108,23 @@ class TableBlock(Block):
                 if not cell: continue  # ignore merged cells   
                 cell.plot(page, content=content, style=style, color=color)
 
-    
+
+    def set_table_contents(self, blocks:list):
+        '''Assign `blocks` to associated cell.'''
+        for row in self._rows:
+            for cell in row:
+                if not cell: continue
+                # check candidate blocks
+                for block in blocks: cell.add(block)
+
+                # rearrange blocks lines
+                cell.blocks.join_horizontally().split_vertically()
+
+                # for lattice table, check cell blocks layout further
+                if self.is_lattice_table_block() and not cell.blocks.is_flow_layout: 
+                    cell.set_stream_table_layout()                
+
+
     def parse_text_format(self, rects):
         '''Parse text format for blocks contained in each cell.
             ---

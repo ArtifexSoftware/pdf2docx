@@ -7,7 +7,8 @@ Image Span based on same raw data structure with image block.
 @author: train8808@gmail.com
 '''
 
-from ..common import docx, utils, constants
+from io import BytesIO
+from ..common import docx, constants
 from .Image import Image
 
 
@@ -24,7 +25,7 @@ class ImageSpan(Image):
               - rect: fitz.Rect, target bbox
         '''
         # add image span if most of of the image is contained in bbox
-        if utils.get_main_bbox(self.bbox, rect, constants.FACTOR_MAJOR):
+        if self.get_main_bbox(rect, constants.FACTOR_MAJOR):
             return self.copy()
         
         # otherwise, ignore image
@@ -34,4 +35,4 @@ class ImageSpan(Image):
     def make_docx(self, paragraph):
         '''Add image span to a docx paragraph.'''
         # add image
-        docx.add_image(paragraph, self.image, self.bbox.x1-self.bbox.x0)
+        docx.add_image(paragraph, BytesIO(self.image), self.bbox.x1-self.bbox.x0)

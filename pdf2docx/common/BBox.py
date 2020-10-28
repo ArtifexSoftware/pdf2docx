@@ -15,7 +15,6 @@ CS. If final coordinates are provided, should update it after creating an empty 
 import copy
 import fitz
 from .base import IText
-from .utils import get_main_bbox
 from . import constants
 
 
@@ -58,12 +57,42 @@ class BBox(IText):
 
     def __repr__(self): return f'{self.__class__.__name__}({tuple(self.bbox)})'
 
-    
+
+    # ------------------------------------------------
+    # bbox operations
+    # ------------------------------------------------
+    def copy(self):
+        '''make a deep copy.'''
+        return copy.deepcopy(self)
+
+
     def get_expand_bbox(self, dt:float):
         '''Get expanded bbox with margin dt in both x- and y- direction. Note this method doesn't change its bbox.'''
         return self.bbox + (-dt, -dt, dt, dt)
-    
 
+
+    def update_bbox(self, rect):
+        '''Update current bbox to specified `rect`.
+            ---
+            Args:
+              - rect: fitz.rect or raw bbox like (x0, y0, x1, y1) in real page CS (with rotation considered).
+        '''
+        self.bbox = fitz.Rect([round(x,1) for x in rect])
+        return self
+
+
+    def union_bbox(self, bbox):
+        '''Update current bbox to the union with specified `rect`.
+            ---
+            Args:
+              - bbox: BBox, the target to get union
+        '''
+        return self.update_bbox(self.bbox | bbox.bbox)
+
+
+    # --------------------------------------------
+    # location relationship to other Bbox
+    # -------------------------------------------- 
     def contains(self, bbox, threshold:float=1.0):
         '''Whether given bbox is contained in this instance, with margin considered.'''
         # it's not practical to set a general threshold to consider the margin, so two steps:
@@ -83,7 +112,26 @@ class BBox(IText):
         else:
             return self.bbox.height+constants.MINOR_DIST >= bbox.bbox.height
    
-   
+
+    def get_main_bbox(self, bbox, threshold:float=0.95):
+        ''' If the intersection with `bbox` exceeds the threshold, return the union of
+            these two bbox-es; else return None.
+        '''
+        bbox_1 = self.bbox
+        bbox_2 = bbox.bbox if hasattr(bbox, 'bbox') else fitz.Rect(bbox)
+        
+        # areas
+        b = bbox_1 & bbox_2
+        if not b: return None # no intersection
+
+        a1, a2, a = bbox_1.getArea(), bbox_2.getArea(), b.getArea()        
+
+        # Note: if bbox_1 and bbox_2 intersects with only an edge, b is not empty but b.getArea()=0
+        # so give a small value when they're intersected but the area is zero
+        factor = a/min(a1,a2) if a else 1e-6
+        return bbox_1 | bbox_2 if factor >= threshold else None
+
+
     def vertically_align_with(self, bbox, factor:float=0.0, text_direction:bool=True):
         ''' Check whether two boxes have enough intersection in vertical direction, i.e. perpendicular to reading direction.
             ---
@@ -154,36 +202,39 @@ class BBox(IText):
         return L1+L2-L>=factor*max(L1,L2)
 
 
-    def copy(self):
-        '''make a deep copy.'''
-        return copy.deepcopy(self)    
+    def in_same_row(self, bbox):
+        ''' Check whether in same row/line with specified BBox instance. Note text direction.
 
+            taking horizontal text as an example:
+            - yes: the bottom edge of each box is lower than the centerline of the other one;
+            - otherwise, not in same row.
 
-    def update_bbox(self, rect):
-        '''Update current bbox to specified `rect`.
-            ---
-            Args:
-              - rect: fitz.rect or raw bbox like (x0, y0, x1, y1) in real page CS (with rotation considered).
+            Note the difference with method `horizontally_align_with`. They may not in same line, though
+            aligned horizontally.
         '''
-        self.bbox = fitz.Rect([round(x,1) for x in rect])
-        return self
+        if not bbox or self.text_direction != bbox.text_direction:
+            return False
+
+        # normal reading direction by default
+        idx = 1 if self.is_horizontal_text else 0
+
+        c1 = (self.bbox[idx] + self.bbox[idx+2]) / 2.0
+        c2 = (bbox.bbox[idx] + bbox.bbox[idx+2]) / 2.0
+
+        # Note y direction under PyMuPDF context
+        res = c1<=bbox.bbox[idx+2] and c2<=self.bbox[idx+2]
+        return res
 
 
-    def union_bbox(self, bbox):
-        '''Update current bbox to the union with specified `rect`.
-            ---
-            Args:
-              - bbox: BBox, the target to get union
-        '''
-        return self.update_bbox(self.bbox | bbox.bbox)
-
-
+    # ------------------------------------------------
+    # others
+    # ------------------------------------------------
     def compare(self, bbox, threshold=0.9):
         '''Whether has same type and bbox.'''
         if not isinstance(bbox, self.__class__):
             return False, f'Inconsistent type: {self.__class__.__name__} v.s. {bbox.__class__.__name__} (expected)'
         
-        if not get_main_bbox(self.bbox, bbox.bbox, threshold):
+        if not self.get_main_bbox(bbox, threshold):
             return False, f'Inconsistent bbox: {self.bbox} v.s. {bbox.bbox}(expected)'
         
         return True, ''
@@ -194,6 +245,6 @@ class BBox(IText):
         return { 'bbox': tuple([x for x in self.bbox]) }
 
     
-    def plot(self, page, stroke:tuple=(0,0,0), width:float=0.5, fill:tuple=None):
+    def plot(self, page, stroke:tuple=(0,0,0), width:float=0.5, fill:tuple=None, dashes:str=None):
         '''Plot bbox in PDF page.'''
-        page.drawRect(self.bbox, color=stroke, fill=fill, width=width, overlay=False)
+        page.drawRect(self.bbox, color=stroke, fill=fill, width=width, dashes=dashes, overlay=False, fill_opacity=0.5)

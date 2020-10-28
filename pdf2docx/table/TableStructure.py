@@ -11,7 +11,6 @@ import fitz
 
 from ..common.BBox import BBox
 from ..common.base import RectType
-from ..common.utils import get_main_bbox
 from ..common import constants
 from ..shape.Shape import Shape, Stroke
 from ..shape.Shapes import Shapes
@@ -76,11 +75,11 @@ class CellStructure:
         # modify the cell bbox from border center to inner region
         x0, y0, x1, y1 = self.merged_bbox
         inner_bbox = (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
-        target_bbox = fitz.Rect(inner_bbox)
+        target_bbox = BBox().update_bbox(inner_bbox)
 
         # shading shape of this cell        
         for shape in fills:
-            if get_main_bbox(shape.bbox, target_bbox, threshold=constants.FACTOR_MOST):
+            if shape.contains(target_bbox, threshold=constants.FACTOR_MOST):
                 self.shading = shape
                 break
         else:
