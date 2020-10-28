@@ -78,6 +78,19 @@ class TextBlock(Block):
             return TextDirection.LEFT_RIGHT
 
 
+    def is_flow_layout(self, float_layout_tolerance:float):
+        '''Check if flow layout: same bottom-left point for lines in same row.'''
+        # lines in same row
+        fun = lambda a, b: a.horizontally_align_with(b, factor=float_layout_tolerance)
+        groups = self.lines.group(fun)
+        
+        # check bottom-left point of lines
+        for lines in groups:
+            points = set([line.bbox[3] for line in lines])
+            if max(points)-min(points)>constants.MINOR_DIST: return False
+        return True
+
+
     def store(self):
         res = super().store()
         res.update({
@@ -213,7 +226,11 @@ class TextBlock(Block):
         return flag
 
 
-    def parse_horizontal_spacing(self, bbox):
+    def parse_horizontal_spacing(self, bbox,
+                    line_separate_threshold:float,
+                    lines_left_aligned_threshold:float,
+                    lines_right_aligned_threshold:float,
+                    lines_center_aligned_threshold:float):
         ''' Set horizontal spacing based on lines layout and page bbox.
             - The general spacing is determined by paragraph alignment and indentation.
             - The detailed spacing of block lines is determined by tab stops.
@@ -228,8 +245,14 @@ class TextBlock(Block):
         
         # the idea is to detect alignments based on internal lines and external bbox,
         # the alignment mode fulfilled with both these two criteria is preferred.
-        int_mode = self._internal_alignments((idx0, idx1, f))
-        ext_mode = self._external_alignments(bbox, (idx0, idx1, f)) # set horizontal space additionally
+        int_mode = self._internal_alignments((idx0, idx1, f),
+                        line_separate_threshold,
+                        lines_left_aligned_threshold,
+                        lines_right_aligned_threshold,
+                        lines_center_aligned_threshold)
+        ext_mode = self._external_alignments(bbox, 
+                        (idx0, idx1, f),
+                        lines_center_aligned_threshold) # set horizontal space additionally
         mode = int_mode & ext_mode
 
         # now, decide the alignment accordingly
@@ -352,7 +375,11 @@ class TextBlock(Block):
 
 
 
-    def _internal_alignments(self, text_direction_param:tuple):
+    def _internal_alignments(self, text_direction_param:tuple, 
+                    line_separate_threshold:float,
+                    lines_left_aligned_threshold:float,
+                    lines_right_aligned_threshold:float,
+                    lines_center_aligned_threshold:float):
         ''' Detect text alignment mode based on layout of internal lines. 
             Return possibility of the alignments, left-center-right-justify e.g. 
             - 0b1000 = left align
@@ -380,7 +407,7 @@ class TextBlock(Block):
             if len(row)==1: continue
             for i in range(1, len(row)):
                 dis = (row[i].bbox[idx0]-row[i-1].bbox[idx1])*f
-                if dis >= constants.MAJOR_DIST:
+                if dis >= line_separate_threshold:
                     return 0b1000
 
         # --------------------------------------------------------------------------
@@ -390,14 +417,14 @@ class TextBlock(Block):
         X1 = [lines[-1].bbox[idx1] for lines in rows]
         X  = [(x0+x1)/2.0 for (x0, x1) in zip(X0, X1)]
 
-        left_aligned   = abs(max(X0)-min(X0))<=constants.MINOR_DIST
-        right_aligned  = abs(max(X1)-min(X1))<=constants.MINOR_DIST
-        center_aligned = abs(max(X)-min(X))  <=constants.MINOR_DIST * 2.0 # coarse margin ofr center alignment
+        left_aligned   = abs(max(X0)-min(X0))<=lines_left_aligned_threshold
+        right_aligned  = abs(max(X1)-min(X1))<=lines_right_aligned_threshold
+        center_aligned = abs(max(X)-min(X))  <=lines_center_aligned_threshold # coarse margin for center alignment
 
         # Note the case that all lines aligned left, but with last line removed, it becomes justify mode.
         if left_aligned and len(rows)>=3: # at least 2 lines excepting the last line
             X1 = X1[0:-1]
-            right_aligned = abs(max(X1)-min(X1))<=constants.MINOR_DIST
+            right_aligned = abs(max(X1)-min(X1))<=lines_right_aligned_threshold
             if right_aligned: return 0b0001
 
         # use bits to represent alignment status
@@ -408,7 +435,9 @@ class TextBlock(Block):
         return res
 
 
-    def _external_alignments(self, bbox:list, text_direction_param:tuple):
+    def _external_alignments(self, bbox:list, 
+            text_direction_param:tuple,
+            lines_center_aligned_threshold:float):
         ''' Detect text alignment mode based on the position to external bbox. 
             Return possibility of the alignments, left-center-right-justify, e.g. 
             - 0b1000 = left align
@@ -445,7 +474,7 @@ class TextBlock(Block):
             return 0b1000 if abs(d_left) <= abs(d_right) else 0b0010
         
         # then, check if align center precisely
-        elif abs(d_center) < constants.MINOR_DIST * 3.0: 
+        elif abs(d_center) < lines_center_aligned_threshold: 
             return 0b0100
 
         # otherwise, we can't decide it

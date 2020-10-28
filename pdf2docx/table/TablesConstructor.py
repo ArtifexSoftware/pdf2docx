@@ -39,7 +39,9 @@ class TablesConstructor:
             connected_border_tolerance:float, # two borders are intersected if the gap lower than this value
             min_border_clearance:float,       # the minimum allowable clearance of two borders
             max_border_width:float,           # max border width
-            flow_layout_tolerance:float       # [0, 1] the larger of this value, the more tolerable of flow layout
+            float_layout_tolerance:float,      # [0,1] the larger of this value, the more tolerable of flow layout
+            line_overlap_threshold:float,     # [0,1] delete line if the intersection to other lines exceeds this value
+            line_merging_threshold:float      # combine two lines if the x-distance is lower than this value
             ):
         '''Parse table with explicit borders/shadings represented by rectangle shapes.'''
         # group stroke shapes: each group may be a potential table
@@ -54,7 +56,9 @@ class TablesConstructor:
         settings = {
             'min_border_clearance': min_border_clearance,
             'max_border_width': max_border_width,
-            'flow_layout_tolerance': flow_layout_tolerance
+            'float_layout_tolerance': float_layout_tolerance,
+            'line_overlap_threshold': line_overlap_threshold,
+            'line_merging_threshold': line_merging_threshold
         }
         for strokes in grouped_strokes:
             # potential shadings in this table region
@@ -79,7 +83,9 @@ class TablesConstructor:
     def stream_tables(self, 
                 min_border_clearance:float, 
                 max_border_width:float,
-                flow_layout_tolerance:float
+                float_layout_tolerance:float,
+                line_overlap_threshold:float,
+                line_merging_threshold
             ):
         ''' Parse table with layout of text/image blocks, and update borders with explicit borders 
             represented by rectangle shapes.
@@ -89,7 +95,7 @@ class TablesConstructor:
         table_fillings = self._shapes.table_fillings
 
         # lines in potential stream tables
-        tables_lines = self._blocks.collect_stream_lines(table_fillings)            
+        tables_lines = self._blocks.collect_stream_lines(table_fillings, float_layout_tolerance)            
 
         # define a function to get the vertical boundaries of given table
         X0, Y0, X1, Y1 = self._parent.bbox
@@ -130,7 +136,9 @@ class TablesConstructor:
         settings = {
             'min_border_clearance': min_border_clearance,
             'max_border_width': max_border_width,
-            'flow_layout_tolerance': flow_layout_tolerance
+            'float_layout_tolerance': float_layout_tolerance,
+            'line_overlap_threshold': line_overlap_threshold,
+            'line_merging_threshold': line_merging_threshold
         }
         for table_lines in tables_lines:
             # bounding box

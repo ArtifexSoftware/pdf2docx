@@ -52,9 +52,8 @@ class Lines(Collection):
         return spans
 
     
-    def join(self):
-        ''' Merge lines aligned horizontally, e.g. make inline image as a span in text line.
-        '''
+    def join(self, line_overlap_threshold:float, line_merging_threshold:float):
+        ''' Merge lines aligned horizontally, e.g. make inline image as a span in text line.'''
         # skip if empty
         if not self._instances: return self
     
@@ -69,7 +68,7 @@ class Lines(Collection):
             if not lines: lines.append(line)
             
             # ignore this line if overlap with previous line
-            elif line.get_main_bbox(lines[-1], threshold=constants.FACTOR_MOST):
+            elif line.get_main_bbox(lines[-1], threshold=line_overlap_threshold):
                 print(f'Ignore Line "{line.text}" due to overlap')
 
             # add line directly if not aligned horizontally with previous line
@@ -78,7 +77,7 @@ class Lines(Collection):
 
             # if it exists x-distance obviously to previous line,
             # take it as a separate line as it is
-            elif abs(line.bbox.x0-lines[-1].bbox.x1) > constants.MINOR_DIST:
+            elif abs(line.bbox.x0-lines[-1].bbox.x1) > line_merging_threshold:
                 lines.append(line) 
 
             # now, this line will be append to previous line as a span

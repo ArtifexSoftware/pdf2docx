@@ -135,14 +135,6 @@ class Collection(BaseCollection, IText):
         return TextDirection.LEFT_RIGHT 
 
 
-    def is_flow_layout(self, flow_layout_tolerance:float):
-        '''Check if flow layout.'''
-        # not flow layout if exist two instances that horizontally aligned but not in same row
-        fun = lambda a, b: a.horizontally_align_with(b, factor=flow_layout_tolerance) and not a.in_same_row(b)
-        groups = self.group(fun)
-        return len(groups) == len(self)
-
-
     def from_dicts(self, *args, **kwargs):
         '''Construct Collection from a list of dict.'''
         raise NotImplementedError

@@ -79,12 +79,24 @@ class Layout:
     @staticmethod
     def _init_settings(settings:dict):
         default = {            
-            'connected_border_tolerance'   : constants.TINY_DIST,
-            'max_border_width'             : constants.MAX_W_BORDER,            
-            'min_border_clearance'         : constants.DW_BORDER,
-            'float_image_ignorable_gap'    : constants.MAJOR_DIST,
-            'flow_layout_tolerance'        : constants.TINY_DIST,
+            'connected_border_tolerance'     : 0.5, # two borders are intersected if the gap lower than this value
+            'max_border_width'               : 6.0, # max border width
+            'min_border_clearance'           : 2.0, # the minimum allowable clearance of two borders
+            'float_image_ignorable_gap'      : 5.0, # float image if the intersection exceeds this value
+            'float_layout_tolerance'         : 0.1, # [0,1] the larger of this value, the more tolerable of float layout
+            'page_margin_tolerance_right'    : 5.0, # reduce right page margin to leave more space
+            'page_margin_factor_top'         : 0.5, # [0,1] reduce top margin by factor
+            'page_margin_factor_bottom'      : 0.5, # [0,1] reduce bottom margin by factor
+            'shape_merging_threshold'        : 0.5, # [0,1] merge shape if the intersection exceeds this value
+            'line_overlap_threshold'         : 0.9, # [0,1] delete line if the intersection to other lines exceeds this value
+            'line_merging_threshold'         : 2.0, # combine two lines if the x-distance is lower than this value
+            'line_separate_threshold'        : 5.0, # two separate lines if the x-distance exceeds this value
+            'lines_left_aligned_threshold'   : 1.0, # left aligned if delta left edge of two lines is lower than this value
+            'lines_right_aligned_threshold'  : 1.0, # right aligned if delta right edge of two lines is lower than this value
+            'lines_center_aligned_threshold' : 2.0, # center aligned if delta center of two lines is lower than this value
         }
+
+        # update user defined parameters
         if settings: default.update(settings)
         return default
 
@@ -217,7 +229,8 @@ class Layout:
     def clean_up_shapes(self, **kwargs):
         '''Clean up shapes and detect semantic types.'''
         # clean up shapes, e.g. remove negative or duplicated instances
-        self.shapes.clean_up(self.settings['max_border_width'])
+        self.shapes.clean_up(self.settings['max_border_width'], 
+                            self.settings['shape_merging_threshold'])
 
         # detect semantic type based on the positions to text blocks, 
         # e.g. table border v.s. text underline, table shading v.s. text highlight.
@@ -235,7 +248,9 @@ class Layout:
     def clean_up_blocks(self, **kwargs):
         '''Clean up blocks and calculate page margin accordingly.'''
         # clean up bad blocks, e.g. overlapping, out of page
-        self.blocks.clean_up(self.settings['float_image_ignorable_gap'])
+        self.blocks.clean_up(self.settings['float_image_ignorable_gap'],
+                        self.settings['line_overlap_threshold'],
+                        self.settings['line_merging_threshold'])
         
         # calculate page margin based on cleaned layout
         self._margin = self.page_margin()
@@ -250,7 +265,9 @@ class Layout:
                 .lattice_tables(self.settings['connected_border_tolerance'],
                                 self.settings['min_border_clearance'],
                                 self.settings['max_border_width'],
-                                self.settings['flow_layout_tolerance']
+                                self.settings['float_layout_tolerance'],
+                                self.settings['line_overlap_threshold'],
+                                self.settings['line_merging_threshold']
                             )
 
 
@@ -260,7 +277,9 @@ class Layout:
         return self._tables_constructor \
                 .stream_tables(self.settings['min_border_clearance'],
                                 self.settings['max_border_width'],
-                                self.settings['flow_layout_tolerance']
+                                self.settings['float_layout_tolerance'],
+                                self.settings['line_overlap_threshold'],
+                                self.settings['line_merging_threshold']
                             )
 
 
@@ -299,9 +318,10 @@ class Layout:
 
         # right margin
         x_max = max(map(lambda x: x.x1, list_bbox))
-        right = self.width - x_max - constants.DM_PAGE  # consider tolerance: leave more free space
-        right = min(right, left)                        # symmetry margin if necessary
-        right = max(right, 0.0)                         # avoid negative margin
+        right = self.width - x_max \
+            - self.settings['page_margin_tolerance_right']  # consider tolerance: leave more free space
+        right = min(right, left)                            # symmetry margin if necessary
+        right = max(right, 0.0)                             # avoid negative margin
 
         # top margin
         top = min(map(lambda x: x.y0, list_bbox))
@@ -312,8 +332,8 @@ class Layout:
         bottom = max(bottom, 0.0)
 
         # reduce calculated top/bottom margin to left some free space
-        top *= constants.FACTOR_PAGE_MARGIN
-        bottom *= constants.FACTOR_PAGE_MARGIN
+        top *= self.settings['page_margin_factor_top']
+        bottom *= self.settings['page_margin_factor_bottom']
 
         # use normal margin if calculated margin is large enough
         return (
@@ -328,4 +348,8 @@ class Layout:
         ''' Calculate external and internal vertical space for paragraph blocks under page context 
             or table context. It'll used as paragraph spacing and line spacing when creating paragraph.
         '''
-        self.blocks.parse_spacing()
+        self.blocks.parse_spacing(
+            self.settings['line_separate_threshold'],
+            self.settings['lines_left_aligned_threshold'],
+            self.settings['lines_right_aligned_threshold'],
+            self.settings['lines_center_aligned_threshold'])

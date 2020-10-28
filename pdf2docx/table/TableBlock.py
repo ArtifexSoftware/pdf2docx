@@ -118,10 +118,12 @@ class TableBlock(Block):
                 for block in blocks: cell.add(block)
 
                 # rearrange blocks lines
-                cell.blocks.join_horizontally().split_vertically()
+                cell.blocks.join_horizontally(text_direction=True, 
+                			line_overlap_threshold=settings['line_overlap_threshold'],
+                			line_merging_threshold=settings['line_merging_threshold']).split_vertically()
 
                 # for lattice table, check cell blocks layout further
-                if self.is_lattice_table_block() and not cell.blocks.is_flow_layout(settings['flow_layout_tolerance']): 
+                if self.is_lattice_table_block() and not cell.blocks.is_flow_layout(settings['float_layout_tolerance']): 
                     cell.set_stream_table_layout(settings)                
 
 
@@ -139,12 +141,20 @@ class TableBlock(Block):
         return True # always return True if table is parsed
 
 
-    def parse_spacing(self):
+    def parse_spacing(self,
+                line_separate_threshold:float,
+                lines_left_aligned_threshold:float,
+                lines_right_aligned_threshold:float,
+                lines_center_aligned_threshold:float):
         ''' Calculate vertical space for blocks contained in table cells.'''
         for row in self._rows:
             for cell in row:
                 if not cell: continue
-                cell.blocks.parse_spacing()
+                cell.blocks.parse_spacing(
+                    line_separate_threshold,
+                    lines_left_aligned_threshold,
+                    lines_right_aligned_threshold,
+                    lines_center_aligned_threshold)
 
 
     def make_docx(self, table):

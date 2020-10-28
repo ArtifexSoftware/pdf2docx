@@ -76,7 +76,7 @@ class Block(BBox):
                 return t
         return TextAlignment.LEFT
 
-    def parse_horizontal_spacing(self, bbox):
+    def parse_horizontal_spacing(self, bbox, *varargs):
         '''set left alignment by default.'''
         # NOTE: in PyMuPDF CS, horizontal text direction is same with positive x-axis,
         # while vertical text is on the contrarory, so use f = -1 here

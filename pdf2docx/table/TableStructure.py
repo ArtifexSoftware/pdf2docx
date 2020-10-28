@@ -232,7 +232,6 @@ class TableStructure:
             # row object
             row = Row()
             row.height = row_structures[0].bbox.y1-row_structures[0].bbox.y0
-            
             for cell_structure in row_structures:
                 # if current cell is merged horizontally or vertically, set None.
                 # actually, it will be counted in the top-left cell of the merged range.
@@ -402,8 +401,8 @@ class TableStructure:
         merged_cells_cols = []  # type: list[list[int]]
         ordered_strokes = [self.h_strokes[k] for k in y_rows]
         for cell in self.cells[0]:
-            ref_x = (cell.bbox.x0+cell.bbox.x1)/2.0            
-            col_structure = TableStructure._check_merged_cells(ref_x, ordered_strokes, 'column')        
+            ref_x = (cell.bbox.x0+cell.bbox.x1)/2.0
+            col_structure = TableStructure._check_merged_cells(ref_x, ordered_strokes, 'column')
             merged_cells_cols.append(col_structure)
 
         # check merged cells
@@ -459,7 +458,7 @@ class TableStructure:
         bbox[(idx+2)%4] = target
 
         # add whole border if not exist
-        if abs(target-current)>max_border_width:
+        if abs(target-current)> max_border_width:
             borders[target] = Shapes([sample_border.copy().update_bbox(bbox)])
         
         # otherwise, check border segments

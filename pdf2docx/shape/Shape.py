@@ -207,7 +207,7 @@ class Fill(Shape):
         '''Convert to Stroke instance based on width criterion.
 
             NOTE: a Fill from shape point of view may be a Stroke from content point of view.
-            The criterion here is whether the width is smaller than `MAX_W_BORDER` defined in constants.
+            The criterion here is whether the width is smaller than defined `max_border_width.
         '''
         w = min(self.bbox.width, self.bbox.height)
 

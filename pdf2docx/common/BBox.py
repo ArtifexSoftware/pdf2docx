@@ -166,7 +166,7 @@ class BBox(IText):
         L2 = bbox.bbox[idx+2]-bbox.bbox[idx]
         L = max(self.bbox[idx+2], bbox.bbox[idx+2]) - min(self.bbox[idx], bbox.bbox[idx])
 
-        return L1+L2-L>=factor*max(L1,L2)
+        return L1+L2-L>=factor*min(L1,L2)
 
 
     def horizontally_align_with(self, bbox, factor:float=0.0, text_direction:bool=True):
@@ -198,8 +198,7 @@ class BBox(IText):
         L1 = self.bbox[idx+2]-self.bbox[idx]
         L2 = bbox.bbox[idx+2]-bbox.bbox[idx]
         L = max(self.bbox[idx+2], bbox.bbox[idx+2]) - min(self.bbox[idx], bbox.bbox[idx])
-
-        return L1+L2-L>=factor*max(L1,L2)
+        return L1+L2-L>=factor*min(L1,L2)
 
 
     def in_same_row(self, bbox):
@@ -220,9 +219,7 @@ class BBox(IText):
 
         c1 = (self.bbox[idx] + self.bbox[idx+2]) / 2.0
         c2 = (bbox.bbox[idx] + bbox.bbox[idx+2]) / 2.0
-
-        # Note y direction under PyMuPDF context
-        res = c1<=bbox.bbox[idx+2] and c2<=self.bbox[idx+2]
+        res = c1<=bbox.bbox[idx+2] and c2<=self.bbox[idx+2] # Note y direction under PyMuPDF context
         return res
 
 

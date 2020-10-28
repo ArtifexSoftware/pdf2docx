@@ -91,7 +91,7 @@ class Shapes(Collection):
         return self._text_underlines_strikes
 
 
-    def clean_up(self, max_border_width:float):
+    def clean_up(self, max_border_width:float, shape_merging_threshold:float):
         '''Clean rectangles:
             - delete rectangles fully contained in another one (beside, they have same bg-color)
             - join intersected and horizontally aligned rectangles with same height and bg-color
@@ -114,18 +114,13 @@ class Shapes(Collection):
                 # Do nothing if these two shapes in different bg-color
                 if ref_shape.color!=shape.color: continue     
 
-                # combine two shapes in a same row if any intersection exists
-                # ideally the aligning threshold should be 1.0, tolerance is considered here
-                if shape.horizontally_align_with(ref_shape, constants.FACTOR_SAME): 
-                    main_bbox = shape.get_main_bbox(ref_shape, 0.0)
+                # # combine two shapes in a same row if any intersection exists
+                # if shape.in_same_row(ref_shape): 
+                #     main_bbox = shape.get_main_bbox(ref_shape, 0.0)
 
-                # combine two shapes in a same column if any intersection exists
-                elif shape.vertically_align_with(ref_shape, constants.FACTOR_SAME):
-                    main_bbox = shape.get_main_bbox(ref_shape, 0.0)
-
-                # combine two shapes if they have a large intersection
-                else:
-                    main_bbox = shape.get_main_bbox(ref_shape, constants.FACTOR_A_HALF)
+                # # combine two shapes if they have a large intersection
+                # else:
+                main_bbox = shape.get_main_bbox(ref_shape, threshold=shape_merging_threshold)
 
                 if main_bbox:
                     ref_shape.update_bbox(main_bbox)

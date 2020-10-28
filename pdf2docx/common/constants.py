@@ -19,29 +19,11 @@ FACTOR_A_HALF = 0.5
 FACTOR_A_FEW = 0.1
 FACTOR_FEW = 0.01
 
-# -------------------------------------
-# page parameters
-# -------------------------------------
-DM_PAGE = 5.0 * PT
-FACTOR_PAGE_MARGIN = 0.5     # page margin factor
-
 
 # -------------------------------------
-# path extracting
+# docx
 # -------------------------------------
-N_BEZIER_SAMPLE = 5
-IGNORE_VEC_GRAPH = False
-FACTOR_RES = 3.0             # improve image resolution
-
-
-# -------------------------------------
-# table parsing
-# -------------------------------------
-# max/min width of table border in docx
-MAX_W_BORDER = 6.0
-MIN_W_BORDER = 0.25
 HIDDEN_W_BORDER = 0.0   # do not show border
-DW_BORDER = 2.0         # width difference of two connected borders
 MIN_LINE_SPACING = 0.7  # minimum line spacing available in MS word
 
 # -------------------------------------
