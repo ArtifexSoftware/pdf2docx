@@ -86,7 +86,7 @@ def docx2pdf(docx_file, pdf_file):
         return False
 
     # convert pdf with command line
-    cmd = f'OfficeToPDF333 "{docx_file}" "{pdf_file}"'
+    cmd = f'OfficeToPDF "{docx_file}" "{pdf_file}"'
     res = os.system(cmd)
     return res==0
 

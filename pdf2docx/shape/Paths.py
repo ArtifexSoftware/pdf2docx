@@ -51,7 +51,7 @@ class PathsExtractor:
             # a collection of paths groups:
             # clip page bitmap if it seems a vector graphic
             combined_paths = Paths()
-            for paths in collection: combined_paths.extend(list(paths))
+            for paths in collection: combined_paths.extend(list(paths))            
             if combined_paths.contains_curve(curve_path_ratio):
                 image = combined_paths.to_image(page, clip_image_res_ratio)
                 if image: pixmaps.append(image)
