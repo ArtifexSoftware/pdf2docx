@@ -24,7 +24,7 @@ more link:
 import os
 import json
 
-from pdf2docx import Converter, Layout, extract_tables, parse
+from pdf2docx import Converter, Layout, parse
 from pdf2docx.text.TextSpan import TextSpan
 
 
@@ -276,7 +276,7 @@ class Test_Main(Utility):
         '''test extracting contents from table.'''
         filename = 'demo-table'
         pdf_file = os.path.join(self.sample_dir, f'{filename}.pdf')
-        tables = extract_tables(pdf_file, start=0, end=1)
+        tables = Converter(pdf_file).extract_tables([0])
 
         # compare the last table
         sample = [

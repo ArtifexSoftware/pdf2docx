@@ -16,21 +16,13 @@ class Converter:
         with python-docx.
     '''
 
-    def __init__(self, pdf_file:str, docx_file:str=None):
+    def __init__(self, pdf_file:str):
         ''' Initialize fitz object with given pdf file path; initialize docx object.'''
         # pdf/docx filename
-        self.filename_pdf = pdf_file
-        self.filename_docx = docx_file if docx_file else pdf_file.replace('.pdf', '.docx')
-        if os.path.exists(self.filename_docx): os.remove(self.filename_docx)
+        self.filename_pdf = pdf_file        
 
         # fitz object to read pdf
         self._doc_pdf = fitz.Document(pdf_file)
-
-        # docx object to write file
-        self._doc_docx = Document()
-
-        # layout object: main worker
-        self._layout = None # type: Layout        
 
 
     def __getitem__(self, index):
@@ -45,27 +37,25 @@ class Converter:
             return self._doc_pdf[index]
 
 
-    def __len__(self):
-        return len(self._doc_pdf)
+    def __len__(self): return len(self._doc_pdf)
 
-
-    @property
-    def layout(self): return self._layout
 
     @property
     def doc_pdf(self): return self._doc_pdf
 
-    @property
-    def doc_docx(self): return self._doc_docx
-
-    def save(self): self._doc_docx.save(self.filename_docx)
-
-    def close(self): self._doc_pdf.close()
+    # @property
+    # def doc_docx(self): return self._doc_docx
 
 
-    def initialize(self, page:fitz.Page, config:dict):
-        '''Initialize layout object.'''
-
+    def make_page(self, 
+            page:fitz.Page, 
+            docx_file:Document,
+            docx_filename:str=None,
+            config:dict=None):
+        ''' Parse pdf `page` and write to `docx_file` with name `docx_filename`. 
+            If `docx_filename`=None, a same filename with source pdf file is used.
+            Return a Layout object.
+        '''
         # Layout blocks with image blocks updated
         # NOTE: all these coordinates are relative to un-rotated page
         # https://pymupdf.readthedocs.io/en/latest/page.html#modifying-pages
@@ -77,13 +67,27 @@ class Converter:
         *_, w, h = page.rect # always reflecting page rotation
         raw_layout.update({ 'width' : w, 'height': h })
 
-        # init layout
-        self._layout = Layout(raw_layout, page, config)
+        # init page layout
+        layout = Layout(raw_layout, page, config)
 
-        return self._layout
+        # parse page layout
+        layout.parse()
+        
+        # check docx filename
+        filename = docx_filename if docx_filename else self.filename_pdf.replace('.pdf', '.docx')
+        if os.path.exists(filename): os.remove(filename)
+
+        # write and save docx
+        layout.make_page(docx_file)
+        docx_file.save(filename)
+
+        return layout
 
 
-    def debug_page(self, page:fitz.Page, config:dict=None):
+    def close(self): self._doc_pdf.close()
+
+
+    def debug_page(self, page:fitz.Page, docx_filename:str=None, config:dict=None):
         ''' Parse, create and plot single page for debug purpose.
             Illustration pdf will be created during parsing the raw pdf layout.
         '''
@@ -101,33 +105,32 @@ class Converter:
             'filename': os.path.join(path, f'debug_{filename}')
         })
 
-        # init page layout
-        self.initialize(page, config)
-
-        # parse and save debug files
-        self.layout.parse()
-        self.layout.serialize(filename_json) # layout information
+        # convert page
+        docx_file = Document() # docx file to write
+        layout = self.make_page(page, docx_file, docx_filename, config)
         
-        # make docx page
-        self._layout.make_page(self.doc_docx)
-        self.save()
+        # layout information for debugging
+        layout.serialize(filename_json) 
 
-        return self
+        return layout
 
 
-    def make_docx(self, page_indexes:list, config:dict=None):
+    def make_docx(self, page_indexes:list, docx_filename:str=None, config:dict=None):
         '''Parse and create a list of pages.
             ---
             Args:
             - page_indexes    : list[int], page indexes to parse
             - multi_processing: bool, multi-processing mode if True
         '''
+        # docx file to write
+        docx_file = Document()
+
         t0 = perf_counter()
         config = config if config else {}
         if config.get('multi_processing', False):
-            self._make_docx_multi_processing(page_indexes, config)
+            self._make_docx_multi_processing(docx_file, page_indexes, config)
         else:
-            self._make_docx(page_indexes, config)
+            self._make_docx(docx_file, page_indexes, config)
         
         print(f'\n{"-"*50}\nTerminated in {perf_counter()-t0}s.')
 
@@ -141,7 +144,7 @@ class Converter:
         for i in page_indexes:
             print(f'\rProcessing Pages: {i+1}/{num_pages}...')
             page = self.doc_pdf[i]
-            page_tables = self.initialize(page, config).extract_tables()
+            page_tables = self.parse_page(page, config).extract_tables()
             tables.extend(page_tables)
 
         return tables
@@ -156,8 +159,15 @@ class Converter:
         num_pages = len(page_indexes)
         for i in page_indexes:
             print(f'\rProcessing Pages: {i+1}/{num_pages}...', end='', flush=True)
+
+            # parse page
             page = self.doc_pdf[i]
-            self.initialize(page, config).parse().make_page(self.doc_docx)
+            layout = self.parse_page(page, config)
+
+            # write and save page
+            self.write_page(layout, docx_file, filename)
+            
+
         self.save()
 
 
