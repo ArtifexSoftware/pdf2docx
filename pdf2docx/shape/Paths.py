@@ -15,79 +15,26 @@ Square and Highlight considered.
 
 import fitz
 from ..common.base import lazyproperty
-from ..common.Collection import BaseCollection
-from ..common.utils import new_page, flatten
+from ..common.Collection import BaseCollection, Collection
+from ..common.utils import flatten
 from ..image.Image import ImagesExtractor
 from .Path import Path
 
 
-class PathsExtractor:
-    '''Extract paths from PDF.'''
+class Paths(Collection):
+    '''A collection of paths.'''
 
-    def __init__(self): self.paths = Paths()
-    
-
-    def extract_paths(self, 
-                      page:fitz.Page, 
-                      curve_path_ratio:float=0.2,    # clip page bitmap if curve paths exceed this ratio
-                      clip_image_res_ratio:float=3.0 # resolution ratio of cliiped bitmap
-                      ):
-        ''' Convert extracted paths to DICT attributes:
-            - bitmap converted from vector graphics if necessary
-            - iso-oriented paths
-            
-            NOTE: the target is to extract horizontal/vertical paths for table parsing, while others
-            are converted to bitmaps.
-        '''
-        # get raw paths
-        self.parse_page(page)
-        
-        # group connected paths -> each group is a potential vector graphic        
-        paths_groups = self.paths.group()
-
-        # convert vector graphics to bitmap
-        iso_paths, pixmaps = [], []
-        for collection in paths_groups:
-            # a collection of paths groups:
-            # clip page bitmap if it seems a vector graphic
-            combined_paths = Paths()
-            for paths in collection: combined_paths.extend(list(paths))            
-            if combined_paths.contains_curve(curve_path_ratio):
-                image = combined_paths.to_image(page, clip_image_res_ratio)
-                if image: pixmaps.append(image)
-                continue
-            
-            # otherwise, check each paths in group
-            for paths in collection:                    
-                # can't be a table if curve path exists
-                if paths.contains_curve(curve_path_ratio):
-                    image = paths.to_image(page, clip_image_res_ratio)
-                    if image: pixmaps.append(image)
-                # keep potential table border paths
-                else:
-                    iso_paths.extend(paths.to_iso_paths())
-
-        return pixmaps, iso_paths
-
-    
-    def parse_page(self, page:fitz.Page):
-        '''Extract paths from PDF page.'''
-        # extract paths from pdf source: PyMuPDF >= 1.18.0
-        # Currently no clip path considered, so may exist paths out of page, which is to be processed
-        # after converting to real page CS (non-rotation page now). 
-        raw_paths = page.getDrawings()
-
-        # init Paths
-        self.paths.reset([])
-        for raw_path in raw_paths:
-            path = Path(raw_path)
+    def from_dicts(self, raws:list):
+        '''Initialize paths from raw data get by `page.getDrawings()`.'''
+        rect = self.parent.bbox
+        for raw in raws:
+            path = Path(raw)
             # ignore path out of page
-            if not path.bbox.intersects(page.rect): continue
-            self.paths.append(path)
-
+            if not path.bbox.intersects(rect): continue
+            self.append(path)
+        
+        return self
     
-class Paths(BaseCollection):
-    '''A collection of paths.'''    
     @lazyproperty
     def bbox(self):
         bbox = fitz.Rect()
@@ -115,9 +62,6 @@ class Paths(BaseCollection):
 
     def extend(self, paths):
         for path in paths: self.append(path)
-
-
-    def reset(self, paths:list): self._instances = paths
 
 
     def group(self):
@@ -149,11 +93,8 @@ class Paths(BaseCollection):
         return paths_groups
 
 
-    def plot(self, doc:fitz.Document, title:str, width:float, height:float):
+    def plot(self, page):
         if not self._instances: return
-        # insert a new page
-        page = new_page(doc, width, height, title)
-        
         # make a drawing canvas and plot path
         canvas = page.newShape()
         for path in self._instances: path.plot(canvas)
@@ -183,4 +124,42 @@ class Paths(BaseCollection):
             paths.extend(path.to_shapes())
         return paths
 
+
+    def to_images_and_shapes(self, page:fitz.Page, 
+            curve_path_ratio:float=0.2,    # clip page bitmap if curve paths exceed this ratio
+            clip_image_res_ratio:float=3.0 # resolution ratio of cliiped bitmap
+            ):
+        ''' Convert extracted paths to DICT attributes:
+            - bitmap converted from vector graphics if necessary
+            - iso-oriented paths
+            
+            NOTE: the target is to extract horizontal/vertical paths for table parsing, while others
+            are converted to bitmaps.
+        '''
+        # group connected paths -> each group is a potential vector graphic        
+        paths_groups = self.group()
+
+        # convert vector graphics to bitmap
+        iso_paths, pixmaps = [], []
+        for collection in paths_groups:
+            # a collection of paths groups:
+            # clip page bitmap if it seems a vector graphic
+            combined_paths = Paths()
+            for paths in collection: combined_paths.extend(list(paths))            
+            if combined_paths.contains_curve(curve_path_ratio):
+                image = combined_paths.to_image(page, clip_image_res_ratio)
+                if image: pixmaps.append(image)
+                continue
+            
+            # otherwise, check each paths in group
+            for paths in collection:                    
+                # can't be a table if curve path exists
+                if paths.contains_curve(curve_path_ratio):
+                    image = paths.to_image(page, clip_image_res_ratio)
+                    if image: pixmaps.append(image)
+                # keep potential table border paths
+                else:
+                    iso_paths.extend(paths.to_iso_paths())
+
+        return pixmaps, iso_paths
 

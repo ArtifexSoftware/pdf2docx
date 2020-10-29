@@ -120,16 +120,17 @@ def debug_plot(title:str):
             objects = func(*args, **kwargs)
 
             # check if plot layout
-            debug = kwargs.get('debug', False)
-            doc = kwargs.get('doc', None)
             layout = args[0] # Layout object
+            debug = layout.settings.get('debug', False)
+            doc = layout.settings.get('doc', None)
+            filename = layout.settings.get('filename', None)
 
             if objects and debug and doc is not None:                
                 # create a new page
                 page = new_page(doc, layout.width, layout.height, title)
-
                 # plot objects, e.g. text blocks, shapes, tables...
                 objects.plot(page)
+                doc.save(filename)
 
             return objects
         return inner
