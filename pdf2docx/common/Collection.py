@@ -8,8 +8,7 @@ A group of instances, e.g. instances, Spans, Shapes.
 '''
 
 from .BBox import BBox
-from .base import IText, TextDirection
-from .utils import solve_rects_intersection, graph_BFS
+from .share import IText, TextDirection, solve_rects_intersection, graph_bfs
 
 
 class BaseCollection:
@@ -72,7 +71,7 @@ class BaseCollection:
                     index_groups[j].add(i)
 
         # search graph -> grouped index of instance
-        groups = graph_BFS(index_groups)
+        groups = graph_bfs(index_groups)
         groups = [self.__class__([self._instances[i] for i in group]) for group in groups]
         return groups
 
@@ -106,7 +105,7 @@ class BaseCollection:
         solve_rects_intersection(i_rect_x, 2*num, index_groups)
 
         # search graph -> grouped index of instance
-        groups = graph_BFS(index_groups)
+        groups = graph_bfs(index_groups)
         groups = [self.__class__([self._instances[i] for i in group]) for group in groups]
         return groups
 

@@ -19,7 +19,7 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
 
 from fitz import Point
 from ..common.BBox import BBox
-from ..common.base import TextDirection
+from ..common.share import TextDirection
 from .Spans import Spans
 from ..image.ImageSpan import ImageSpan
 

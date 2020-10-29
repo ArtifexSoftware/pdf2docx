@@ -1,22 +1,26 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-
 from .converter import Converter
 
 
-def parse(pdf_file, docx_file=None, start=0, end=None, pages=None, **kwargs):
-    ''' Run the pdf2docx parser.
-    
-        Args:
-            pdf_file (str)  : PDF filename to read from
-            docx_file (str) : DOCX filename to write to
-            start (int)     : first page to process, starting from zero if --zero_based_index=True
-            end (int)       : last page to process, starting from zero if --zero_based_index=True
-            pages (list)    : range of pages
-            kwargs          : configuration parameters:
+class PDF2DOCX:
+    '''Command line interface for pdf2docx.'''
+
+    @staticmethod
+    def convert(pdf_file, docx_file=None, start=0, end=None, pages=None, **kwargs):
+        ''' Convert pdf file to docx file.
+        
+            Args:
+                pdf_file (str) : PDF filename to read from
+                docx_file (str): DOCX filename to write to
+                start (int)    : first page to process, starting from zero if --zero_based_index=True
+                end (int)      : last page to process, starting from zero if --zero_based_index=True
+                pages (list)   : range of pages
+                kwargs (dict)  : configuration parameters
                                 zero_based_index               : True, page index from 0 if True else 1
                                 multi_processing               : False, set multi-processes, especially for PDF with large pages
+                                cpu_count                      : cpu_count(), the count of cpu used for multi-processing
                                 connected_border_tolerance     : 0.5, two borders are intersected if the gap lower than this value
                                 max_border_width               : 6.0, max border width
                                 min_border_clearance           : 2.0, the minimum allowable clearance of two borders
@@ -35,62 +39,36 @@ def parse(pdf_file, docx_file=None, start=0, end=None, pages=None, **kwargs):
                                 lines_center_aligned_threshold : 2.0, center aligned if delta center of two lines is lower than this value
                                 clip_image_res_ratio           : 3.0, resolution ratio (to 72dpi) when cliping page image
                                 curve_path_ratio               : 0.2, clip page bitmap if the component of curve paths exceeds this ratio
-    '''
-    # start index mode
-    if not kwargs.get('zero_based_index', True):
-        start = max(start-1, 0)
-        if end: end -= 1
-        if pages: pages = [i-1 for i in pages]
-
-    cv = Converter(pdf_file, docx_file)
-
-    # parsing arguments
-    pdf_len = len(cv)
-    if pages: 
-        indexes = [int(x) for x in pages if 0<=x<pdf_len]
-    else:
-        end = end or pdf_len
-        s = slice(int(start), int(end))
-        indexes = range(pdf_len)[s]
-
-    # process page by page
-    cv.make_docx(indexes, kwargs)
-
-    # close pdf
-    cv.close()
+        '''
+        cv = Converter(pdf_file)
+        cv.make_docx(docx_file, start, end, pages, kwargs)
+        cv.close()
     
 
-def extract_tables(pdf_file, start=0, end=None, pages=None, **kwargs):
-    ''' Extract table content from pdf pages.
-    
-        Args:
-            pdf_file (str) : PDF filename to read from
-            start (int)    : first page to process, starting from zero
-            end (int)      : last page to process, starting from zero
-            pages (list)   : range of pages
-    '''
+    @staticmethod
+    def table(pdf_file, start=0, end=None, pages=None, **kwargs):
+        ''' Extract table content from pdf pages.
+        
+            Args:
+                pdf_file (str) : PDF filename to read from
+                start (int)    : first page to process, starting from zero
+                end (int)      : last page to process, starting from zero
+                pages (list)   : range of pages
+        '''
 
-    cv = Converter(pdf_file)
+        cv = Converter(pdf_file)
+        tables = cv.extract_tables(start, end, pages, kwargs)
+        cv.close()
 
-    # parsing arguments
-    pdf_len = len(cv)
-    if pages: 
-        indexes = [int(x) for x in pages if 0<=x<pdf_len]
-    else:
-        end = end or pdf_len
-        s = slice(int(start), int(end))
-        indexes = range(pdf_len)[s]
+        return tables
 
-    # process page by page
-    tables = cv.extract_tables(indexes, kwargs)
-    cv.close()
 
-    return tables
+parse = PDF2DOCX.convert
 
 
 def main():
     import fire
-    fire.Fire(parse)
+    fire.Fire(PDF2DOCX)
 
 
 if __name__ == '__main__':

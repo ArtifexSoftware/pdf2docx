@@ -24,7 +24,7 @@ Data structure based on results of `page.getDrawings()`:
 '''
 
 import fitz
-from ..common.utils import RGB_value
+from ..common.share import rgb_value
 
 
 class Segment:
@@ -52,7 +52,7 @@ class L(Segment):
                 'start': tuple(self.points[0]),
                 'end'  : tuple(self.points[1]),
                 'width': width,
-                'color': RGB_value(color)
+                'color': rgb_value(color)
             })
         return strokes
 
@@ -79,7 +79,7 @@ class R(Segment):
                     'start': points[i],
                     'end'  : points[i+1],
                     'width': width * 2.0, # seems need adjustment by * 2.0
-                    'color': RGB_value(color)
+                    'color': rgb_value(color)
                 })
         return strokes
 
@@ -142,7 +142,7 @@ class Segments:
         '''Convert segment closed area to a fill.'''
         return {
             'bbox' : list(self.bbox), 
-            'color': RGB_value(color)
+            'color': rgb_value(color)
         }
 
 

@@ -10,7 +10,7 @@ Parsing table structure based on strokes and fills.
 import fitz
 
 from ..common.BBox import BBox
-from ..common.base import RectType
+from ..common.share import RectType
 from ..common import constants
 from ..shape.Shape import Shape, Stroke
 from ..shape.Shapes import Shapes

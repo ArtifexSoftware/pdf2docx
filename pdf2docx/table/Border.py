@@ -29,7 +29,7 @@ Consider horizontal and vertical borders only.
 from ..shape.Shapes import Shapes
 from ..shape.Shape import Stroke
 from ..common import constants
-from ..common.base import RectType
+from ..common.share import RectType
 
 
 class Border:

@@ -35,9 +35,9 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from .Line import Line
 from .Lines import Lines
 from ..image.ImageSpan import ImageSpan
-from ..common.base import TextDirection, TextAlignment
+from ..common.share import TextDirection, TextAlignment
 from ..common.Block import Block
-from ..common.utils import RGB_component_from_name
+from ..common.share import rgb_component_from_name
 from ..common import constants
 from ..common import docx
 
@@ -131,18 +131,18 @@ class TextBlock(Block):
               - page: fitz.Page object
         '''
         # block border in blue
-        blue = RGB_component_from_name('blue')   
+        blue = rgb_component_from_name('blue')   
         super().plot(page, stroke=blue, dashes='[3.0 3.0] 0')
 
         # lines and spans
         for line in self.lines:
             # line border in red
-            red = RGB_component_from_name('red')
+            red = rgb_component_from_name('red')
             line.plot(page, stroke=red)
 
             # span regions in random color
             for span in line.spans:
-                c = RGB_component_from_name('')                
+                c = rgb_component_from_name('')                
                 span.plot(page, color=c)
 
 

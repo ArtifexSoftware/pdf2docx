@@ -10,7 +10,7 @@ Table Cell object.
 from docx.shared import Pt
 from ..text.TextBlock import TextBlock
 from ..common.BBox import BBox
-from ..common.utils import RGB_component
+from ..common.share import rgb_component
 from ..common import docx
 from ..layout import Blocks # avoid import conflict
 from ..text.Line import Line
@@ -92,12 +92,12 @@ class Cell(BBox):
         # plot cell style
         if style:
             # border color and width
-            bc = [x/255.0 for x in RGB_component(self.border_color[0])]
+            bc = [x/255.0 for x in rgb_component(self.border_color[0])]
             w = self.border_width[0]
 
             # shading color
             if self.bg_color != None:
-                sc = [x/255.0 for x in RGB_component(self.bg_color)] 
+                sc = [x/255.0 for x in rgb_component(self.bg_color)] 
             else:
                 sc = None
             super().plot(page, stroke=bc, fill=sc, width=w)

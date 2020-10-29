@@ -9,7 +9,7 @@ A group of Text/Image or Table block.
 from docx.shared import Pt
 from ..common import constants
 from ..common.Collection import Collection
-from ..common.base import BlockType
+from ..common.share import BlockType
 from ..common.Block import Block
 from ..common.docx import reset_paragraph_format
 from ..text.TextBlock import TextBlock
@@ -184,6 +184,7 @@ class Blocks(Collection):
             Under this circumstance, it only exists text blocks since all raw image blocks are converted to 
             text blocks.
         '''
+        if not self._instances: return
         # filter function:
         # - remove blocks out of page
         # - remove transformed text: text direction is not (1, 0) or (0, -1)

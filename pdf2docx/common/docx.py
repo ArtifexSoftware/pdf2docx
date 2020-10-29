@@ -13,7 +13,7 @@ from docx.enum.text import WD_COLOR_INDEX
 from docx.image.exceptions import UnrecognizedImageError
 from docx.table import _Cell
 
-from .utils import RGB_value
+from .share import rgb_value
 from . import constants
 
 
@@ -107,12 +107,12 @@ def set_char_shading(p_run, srgb:int):
     # try to set highlight first using python-docx built-in method
     # Here give 6/16 of the valid highlight colors
     color_map = {        
-        RGB_value((1,0,0)): WD_COLOR_INDEX.RED,
-        RGB_value((0,1,0)): WD_COLOR_INDEX.BRIGHT_GREEN,
-        RGB_value((0,0,1)): WD_COLOR_INDEX.BLUE,
-        RGB_value((1,1,0)): WD_COLOR_INDEX.YELLOW,
-        RGB_value((1,0,1)): WD_COLOR_INDEX.PINK,
-        RGB_value((0,1,1)): WD_COLOR_INDEX.TURQUOISE
+        rgb_value((1,0,0)): WD_COLOR_INDEX.RED,
+        rgb_value((0,1,0)): WD_COLOR_INDEX.BRIGHT_GREEN,
+        rgb_value((0,0,1)): WD_COLOR_INDEX.BLUE,
+        rgb_value((1,1,0)): WD_COLOR_INDEX.YELLOW,
+        rgb_value((1,0,1)): WD_COLOR_INDEX.PINK,
+        rgb_value((0,1,1)): WD_COLOR_INDEX.TURQUOISE
     }
     if srgb in color_map:
         p_run.font.highlight_color = color_map[srgb]

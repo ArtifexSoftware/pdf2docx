@@ -8,9 +8,9 @@ A group of Shape (Stroke or Fill) instances.
 '''
 
 from .Shape import Shape, Stroke, Fill
-from ..common.base import RectType, lazyproperty
+from ..common.share import RectType, lazyproperty
 from ..common.Collection import Collection
-from ..common import utils
+from ..common import share
 from ..common import constants
 
 
@@ -63,7 +63,7 @@ class Shapes(Collection):
         '''
         # white bg-color is by default, so ignore those fillings
         instances = list(filter(
-            lambda shape: isinstance(shape, Fill) and shape.color != utils.RGB_value((1,1,1)), self._instances))
+            lambda shape: isinstance(shape, Fill) and shape.color != share.rgb_value((1,1,1)), self._instances))
         return Shapes(instances)
 
 
@@ -97,6 +97,8 @@ class Shapes(Collection):
             - join intersected and horizontally aligned rectangles with same height and bg-color
             - join intersected and vertically aligned rectangles with same width and bg-color
         '''
+        if not self._instances: return
+        
         # sort in reading order
         self.sort_in_reading_order()
 

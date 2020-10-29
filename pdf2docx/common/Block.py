@@ -7,7 +7,7 @@ Base class for text/image/table blocks.
 @author: train8808@gmail.com
 '''
 
-from .base import BlockType, TextAlignment
+from .share import BlockType, TextAlignment
 from .BBox import BBox
 from . import constants
 
