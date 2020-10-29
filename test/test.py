@@ -51,14 +51,14 @@ class Utility:
         layout_file = os.path.join(self.layout_dir, f'{filename}.json')
         with open(layout_file, 'r') as f:
             raw_dict = json.load(f)
-        self.sample = Layout(raw_dict)
+        self.sample = Layout().restore(raw_dict)
 
         # parsed layout: first page only
         pdf_file = os.path.join(self.sample_dir, f'{filename}.pdf')
         docx_file = os.path.join(self.output_dir, f'{filename}.docx')
-        cv = Converter(pdf_file, docx_file)        
-        cv.make_docx([0])
-        self.test = cv.layout # type: Layout
+        cv = Converter(pdf_file)        
+        layouts = cv.make_docx(docx_file, pages=[0])
+        self.test = layouts[0] # type: Layout
         cv.close()
 
         return self
@@ -276,7 +276,7 @@ class Test_Main(Utility):
         '''test extracting contents from table.'''
         filename = 'demo-table'
         pdf_file = os.path.join(self.sample_dir, f'{filename}.pdf')
-        tables = Converter(pdf_file).extract_tables([0])
+        tables = Converter(pdf_file).extract_tables(end=1)
 
         # compare the last table
         sample = [

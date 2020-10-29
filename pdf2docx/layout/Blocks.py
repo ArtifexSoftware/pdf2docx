@@ -184,6 +184,7 @@ class Blocks(Collection):
             Under this circumstance, it only exists text blocks since all raw image blocks are converted to 
             text blocks.
         '''
+        if not self._instances: return
         # filter function:
         # - remove blocks out of page
         # - remove transformed text: text direction is not (1, 0) or (0, -1)

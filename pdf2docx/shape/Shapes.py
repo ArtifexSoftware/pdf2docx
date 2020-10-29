@@ -97,6 +97,8 @@ class Shapes(Collection):
             - join intersected and horizontally aligned rectangles with same height and bg-color
             - join intersected and vertically aligned rectangles with same width and bg-color
         '''
+        if not self._instances: return
+        
         # sort in reading order
         self.sort_in_reading_order()
 

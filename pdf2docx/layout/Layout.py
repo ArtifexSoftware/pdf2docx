@@ -47,46 +47,26 @@ from ..common import constants
 class Layout:
     ''' Object representing the whole page, e.g. margins, blocks, shapes, spacing.'''
 
-    def __init__(self, raw:dict, parent=None, settings:dict=None):
+    def __init__(self, parent=None, settings:dict=None):
         ''' Initialize page layout.
             ---
             Args:
-            - raw: raw dict representing page blocks, shape
             - parent: fitz.Page, owner of this layout
+            - settings: global parameters for layout parsing
         '''
-        # dict configuration parameters
-        self.settings = self._init_settings(settings)
-        self.width = raw.get('width', 0.0)
-        self.height = raw.get('height', 0.0)
-        
-        # page margin: 
-        # - dict from PyMuPDF: to calculate after cleaning blocks
-        # - restored from json: get margin directly
-        self._margin = raw.get('margin', None)
-
-        # pre-processing for layout blocks and shapes based on parent page
-        if parent:
-            self._preprocess_images(parent, raw)
-            self._preprocess_shapes(parent, raw)
-            
-            # BBox is a base class processing coordinates, so set rotation matrix globally
-            BBox.set_rotation_matrix(parent.rotationMatrix)
-
-        # initialize blocks
-        self.blocks = Blocks(parent=self).from_dicts(raw.get('blocks', []))
-
-        # initialize shapes: to add rectangles later
-        self.shapes = Shapes(parent=self).from_dicts(raw.get('shapes', []))
-
-        # table parser
-        self._tables_constructor = TablesConstructor(parent=self)
+        # global configuration parameters
+        self.settings = self.__init_settings(settings)
+       
+        # initialize layout
+        data = self.__source_from_page(parent) if parent else {}
+        self.restore(data)
 
         # plot initial layout for debug purpose: settings['debug']=True
         self.plot()
 
 
     @staticmethod
-    def _init_settings(settings:dict):
+    def __init_settings(settings:dict):
         default = {
             'debug': False, # plot layout if True
             'connected_border_tolerance'     : 0.5, # two borders are intersected if the gap lower than this value
@@ -107,6 +87,7 @@ class Layout:
             'lines_center_aligned_threshold' : 2.0, # center aligned if delta center of two lines is lower than this value
             'clip_image_res_ratio'           : 3.0, # resolution ratio (to 72dpi) when cliping page image
             'curve_path_ratio'               : 0.2, # clip page bitmap if the component of curve paths exceeds this ratio
+            'extract_stream_table'           : False, # don't consider stream table when extracting tables
         }
 
         # update user defined parameters
@@ -116,6 +97,10 @@ class Layout:
 
     @property
     def margin(self): return self._margin
+
+
+    @property
+    def parsed(self): return self._margin is not None
 
     
     @property
@@ -127,24 +112,24 @@ class Layout:
             return (left, top, self.width-right, self.height-bottom)
 
 
-    def store(self):
-        return {
-            'width': self.width,
-            'height': self.height,
-            'margin': self._margin,
-            'blocks': self.blocks.store(),
-            'shapes': self.shapes.store(),
-        }
+    def reset(self):
+        '''Reset Layout object.'''
+        self._margin = None
+
+        # blocks representing text/table contents
+        self.blocks = Blocks(parent=self)
+
+        # shapes representing table border, shading and text style like underline, highlight
+        self.shapes = Shapes(parent=self)
+
+        # table parser
+        self._tables_constructor = TablesConstructor(parent=self)
 
 
-    def serialize(self, filename:str):
-        '''Write layout to specified file.'''
-        with open(filename, 'w', encoding='utf-8') as f:
-            f.write(json.dumps(self.store(), indent=4))
-
-    
     def parse(self):
         ''' Parse page layout.'''
+
+        if self.parsed: return self
 
         # preprocessing, e.g. change block order, clean negative block
         self.clean_up_blocks()
@@ -169,18 +154,56 @@ class Layout:
         return self
 
 
+    def store(self):
+        '''Store parsed layout.'''
+        return {
+            'width': self.width,
+            'height': self.height,
+            'margin': self._margin,
+            'blocks': self.blocks.store(),
+            'shapes': self.shapes.store(),
+        }
+
+
+    def restore(self, data:dict):
+        '''Restore Layout from parsed results.'''
+        # reset attributes
+        self.reset()
+
+        # page width/height
+        self.width = data.get('width', 0.0)
+        self.height = data.get('height', 0.0)
+        
+        # page margin: 
+        # - dict from PyMuPDF: to calculate after cleaning blocks
+        # - restored from json: get margin directly
+        self._margin = data.get('margin', None)
+
+        # initialize blocks
+        self.blocks.from_dicts(data.get('blocks', []))
+
+        # initialize shapes: to add rectangles later
+        self.shapes.from_dicts(data.get('shapes', []))
+
+        return self
+
+
+    def serialize(self, filename:str):
+        '''Write layout to specified file.'''
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(json.dumps(self.store(), indent=4))
+
+
     def extract_tables(self):
-        '''Extract content from lattice tables.'''
-        # preprocessing, e.g. change block order, clean negative block
-        self.clean_up_shapes()
-        self.clean_up_blocks()
-
-        # parsing lattice tables only
-        self.parse_lattice_tables()
-
+        '''Extract content from tables.'''
         # check table
         tables = [] # type: list[ list[list[str]] ]
-        for table_block in self.blocks.table_blocks:
+        if self.settings['extract_stream_table']:
+            collections = self.blocks.table_blocks
+        else:
+            collections = self.blocks.lattice_table_blocks
+        
+        for table_block in collections:
             tables.append(table_block.text)
 
         return tables
@@ -225,11 +248,35 @@ class Layout:
         '''Plot initial blocks. It's generally called once Layout is initialized.'''
         return self.blocks
 
+    
+    # ----------------------------------------------------
+    # initialize layout methods
+    # ----------------------------------------------------
+    def __source_from_page(self, page):
+        '''Source data extracted from page by `PyMuPDF`.'''
+        # source blocks
+        # NOTE: all these coordinates are relative to un-rotated page
+        # https://pymupdf.readthedocs.io/en/latest/page.html#modifying-pages
+        raw_layout = page.getText('rawdict')
 
-    # ----------------------------------------------------
-    # wraping Blocks and Shapes methods
-    # ----------------------------------------------------
-    def _preprocess_images(self, page, raw):
+        # page size: though 'width', 'height' are contained in `raw_dict`, 
+        # they are based on un-rotated page. So, update page width/height 
+        # to right direction in case page is rotated
+        *_, w, h = page.rect # always reflecting page rotation
+        raw_layout.update({ 'width' : w, 'height': h })
+        self.width, self.height = w, h
+
+        # pre-processing for layout blocks and shapes based on parent page
+        self.__preprocess_images(page, raw_layout)
+        self.__preprocess_shapes(page, raw_layout)
+        
+        # BBox is a base class processing coordinates, so set rotation matrix globally
+        BBox.set_rotation_matrix(page.rotationMatrix)
+
+        return raw_layout
+
+
+    def __preprocess_images(self, page, raw):
         ''' Adjust image blocks. Image block extracted by `page.getText('rawdict')` doesn't contain alpha channel data,
             so it needs to get page images by `page.getImageList()` and then recover them. However, `Page.getImageList()` 
             contains each image only once, while `page.getText('rawdict')` generates image blocks for every image location,
@@ -276,9 +323,9 @@ class Layout:
 
 
     @debug_plot('Source Paths')
-    def _preprocess_shapes(self, page, raw):
+    def __preprocess_shapes(self, page, raw):
         ''' Identify iso-oriented paths and convert vector graphic paths to pixmap.'''
-        # extract paths ed by `page.getDrawings()` is stored in raw['paths'] in advance
+        # extract paths ed by `page.getDrawings()`
         raw_paths = page.getDrawings()
 
         # paths to shapes or images
@@ -294,6 +341,9 @@ class Layout:
         return paths
 
 
+    # ----------------------------------------------------
+    # wraping Blocks and Shapes methods
+    # ----------------------------------------------------
     @debug_plot('Cleaned Shapes')
     def clean_up_shapes(self):
         '''Clean up shapes and detect semantic types.'''
@@ -362,13 +412,7 @@ class Layout:
  
 
     def page_margin(self):
-        '''Calculate page margin.            
-            ---
-            Args:
-            - width: page width
-            - height: page height
-
-            Calculation method:
+        '''Calculate page margin:
             - left: MIN(bbox[0])
             - right: MIN(left, width-max(bbox[2]))
             - top: MIN(bbox[1])

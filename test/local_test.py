@@ -124,38 +124,35 @@ def local_test(sub_path, filename, compare=False, make_test_case=False):
     pdf_file = os.path.join(output, sub_path, f'{filename}.pdf')
     docx_file = os.path.join(output, sub_path, f'{filename}.docx')
 
-    cv = Converter(pdf_file, docx_file)
+    cv = Converter(pdf_file)
+    page = cv[0]
 
-    # process page by page
-    for page in cv[0:1]:
+    # print(page.rotation, page.rotationMatrix)
+    # print(page.transformationMatrix)
+    # print(page.rect, page.MediaBox, page.CropBox)
 
-        # print(page.rotation, page.rotationMatrix)
-        # print(page.transformationMatrix)
-        # print(page.rect, page.MediaBox, page.CropBox)
-
-
-        # print(page.xref)
-        # print(page.getContents())
-        # print(cv.doc_pdf.xrefObject(page.xref))
-        # page.cleanContents()
-        # c = page.readContents().decode(encoding="ISO-8859-1")
-        # with open('c.txt', 'w') as f:
-        #     f.write(c)
-        
-        # print(cv.doc_pdf.xrefObject(6))
-        # print(cv.doc_pdf._getXrefString(7))
+    # print(page.xref)
+    # print(page.getContents())
+    # print(cv.doc_pdf.xrefObject(page.xref))
+    # page.cleanContents()
+    # c = page.readContents().decode(encoding="ISO-8859-1")
+    # with open('c.txt', 'w') as f:
+    #     f.write(c)
+    
+    # print(cv.doc_pdf.xrefObject(6))
+    # print(cv.doc_pdf._getXrefString(7))
 
 
-        # with open('x.svg', 'w') as f:
-        #     f.write(page.getSVGimage(text_as_path=False))
-        
-        # parse layout
-        cv.debug_page(page)
-        
-        # # extract tables
-        # tables = cv.extract_tables(page)
-        # for table in tables:
-        #     print(table)
+    # with open('x.svg', 'w') as f:
+    #     f.write(page.getSVGimage(text_as_path=False))
+    
+    # parse layout
+    cv.debug_page(0, docx_file)
+    
+    # # extract tables
+    # tables = cv.extract_tables([0])
+    # for table in tables:
+    #     print(table)
     
     cv.close() # close pdf
 

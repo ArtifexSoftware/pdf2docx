@@ -4,7 +4,6 @@
 from .converter import Converter
 
 
-
 class PDF2DOCX:
     '''Command line interface for pdf2docx.'''
 
@@ -21,6 +20,7 @@ class PDF2DOCX:
                 kwargs (dict)  : configuration parameters
                                 zero_based_index               : True, page index from 0 if True else 1
                                 multi_processing               : False, set multi-processes, especially for PDF with large pages
+                                cpu_count                      : cpu_count(), the count of cpu used for multi-processing
                                 connected_border_tolerance     : 0.5, two borders are intersected if the gap lower than this value
                                 max_border_width               : 6.0, max border width
                                 min_border_clearance           : 2.0, the minimum allowable clearance of two borders
@@ -40,14 +40,8 @@ class PDF2DOCX:
                                 clip_image_res_ratio           : 3.0, resolution ratio (to 72dpi) when cliping page image
                                 curve_path_ratio               : 0.2, clip page bitmap if the component of curve paths exceeds this ratio
         '''
-        cv = Converter(pdf_file, docx_file)
-
-        # parsing arguments
-        zero_based = kwargs.get('zero_based_index', True)
-        indexes = PDF2DOCX.__page_indexes(start, end, pages, len(cv), zero_based)
-
-        # process pages
-        cv.make_docx(indexes, kwargs)
+        cv = Converter(pdf_file)
+        cv.make_docx(docx_file, start, end, pages, kwargs)
         cv.close()
     
 
@@ -63,35 +57,10 @@ class PDF2DOCX:
         '''
 
         cv = Converter(pdf_file)
-
-        # parsing arguments
-        zero_based = kwargs.get('zero_based_index', True)
-        indexes = PDF2DOCX.__page_indexes(start, end, pages, len(cv), zero_based)
-
-        # process page by page
-        tables = cv.extract_tables(indexes, kwargs)
+        tables = cv.extract_tables(start, end, pages, kwargs)
         cv.close()
 
         return tables
-
-
-    @staticmethod
-    def __page_indexes(start, end, pages, pdf_len, zero_based=True):
-        # index starts from zero or one
-        if not zero_based:
-            start = max(start-1, 0)
-            if end: end -= 1
-            if pages: pages = [i-1 for i in pages]
-
-        # parsing arguments
-        if pages: 
-            indexes = [int(x) for x in pages if 0<=x<pdf_len]
-        else:
-            end = end or pdf_len
-            s = slice(int(start), int(end))
-            indexes = range(pdf_len)[s]
-        
-        return indexes
 
 
 parse = PDF2DOCX.convert
