@@ -69,14 +69,20 @@ class Converter:
     def close(self): self._doc_pdf.close()
 
 
-    def initialize(self, page:fitz.Page):
+    def initialize(self, page:fitz.Page, kwargs:dict):
         '''Initialize layout object.'''
+        # settings
+        settings = {
+            'clip_image_res_ratio': 3.0,
+            'curve_path_ratio': 0.2
+        }
+        settings.update(kwargs)
         # -----------------------------------------
         # Layout blocks with image blocks updated
         # -----------------------------------------
         # NOTE: all these coordinates are relative to un-rotated page
         # https://pymupdf.readthedocs.io/en/latest/page.html#modifying-pages
-        raw_layout = self._page_blocks(page)
+        raw_layout = self._page_blocks(page, settings)
 
         # -----------------------------------------
         # page size
@@ -91,17 +97,19 @@ class Converter:
         # -----------------------------------------
         # convert vector graphic paths to pixmap
         self._paths_extractor = PathsExtractor()
-        images, paths = self._paths_extractor.extract_paths(page)
+        images, paths = self._paths_extractor.extract_paths(page, 
+                    settings['curve_path_ratio'],
+                    settings['clip_image_res_ratio'])
         raw_layout['blocks'].extend(images)
         raw_layout['paths'] = paths
 
         # init layout
-        self._layout = Layout(raw_layout, page.rotationMatrix)    
+        self._layout = Layout(raw_layout, page.rotationMatrix, kwargs)    
 
         return self._layout
 
 
-    def debug_page(self, page:fitz.Page):
+    def debug_page(self, page:fitz.Page, kwargs:dict=None):
         ''' Parse, create and plot single page for debug purpose.
             Illustration pdf will be created during parsing the raw pdf layout.
         '''
@@ -117,7 +125,7 @@ class Converter:
         }
 
         # init page layout
-        self.initialize(page)
+        self.initialize(page, kwargs if kwargs else {})
         self._layout.plot(**debug_kwargs)
         self._paths_extractor.paths.plot(debug_kwargs['doc'], 'Source Paths', self._layout.width, self._layout.height)
 
@@ -133,7 +141,7 @@ class Converter:
         return self
 
 
-    def make_docx(self, page_indexes:list, multi_processing=False):
+    def make_docx(self, page_indexes:list, kwargs:dict=None):
         '''Parse and create a list of pages.
             ---
             Args:
@@ -141,30 +149,32 @@ class Converter:
             - multi_processing: bool, multi-processing mode if True
         '''
         t0 = perf_counter()
-        if multi_processing:
-            self._make_docx_multi_processing(page_indexes)
+        kwargs = kwargs if kwargs else {}
+        if kwargs.get('multi_processing', False):
+            self._make_docx_multi_processing(page_indexes, kwargs)
         else:
-            self._make_docx(page_indexes)
+            self._make_docx(page_indexes, kwargs)
         
         print(f'\n{"-"*50}\nTerminated in {perf_counter()-t0}s.')
 
 
-    def extract_tables(self, page_indexes:list):
+    def extract_tables(self, page_indexes:list, kwargs:dict=None):
         '''Extract table contents.'''
         tables = []
         num_pages = len(page_indexes)
-        # process page by page        
+        # process page by page
+        kwargs = kwargs if kwargs else {}
         for i in page_indexes:
             print(f'\rProcessing Pages: {i+1}/{num_pages}...')
             page = self.doc_pdf[i]
-            page_tables = self.initialize(page).extract_tables()
+            page_tables = self.initialize(page, kwargs).extract_tables()
             tables.extend(page_tables)
 
         return tables
 
 
     @staticmethod
-    def _page_blocks(page:fitz.Page):
+    def _page_blocks(page:fitz.Page, kwargs:dict):
         '''Get page blocks and adjust image blocks.'''
         # Layout object based on raw dict:
         # NOTE: all these coordinates are relative to un-rotated page
@@ -181,7 +191,7 @@ class Converter:
         # - get image location with `page.getText('rawdict')`
         # 
         # extract and recover images
-        recovered_images = ImagesExtractor.extract_images(page)
+        recovered_images = ImagesExtractor.extract_images(page, kwargs['clip_image_res_ratio'])
 
         # group original image blocks by image contents
         image_blocks_group = defaultdict(list)
@@ -218,7 +228,7 @@ class Converter:
         return raw_layout
 
 
-    def _make_docx(self, page_indexes:list):
+    def _make_docx(self, page_indexes:list, kwargs:dict):
         ''' Parse and create pages based on page indexes.
             ---
             Args:
@@ -228,11 +238,11 @@ class Converter:
         for i in page_indexes:
             print(f'\rProcessing Pages: {i+1}/{num_pages}...', end='', flush=True)
             page = self.doc_pdf[i]
-            self.initialize(page).parse().make_page(self.doc_docx)
+            self.initialize(page, kwargs).parse().make_page(self.doc_docx)
         self.save()
 
 
-    def _make_docx_multi_processing(self, page_indexes:list):
+    def _make_docx_multi_processing(self, page_indexes:list, kwargs:dict):
         ''' Parse and create pages based on page indexes.
             ---
             Args:
@@ -244,7 +254,7 @@ class Converter:
         cpu = cpu_count()
         start, end = min(page_indexes), max(page_indexes)
         prefix_layout = 'layout'
-        vectors = [(i, cpu, start, end, self.filename_pdf, f'{prefix_layout}-{i}.json') for i in range(cpu)]
+        vectors = [(i, cpu, start, end, self.filename_pdf, f'{prefix_layout}-{i}.json', kwargs) for i in range(cpu)]
 
         # start parsing processes
         pool = Pool()
@@ -289,7 +299,7 @@ class Converter:
                 - 5  : json filename storing parsed results
         '''
         # recreate the arguments
-        idx, cpu, s, e, pdf_filename, json_filename = vector
+        idx, cpu, s, e, pdf_filename, json_filename, kwargs = vector
 
         # worker
         cv = Converter(pdf_filename)
@@ -310,7 +320,7 @@ class Converter:
 
             # parse page
             page = cv.doc_pdf[page_index]
-            cv.initialize(page).parse()
+            cv.initialize(page, kwargs).parse()
 
             # page results
             res[page_index] = cv.layout.store()
