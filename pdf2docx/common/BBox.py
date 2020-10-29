@@ -14,7 +14,7 @@ CS. If final coordinates are provided, should update it after creating an empty 
 
 import copy
 import fitz
-from .base import IText
+from .share import IText
 from . import constants
 
 

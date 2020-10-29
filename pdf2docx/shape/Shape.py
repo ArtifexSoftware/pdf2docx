@@ -21,13 +21,13 @@ Data structure:
     {
         'type': int,
         'bbox': (x0, y0, x1, y1),
-        'color': sRGB_value
+        'color': srgb_value
     }
 '''
 
 import fitz
 from ..common.BBox import BBox
-from ..common.base import RectType
+from ..common.share import RectType
 from ..common import constants
 
 

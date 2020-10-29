@@ -40,7 +40,7 @@ from ..shape.Shapes import Shapes
 from ..shape.Paths import Paths
 from ..table.TablesConstructor import TablesConstructor
 from ..common.BBox import BBox
-from ..common.utils import debug_plot
+from ..common.share import debug_plot
 from ..common import constants
 
 

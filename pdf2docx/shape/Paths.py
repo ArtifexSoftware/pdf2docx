@@ -14,9 +14,9 @@ Square and Highlight considered.
 
 
 import fitz
-from ..common.base import lazyproperty
+from ..common.share import lazyproperty
 from ..common.Collection import BaseCollection, Collection
-from ..common.utils import flatten
+from ..common.share import flatten
 from ..image.Image import ImagesExtractor
 from .Path import Path
 

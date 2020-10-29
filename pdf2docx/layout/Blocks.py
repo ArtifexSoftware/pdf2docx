@@ -9,7 +9,7 @@ A group of Text/Image or Table block.
 from docx.shared import Pt
 from ..common import constants
 from ..common.Collection import Collection
-from ..common.base import BlockType
+from ..common.share import BlockType
 from ..common.Block import Block
 from ..common.docx import reset_paragraph_format
 from ..text.TextBlock import TextBlock

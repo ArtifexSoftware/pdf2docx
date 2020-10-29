@@ -40,9 +40,9 @@ from docx.oxml.ns import qn
 
 from .Char import Char
 from ..common.BBox import BBox
-from ..common.base import RectType
+from ..common.share import RectType
 from ..common import constants
-from ..common import utils, docx
+from ..common import share, docx
 from ..shape.Shape import Shape
 
 
@@ -285,7 +285,7 @@ class TextSpan(BBox):
         # highlight: both the rect height and overlap must be large enough
         if h_rect >= 0.5*h_span:
             # In general, highlight color isn't white
-            if rect.color != utils.RGB_value((1,1,1)) and self.get_main_bbox(rect, constants.FACTOR_MAJOR): 
+            if rect.color != share.rgb_value((1,1,1)) and self.get_main_bbox(rect, constants.FACTOR_MAJOR): 
                 rect.type = RectType.HIGHLIGHT
     
         # near to bottom of span? yes, underline
@@ -362,7 +362,7 @@ class TextSpan(BBox):
         font_name = self.font
         docx_span.font.name = font_name
         docx_span._element.rPr.rFonts.set(qn('w:eastAsia'), font_name) # set font for chinese characters
-        docx_span.font.color.rgb = RGBColor(*utils.RGB_component(self.color))
+        docx_span.font.color.rgb = RGBColor(*share.rgb_component(self.color))
 
         # font size
         # NOTE: only x.0 and x.5 is accepted in docx, so set character scaling accordingly

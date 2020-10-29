@@ -1,11 +1,88 @@
 # -*- coding: utf-8 -*-
 
+from enum import Enum
 import random
 from collections import deque
 from collections.abc import Iterable
 from fitz.utils import getColorList, getColorInfoList
 
 
+class BlockType(Enum):
+    '''Block types.'''
+    UNDEFINED = -1
+    TEXT = 0
+    IMAGE = 1
+    LATTICE_TABLE = 2
+    STREAM_TABLE = 3
+    FLOAT_IMAGE = 4
+
+
+class RectType(Enum):
+    ''' Shape type in context:
+        - not defined   : -1
+        - highlight     : 0
+        - underline     : 1
+        - strike-through: 2
+        - table border  : 10
+        - cell shading  : 11
+    '''
+    UNDEFINED = -1
+    HIGHLIGHT = 0
+    UNDERLINE = 1
+    STRIKE = 2
+    UNDERLINE_OR_STRIKE = 5
+    BORDER = 10
+    SHADING = 11
+
+
+class TextDirection(Enum):
+    '''Block types.'''
+    IGNORE     = -1
+    LEFT_RIGHT = 0 # from left to right within a line, and lines go from top to bottom
+    BOTTOM_TOP = 1 # from bottom to top within a line, and lines go from left to right
+
+
+class TextAlignment(Enum):
+    '''Block types.'''
+    LEFT    = 0b1000
+    CENTER  = 0b0100
+    RIGHT   = 0b0010
+    JUSTIFY = 0b0001
+
+
+class IText:
+    '''Text related interface considering text direction.'''
+    @property
+    def text_direction(self):
+        '''Default text direction: from left to right.'''
+        return TextDirection.LEFT_RIGHT
+
+    @property
+    def is_horizontal_text(self):
+        '''Check whether text direction is from left to right.'''
+        return self.text_direction == TextDirection.LEFT_RIGHT
+
+    @property
+    def is_vertical_text(self):
+        return self.text_direction == TextDirection.BOTTOM_TOP
+
+
+class lazyproperty:
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, instance, cls):
+        if instance is None:
+            return self
+        else:
+            value = self.func(instance)
+            setattr(instance, self.func.__name__, value)
+            return value
+
+
+# -------------------------
+# methods
+# -------------------------
 def is_number(str_number):
     try:
         float(str_number)
@@ -27,7 +104,7 @@ def flatten(items, klass):
 # -------------------------
 # color methods
 # -------------------------
-def RGB_component_from_name(name:str=''):
+def rgb_component_from_name(name:str=''):
     '''Get a named RGB color (or random color) from fitz predefined colors, e.g. 'red' -> (1.0,0.0,0.0).'''
     # get color index
     if name and name.upper() in getColorList():
@@ -39,7 +116,7 @@ def RGB_component_from_name(name:str=''):
     return (c[1] / 255.0, c[2] / 255.0, c[3] / 255.0)
 
 
-def RGB_component(srgb:int):
+def rgb_component(srgb:int):
     ''' srgb value to R,G,B components, e.g. 16711680 -> (255, 0, 0).
         
         Equal to PyMuPDF built-in method: [int(255*x) for x in fitz.sRGB_to_pdf(x)]
@@ -49,7 +126,7 @@ def RGB_component(srgb:int):
     return [int(s[i:i+2], 16) for i in [0, 2, 4]]
 
 
-def RGB_to_value(rgb:list):
+def rgb_to_value(rgb:list):
     '''RGB components to decimal value, e.g. (1,0,0) -> 16711680'''
     res = 0
     for (i,x) in enumerate(rgb):
@@ -57,30 +134,30 @@ def RGB_to_value(rgb:list):
     return int(res)
 
 
-def CMYK_to_RGB(c:float, m:float, y:float, k:float, cmyk_scale:float=100):
+def cmyk_to_rgb(c:float, m:float, y:float, k:float, cmyk_scale:float=100):
     ''' CMYK components to GRB value.'''
     r = (1.0 - c / float(cmyk_scale)) * (1.0 - k / float(cmyk_scale))
     g = (1.0 - m / float(cmyk_scale)) * (1.0 - k / float(cmyk_scale))
     b = (1.0 - y / float(cmyk_scale)) * (1.0 - k / float(cmyk_scale))
-    res = RGB_to_value([r, g, b]) # type: int
+    res = rgb_to_value([r, g, b]) # type: int
     return res
 
 
-def RGB_value(components:list):
+def rgb_value(components:list):
     '''Gray/RGB/CMYK mode components to color value.'''
     num = len(components)
     # CMYK mode
     if num==4:
         c, m, y, k = map(float, components)
-        color = CMYK_to_RGB(c, m, y, k, cmyk_scale=1.0)
+        color = cmyk_to_rgb(c, m, y, k, cmyk_scale=1.0)
     # RGB mode
     elif num==3:
         r, g, b = map(float, components)
-        color = RGB_to_value([r, g, b])
+        color = rgb_to_value([r, g, b])
     # gray mode
     elif num==1:
         g = float(components[0])
-        color = RGB_to_value([g,g,g])    
+        color = rgb_to_value([g,g,g])    
     else:
         color = 0
 
@@ -102,7 +179,7 @@ def new_page(doc, width:float, height:float, title:str):
     page = doc.newPage(width=width, height=height)    
 
     # plot title at the top-left corner
-    gray = RGB_component_from_name('gray')
+    gray = rgb_component_from_name('gray')
     page.insertText((5, 16), title, color=gray, fontsize=15)
     
     return page
@@ -252,7 +329,7 @@ def report_pair(i:int, j:int, index_groups:list):
     index_groups[j].add(i)
 
 
-def graph_BFS(graph):
+def graph_bfs(graph):
     '''Breadth First Search graph (may be disconnected graph), return a list of connected components.
         ---
         Args:
@@ -265,14 +342,14 @@ def graph_BFS(graph):
     for i in range(len(graph)):
         if i in counted_indexes: continue
         # connected component starts...
-        indexes = set(graph_BFS_from_node(graph, i))
+        indexes = set(graph_bfs_from_node(graph, i))
         groups.append(indexes)
         counted_indexes.update(indexes)
 
     return groups
 
 
-def graph_BFS_from_node(graph, start):
+def graph_bfs_from_node(graph, start):
     '''Breadth First Search connected graph with start node.
         ---
         Args:
