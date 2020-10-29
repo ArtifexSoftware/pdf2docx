@@ -214,18 +214,17 @@ class Path:
     @property
     def is_iso_oriented(self):
         '''It is iso-oriented on condition that:
-            - at least one Line
             - all Lines are iso-oriented
-            - no requirements on curves
+            - the count of iso-oriented Lines is larger than Curves
         '''
-        cnt = 0
+        line_cnt, curve_cnt = 0, 0
         for segments in self.items:
             for segment in segments:
-                if isinstance(segment, C): continue
-                elif isinstance(segment, R): cnt += 1
-                elif not segment.is_iso_oriented: return False
-                else: cnt += 1
-        return cnt >= 1
+                if isinstance(segment, C): curve_cnt += 1
+                elif isinstance(segment, R): line_cnt += 1
+                elif segment.is_iso_oriented: line_cnt += 1
+                else: return False
+        return line_cnt >= curve_cnt
 
 
     def to_shapes(self):

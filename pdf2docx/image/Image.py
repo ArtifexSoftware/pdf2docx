@@ -76,7 +76,10 @@ class ImagesExtractor:
 
 
     @classmethod
-    def extract_images(cls, page:fitz.Page):
+    def extract_images(cls, 
+                page:fitz.Page,
+                clip_image_res_ratio:float=3.0 # resolution ratio of cliiped bitmap
+            ):
         ''' Get images dict based on image contents from `Page.getImageList()`.
 
             NOTE: Page.getImageList() contains each image only once, which may less than the real
@@ -108,7 +111,7 @@ class ImagesExtractor:
             # So, just to clip page pixmap according to the right bbox
             # https://github.com/pymupdf/PyMuPDF/issues/677
             if not pix.colorspace:
-                raw_dict = cls.clip_page(page, bbox, zoom=3.0)
+                raw_dict = cls.clip_page(page, bbox, zoom=clip_image_res_ratio)
             else:
                 raw_dict = cls.to_raw_dict(pix, bbox)
             images.append(raw_dict)

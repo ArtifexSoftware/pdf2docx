@@ -23,7 +23,6 @@ from ..common import constants
 from ..layout.Blocks import Blocks
 from ..shape.Shapes import Shapes
 from ..text.Lines import Lines
-from ..text.Line import Line
 from .TableStructure import TableStructure
 from .Border import HBorder, VBorder, Borders
 
@@ -36,22 +35,37 @@ class TablesConstructor:
         self._shapes = parent.shapes if parent else None # type: Shapes
 
 
-    def lattice_tables(self):
+    def lattice_tables(self, 
+            connected_border_tolerance:float, # two borders are intersected if the gap lower than this value
+            min_border_clearance:float,       # the minimum allowable clearance of two borders
+            max_border_width:float,           # max border width
+            float_layout_tolerance:float,      # [0,1] the larger of this value, the more tolerable of flow layout
+            line_overlap_threshold:float,     # [0,1] delete line if the intersection to other lines exceeds this value
+            line_merging_threshold:float      # combine two lines if the x-distance is lower than this value
+            ):
         '''Parse table with explicit borders/shadings represented by rectangle shapes.'''
         # group stroke shapes: each group may be a potential table
-        grouped_strokes = self._shapes.table_strokes.group_by_connectivity(dx=constants.TINY_DIST, dy=constants.TINY_DIST)
+        grouped_strokes = self._shapes.table_strokes \
+            .group_by_connectivity(dx=connected_border_tolerance, dy=connected_border_tolerance)
 
         # all filling shapes
         fills = self._shapes.table_fillings
 
         # parse table with each group
         tables = Blocks()
+        settings = {
+            'min_border_clearance': min_border_clearance,
+            'max_border_width': max_border_width,
+            'float_layout_tolerance': float_layout_tolerance,
+            'line_overlap_threshold': line_overlap_threshold,
+            'line_merging_threshold': line_merging_threshold
+        }
         for strokes in grouped_strokes:
             # potential shadings in this table region
             group_fills = fills.contained_in_bbox(strokes.bbox)
 
             # parse table structure
-            table = TableStructure(strokes).parse(group_fills).to_table_block()
+            table = TableStructure(strokes, settings).parse(group_fills).to_table_block()
             tables.append(table)
 
         # check if any intersection with previously parsed tables
@@ -61,12 +75,18 @@ class TablesConstructor:
             table.set_lattice_table_block()
 
         # assign text contents to each table
-        self._blocks.assign_table_contents(unique_tables)
+        self._blocks.assign_table_contents(unique_tables, settings)
 
         return Blocks(unique_tables)
 
 
-    def stream_tables(self):
+    def stream_tables(self, 
+                min_border_clearance:float, 
+                max_border_width:float,
+                float_layout_tolerance:float,
+                line_overlap_threshold:float,
+                line_merging_threshold
+            ):
         ''' Parse table with layout of text/image blocks, and update borders with explicit borders 
             represented by rectangle shapes.
         '''
@@ -75,7 +95,7 @@ class TablesConstructor:
         table_fillings = self._shapes.table_fillings
 
         # lines in potential stream tables
-        tables_lines = self._blocks.collect_stream_lines(table_fillings)            
+        tables_lines = self._blocks.collect_stream_lines(table_fillings, float_layout_tolerance)            
 
         # define a function to get the vertical boundaries of given table
         X0, Y0, X1, Y1 = self._parent.bbox
@@ -100,7 +120,7 @@ class TablesConstructor:
                 +---------------------------+ <- Y1
                 ```
             '''
-            y_lower, y_upper = Y0, Y1-constants.MINOR_DIST
+            y_lower, y_upper = Y0, Y1
             for block in self._blocks:
                 # move top border
                 if block.bbox.y1 < y0: y_lower = block.bbox.y1
@@ -113,6 +133,13 @@ class TablesConstructor:
 
         # parse tables
         tables = Blocks()
+        settings = {
+            'min_border_clearance': min_border_clearance,
+            'max_border_width': max_border_width,
+            'float_layout_tolerance': float_layout_tolerance,
+            'line_overlap_threshold': line_overlap_threshold,
+            'line_merging_threshold': line_merging_threshold
+        }
         for table_lines in tables_lines:
             # bounding box
             x0 = min([rect.bbox.x0 for rect in table_lines])
@@ -128,8 +155,9 @@ class TablesConstructor:
 
             # explicit strokes/shadings in table region
             rect = BBox().update_bbox(outer_bbox)
-            explicit_strokes  = table_strokes.contained_in_bbox(rect.bbox) 
-            explicit_shadings = table_fillings.contained_in_bbox(rect.bbox)
+            explicit_strokes  = table_strokes.contained_in_bbox(rect.bbox)
+            # NOTE: shading with any intersections should be counted to avoid missing any candidates
+            explicit_shadings, _ = table_fillings.split_with_intersection(rect.bbox) 
 
             # parse stream borders based on lines in cell and explicit borders/shadings
             strokes = self.stream_strokes(table_lines, outer_borders, explicit_strokes, explicit_shadings)
@@ -137,7 +165,7 @@ class TablesConstructor:
 
             # parse table structure
             strokes.sort_in_reading_order() # required
-            table = TableStructure(strokes).parse(explicit_shadings).to_table_block()
+            table = TableStructure(strokes, settings).parse(explicit_shadings).to_table_block()
             tables.append(table)
 
         # check if any intersection with previously parsed tables
@@ -147,7 +175,7 @@ class TablesConstructor:
             table.set_stream_table_block()
 
         # assign text contents to each table
-        self._blocks.assign_table_contents(unique_tables)
+        self._blocks.assign_table_contents(unique_tables, settings)
 
         return Blocks(unique_tables)
 

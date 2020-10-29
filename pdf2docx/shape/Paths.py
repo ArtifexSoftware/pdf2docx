@@ -15,9 +15,8 @@ Square and Highlight considered.
 
 import fitz
 from ..common.base import lazyproperty
-from ..common import constants
 from ..common.Collection import BaseCollection
-from ..common.utils import new_page
+from ..common.utils import new_page, flatten
 from ..image.Image import ImagesExtractor
 from .Path import Path
 
@@ -28,7 +27,11 @@ class PathsExtractor:
     def __init__(self): self.paths = Paths()
     
 
-    def extract_paths(self, page:fitz.Page):
+    def extract_paths(self, 
+                      page:fitz.Page, 
+                      curve_path_ratio:float=0.2,    # clip page bitmap if curve paths exceed this ratio
+                      clip_image_res_ratio:float=3.0 # resolution ratio of cliiped bitmap
+                      ):
         ''' Convert extracted paths to DICT attributes:
             - bitmap converted from vector graphics if necessary
             - iso-oriented paths
@@ -38,32 +41,31 @@ class PathsExtractor:
         '''
         # get raw paths
         self.parse_page(page)
-
-        # ignore vector graphics
-        if constants.IGNORE_VEC_GRAPH: return [], self.paths.to_iso_paths()
         
-        # group connected paths -> each group is a potential vector graphic
-        paths_list = self.paths.group_by_connectivity(dx=0.0, dy=0.0)
-        num = 0
-        while num!=len(paths_list)>0:
-            num = len(paths_list)
-            res = BaseCollection(paths_list).group_by_connectivity(dx=0.0, dy=0.0)
-            paths_list = []
-            for paths_group in res:
-                paths = Paths()
-                for paths_ in paths_group: paths.extend(paths_)
-                paths_list.append(paths)
+        # group connected paths -> each group is a potential vector graphic        
+        paths_groups = self.paths.group()
 
         # convert vector graphics to bitmap
         iso_paths, pixmaps = [], []
-        for paths in paths_list:
-            # can't be a table if curve path exists
-            if paths.contains_curve(constants.FACTOR_A_FEW):
-                image = paths.to_image(page, constants.FACTOR_RES)
+        for collection in paths_groups:
+            # a collection of paths groups:
+            # clip page bitmap if it seems a vector graphic
+            combined_paths = Paths()
+            for paths in collection: combined_paths.extend(list(paths))            
+            if combined_paths.contains_curve(curve_path_ratio):
+                image = combined_paths.to_image(page, clip_image_res_ratio)
                 if image: pixmaps.append(image)
-            # keep potential table border paths
-            else:
-                iso_paths.extend(paths.to_iso_paths())
+                continue
+            
+            # otherwise, check each paths in group
+            for paths in collection:                    
+                # can't be a table if curve path exists
+                if paths.contains_curve(curve_path_ratio):
+                    image = paths.to_image(page, clip_image_res_ratio)
+                    if image: pixmaps.append(image)
+                # keep potential table border paths
+                else:
+                    iso_paths.extend(paths.to_iso_paths())
 
         return pixmaps, iso_paths
 
@@ -116,6 +118,35 @@ class Paths(BaseCollection):
 
 
     def reset(self, paths:list): self._instances = paths
+
+
+    def group(self):
+        ''' Group paths by connectivity on two level:
+            - connected paths -> basic unit for figure or sub-area of a figure
+            - connected paths groups -> figure(s) in a clipping area
+            ```
+                +----------+
+                |    A     |  A+B, C  -> connected paths
+                +------+---+
+                       |   |
+            +--------+ | B |  (A+B)+C -> connected paths group
+            |   C    | |   |
+            +--------+ +---+
+            ```
+        '''
+        num = 0 # count of final connected groups
+        paths_groups = self.group_by_connectivity(dx=0.0, dy=0.0)
+
+        # check connectivity until no intersections exist in any two groups
+        while num!=len(paths_groups)>0:
+            num = len(paths_groups)
+            res = BaseCollection(paths_groups).group_by_connectivity(dx=0.0, dy=0.0)
+            paths_groups = []
+            for paths_group in res:
+                collection = BaseCollection(list(flatten(paths_group, Paths))) # ensure basic unit: Paths
+                paths_groups.append(collection)
+
+        return paths_groups
 
 
     def plot(self, doc:fitz.Document, title:str, width:float, height:float):

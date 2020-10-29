@@ -91,7 +91,7 @@ class Shapes(Collection):
         return self._text_underlines_strikes
 
 
-    def clean_up(self):
+    def clean_up(self, max_border_width:float, shape_merging_threshold:float, shape_min_dimension:float):
         '''Clean rectangles:
             - delete rectangles fully contained in another one (beside, they have same bg-color)
             - join intersected and horizontally aligned rectangles with same height and bg-color
@@ -100,9 +100,12 @@ class Shapes(Collection):
         # sort in reading order
         self.sort_in_reading_order()
 
-        # remove shapes out of page
+        # clean up shapes:
+        # - remove shapes out of page
+        # - remove small shapes
         page_bbox = (0.0, 0.0, self.parent.width, self.parent.height)
-        f = lambda shape: shape.bbox.intersects(page_bbox)
+        f = lambda shape: shape.bbox.intersects(page_bbox) and \
+                        (shape.bbox.width>=shape_min_dimension or shape.bbox.height>=shape_min_dimension)
         shapes = filter(f, self._instances)
 
         # merge shapes if:
@@ -114,18 +117,13 @@ class Shapes(Collection):
                 # Do nothing if these two shapes in different bg-color
                 if ref_shape.color!=shape.color: continue     
 
-                # combine two shapes in a same row if any intersection exists
-                # ideally the aligning threshold should be 1.0, tolerance is considered here
-                if shape.horizontally_align_with(ref_shape, constants.FACTOR_SAME): 
-                    main_bbox = shape.get_main_bbox(ref_shape, 0.0)
+                # # combine two shapes in a same row if any intersection exists
+                # if shape.in_same_row(ref_shape): 
+                #     main_bbox = shape.get_main_bbox(ref_shape, 0.0)
 
-                # combine two shapes in a same column if any intersection exists
-                elif shape.vertically_align_with(ref_shape, constants.FACTOR_SAME):
-                    main_bbox = shape.get_main_bbox(ref_shape, 0.0)
-
-                # combine two shapes if they have a large intersection
-                else:
-                    main_bbox = shape.get_main_bbox(ref_shape, constants.FACTOR_A_HALF)
+                # # combine two shapes if they have a large intersection
+                # else:
+                main_bbox = shape.get_main_bbox(ref_shape, threshold=shape_merging_threshold)
 
                 if main_bbox:
                     ref_shape.update_bbox(main_bbox)
@@ -139,7 +137,7 @@ class Shapes(Collection):
             if isinstance(shape, Stroke):
                 shapes.append(shape)
             else:
-                stroke = shape.to_stroke()
+                stroke = shape.to_stroke(max_border_width)
                 shapes.append(stroke if stroke else shape)
 
         self.reset(shapes)

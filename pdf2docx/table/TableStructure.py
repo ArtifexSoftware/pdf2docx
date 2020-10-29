@@ -101,20 +101,36 @@ class CellStructure:
         # cell range
         x0, x1 = self.merged_bbox[idx], self.merged_bbox[idx+2]
 
-        # check strokes
+        # check all candidate strokes
+        L = 0.0
+        border_strokes = []
         for stroke in strokes:
             bbox = (stroke.x0, stroke.y0, stroke.x1, stroke.y1)
             t0, t1 = bbox[idx], bbox[idx+2]
-            # it's the border shape if has a major intersection with cell border
-            L = min(x1, t1) - max(x0, t0)
-            if L/(x1-x0) >= constants.FACTOR_MAJOR: return stroke
+            if t1 <= x0: continue
+            if t0 >= x1: break
+            # intersection length
+            dl = min(x1, t1) - max(x0, t0)
+            # NOTE to ignore small intersection on end point
+            if dl < constants.MAJOR_DIST: continue 
+            L += dl
+            border_strokes.append(stroke)
+        
+        # use an empty stroke if nothing found, especially for merged cells.
+        # no worry since the border style will be set correctly by adjacent separate cells.
+        if L/(x1-x0) < constants.FACTOR_MAJOR: return Stroke()
 
-        return strokes[0] # use the first stroke if nothing found
+        # the entire border of merged cell must have same property, i.e. width and color
+        # otherwise, set empty stroke here and let adjacent cells set the correct style separately
+        if len(border_strokes)==1: return border_strokes[0]
+
+        properties = set([stroke.color for stroke in border_strokes])
+        return border_strokes[0] if len(properties)==1 else Stroke()
 
 
 class TableStructure:
     '''Parsing table structure based on strokes/fills.'''
-    def __init__(self, strokes:Shapes):
+    def __init__(self, strokes:Shapes, settings:dict):
         ''' Parse table structure from strokes and fills shapes.
             ---
             Args:
@@ -166,8 +182,10 @@ class TableStructure:
         # cells
         self.cells = [] # type: list[list[CellStructure]]
 
-        # group horizontal/vertical strokes -> table structure dict
-        self.h_strokes, self.v_strokes = TableStructure._group_h_v_strokes(strokes)
+        # group horizontal/vertical strokes -> table structure dict        
+        self.h_strokes, self.v_strokes = TableStructure._group_h_v_strokes(strokes, 
+                        settings['min_border_clearance'], 
+                        settings['max_border_width'])
         if not self.h_strokes or not self.v_strokes: return
 
         # initialize cells
@@ -230,7 +248,6 @@ class TableStructure:
             # row object
             row = Row()
             row.height = row_structures[0].bbox.y1-row_structures[0].bbox.y0
-            
             for cell_structure in row_structures:
                 # if current cell is merged horizontally or vertically, set None.
                 # actually, it will be counted in the top-left cell of the merged range.
@@ -285,7 +302,7 @@ class TableStructure:
 
 
     @staticmethod
-    def _group_h_v_strokes(strokes:Shapes):
+    def _group_h_v_strokes(strokes:Shapes, min_border_clearance:float, max_border_width:float):
         ''' Split strokes in horizontal and vertical groups respectively.
 
             According to strokes below, the grouped h-strokes looks like
@@ -321,7 +338,7 @@ class TableStructure:
 
                 # ignore minor error resulting from different stroke width
                 for y_ in h_strokes:
-                    if abs(y-y_)>constants.DW_BORDER: continue
+                    if abs(y-y_)>min_border_clearance: continue
                     y = (y_+y)/2.0 # average
                     h_strokes[y] = h_strokes.pop(y_)
                     h_strokes[y].append(stroke)
@@ -339,7 +356,7 @@ class TableStructure:
                 
                 # ignore minor error resulting from different stroke width
                 for x_ in v_strokes:
-                    if abs(x-x_)>constants.DW_BORDER: continue
+                    if abs(x-x_)>min_border_clearance: continue
                     x = (x+x_)/2.0 # average
                     v_strokes[x] = v_strokes.pop(x_)
                     v_strokes[x].append(stroke)
@@ -356,10 +373,10 @@ class TableStructure:
 
         # Note: add dummy strokes if no outer strokes exist        
         table_bbox = BBox().update_bbox((X0, Y0, X1, Y1)) # table bbox
-        TableStructure._check_outer_strokes(table_bbox, h_strokes, 'top')
-        TableStructure._check_outer_strokes(table_bbox, h_strokes, 'bottom')
-        TableStructure._check_outer_strokes(table_bbox, v_strokes, 'left')
-        TableStructure._check_outer_strokes(table_bbox, v_strokes, 'right')
+        TableStructure._check_outer_strokes(table_bbox, h_strokes, 'top', max_border_width)
+        TableStructure._check_outer_strokes(table_bbox, h_strokes, 'bottom', max_border_width)
+        TableStructure._check_outer_strokes(table_bbox, v_strokes, 'left', max_border_width)
+        TableStructure._check_outer_strokes(table_bbox, v_strokes, 'right', max_border_width)
 
         return h_strokes, v_strokes
     
@@ -384,9 +401,7 @@ class TableStructure:
 
 
     def _check_merging_status(self):
-        ''' Check cell merging status. taking row direction for example,
-            
-        '''
+        ''' Check cell merging status. '''
         x_cols, y_rows = self.x_cols, self.y_rows
         # check merged cells in each row
         merged_cells_rows = []  # type: list[list[int]]
@@ -400,8 +415,8 @@ class TableStructure:
         merged_cells_cols = []  # type: list[list[int]]
         ordered_strokes = [self.h_strokes[k] for k in y_rows]
         for cell in self.cells[0]:
-            ref_x = (cell.bbox.x0+cell.bbox.x1)/2.0            
-            col_structure = TableStructure._check_merged_cells(ref_x, ordered_strokes, 'column')        
+            ref_x = (cell.bbox.x0+cell.bbox.x1)/2.0
+            col_structure = TableStructure._check_merged_cells(ref_x, ordered_strokes, 'column')
             merged_cells_cols.append(col_structure)
 
         # check merged cells
@@ -421,7 +436,7 @@ class TableStructure:
 
     
     @staticmethod
-    def _check_outer_strokes(table_bbox:BBox, borders:dict, direction:str):
+    def _check_outer_strokes(table_bbox:BBox, borders:dict, direction:str, max_border_width:float):
         '''Add missing outer borders based on table bbox and grouped horizontal/vertical borders.
             ---
             Args:
@@ -457,17 +472,21 @@ class TableStructure:
         bbox[(idx+2)%4] = target
 
         # add whole border if not exist
-        if abs(target-current)>constants.MAX_W_BORDER:
+        if abs(target-current)> max_border_width:
             borders[target] = Shapes([sample_border.copy().update_bbox(bbox)])
         
         # otherwise, check border segments
         else:
             idx_start = (idx+1)%2 # 0, 1
-            start = table_bbox.bbox[idx_start]
+            idx_end = idx_start+2
 
+            occupied = [(border.bbox[idx_start], 
+                        border.bbox[idx_end]) for border in borders[current]]
+            occupied.append((bbox[idx_end], None)) # end point
+            start = bbox[idx_start] # start point
             segments = []
-            for border in borders[current]:
-                end = border.bbox[idx_start]
+            for (left, right) in occupied:
+                end = left
                 # not connected -> add missing border segment
                 if abs(start-end)>constants.MINOR_DIST:
                     bbox[idx_start] = start
@@ -475,9 +494,15 @@ class TableStructure:
                     segments.append(sample_border.copy().update_bbox(bbox))
                 
                 # update ref position
-                start = border.bbox[idx_start+2]
+                start = right
             
             borders[current].extend(segments)
+
+            # sort due to added segments
+            if direction in ('top', 'bottom'):
+                borders[current].sort_in_line_order()
+            else:
+                borders[current].sort_in_reading_order()                
 
 
     @staticmethod
@@ -509,7 +534,6 @@ class TableStructure:
             # NOTE: shapes MUST be sorted in reading order!!
             # multi-lines exist in a row/column
             for border in shapes:
-
                 # reference coordinates depending on checking direction
                 if direction=='row':
                     ref0, ref1 = border.y0, border.y1

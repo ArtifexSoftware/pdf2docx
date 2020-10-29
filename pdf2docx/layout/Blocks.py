@@ -127,6 +127,22 @@ class Blocks(Collection):
                         spans.extend(cell.blocks.image_spans(level))        
         return spans
 
+    
+    def is_flow_layout(self, float_layout_tolerance:float):
+        '''Check if flow layout: 
+            - no more blocks in same row
+            - check further in table block lines level
+        '''
+        # block level
+        fun = lambda a, b: a.horizontally_align_with(b, factor=float_layout_tolerance)
+        groups = self.group(fun)
+        if len(groups) != len(self): return False
+
+        # block lines level
+        for block in self.text_blocks(level=0):
+            if not block.is_flow_layout(float_layout_tolerance): return False
+        return True
+
 
     def combine_floating_objects(self):
         self._instances.extend(self._floating_image_blocks)
@@ -161,7 +177,7 @@ class Blocks(Collection):
         return self
 
 
-    def clean_up(self):
+    def clean_up(self, float_image_ignorable_gap:float, line_overlap_threshold:float, line_merging_threshold:float):
         ''' Preprocess blocks initialized from the raw layout.
 
             NOTE: this method works ONLY for layout initialized from raw dict extracted by `page.getText()`.
@@ -182,8 +198,10 @@ class Blocks(Collection):
         # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
         self.strip() \
             .sort_in_reading_order() \
-            .identify_floating_images() \
-            .join_horizontally(text_direction=False)
+            .identify_floating_images(float_image_ignorable_gap) \
+            .join_horizontally(text_direction=False, 
+                            line_overlap_threshold=line_overlap_threshold,
+                            line_merging_threshold=line_merging_threshold)
 
     
     def strip(self):
@@ -194,14 +212,14 @@ class Blocks(Collection):
         return self
 
 
-    def identify_floating_images(self):
+    def identify_floating_images(self, float_image_ignorable_gap:float):
         ''' Identify floating image lines and convert to ImageBlock.'''
         lines = Lines()
         for block in self._instances: # Note contain only text blocks
             lines.extend(block.lines)
         
         # group by connectivity
-        groups = lines.group_by_connectivity(dx=-constants.MAJOR_DIST, dy=-constants.MAJOR_DIST)
+        groups = lines.group_by_connectivity(dx=-float_image_ignorable_gap, dy=-float_image_ignorable_gap)
         
         # identify floating objects
         # ASSUMPTION: no overlaps between text lines
@@ -216,7 +234,7 @@ class Blocks(Collection):
         return self
 
 
-    def assign_table_contents(self, tables:list):
+    def assign_table_contents(self, tables:list, settings:dict):
         '''Add Text/Image/table block lines to associated cells of given tables.'''
         if not tables: return
 
@@ -230,14 +248,14 @@ class Blocks(Collection):
         for table, blocks_in_table in zip(tables, blocks_in_tables):
             # no contents for this table
             if not blocks_in_table: continue
-            table.set_table_contents(blocks_in_table)
+            table.set_table_contents(blocks_in_table, settings)
 
         # sort in natural reading order and update layout blocks
         blocks.extend(tables)
         self.reset(blocks).sort_in_reading_order()
 
 
-    def collect_stream_lines(self, potential_shadings:list):
+    def collect_stream_lines(self, potential_shadings:list, float_layout_tolerance:float):
         ''' Collect lines of text block, which may contained in a stream table region.
             ---
             Args:
@@ -290,7 +308,7 @@ class Blocks(Collection):
 
             # (c) multi-blocks are in a same row: check layout with next block?
             # yes, add both current and next blocks
-            if block.horizontally_align_with(next_block, factor=constants.FACTOR_A_FEW):
+            if block.horizontally_align_with(next_block, factor=float_layout_tolerance):
                 # if it's start of new table row: add the first block
                 if new_line: table_lines.extend(sub_lines(block))
                 
@@ -319,7 +337,11 @@ class Blocks(Collection):
         return res
 
 
-    def parse_spacing(self):
+    def parse_spacing(self,
+            line_separate_threshold:float,
+            lines_left_aligned_threshold:float,
+            lines_right_aligned_threshold:float,
+            lines_center_aligned_threshold:float):
         ''' Calculate external and internal vertical space for text blocks.
         
             - paragraph spacing is determined by the vertical distance to previous block. 
@@ -360,7 +382,11 @@ class Blocks(Collection):
             # - horizontal block -> take left boundary as reference
             # - vertical block   -> take bottom boundary as reference
             #---------------------------------------------------------
-            block.parse_horizontal_spacing(bbox)            
+            block.parse_horizontal_spacing(bbox,
+                    line_separate_threshold,
+                    lines_left_aligned_threshold,
+                    lines_right_aligned_threshold,
+                    lines_center_aligned_threshold)            
 
             #---------------------------------------------------------
             # vertical space calculation
@@ -372,7 +398,12 @@ class Blocks(Collection):
                 dw = block[0][0].border_width[0] / 2.0 # use top border of the first cell
 
                 # calculate vertical spacing of blocks under this table
-                block.parse_spacing()
+                block.parse_spacing(
+                    line_separate_threshold,
+                    lines_left_aligned_threshold,
+                    lines_right_aligned_threshold,
+                    lines_center_aligned_threshold
+                )
             
             else:
                 dw = 0.0
@@ -419,11 +450,13 @@ class Blocks(Collection):
         # must be remove in other place, especially the page space is run out.
         # Here, reduce the last row of table.
         block = self._instances[-1]
-        if block.is_table_block():
-            block[-1].height -= constants.MINOR_DIST # same value used when creating docx
+        if block.is_table_block(): block[-1].height -= constants.MINOR_DIST
 
 
-    def join_horizontally(self, text_direction=True):
+    def join_horizontally(self, 
+                text_direction:bool, 
+                line_overlap_threshold:float, 
+                line_merging_threshold:float):
         ''' Join lines in horizontally aligned blocks into new TextBlock.
             ---
             Args:
@@ -454,7 +487,7 @@ class Blocks(Collection):
             # may be not reasonable after this step. So, this is just a pre-processing step focusing 
             # on processing lines in horizontal direction, e.g. merging inline image to its text line.
             # A further step, e.g. `split_vertically()`, must be applied before final making docx.
-            final_block.lines.join()
+            final_block.lines.join(line_overlap_threshold, line_merging_threshold)
 
             blocks.append(final_block)
         
@@ -549,7 +582,7 @@ class Blocks(Collection):
 
             # otherwise, add a small paragraph
             p = doc.add_paragraph()
-            reset_paragraph_format(p, Pt(constants.MINOR_DIST)) # a small line height
+            reset_paragraph_format(p, Pt(constants.MIN_LINE_SPACING)) # a small line height
 
         # Finally, add floating image to last paragraph
         p = doc.add_paragraph() if not doc.paragraphs else doc.paragraphs[0]

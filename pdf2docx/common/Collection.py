@@ -9,8 +9,7 @@ A group of instances, e.g. instances, Spans, Shapes.
 
 from .BBox import BBox
 from .base import IText, TextDirection
-from .utils import graph_BFS
-from .rect_intersection import solve_rects_intersection
+from .utils import solve_rects_intersection, graph_BFS
 
 
 class BaseCollection:
@@ -31,6 +30,15 @@ class BaseCollection:
     def __iter__(self): return (instance for instance in self._instances)
 
     def __len__(self): return len(self._instances)
+
+
+    @property
+    def bbox(self):
+        '''bbox of combined collection.'''
+        res = BBox()
+        for instance in self._instances:
+            res.union_bbox(instance)
+        return res.bbox
 
 
     def group(self, fun):
@@ -116,15 +124,6 @@ class Collection(BaseCollection, IText):
 
 
     @property
-    def bbox(self):
-        '''bbox of combined collection.'''
-        Box = BBox()
-        for instance in self._instances:
-            Box.union_bbox(instance)
-        return Box.bbox
-
-
-    @property
     def text_direction(self):
         '''Get text direction. All instances must have same text direction.''' 
         if self._instances and hasattr(self._instances[0], 'text_direction'):
@@ -134,15 +133,6 @@ class Collection(BaseCollection, IText):
 
         # normal direction by default
         return TextDirection.LEFT_RIGHT 
-
-
-    @property
-    def is_flow_layout(self):
-        '''Check if flow layout.'''
-        # not flow layout if exist two instances that horizontally aligned but not in same row
-        fun = lambda a, b: a.horizontally_align_with(b) and not a.in_same_row(b)
-        groups = self.group(fun)
-        return len(groups) == len(self)
 
 
     def from_dicts(self, *args, **kwargs):
