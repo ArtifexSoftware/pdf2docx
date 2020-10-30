@@ -179,10 +179,10 @@ class Layout:
         self._margin = data.get('margin', None)
 
         # initialize blocks
-        self.blocks.from_dicts(data.get('blocks', []))
+        self.blocks.restore(data.get('blocks', []))
 
         # initialize shapes: to add rectangles later
-        self.shapes.from_dicts(data.get('shapes', []))
+        self.shapes.restore(data.get('shapes', []))
 
         return self
 
@@ -328,7 +328,7 @@ class Layout:
         raw_paths = page.getDrawings()
 
         # paths to shapes or images
-        paths = Paths(parent=self).from_dicts(raw_paths)
+        paths = Paths(parent=self).restore(raw_paths)
         images, shapes = paths.to_images_and_shapes(
             page,
             self.settings['curve_path_ratio'], 

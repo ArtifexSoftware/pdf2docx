@@ -27,7 +27,7 @@ class Cell(BBox):
         self.merged_cells = raw.get('merged_cells', (1,1)) # type: tuple [int]
 
         # collect blocks
-        self.blocks = Blocks.Blocks(parent=self).from_dicts(raw.get('blocks', []))
+        self.blocks = Blocks.Blocks(parent=self).restore(raw.get('blocks', []))
 
         super().__init__(raw)
 

@@ -148,7 +148,8 @@ class Blocks(Collection):
         self._instances.extend(self._floating_image_blocks)
 
 
-    def from_dicts(self, raws:list):
+    def restore(self, raws:list):
+        '''Restore Blocks from source dict.'''
         for raw_block in raws:
             block_type = raw_block.get('type', -1) # type: int
             
@@ -596,11 +597,11 @@ class Blocks(Collection):
         # different plot options for table block:
         #                       cell_content    border_style   border_color         note
         # lattice table ONLY        N               Y               -           temp Blocks with parent=None
-        # stream table ONLY         N               N         (0.6, 0.7, 0.8)   temp Blocks with parent=None
-        # text & table blocks       Y               N         (1.0, 0.0, 0.0)   layout Blocks with parent=Layout
+        # stream table ONLY         N               N         (0.2, 0.6, 0.9)   temp Blocks with parent=None
+        # text & table blocks       Y               N         (0.0, 0.0, 0.0)   layout Blocks with parent=Layout
         content = not self._parent is None
         style   = not content and len(self.lattice_table_blocks)
-        color   = (1.0, 0.0, 0.0) if content else (0.6, 0.7, 0.8)
+        color   = (0.0, 0.0, 0.0) if content else (0.2, 0.6, 0.9)
 
         for block in self._instances:
             if block.is_table_block():

@@ -35,7 +35,7 @@ class Lines(Collection):
             line.pid = id(self._parent)
 
 
-    def from_dicts(self, raws:list):
+    def restore(self, raws:list):
         '''Construct lines from raw dicts list.'''
         for raw in raws:
             line = Line(raw)

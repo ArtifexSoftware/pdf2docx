@@ -30,7 +30,7 @@ class Shapes(Collection):
         self._text_highlights = Collection()
 
 
-    def from_dicts(self, raws:list):
+    def restore(self, raws:list):
         '''Initialize Stroke/Fill from dicts.'''
         # distinguish Stroke and Fill: whether keys 'start' and 'end' exist in dict
         for raw in raws:

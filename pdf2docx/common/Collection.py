@@ -134,7 +134,11 @@ class Collection(BaseCollection, IText):
         return TextDirection.LEFT_RIGHT 
 
 
-    def from_dicts(self, *args, **kwargs):
+    def store(self):
+        '''Store attributes in json format.'''
+        return [ instance.store() for instance in self._instances ]
+
+    def restore(self, *args, **kwargs):
         '''Construct Collection from a list of dict.'''
         raise NotImplementedError
 
@@ -198,12 +202,7 @@ class Collection(BaseCollection, IText):
             self._instances.sort(key=lambda instance: (instance.bbox.y1, instance.bbox.x0, instance.bbox.y0))
         return self
 
-
-    def store(self):
-        '''Store attributes in json format.'''
-        return [ instance.store() for instance in self._instances ]
-
-    
+   
     def contained_in_bbox(self, bbox):
         ''' Filter instances contained in target bbox.
             ---

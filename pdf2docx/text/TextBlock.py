@@ -52,7 +52,7 @@ class TextBlock(Block):
         super().__init__(raw)
 
         # collect lines
-        self.lines = Lines(parent=self).from_dicts(raw.get('lines', []))
+        self.lines = Lines(parent=self).restore(raw.get('lines', []))
 
         # set type
         self.set_text_block()        

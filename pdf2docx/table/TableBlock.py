@@ -47,7 +47,7 @@ class TableBlock(Block):
         super().__init__(raw)
 
         # collect rows
-        self._rows = Rows(parent=self).from_dicts(raw.get('rows', []))
+        self._rows = Rows(parent=self).restore(raw.get('rows', []))
 
         # lattice table by default
         self.set_lattice_table_block()

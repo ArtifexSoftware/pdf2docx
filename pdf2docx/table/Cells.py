@@ -13,7 +13,8 @@ from ..common.Collection import Collection
 
 class Cells(Collection):
     '''A group of Cells.'''
-    def from_dicts(self, raws:list):
+    def restore(self, raws:list):
+        '''restore Cells from source dict.'''
         for raw in raws:
             cell = Cell(raw)
             self.append(cell)

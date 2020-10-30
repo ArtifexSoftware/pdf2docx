@@ -14,7 +14,7 @@ from ..image.ImageSpan import ImageSpan
 class Spans(Collection):
     '''Text span list.'''
 
-    def from_dicts(self, raws:list):
+    def restore(self, raws:list):
         for raw_span in raws:
             span = ImageSpan(raw_span) if 'image' in raw_span else TextSpan(raw_span)
             self.append(span)
