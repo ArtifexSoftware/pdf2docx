@@ -346,27 +346,27 @@ class TextBlock(Block):
 
         # line spacing
         pf.line_spacing = Pt(round(self.line_space, 1))
+        
+        # horizontal spacing
+        pf.left_indent  = Pt(self.left_space)
+        pf.right_indent  = Pt(self.right_space)
 
         # horizontal alignment
         if self.alignment==TextAlignment.LEFT:
             pf.alignment = WD_ALIGN_PARAGRAPH.LEFT
-            pf.left_indent  = Pt(self.left_space)
-
             # set tab stops to ensure line position
             for pos in self.tab_stops:
                 pf.tab_stops.add_tab_stop(Pt(self.left_space + pos))
 
         elif self.alignment==TextAlignment.RIGHT:
             pf.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-            pf.right_indent  = Pt(self.right_space)
 
         elif self.alignment==TextAlignment.CENTER:
             pf.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
         else:
             pf.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-            pf.left_indent  = Pt(self.left_space)
-            pf.right_indent  = Pt(self.right_space)
+            
 
         # add lines        
         self.lines.make_docx(p)
