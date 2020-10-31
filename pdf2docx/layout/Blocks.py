@@ -190,7 +190,7 @@ class Blocks(Collection):
         # - remove blocks out of page
         # - remove transformed text: text direction is not (1, 0) or (0, -1)
         # - remove empty blocks
-        page_bbox = (0.0, 0.0, self.parent.width, self.parent.height)
+        page_bbox = self.parent.bbox
         f = lambda block:   block.bbox.intersects(page_bbox) and \
                             block.text.strip() and (
                             block.is_horizontal_text or block.is_vertical_text)
@@ -361,13 +361,7 @@ class Blocks(Collection):
         # bbox of blocks
         # - page level, e.g. blocks in top layout
         # - table level, e.g. blocks in table cell
-        if isinstance(self.parent, Cell):
-            cell = self.parent
-            x0,y0,x1,y1 = cell.bbox
-            w_top, w_right, w_bottom, w_left = cell.border_width
-            bbox = (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)        
-        else:
-             bbox = self.parent.bbox
+        bbox = self.parent.working_bbox
 
         # check text direction for vertical space calculation:
         # - normal reading direction (from left to right)    -> the reference boundary is top border, i.e. bbox[1].

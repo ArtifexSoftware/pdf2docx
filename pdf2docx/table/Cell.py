@@ -37,6 +37,14 @@ class Cell(BBox):
         '''Text contained in this cell.'''
         return '\n'.join([block.text for block in self.blocks]) if bool(self) else None
 
+
+    @property
+    def working_bbox(self):
+        '''bbox with border width considered.'''
+        x0, y0, x1, y1 = self.bbox
+        w_top, w_right, w_bottom, w_left = self.border_width
+        return (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
+
     
     def compare(self, cell, threshold:float=0.9):
         '''whether has same structure with given Cell.
