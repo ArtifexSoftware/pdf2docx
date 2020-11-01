@@ -138,6 +138,7 @@ class Collection(BaseCollection, IText):
         '''Store attributes in json format.'''
         return [ instance.store() for instance in self._instances ]
 
+
     def restore(self, *args, **kwargs):
         '''Construct Collection from a list of dict.'''
         raise NotImplementedError

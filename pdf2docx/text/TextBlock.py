@@ -32,7 +32,6 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
 from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-from .Line import Line
 from .Lines import Lines
 from ..image.ImageSpan import ImageSpan
 from ..common.share import TextDirection, TextAlignment
@@ -55,7 +54,7 @@ class TextBlock(Block):
         self.lines = Lines(parent=self).restore(raw.get('lines', []))
 
         # set type
-        self.set_text_block()        
+        self.set_text_block()
 
 
     @property

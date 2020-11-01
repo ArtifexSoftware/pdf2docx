@@ -15,7 +15,7 @@ from ..common.docx import reset_paragraph_format
 from ..text.TextBlock import TextBlock
 from ..text.Line import Line
 from ..text.Lines import Lines
-from ..image.ImageBlock import FloatImageBlock, ImageBlock
+from ..image.ImageBlock import ImageBlock
 from ..table.TableBlock import TableBlock
 from ..table.Cell import Cell
 
@@ -29,10 +29,13 @@ class Blocks(Collection):
         self._instances = []  # type: list[TextBlock or TableBlock]
 
         # NOTE: no changes on floating image blocks once identified, so store them here
-        self._floating_image_blocks = []
+        self.floating_image_blocks = []
     
         # Convert all original image blocks to text blocks, i.e. ImageSpan,
         # So we can focus on single TextBlock later on; TableBlock is also combination of TextBlocks.
+        # NOTE: for a converted image block
+        # - isinstance(image_block, TextBlock)==True
+        # - image_block.is_text_block()==False
         for block in instances:
             if isinstance(block, ImageBlock):
                 text_block = block.to_text_block()
@@ -76,56 +79,10 @@ class Blocks(Collection):
 
 
     @property
-    def floating_image_blocks(self): 
+    def text_blocks(self):
+        '''Get text/image blocks contained in this Collection.'''
         return list(filter(
-            lambda block: block.is_float_image_block(), self._instances))
-
-
-    def text_blocks(self, level=0):
-        '''Get text blocks contained in this Collection.
-            ---
-            Args:
-              - level: 
-                - 0: text blocks in top level only
-                - 1: text blocks deep to table level
-        '''
-        # top level
-        blocks = list(filter(
-            lambda block: block.is_text_block(), self._instances))
-        
-        # table cell level
-        if level>0:
-            for table in self.table_blocks:
-                for row in table:
-                    for cell in row:
-                        blocks.extend(cell.blocks.text_blocks(level))
-        return blocks
- 
-
-    def image_spans(self, level=0):
-        '''Get ImageSpan contained in this Collection.             
-            ---
-            Args:
-              - level: 
-                - 0: image span contained in top level text blocks
-                - 1: image span deep to table blocks level
-
-            NOTE:
-            No ImageBlock exists in this collection since it's already converted to text block.
-        '''
-        
-        # image span in top text block
-        spans = []
-        for block in self.text_blocks(level=0):
-            spans.extend(block.lines.image_spans)
-        
-        # image span in table block level
-        if level>0:
-            for table in self.table_blocks:
-                for row in table:
-                    for cell in row:
-                        spans.extend(cell.blocks.image_spans(level))        
-        return spans
+            lambda block: block.is_text_image_block(), self._instances))
 
     
     def is_flow_layout(self, float_layout_tolerance:float):
@@ -144,8 +101,11 @@ class Blocks(Collection):
         return True
 
 
-    def combine_floating_objects(self):
-        self._instances.extend(self._floating_image_blocks)
+    def store(self):
+        '''Store attributes in json format.'''
+        res = super().store()
+        res.extend([ instance.store() for instance in self.floating_image_blocks ])
+        return res
 
 
     def restore(self, raws:list):
@@ -163,7 +123,8 @@ class Blocks(Collection):
             
             # floating image block
             elif block_type == BlockType.FLOAT_IMAGE.value:
-                block = FloatImageBlock(raw_block)
+                block = ImageBlock(raw_block)
+                block.set_float_image_block()
 
             # table block
             elif block_type in (BlockType.LATTICE_TABLE.value, BlockType.STREAM_TABLE.value):
@@ -216,22 +177,21 @@ class Blocks(Collection):
 
     def identify_floating_images(self, float_image_ignorable_gap:float):
         ''' Identify floating image lines and convert to ImageBlock.'''
-        lines = Lines()
-        for block in self._instances: # Note contain only text blocks
-            lines.extend(block.lines)
-        
         # group by connectivity
-        groups = lines.group_by_connectivity(dx=-float_image_ignorable_gap, dy=-float_image_ignorable_gap)
+        groups = self.group_by_connectivity(dx=-float_image_ignorable_gap, dy=-float_image_ignorable_gap)
         
         # identify floating objects
-        # ASSUMPTION: no overlaps between text lines
         for group in filter(lambda group: len(group)>1, groups):
-            for line in group:
-                image_blocks = [FloatImageBlock().from_image(image_span) for image_span in line.image_spans]
-                if image_blocks:
-                    self._floating_image_blocks.extend(image_blocks)
-                    # remove this line from flow layout
-                    line.update_bbox((0,0,0,0))
+            for block in group:
+                # consider image block only (converted to text block)
+                if not block.is_inline_image_block(): continue
+
+                float_image = ImageBlock().from_text_block(block)
+                float_image.set_float_image_block()
+                self.floating_image_blocks.append(float_image)
+
+                # remove the original image block from flow layout
+                block.update_bbox((0,0,0,0))
 
         return self
 
@@ -274,7 +234,7 @@ class Blocks(Collection):
         '''
         # get sub-lines from block
         def sub_lines(block):
-            return block.lines if block.is_text_block() else [Line().update_bbox(block.bbox)]
+            return block.lines if block.is_text_image_block() else [Line().update_bbox(block.bbox)]
 
         # check block by block
         res = [] # type: list[Lines]
@@ -473,7 +433,7 @@ class Blocks(Collection):
             # combine all lines into a TextBlock
             final_block = TextBlock()
             for block in blocks_collection:
-                if not block.is_text_block(): continue
+                if not block.is_text_image_block(): continue
                 final_block.add(block.lines) # keep empty line, may help to identify table layout
 
             # merge lines/spans contained in this text block
@@ -505,7 +465,7 @@ class Blocks(Collection):
         '''
         blocks = [] # type: list[TextBlock]
         for block in self._instances:
-            if block.is_text_block():
+            if block.is_text_image_block():
                 blocks.extend(block.split())
             else:
                 blocks.append(block)        
@@ -536,7 +496,7 @@ class Blocks(Collection):
         pre_table = False
         for block in self._instances:
             # make paragraphs
-            if block.is_text_block():
+            if block.is_text_image_block():
                 # new paragraph
                 p = doc.add_paragraph()
                 block.make_docx(p)
@@ -585,7 +545,7 @@ class Blocks(Collection):
 
         # Finally, add floating image to last paragraph
         p = doc.add_paragraph() if not doc.paragraphs else doc.paragraphs[0]
-        for image_block in self._floating_image_blocks:
+        for image_block in self.floating_image_blocks:
             image_block.make_docx(p)
 
   
@@ -611,7 +571,7 @@ class Blocks(Collection):
     def _assign_block_to_tables(block:Block, tables:list, blocks_in_tables:list, blocks:list):
         '''Collect blocks contained in table region `blocks_in_tables` and rest text blocks in `blocks`.'''
         # lines in block for further check if necessary
-        lines = block.lines if block.is_text_block() else Lines()
+        lines = block.lines if block.is_text_image_block() else Lines()
 
         # collect blocks contained in table region
         # NOTE: there is a probability that only a part of a text block is contained in table region, 
@@ -627,7 +587,7 @@ class Blocks(Collection):
             elif not table.bbox.intersects(block.bbox): continue
             
             # deep into line level for text block
-            elif block.is_text_block():
+            elif block.is_text_image_block():
                 table_lines, not_table_lines = lines.split_with_intersection(table.bbox)
 
                 # add lines to table

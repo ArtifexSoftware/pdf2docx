@@ -9,7 +9,6 @@ A group of Line objects.
 
 from docx.shared import Pt
 from .Line import Line
-from ..common import constants
 from ..common.Collection import Collection
 from ..common.docx import add_stop
 

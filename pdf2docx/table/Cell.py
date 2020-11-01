@@ -11,7 +11,7 @@ from docx.shared import Pt
 from ..text.TextBlock import TextBlock
 from ..common.BBox import BBox
 from ..common.share import rgb_component
-from ..common import docx
+from ..common import docx, constants
 from ..layout import Blocks # avoid import conflict
 from ..text.Line import Line
 from ..text.Lines import Lines
@@ -127,7 +127,7 @@ class Cell(BBox):
             Note: If it's a text block and partly contained in a cell, it must deep into line -> span -> char.
         '''
         # add block directly if fully contained in cell
-        if self.bbox.contains(block.bbox):
+        if self.contains(block, constants.FACTOR_ALMOST):
             self.blocks.append(block)
             return
         
@@ -135,7 +135,7 @@ class Cell(BBox):
         if not self.bbox & block.bbox: return
 
         # otherwise, further check lines in text block
-        if not block.is_text_block():  return
+        if not block.is_text_image_block():  return
         
         # NOTE: add each line as a single text block to avoid overlap between table block and combined lines
         split_block = TextBlock()
@@ -156,7 +156,7 @@ class Cell(BBox):
 
         # stream table contents        
         def sub_lines(block): # get sub-lines from block
-            return block.lines if block.is_text_block() else [Line().update_bbox(block.bbox)]
+            return block.lines if block.is_text_image_block() else [Line().update_bbox(block.bbox)]
         table_lines = Lines()
         for block in self.blocks:
             table_lines.extend(sub_lines(block))
