@@ -151,7 +151,7 @@ class Cell(BBox):
         from .TableStructure import TableStructure
 
         # bbox range of stream table
-        inner_bbox, outer_bbox = self.bbox, self.bbox
+        inner_bbox, outer_bbox = self.working_bbox, self.working_bbox
         outer_borders = TablesConstructor._outer_borders(inner_bbox, outer_bbox)
 
         # stream table contents        

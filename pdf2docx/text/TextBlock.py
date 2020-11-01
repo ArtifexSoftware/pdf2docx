@@ -146,42 +146,6 @@ class TextBlock(Block):
                 span.plot(page, color=c)
 
 
-    def contains_discrete_lines(self, distance:float=25, threshold:int=2):
-        ''' Check whether lines in block are discrete: 
-              - the count of lines with a distance larger than `distance` is greater then `threshold`.
-              - ImageSpan exists
-              - vertical text exists
-        '''
-        num = len(self.lines)
-        if num==1: return False
-
-        # check image spans
-        if self.lines.image_spans: return True
-
-        # check text direction
-        if self.is_vertical_text: return True
-
-        # check the count of discrete lines
-        cnt = 1
-        for i in range(num-1):
-            line = self.lines[i]
-            next_line = self.lines[i+1]
-
-            if line.horizontally_align_with(next_line):
-                # if two lines are intersected each other, it's of no use to detect table cells
-                if line.bbox & next_line.bbox:
-                    continue
-
-                # horizontally aligned but not in a same row -> discrete block
-                elif not line.in_same_row(next_line): return True
-                
-                # otherwise, check the distance only
-                elif abs(line.bbox.x1-next_line.bbox.x0) > distance:
-                    cnt += 1
-
-        return cnt >= threshold
-
-    
     def parse_text_format(self, rects):
         '''parse text format with style represented by rectangles.
             ---
@@ -346,27 +310,29 @@ class TextBlock(Block):
 
         # line spacing
         pf.line_spacing = Pt(round(self.line_space, 1))
-        
-        # horizontal spacing
-        pf.left_indent  = Pt(self.left_space)
-        pf.right_indent  = Pt(self.right_space)
 
         # horizontal alignment
+        # for multi-lines paragraph, set both left and right indentation; this hard restriction may lead to
+        # unexpected line break especially different font used in docx. So, just add one side indentation for
+        # single line paragraph.
         if self.alignment==TextAlignment.LEFT:
             pf.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            pf.left_indent  = Pt(self.left_space)
             # set tab stops to ensure line position
             for pos in self.tab_stops:
                 pf.tab_stops.add_tab_stop(Pt(self.left_space + pos))
 
         elif self.alignment==TextAlignment.RIGHT:
             pf.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            pf.right_indent  = Pt(self.right_space)
 
         elif self.alignment==TextAlignment.CENTER:
             pf.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
         else:
             pf.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-            
+            pf.left_indent  = Pt(self.left_space)
+            pf.right_indent  = Pt(self.right_space)
 
         # add lines        
         self.lines.make_docx(p)

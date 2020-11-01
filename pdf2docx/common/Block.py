@@ -127,12 +127,10 @@ class Block(BBox):
             })
         return res
 
-    @staticmethod
-    def contains_discrete_lines():
-        ''' Check whether lines in block are discrete, False by default. 
-            Rewrite it if necessary, e.g. in TextBlock.
-        '''
-        return False
+
+    def is_flow_layout(self, *args):
+        ''' Check whether flow layout, True by default. Rewrite it if necessary, e.g. in TextBlock.'''
+        return True
 
 
     def parse_text_format(self, *args, **kwargs):

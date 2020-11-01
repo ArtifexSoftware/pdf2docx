@@ -213,20 +213,24 @@ class Lines(Collection):
             # one paragraph row can't accommodate a Line, the hard break leads to an unnecessary empty row.
             # Since we can't 100% ensure a same structure, it's better to focus on the content - add line
             # break only when it's necessary to, e.g. explicit free space exists.
-            line_break = False
-
             idx_1 = (idx+2)%4 # H: x1->2, or V: y0->1
             # no more lines after last line
             if line==self._instances[-1]: 
                 line_break = False
             
-            # break line if free space exists
-            elif abs(block.bbox[idx_1]-line.bbox[idx_1]) > constants.MINOR_DIST:
+            elif line.in_same_row(self._instances[i+1]):
+                line_break = False
+            
+            # break line if free space accommodates the next line
+            elif abs(block.bbox[idx_1]-line.bbox[idx_1]) > abs(self._instances[i+1].bbox[idx_1]-self._instances[i+1].bbox[idx]):
                 line_break = True
             
             # break line if next line is a only a space (otherwise, MS Word leaves it in previous line)
             elif not self._instances[i+1].text.strip():
                 line_break = True
+            
+            else:
+                line_break = False
             
             if line_break:
                 p.add_run('\n')

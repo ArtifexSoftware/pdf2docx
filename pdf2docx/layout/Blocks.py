@@ -302,7 +302,7 @@ class Blocks(Collection):
             
             # (b) lines in current block are connected sequently?
             # yes, counted as table lines
-            if new_line and block.contains_discrete_lines(): 
+            if new_line and not block.is_flow_layout(float_layout_tolerance): 
                 table_lines.extend(sub_lines(block))  # deep into line level
                 
                 # update line status
@@ -533,27 +533,27 @@ class Blocks(Collection):
             Args:
             - doc: python-docx Document or _Cell object
         '''
+        pre_table = False
         for block in self._instances:
             # make paragraphs
             if block.is_text_block():
                 # new paragraph
                 p = doc.add_paragraph()
                 block.make_docx(p)
+
+                # mark block type
+                pre_table = False
             
             # make table
             elif block.is_table_block():
 
                 # create dummy paragraph if table before space is set
-                # line spacing: table before_space/2.0
-                # before space: table before space / 2.0
-                if block.before_space:
-                    h = int(10*block.before_space/2.0)/10.0 # round(x,1), but to lower bound
-                    h = max(h, 1.0) # 1.0 is the minimum value in docx
+                # - a minimum line height of paragraph is 0.7pt, so ignore before space if less than this value
+                # - but tow adjacent tables will be combined automatically, so adding a minimum dummy paragraph is required
+                if block.before_space>=constants.MIN_LINE_SPACING or pre_table:
+                    h = int(10*block.before_space)/10.0 # round(x,1), but to lower bound
                     p = doc.add_paragraph()
-                    pf = reset_paragraph_format(p)
-                    pf.space_before = Pt(h)
-                    pf.space_after = Pt(0)
-                    pf.line_spacing = Pt(h)
+                    reset_paragraph_format(p, line_spacing=Pt(h))
 
                 # new table            
                 table = doc.add_table(rows=block.num_rows, cols=block.num_cols)
@@ -561,7 +561,10 @@ class Blocks(Collection):
                 table.allow_autofit  = False
                 block.make_docx(table)
 
-        # below table processing is necessary for page level
+                # mark block type
+                pre_table = True
+
+        # below table processing is necessary for page level only
         if isinstance(self.parent, Cell): return
         
         # NOTE: If a table is at the end of a page, a new paragraph will be automatically 
