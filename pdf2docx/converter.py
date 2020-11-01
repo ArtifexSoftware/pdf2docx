@@ -53,9 +53,14 @@ class Converter:
         return Layout(page, config).parse()
 
 
-    def debug_page(self, i:int, docx_filename:str=None, config:dict=None):
+    def debug_page(self, i:int, docx_filename:str=None, debug_pdf=None, layout_file=None, config:dict=None):
         ''' Parse, create and plot single page for debug purpose.
-            Illustration pdf will be created during parsing the raw pdf layout.
+            ---
+            Args:
+            - i (int): page index to convert
+            - docx_filename (str): DOCX filename to write to
+            - debug_pdf (str): new pdf file storing layout information (add prefix "debug_" by default)
+            - layout_file (str): new json file storing parsed layout data (layout.json by default)
         '''
         config = config if config else {}
 
@@ -63,19 +68,19 @@ class Converter:
         # fitz object in debug mode: plot page layout
         # file path for this debug pdf: demo.pdf -> debug_demo.pdf
         path, filename = os.path.split(self.filename_pdf)
-        filename_json  = os.path.join(path, 'layout.json')
-        debug_doc = fitz.Document()
+        if not debug_pdf: debug_pdf = os.path.join(path, f'debug_{filename}')
+        if not layout_file: layout_file  = os.path.join(path, 'layout.json')
         config.update({
-            'debug'   : True,
-            'doc'     : debug_doc,
-            'filename': os.path.join(path, f'debug_{filename}')
+            'debug'         : True,
+            'debug_doc'     : fitz.Document(),
+            'debug_filename': debug_pdf
         })
 
         # parse and make page
         layouts = self.make_docx(docx_filename, pages=[i], config=config)
         
         # layout information for debugging
-        layouts[0].serialize(filename_json) 
+        layouts[0].serialize(layout_file) 
 
         return layouts[0]
 
