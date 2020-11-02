@@ -77,16 +77,26 @@ class TextBlock(Block):
             return TextDirection.LEFT_RIGHT
 
 
-    def is_flow_layout(self, float_layout_tolerance:float):
+    def is_flow_layout(self, float_layout_tolerance:float, line_separate_threshold:float):
         '''Check if flow layout: same bottom-left point for lines in same row.'''
         # lines in same row
         fun = lambda a, b: a.horizontally_align_with(b, factor=float_layout_tolerance)
-        groups = self.lines.group(fun)
+        groups = self.lines.group(fun)        
         
-        # check bottom-left point of lines
+        idx = 0 if self.is_horizontal_text else 3
         for lines in groups:
-            points = set([line.bbox[3] for line in lines])
+            num = len(lines)
+            if num==1: continue
+
+            # check bottom-left point of lines
+            points = set([line.bbox[(idx+3)%4] for line in lines])
             if max(points)-min(points)>constants.MINOR_DIST: return False
+
+            # check distance between lines
+            for i in range(1, num):
+                dis = abs(lines[i].bbox[idx]-lines[i-1].bbox[(idx+2)%4])
+                if dis >= line_separate_threshold: return False
+
         return True
 
 

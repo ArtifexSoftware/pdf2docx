@@ -404,7 +404,8 @@ class Layout:
                 self.settings['max_border_width'],
                 self.settings['float_layout_tolerance'],
                 self.settings['line_overlap_threshold'],
-                self.settings['line_merging_threshold']
+                self.settings['line_merging_threshold'],
+                self.settings['line_separate_threshold']
             )
 
 
@@ -416,7 +417,8 @@ class Layout:
                 self.settings['max_border_width'],
                 self.settings['float_layout_tolerance'],
                 self.settings['line_overlap_threshold'],
-                self.settings['line_merging_threshold']
+                self.settings['line_merging_threshold'],
+                self.settings['line_separate_threshold']
             )
 
 

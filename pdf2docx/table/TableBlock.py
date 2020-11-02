@@ -123,7 +123,8 @@ class TableBlock(Block):
                 			line_merging_threshold=settings['line_merging_threshold']).split_vertically()
 
                 # for lattice table, check cell blocks layout further
-                if self.is_lattice_table_block() and cell.blocks.collect_stream_lines([], settings['float_layout_tolerance']):
+                if self.is_lattice_table_block() and \
+                    cell.blocks.collect_stream_lines([], settings['float_layout_tolerance'], settings['line_separate_threshold']):
                     cell.set_stream_table_layout(settings)                
 
 

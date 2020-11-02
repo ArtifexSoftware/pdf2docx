@@ -217,7 +217,9 @@ class Blocks(Collection):
         self.reset(blocks).sort_in_reading_order()
 
 
-    def collect_stream_lines(self, potential_shadings:list, float_layout_tolerance:float):
+    def collect_stream_lines(self, potential_shadings:list, 
+            float_layout_tolerance:float, 
+            line_separate_threshold:float):
         ''' Collect lines of text block, which may contained in a stream table region.
             ---
             Args:
@@ -262,7 +264,7 @@ class Blocks(Collection):
             
             # (b) lines in current block are connected sequently?
             # yes, counted as table lines
-            if new_line and not block.is_flow_layout(float_layout_tolerance): 
+            if new_line and not block.is_flow_layout(float_layout_tolerance, line_separate_threshold): 
                 table_lines.extend(sub_lines(block))  # deep into line level
                 
                 # update line status
