@@ -48,7 +48,7 @@ class Line(BBox):
         super().__init__(raw)
 
         # collect spans
-        self.spans = Spans(parent=self).from_dicts(raw.get('spans', []))        
+        self.spans = Spans(parent=self).restore(raw.get('spans', []))        
 
     
     @property

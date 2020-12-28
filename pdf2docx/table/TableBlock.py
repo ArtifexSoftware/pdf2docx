@@ -47,7 +47,7 @@ class TableBlock(Block):
         super().__init__(raw)
 
         # collect rows
-        self._rows = Rows(parent=self).from_dicts(raw.get('rows', []))
+        self._rows = Rows(parent=self).restore(raw.get('rows', []))
 
         # lattice table by default
         self.set_lattice_table_block()
@@ -123,7 +123,7 @@ class TableBlock(Block):
                 			line_merging_threshold=settings['line_merging_threshold']).split_vertically()
 
                 # for lattice table, check cell blocks layout further
-                if self.is_lattice_table_block() and not cell.blocks.is_flow_layout(settings['float_layout_tolerance']): 
+                if self.is_lattice_table_block() and cell.blocks.collect_stream_lines([], settings['float_layout_tolerance']):
                     cell.set_stream_table_layout(settings)                
 
 

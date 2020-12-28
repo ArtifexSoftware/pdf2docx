@@ -17,12 +17,13 @@ from .ImageSpan import ImageSpan
 from ..common.Block import Block
 from ..common.docx import add_float_image
 
+
 class ImageBlock(Image, Block): # to get Image.plot() in first priority
     '''Image block.'''
     def __init__(self, raw:dict=None):
         super().__init__(raw)
 
-        # set type
+        # inline image type by default
         self.set_inline_image_block()
 
 
@@ -36,31 +37,24 @@ class ImageBlock(Image, Block): # to get Image.plot() in first priority
         image_line.add(span)
         
         # insert line to block
-        block = TextBlock()
+        block = TextBlock()        
         block.add(image_line)
 
-        # set text block
-        block.set_text_block()
+        # NOTE: it's an image block even though in TextBlock type
+        block.set_inline_image_block() 
 
         return block
+ 
 
+    def from_text_block(self, block:TextBlock):
+        '''Initialize image block from image in TextBlock instance.'''
+        if not block.lines or not block.lines[0].spans: return self
 
-    def store(self):
-        res = super().store()
-        res.update(
-            super().store_image()
-        )
-        return res
+        image_span = block.lines[0].spans[0]
+        if not isinstance(image_span, ImageSpan): return self
 
+        return self.from_image(image_span)
 
-class FloatImageBlock(Image, Block): # to get Image.plot() in first priority
-    '''Floating Image block.'''
-    def __init__(self, raw:dict=None):
-        super().__init__(raw)
-
-        # set type
-        self.set_float_image_block()
-    
 
     def store(self):
         res = super().store()
@@ -85,6 +79,9 @@ class FloatImageBlock(Image, Block): # to get Image.plot() in first priority
             Args:
               - p: docx paragraph instance
         '''
-        x0, y0, x1, y1 = self.bbox
-        add_float_image(p, BytesIO(self.image), width=x1-x0, pos_x=x0, pos_y=y0)
+        if self.is_float_image_block():
+            x0, y0, x1, y1 = self.bbox
+            add_float_image(p, BytesIO(self.image), width=x1-x0, pos_x=x0, pos_y=y0)
+        else:
+            super().make_docx(p)
         return p

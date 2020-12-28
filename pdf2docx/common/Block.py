@@ -35,16 +35,19 @@ class Block(BBox):
 
 
     def is_text_block(self):
-        return self._type==BlockType.TEXT
-
-    def is_image_block(self):
-        return self.is_inline_image_block() or self.is_float_image_block()
+        return self._type==BlockType.TEXT    
     
     def is_inline_image_block(self):
         return self._type==BlockType.IMAGE
     
     def is_float_image_block(self):
         return self._type==BlockType.FLOAT_IMAGE
+    
+    def is_image_block(self):
+        return self.is_inline_image_block() or self.is_float_image_block()
+
+    def is_text_image_block(self):
+        return self.is_text_block() or self.is_inline_image_block()
 
     def is_lattice_table_block(self):
         return self._type==BlockType.LATTICE_TABLE
@@ -127,12 +130,10 @@ class Block(BBox):
             })
         return res
 
-    @staticmethod
-    def contains_discrete_lines():
-        ''' Check whether lines in block are discrete, False by default. 
-            Rewrite it if necessary, e.g. in TextBlock.
-        '''
-        return False
+
+    def is_flow_layout(self, *args):
+        ''' Check whether flow layout, True by default. Rewrite it if necessary, e.g. in TextBlock.'''
+        return True
 
 
     def parse_text_format(self, *args, **kwargs):

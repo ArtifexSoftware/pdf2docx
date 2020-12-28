@@ -11,7 +11,7 @@ from docx.shared import Pt
 from ..text.TextBlock import TextBlock
 from ..common.BBox import BBox
 from ..common.share import rgb_component
-from ..common import docx
+from ..common import docx, constants
 from ..layout import Blocks # avoid import conflict
 from ..text.Line import Line
 from ..text.Lines import Lines
@@ -27,7 +27,7 @@ class Cell(BBox):
         self.merged_cells = raw.get('merged_cells', (1,1)) # type: tuple [int]
 
         # collect blocks
-        self.blocks = Blocks.Blocks(parent=self).from_dicts(raw.get('blocks', []))
+        self.blocks = Blocks.Blocks(parent=self).restore(raw.get('blocks', []))
 
         super().__init__(raw)
 
@@ -36,6 +36,14 @@ class Cell(BBox):
     def text(self):
         '''Text contained in this cell.'''
         return '\n'.join([block.text for block in self.blocks]) if bool(self) else None
+
+
+    @property
+    def working_bbox(self):
+        '''bbox with border width considered.'''
+        x0, y0, x1, y1 = self.bbox
+        w_top, w_right, w_bottom, w_left = self.border_width
+        return (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
 
     
     def compare(self, cell, threshold:float=0.9):
@@ -119,7 +127,7 @@ class Cell(BBox):
             Note: If it's a text block and partly contained in a cell, it must deep into line -> span -> char.
         '''
         # add block directly if fully contained in cell
-        if self.bbox.contains(block.bbox):
+        if self.contains(block, constants.FACTOR_ALMOST):
             self.blocks.append(block)
             return
         
@@ -127,7 +135,7 @@ class Cell(BBox):
         if not self.bbox & block.bbox: return
 
         # otherwise, further check lines in text block
-        if not block.is_text_block():  return
+        if not block.is_text_image_block():  return
         
         # NOTE: add each line as a single text block to avoid overlap between table block and combined lines
         split_block = TextBlock()
@@ -143,12 +151,12 @@ class Cell(BBox):
         from .TableStructure import TableStructure
 
         # bbox range of stream table
-        inner_bbox, outer_bbox = self.bbox, self.bbox
+        inner_bbox, outer_bbox = self.working_bbox, self.working_bbox
         outer_borders = TablesConstructor._outer_borders(inner_bbox, outer_bbox)
 
         # stream table contents        
         def sub_lines(block): # get sub-lines from block
-            return block.lines if block.is_text_block() else [Line().update_bbox(block.bbox)]
+            return block.lines if block.is_text_image_block() else [Line().update_bbox(block.bbox)]
         table_lines = Lines()
         for block in self.blocks:
             table_lines.extend(sub_lines(block))

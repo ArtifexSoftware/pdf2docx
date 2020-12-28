@@ -14,7 +14,7 @@ from ..common.Collection import Collection
 class Rows(Collection):
     '''A group of Rows.'''
 
-    def from_dicts(self, raws:list):
+    def restore(self, raws:list):
         for raw in raws:
             row = Row(raw)
             self.append(row)

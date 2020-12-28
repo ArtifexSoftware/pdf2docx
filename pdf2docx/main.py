@@ -13,9 +13,9 @@ class PDF2DOCX:
         
             Args:
                 pdf_file (str) : PDF filename to read from
-                docx_file (str): DOCX filename to write to
-                start (int)    : first page to process, starting from zero if --zero_based_index=True
-                end (int)      : last page to process, starting from zero if --zero_based_index=True
+                docx_file (str): DOCX filename to write to (change extension from "pdf" to "docx" by default)
+                start (int)    : first page to process (starting from zero if --zero_based_index=True)
+                end (int)      : last page to process (starting from zero if --zero_based_index=True)
                 pages (list)   : range of pages
                 kwargs (dict)  : configuration parameters
                                 zero_based_index               : True, page index from 0 if True else 1
@@ -26,7 +26,6 @@ class PDF2DOCX:
                                 min_border_clearance           : 2.0, the minimum allowable clearance of two borders
                                 float_image_ignorable_gap      : 5.0, float image if the intersection exceeds this value
                                 float_layout_tolerance         : 0.1, [0,1] the larger of this value, the more tolerable of float layout
-                                page_margin_tolerance_right    : 5.0, reduce right page margin to leave more space
                                 page_margin_factor_top         : 0.5, [0,1] reduce top margin by factor
                                 page_margin_factor_bottom      : 0.5, [0,1] reduce bottom margin by factor
                                 shape_merging_threshold        : 0.5, [0,1] merge shape if the intersection exceeds this value
@@ -44,6 +43,23 @@ class PDF2DOCX:
         cv.make_docx(docx_file, start, end, pages, kwargs)
         cv.close()
     
+
+    @staticmethod
+    def debug_page(pdf_file, page_index=0, docx_file=None, debug_pdf=None, layout_file='layout.json', **kwargs):
+        ''' Convert one PDF page and plot layout information for debugging.
+
+            Args:
+                pdf_file (str) : PDF filename to read from
+                page_index (int): page index to convert
+                docx_file (str): DOCX filename to write to (change extension from "pdf" to "docx" by default)
+                debug_pdf (str): new pdf file storing layout information (add prefix "debug_" by default)
+                layout_file (str): new json file storing parsed layout data (layout.json by default)
+                kwargs (dict)  : configuration parameters
+        '''
+        cv = Converter(pdf_file)
+        cv.debug_page(page_index, docx_file, debug_pdf, layout_file, kwargs)
+        cv.close()
+
 
     @staticmethod
     def table(pdf_file, start=0, end=None, pages=None, **kwargs):

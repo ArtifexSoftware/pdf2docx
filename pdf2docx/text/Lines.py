@@ -9,7 +9,6 @@ A group of Line objects.
 
 from docx.shared import Pt
 from .Line import Line
-from ..common import constants
 from ..common.Collection import Collection
 from ..common.docx import add_stop
 
@@ -35,7 +34,7 @@ class Lines(Collection):
             line.pid = id(self._parent)
 
 
-    def from_dicts(self, raws:list):
+    def restore(self, raws:list):
         '''Construct lines from raw dicts list.'''
         for raw in raws:
             line = Line(raw)
@@ -208,15 +207,28 @@ class Lines(Collection):
             # add line
             line.make_docx(p)
 
-            # hard line break is necessary, otherwise the paragraph structure may change in docx,
-            # which leads to the pdf-based layout calculation becomes wrong
-            line_break = True
-
+            # hard line break helps ensure paragraph structure, but pdf-based layout calculation may
+            # change in docx due to different rendering mechanism like font, spacing. For instance, when
+            # one paragraph row can't accommodate a Line, the hard break leads to an unnecessary empty row.
+            # Since we can't 100% ensure a same structure, it's better to focus on the content - add line
+            # break only when it's necessary to, e.g. explicit free space exists.
+            idx_1 = (idx+2)%4 # H: x1->2, or V: y0->1
             # no more lines after last line
-            if line==self._instances[-1]: line_break = False            
+            if line==self._instances[-1]: 
+                line_break = False
             
-            # do not break line if they're indeed in same line
             elif line.in_same_row(self._instances[i+1]):
+                line_break = False
+            
+            # break line if free space accommodates the next line
+            elif abs(block.bbox[idx_1]-line.bbox[idx_1]) > abs(self._instances[i+1].bbox[idx_1]-self._instances[i+1].bbox[idx]):
+                line_break = True
+            
+            # break line if next line is a only a space (otherwise, MS Word leaves it in previous line)
+            elif not self._instances[i+1].text.strip():
+                line_break = True
+            
+            else:
                 line_break = False
             
             if line_break:

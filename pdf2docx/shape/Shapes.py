@@ -30,7 +30,7 @@ class Shapes(Collection):
         self._text_highlights = Collection()
 
 
-    def from_dicts(self, raws:list):
+    def restore(self, raws:list):
         '''Initialize Stroke/Fill from dicts.'''
         # distinguish Stroke and Fill: whether keys 'start' and 'end' exist in dict
         for raw in raws:
@@ -105,7 +105,7 @@ class Shapes(Collection):
         # clean up shapes:
         # - remove shapes out of page
         # - remove small shapes
-        page_bbox = (0.0, 0.0, self.parent.width, self.parent.height)
+        page_bbox = self.parent.bbox
         f = lambda shape: shape.bbox.intersects(page_bbox) and \
                         (shape.bbox.width>=shape_min_dimension or shape.bbox.height>=shape_min_dimension)
         shapes = filter(f, self._instances)

@@ -32,7 +32,6 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
 from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-from .Line import Line
 from .Lines import Lines
 from ..image.ImageSpan import ImageSpan
 from ..common.share import TextDirection, TextAlignment
@@ -52,10 +51,10 @@ class TextBlock(Block):
         super().__init__(raw)
 
         # collect lines
-        self.lines = Lines(parent=self).from_dicts(raw.get('lines', []))
+        self.lines = Lines(parent=self).restore(raw.get('lines', []))
 
         # set type
-        self.set_text_block()        
+        self.set_text_block()
 
 
     @property
@@ -146,42 +145,6 @@ class TextBlock(Block):
                 span.plot(page, color=c)
 
 
-    def contains_discrete_lines(self, distance:float=25, threshold:int=2):
-        ''' Check whether lines in block are discrete: 
-              - the count of lines with a distance larger than `distance` is greater then `threshold`.
-              - ImageSpan exists
-              - vertical text exists
-        '''
-        num = len(self.lines)
-        if num==1: return False
-
-        # check image spans
-        if self.lines.image_spans: return True
-
-        # check text direction
-        if self.is_vertical_text: return True
-
-        # check the count of discrete lines
-        cnt = 1
-        for i in range(num-1):
-            line = self.lines[i]
-            next_line = self.lines[i+1]
-
-            if line.horizontally_align_with(next_line):
-                # if two lines are intersected each other, it's of no use to detect table cells
-                if line.bbox & next_line.bbox:
-                    continue
-
-                # horizontally aligned but not in a same row -> discrete block
-                elif not line.in_same_row(next_line): return True
-                
-                # otherwise, check the distance only
-                elif abs(line.bbox.x1-next_line.bbox.x0) > distance:
-                    cnt += 1
-
-        return cnt >= threshold
-
-    
     def parse_text_format(self, rects):
         '''parse text format with style represented by rectangles.
             ---
@@ -348,10 +311,12 @@ class TextBlock(Block):
         pf.line_spacing = Pt(round(self.line_space, 1))
 
         # horizontal alignment
+        # for multi-lines paragraph, set both left and right indentation; this hard restriction may lead to
+        # unexpected line break especially different font used in docx. So, just add one side indentation for
+        # single line paragraph.
         if self.alignment==TextAlignment.LEFT:
             pf.alignment = WD_ALIGN_PARAGRAPH.LEFT
             pf.left_indent  = Pt(self.left_space)
-
             # set tab stops to ensure line position
             for pos in self.tab_stops:
                 pf.tab_stops.add_tab_stop(Pt(self.left_space + pos))

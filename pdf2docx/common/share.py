@@ -199,8 +199,8 @@ def debug_plot(title:str):
             # check if plot layout
             layout = args[0] # Layout object
             debug = layout.settings.get('debug', False)
-            doc = layout.settings.get('doc', None)
-            filename = layout.settings.get('filename', None)
+            doc = layout.settings.get('debug_doc', None)
+            filename = layout.settings.get('debug_filename', None)
 
             if objects and debug and doc is not None:                
                 # create a new page

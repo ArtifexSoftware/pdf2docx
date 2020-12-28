@@ -30,6 +30,8 @@ structure.
 
 import base64
 import fitz
+from io import BytesIO
+from ..common import docx
 from ..common.BBox import BBox
 from ..common.share import BlockType
 
@@ -221,3 +223,9 @@ class Image(BBox):
         page.drawLine((x0, y0), (x1, y1), color=color, width=0.5)
         page.drawLine((x0, y1), (x1, y0), color=color, width=0.5)
         super().plot(page, stroke=color)
+
+
+    def make_docx(self, paragraph):
+        '''Add image span to a docx paragraph.'''
+        # add image
+        docx.add_image(paragraph, BytesIO(self.image), self.bbox.x1-self.bbox.x0)
