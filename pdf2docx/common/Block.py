@@ -13,7 +13,7 @@ from . import constants
 
 
 class Block(BBox):
-    '''Text block.'''
+    '''Base class for text/image/table blocks.'''
     def __init__(self, raw:dict=None):        
         self._type = BlockType.UNDEFINED
 
@@ -22,6 +22,10 @@ class Block(BBox):
         self.alignment = self.get_alignment(raw.get('alignment', 0))
         self.left_space = raw.get('left_space', 0.0)
         self.right_space = raw.get('right_space', 0.0)
+        self.first_line_space = raw.get('first_line_space', 0.0)
+
+        self.left_space_total = raw.get('left_space_total', 0.0)
+        self.right_space_total = raw.get('right_space_total', 0.0)
 
         # RELATIVE position of tab stops
         self.tab_stops = raw.get('tab_stops', []) 
@@ -79,7 +83,7 @@ class Block(BBox):
                 return t
         return TextAlignment.LEFT
 
-    def parse_horizontal_spacing(self, bbox, *varargs):
+    def parse_horizontal_spacing(self, bbox, *args):
         '''set left alignment by default.'''
         # NOTE: in PyMuPDF CS, horizontal text direction is same with positive x-axis,
         # while vertical text is on the contrarory, so use f = -1 here
@@ -119,14 +123,17 @@ class Block(BBox):
         '''Store attributes in json format.'''
         res = super().store()
         res.update({
-            'type'        : self._type.value,
-            'alignment'   : self.alignment.value,
-            'left_space'  : self.left_space,
-            'right_space' : self.right_space,
-            'before_space': self.before_space,
-            'after_space' : self.after_space,
-            'line_space'  : self.line_space,
-            'tab_stops'   : self.tab_stops
+            'type'             : self._type.value,
+            'alignment'        : self.alignment.value,
+            'left_space'       : self.left_space,
+            'right_space'      : self.right_space,
+            'first_line_space' : self.first_line_space,
+            'before_space'     : self.before_space,
+            'after_space'      : self.after_space,
+            'line_space'       : self.line_space,
+            'tab_stops'        : self.tab_stops,
+            'left_space_total' : self.left_space_total,
+            'right_space_total': self.right_space_total
             })
         return res
 

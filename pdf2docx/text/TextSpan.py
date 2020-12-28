@@ -201,6 +201,7 @@ class TextSpan(BBox):
     def split(self, rect:Shape, horizontal:bool=True):
         '''Split span with the intersection: span-intersection-span.'''
         # any intersection in this span?
+        # NOTE: didn't consider the case that an underline is out of a span
         intsec = rect.bbox & self.bbox
 
         # no, then add this span as it is
@@ -280,7 +281,7 @@ class TextSpan(BBox):
         h_span = self.bbox[idx+2] - self.bbox[idx]
 
         # distance to span bottom border
-        d = self.bbox[idx+2] - rect.bbox[idx]
+        d = abs(self.bbox[idx+2] - rect.bbox[idx])
 
         # highlight: both the rect height and overlap must be large enough
         if h_rect >= 0.5*h_span:

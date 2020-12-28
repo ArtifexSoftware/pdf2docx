@@ -9,8 +9,11 @@ A group of Line objects.
 
 from docx.shared import Pt
 from .Line import Line
+from ..image.ImageSpan import ImageSpan
 from ..common.Collection import Collection
 from ..common.docx import add_stop
+from ..common.share import TextAlignment
+from ..common import constants
 
 
 class Lines(Collection):
@@ -191,48 +194,100 @@ class Lines(Collection):
         return groups
 
 
+    def parse_text_format(self, rect):
+        '''parse text format with style represented by rectangle shape.
+            ---
+            Args:
+            - rect: potential style shape applied on blocks
+        '''
+        flag = False
+
+        for line in self._instances:
+            # any intersection in this line?
+            intsec = rect.bbox & line.get_expand_bbox(constants.MAJOR_DIST)
+            
+            if not intsec: 
+                if rect.bbox.y1 < line.bbox.y0: break # lines must be sorted in advance
+                continue
+
+            # yes, then try to split the spans in this line
+            split_spans = []
+            for span in line.spans: 
+                # include image span directly
+                if isinstance(span, ImageSpan): split_spans.append(span)                   
+
+                # split text span with the format rectangle: span-intersection-span
+                else:
+                    spans = span.split(rect, line.is_horizontal_text)
+                    split_spans.extend(spans)
+                    flag = True
+                                            
+            # update line spans                
+            line.spans.reset(split_spans)
+
+        return flag
+
+
+    def parse_line_break(self, line_free_space_ratio_threshold):
+        ''' Whether hard break each line.
+
+            Hard line break helps ensure paragraph structure, but pdf-based layout calculation may
+            change in docx due to different rendering mechanism like font, spacing. For instance, when
+            one paragraph row can't accommodate a Line, the hard break leads to an unnecessary empty row.
+            Since we can't 100% ensure a same structure, it's better to focus on the content - add line
+            break only when it's necessary to, e.g. explicit free space exists.            
+        '''
+        block = self.parent        
+        idx0 = 0 if block.is_horizontal_text else 3
+        idx1 = (idx0+2)%4 # H: x1->2, or V: y0->1
+        width = abs(block.bbox[idx1]-block.bbox[idx0])
+
+        # space for checking line break
+        if block.alignment == TextAlignment.RIGHT:
+            delta_space = block.left_space_total - block.left_space
+            idx = idx0
+        else:
+            delta_space = block.right_space_total - block.right_space
+            idx = idx1        
+
+        for i, line in enumerate(self._instances):            
+            if line==self._instances[-1]: # no more lines after last line
+                line.line_break = 0
+            
+            elif line.in_same_row(self._instances[i+1]):
+                line.line_break = 0
+            
+            # break line if free space exceeds a threshold
+            elif (abs(block.bbox[idx]-line.bbox[idx]) + delta_space) / width > line_free_space_ratio_threshold:
+                line.line_break = 1
+            
+            # break line if next line is a only a space (otherwise, MS Word leaves it in previous line)
+            elif not self._instances[i+1].text.strip():
+                line.line_break = 1
+            
+            else:
+                line.line_break = 0
+
+
     def make_docx(self, p):
         '''Create lines in paragraph.'''
         block = self.parent        
-        idx = 0 if block.is_horizontal_text else 3
+        idx0 = 0 if block.is_horizontal_text else 3
+        idx1 = (idx0+2)%4 # H: x1->2, or V: y0->1
         current_pos = block.left_space
 
         for i, line in enumerate(self._instances):
-
             # left indentation implemented with tab
-            pos = block.left_space + (line.bbox[idx]-block.bbox[idx])
-            if pos>block.left_space:
+            pos = block.left_space + (line.bbox[idx0]-block.bbox[idx0])
+            if pos>block.left_space and block.tab_stops: # sometimes set by first line indentation
                 add_stop(p, Pt(pos), Pt(current_pos))
 
             # add line
             line.make_docx(p)
 
-            # hard line break helps ensure paragraph structure, but pdf-based layout calculation may
-            # change in docx due to different rendering mechanism like font, spacing. For instance, when
-            # one paragraph row can't accommodate a Line, the hard break leads to an unnecessary empty row.
-            # Since we can't 100% ensure a same structure, it's better to focus on the content - add line
-            # break only when it's necessary to, e.g. explicit free space exists.
-            idx_1 = (idx+2)%4 # H: x1->2, or V: y0->1
-            # no more lines after last line
-            if line==self._instances[-1]: 
-                line_break = False
-            
-            elif line.in_same_row(self._instances[i+1]):
-                line_break = False
-            
-            # break line if free space accommodates the next line
-            elif abs(block.bbox[idx_1]-line.bbox[idx_1]) > abs(self._instances[i+1].bbox[idx_1]-self._instances[i+1].bbox[idx]):
-                line_break = True
-            
-            # break line if next line is a only a space (otherwise, MS Word leaves it in previous line)
-            elif not self._instances[i+1].text.strip():
-                line_break = True
-            
+            # update stop position            
+            if line==self._instances[-1]: break
+            if line.in_same_row(self._instances[i+1]):
+                current_pos = pos + abs(line.bbox[idx1]-block.bbox[idx0])
             else:
-                line_break = False
-            
-            if line_break:
-                p.add_run('\n')
                 current_pos = block.left_space
-            else:
-                current_pos = pos + line.bbox.width

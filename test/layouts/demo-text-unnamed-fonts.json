@@ -1,9 +1,10 @@
 {
+    "finalized": true,
     "width": 595.0,
     "height": 842.0,
     "margin": [
+        42.5,
         72.0,
-        68.0,
         50.0,
         72.0
     ],
@@ -16,13 +17,16 @@
                 135.0
             ],
             "type": 0,
-            "alignment": 8,
-            "left_space": 13.1,
-            "right_space": 346.8,
+            "alignment": 1,
+            "left_space": 42.6,
+            "right_space": 42.6,
+            "first_line_space": 0.0,
             "before_space": 49.0,
             "after_space": 1.9000000000000057,
             "line_space": 12.0,
             "tab_stops": [],
+            "left_space_total": 42.6,
+            "right_space_total": 342.8,
             "lines": [
                 {
                     "bbox": [
@@ -36,6 +40,7 @@
                         1.0,
                         0.0
                     ],
+                    "line_break": 1,
                     "spans": [
                         {
                             "bbox": [
@@ -300,6 +305,7 @@
                         1.0,
                         0.0
                     ],
+                    "line_break": 1,
                     "spans": [
                         {
                             "bbox": [
@@ -344,6 +350,7 @@
                         1.0,
                         0.0
                     ],
+                    "line_break": 0,
                     "spans": [
                         {
                             "bbox": [
@@ -380,32 +387,35 @@
         },
         {
             "bbox": [
-                78.5,
+                42.5,
                 136.9,
-                432.9,
+                466.9,
                 352.1
             ],
             "type": 3,
-            "alignment": 8,
-            "left_space": 6.5,
+            "alignment": 1,
+            "left_space": 0.0,
             "right_space": 0.0,
+            "first_line_space": 0.0,
             "before_space": 0.0,
             "after_space": 0.0,
             "line_space": 0.0,
             "tab_stops": [],
+            "left_space_total": 0.0,
+            "right_space_total": 0.0,
             "rows": [
                 {
                     "bbox": [
-                        78.5,
+                        42.5,
                         136.9,
-                        432.9,
+                        466.9,
                         169.1
                     ],
                     "height": 32.19999999999999,
                     "cells": [
                         {
                             "bbox": [
-                                78.5,
+                                42.5,
                                 136.9,
                                 165.2,
                                 169.1
@@ -436,13 +446,16 @@
                                         167.8
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 6.6,
-                                    "right_space": 77.4,
+                                    "alignment": 1,
+                                    "left_space": 42.6,
+                                    "right_space": 42.6,
+                                    "first_line_space": 0.0,
                                     "before_space": 21.400000000000006,
                                     "after_space": 0.0,
                                     "line_space": 9.5,
                                     "tab_stops": [],
+                                    "left_space_total": 42.6,
+                                    "right_space_total": 77.4,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -456,6 +469,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -496,7 +510,7 @@
                             "bbox": [
                                 165.2,
                                 136.9,
-                                432.9,
+                                466.9,
                                 169.1
                             ],
                             "bg_color": null,
@@ -525,13 +539,16 @@
                                         160.3
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
+                                    "alignment": 1,
                                     "left_space": 77.4,
-                                    "right_space": 113.2,
+                                    "right_space": 77.4,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.9000000000000057,
                                     "after_space": 0.0,
                                     "line_space": 21.5,
                                     "tab_stops": [],
+                                    "left_space_total": 77.4,
+                                    "right_space_total": 147.2,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -545,6 +562,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -663,18 +681,18 @@
                 },
                 {
                     "bbox": [
-                        78.5,
+                        42.5,
                         169.1,
-                        432.9,
+                        466.9,
                         181.1
                     ],
                     "height": 12.0,
                     "cells": [
                         {
                             "bbox": [
-                                78.5,
+                                42.5,
                                 169.1,
-                                432.9,
+                                466.9,
                                 181.1
                             ],
                             "bg_color": null,
@@ -703,13 +721,16 @@
                                         179.8
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 6.6,
-                                    "right_space": 345.1,
+                                    "alignment": 1,
+                                    "left_space": 42.6,
+                                    "right_space": 42.6,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.200000000000017,
                                     "after_space": 0.0,
                                     "line_space": 9.5,
                                     "tab_stops": [],
+                                    "left_space_total": 42.6,
+                                    "right_space_total": 379.1,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -723,6 +744,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -764,18 +786,18 @@
                 },
                 {
                     "bbox": [
-                        78.5,
+                        42.5,
                         181.1,
-                        432.9,
+                        466.9,
                         192.4
                     ],
                     "height": 11.300000000000011,
                     "cells": [
                         {
                             "bbox": [
-                                78.5,
+                                42.5,
                                 181.1,
-                                432.9,
+                                466.9,
                                 192.4
                             ],
                             "bg_color": null,
@@ -804,13 +826,16 @@
                                         191.8
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 6.6,
-                                    "right_space": 345.1,
+                                    "alignment": 1,
+                                    "left_space": 42.6,
+                                    "right_space": 42.6,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.200000000000017,
                                     "after_space": 0.0,
                                     "line_space": 9.5,
                                     "tab_stops": [],
+                                    "left_space_total": 42.6,
+                                    "right_space_total": 379.1,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -824,6 +849,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -865,18 +891,18 @@
                 },
                 {
                     "bbox": [
-                        78.5,
+                        42.5,
                         192.4,
-                        432.9,
+                        466.9,
                         205.1
                     ],
                     "height": 12.699999999999989,
                     "cells": [
                         {
                             "bbox": [
-                                78.5,
+                                42.5,
                                 192.4,
-                                432.9,
+                                466.9,
                                 205.1
                             ],
                             "bg_color": null,
@@ -905,13 +931,16 @@
                                         203.8
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 6.6,
-                                    "right_space": 256.1,
+                                    "alignment": 1,
+                                    "left_space": 42.6,
+                                    "right_space": 42.6,
+                                    "first_line_space": 0.0,
                                     "before_space": 0.5,
                                     "after_space": 0.0,
                                     "line_space": 10.900000000000006,
                                     "tab_stops": [],
+                                    "left_space_total": 42.6,
+                                    "right_space_total": 290.1,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -925,6 +954,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -1173,18 +1203,18 @@
                 },
                 {
                     "bbox": [
-                        78.5,
+                        42.5,
                         205.1,
-                        432.9,
+                        466.9,
                         216.4
                     ],
                     "height": 11.300000000000011,
                     "cells": [
                         {
                             "bbox": [
-                                78.5,
+                                42.5,
                                 205.1,
-                                432.9,
+                                466.9,
                                 216.4
                             ],
                             "bg_color": null,
@@ -1213,13 +1243,16 @@
                                         215.8
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 6.6,
-                                    "right_space": 345.1,
+                                    "alignment": 1,
+                                    "left_space": 42.6,
+                                    "right_space": 42.6,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.200000000000017,
                                     "after_space": 0.0,
                                     "line_space": 9.5,
                                     "tab_stops": [],
+                                    "left_space_total": 42.6,
+                                    "right_space_total": 379.1,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -1233,6 +1266,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -1274,18 +1308,18 @@
                 },
                 {
                     "bbox": [
-                        78.5,
+                        42.5,
                         216.4,
-                        432.9,
+                        466.9,
                         229.1
                     ],
                     "height": 12.699999999999989,
                     "cells": [
                         {
                             "bbox": [
-                                78.5,
+                                42.5,
                                 216.4,
-                                432.9,
+                                466.9,
                                 229.1
                             ],
                             "bg_color": null,
@@ -1314,13 +1348,16 @@
                                         227.8
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 16.7,
-                                    "right_space": 114.2,
+                                    "alignment": 1,
+                                    "left_space": 52.7,
+                                    "right_space": 52.7,
+                                    "first_line_space": 0.0,
                                     "before_space": 0.5,
                                     "after_space": 0.0,
                                     "line_space": 10.900000000000006,
                                     "tab_stops": [],
+                                    "left_space_total": 52.7,
+                                    "right_space_total": 148.2,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -1334,6 +1371,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -1944,18 +1982,18 @@
                 },
                 {
                     "bbox": [
-                        78.5,
+                        42.5,
                         229.1,
-                        432.9,
+                        466.9,
                         240.4
                     ],
                     "height": 11.300000000000011,
                     "cells": [
                         {
                             "bbox": [
-                                78.5,
+                                42.5,
                                 229.1,
-                                432.9,
+                                466.9,
                                 240.4
                             ],
                             "bg_color": null,
@@ -1984,13 +2022,16 @@
                                         239.8
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 6.6,
-                                    "right_space": 345.1,
+                                    "alignment": 1,
+                                    "left_space": 42.6,
+                                    "right_space": 42.6,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.200000000000017,
                                     "after_space": 0.0,
                                     "line_space": 9.5,
                                     "tab_stops": [],
+                                    "left_space_total": 42.6,
+                                    "right_space_total": 379.1,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -2004,6 +2045,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -2045,18 +2087,18 @@
                 },
                 {
                     "bbox": [
-                        78.5,
+                        42.5,
                         240.4,
-                        432.9,
+                        466.9,
                         253.1
                     ],
                     "height": 12.699999999999989,
                     "cells": [
                         {
                             "bbox": [
-                                78.5,
+                                42.5,
                                 240.4,
-                                432.9,
+                                466.9,
                                 253.1
                             ],
                             "bg_color": null,
@@ -2085,13 +2127,16 @@
                                         251.8
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 16.7,
-                                    "right_space": 94.1,
+                                    "alignment": 1,
+                                    "left_space": 52.7,
+                                    "right_space": 52.7,
+                                    "first_line_space": 0.0,
                                     "before_space": 0.5,
                                     "after_space": 0.0,
                                     "line_space": 10.900000000000006,
                                     "tab_stops": [],
+                                    "left_space_total": 52.7,
+                                    "right_space_total": 128.1,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -2105,6 +2150,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -2741,18 +2787,18 @@
                 },
                 {
                     "bbox": [
-                        78.5,
+                        42.5,
                         253.1,
-                        432.9,
+                        466.9,
                         264.4
                     ],
                     "height": 11.299999999999983,
                     "cells": [
                         {
                             "bbox": [
-                                78.5,
+                                42.5,
                                 253.1,
-                                432.9,
+                                466.9,
                                 264.4
                             ],
                             "bg_color": null,
@@ -2781,13 +2827,16 @@
                                         263.8
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 6.6,
-                                    "right_space": 345.1,
+                                    "alignment": 1,
+                                    "left_space": 42.6,
+                                    "right_space": 42.6,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.200000000000017,
                                     "after_space": 0.0,
                                     "line_space": 9.5,
                                     "tab_stops": [],
+                                    "left_space_total": 42.6,
+                                    "right_space_total": 379.1,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -2801,6 +2850,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -2842,18 +2892,18 @@
                 },
                 {
                     "bbox": [
-                        78.5,
+                        42.5,
                         264.4,
-                        432.9,
+                        466.9,
                         277.1
                     ],
                     "height": 12.700000000000045,
                     "cells": [
                         {
                             "bbox": [
-                                78.5,
+                                42.5,
                                 264.4,
-                                432.9,
+                                466.9,
                                 277.1
                             ],
                             "bg_color": null,
@@ -2882,13 +2932,16 @@
                                         275.8
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 21.6,
-                                    "right_space": 151.7,
+                                    "alignment": 1,
+                                    "left_space": 57.6,
+                                    "right_space": 57.6,
+                                    "first_line_space": 0.0,
                                     "before_space": 0.5,
                                     "after_space": 0.0,
                                     "line_space": 10.900000000000034,
                                     "tab_stops": [],
+                                    "left_space_total": 57.6,
+                                    "right_space_total": 185.7,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -2902,6 +2955,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -3386,18 +3440,18 @@
                 },
                 {
                     "bbox": [
-                        78.5,
+                        42.5,
                         277.1,
-                        432.9,
+                        466.9,
                         289.1
                     ],
                     "height": 12.0,
                     "cells": [
                         {
                             "bbox": [
-                                78.5,
+                                42.5,
                                 277.1,
-                                432.9,
+                                466.9,
                                 289.1
                             ],
                             "bg_color": null,
@@ -3426,13 +3480,16 @@
                                         287.8
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 6.6,
-                                    "right_space": 345.1,
+                                    "alignment": 1,
+                                    "left_space": 42.6,
+                                    "right_space": 42.6,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.1999999999999886,
                                     "after_space": 0.0,
                                     "line_space": 9.5,
                                     "tab_stops": [],
+                                    "left_space_total": 42.6,
+                                    "right_space_total": 379.1,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -3446,6 +3503,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -3487,18 +3545,18 @@
                 },
                 {
                     "bbox": [
-                        78.5,
+                        42.5,
                         289.1,
-                        432.9,
+                        466.9,
                         301.1
                     ],
                     "height": 12.0,
                     "cells": [
                         {
                             "bbox": [
-                                78.5,
+                                42.5,
                                 289.1,
-                                432.9,
+                                466.9,
                                 301.1
                             ],
                             "bg_color": null,
@@ -3527,13 +3585,16 @@
                                         299.8
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 6.6,
-                                    "right_space": 345.1,
+                                    "alignment": 1,
+                                    "left_space": 42.6,
+                                    "right_space": 42.6,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.1999999999999886,
                                     "after_space": 0.0,
                                     "line_space": 9.5,
                                     "tab_stops": [],
+                                    "left_space_total": 42.6,
+                                    "right_space_total": 379.1,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -3547,6 +3608,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -3588,18 +3650,18 @@
                 },
                 {
                     "bbox": [
-                        78.5,
+                        42.5,
                         301.1,
-                        432.9,
+                        466.9,
                         313.1
                     ],
                     "height": 12.0,
                     "cells": [
                         {
                             "bbox": [
-                                78.5,
+                                42.5,
                                 301.1,
-                                432.9,
+                                466.9,
                                 313.1
                             ],
                             "bg_color": null,
@@ -3628,13 +3690,16 @@
                                         311.8
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 6.6,
-                                    "right_space": 345.1,
+                                    "alignment": 1,
+                                    "left_space": 42.6,
+                                    "right_space": 42.6,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.1999999999999886,
                                     "after_space": 0.0,
                                     "line_space": 9.5,
                                     "tab_stops": [],
+                                    "left_space_total": 42.6,
+                                    "right_space_total": 379.1,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -3648,6 +3713,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -3689,18 +3755,18 @@
                 },
                 {
                     "bbox": [
-                        78.5,
+                        42.5,
                         313.1,
-                        432.9,
+                        466.9,
                         324.4
                     ],
                     "height": 11.299999999999955,
                     "cells": [
                         {
                             "bbox": [
-                                78.5,
+                                42.5,
                                 313.1,
-                                432.9,
+                                466.9,
                                 324.4
                             ],
                             "bg_color": null,
@@ -3729,13 +3795,16 @@
                                         323.8
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 6.6,
-                                    "right_space": 345.1,
+                                    "alignment": 1,
+                                    "left_space": 42.6,
+                                    "right_space": 42.6,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.1999999999999886,
                                     "after_space": 0.0,
                                     "line_space": 9.5,
                                     "tab_stops": [],
+                                    "left_space_total": 42.6,
+                                    "right_space_total": 379.1,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -3749,6 +3818,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -3790,18 +3860,18 @@
                 },
                 {
                     "bbox": [
-                        78.5,
+                        42.5,
                         324.4,
-                        432.9,
+                        466.9,
                         337.3
                     ],
                     "height": 12.900000000000034,
                     "cells": [
                         {
                             "bbox": [
-                                78.5,
+                                42.5,
                                 324.4,
-                                432.9,
+                                466.9,
                                 337.3
                             ],
                             "bg_color": null,
@@ -3830,13 +3900,16 @@
                                         335.8
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 6.6,
-                                    "right_space": 216.1,
+                                    "alignment": 1,
+                                    "left_space": 42.6,
+                                    "right_space": 42.6,
+                                    "first_line_space": 0.0,
                                     "before_space": 0.5,
                                     "after_space": 0.0,
                                     "line_space": 10.900000000000034,
                                     "tab_stops": [],
+                                    "left_space_total": 42.6,
+                                    "right_space_total": 250.1,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -3850,6 +3923,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -4227,18 +4301,18 @@
                 },
                 {
                     "bbox": [
-                        78.5,
+                        42.5,
                         337.3,
-                        432.9,
+                        466.9,
                         352.1
                     ],
                     "height": 14.800000000000011,
                     "cells": [
                         {
                             "bbox": [
-                                78.5,
+                                42.5,
                                 337.3,
-                                432.9,
+                                466.9,
                                 352.1
                             ],
                             "bg_color": null,
@@ -4267,13 +4341,16 @@
                                         348.3
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 6.6,
-                                    "right_space": 345.1,
+                                    "alignment": 1,
+                                    "left_space": 42.6,
+                                    "right_space": 42.6,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.5,
                                     "after_space": 0.0,
                                     "line_space": 9.5,
                                     "tab_stops": [],
+                                    "left_space_total": 42.6,
+                                    "right_space_total": 379.1,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -4287,6 +4364,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -4336,13 +4414,16 @@
                 662.1
             ],
             "type": 2,
-            "alignment": 8,
-            "left_space": 12.299999999999997,
+            "alignment": 1,
+            "left_space": 41.8,
             "right_space": 0.0,
+            "first_line_space": 0.0,
             "before_space": 3.5,
             "after_space": 0.0,
             "line_space": 0.0,
             "tab_stops": [],
+            "left_space_total": 0.0,
+            "right_space_total": 0.0,
             "rows": [
                 {
                     "bbox": [
@@ -4387,12 +4468,15 @@
                                     ],
                                     "type": 0,
                                     "alignment": 2,
-                                    "left_space": 41.4,
-                                    "right_space": 38.4,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 7.800000000000011,
                                     "after_space": 0.0,
                                     "line_space": 9.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 41.4,
+                                    "right_space_total": 38.4,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -4406,6 +4490,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -4518,13 +4603,16 @@
                                         373.7
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 7.3,
-                                    "right_space": 4.5,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 7.800000000000011,
                                     "after_space": 0.0,
                                     "line_space": 9.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 7.3,
+                                    "right_space_total": 4.5,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -4538,6 +4626,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -4669,303 +4758,409 @@
                             "blocks": [
                                 {
                                     "bbox": [
-                                        309.0,
-                                        357.3,
-                                        341.5,
-                                        367.2
+                                        242.2,
+                                        356.0,
+                                        405.4,
+                                        382.1
                                     ],
-                                    "type": 0,
-                                    "alignment": 2,
-                                    "left_space": 66.8,
-                                    "right_space": 63.9,
-                                    "before_space": 1.3000000000000114,
+                                    "type": 3,
+                                    "alignment": 1,
+                                    "left_space": 0.04999999999998295,
+                                    "right_space": 0.0,
+                                    "first_line_space": 0.0,
+                                    "before_space": 0.0,
                                     "after_space": 0.0,
-                                    "line_space": 9.899999999999977,
+                                    "line_space": 0.0,
                                     "tab_stops": [],
-                                    "lines": [
+                                    "left_space_total": 0.0,
+                                    "right_space_total": 0.0,
+                                    "rows": [
                                         {
                                             "bbox": [
-                                                309.0,
-                                                357.3,
-                                                339.0,
-                                                367.2
+                                                242.2,
+                                                356.0,
+                                                405.4,
+                                                368.8
                                             ],
-                                            "wmode": 0,
-                                            "dir": [
-                                                1.0,
-                                                0.0
-                                            ],
-                                            "spans": [
+                                            "height": 12.800000000000011,
+                                            "cells": [
                                                 {
                                                     "bbox": [
-                                                        309.0,
-                                                        357.3,
-                                                        339.0,
-                                                        367.2
+                                                        242.2,
+                                                        356.0,
+                                                        405.4,
+                                                        368.8
                                                     ],
-                                                    "color": 0,
-                                                    "font": "Arial",
-                                                    "size": 9.937604904174805,
-                                                    "flags": 0,
-                                                    "chars": [
+                                                    "bg_color": null,
+                                                    "border_color": [
+                                                        0,
+                                                        0,
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "border_width": [
+                                                        0.0,
+                                                        0.0,
+                                                        0.0,
+                                                        0.0
+                                                    ],
+                                                    "merged_cells": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "blocks": [
                                                         {
                                                             "bbox": [
                                                                 309.0,
                                                                 357.3,
-                                                                319.1,
+                                                                341.5,
                                                                 367.2
                                                             ],
-                                                            "c": "\ubcf4",
-                                                            "origin": [
-                                                                308.9996643066406,
-                                                                366.1187744140625
-                                                            ]
-                                                        },
-                                                        {
-                                                            "bbox": [
-                                                                319.1,
-                                                                357.3,
-                                                                329.1,
-                                                                367.2
-                                                            ],
-                                                            "c": "\ud5d8",
-                                                            "origin": [
-                                                                319.078369140625,
-                                                                366.1187744140625
-                                                            ]
-                                                        },
-                                                        {
-                                                            "bbox": [
-                                                                328.9,
-                                                                357.3,
-                                                                339.0,
-                                                                367.2
-                                                            ],
-                                                            "c": "\ub8cc",
-                                                            "origin": [
-                                                                328.9176025390625,
-                                                                366.1187744140625
+                                                            "type": 0,
+                                                            "alignment": 2,
+                                                            "left_space": 0,
+                                                            "right_space": 0,
+                                                            "first_line_space": 0.0,
+                                                            "before_space": 1.3000000000000114,
+                                                            "after_space": 0.0,
+                                                            "line_space": 9.899999999999977,
+                                                            "tab_stops": [],
+                                                            "left_space_total": 66.8,
+                                                            "right_space_total": 63.9,
+                                                            "lines": [
+                                                                {
+                                                                    "bbox": [
+                                                                        309.0,
+                                                                        357.3,
+                                                                        339.0,
+                                                                        367.2
+                                                                    ],
+                                                                    "wmode": 0,
+                                                                    "dir": [
+                                                                        1.0,
+                                                                        0.0
+                                                                    ],
+                                                                    "line_break": 0,
+                                                                    "spans": [
+                                                                        {
+                                                                            "bbox": [
+                                                                                309.0,
+                                                                                357.3,
+                                                                                339.0,
+                                                                                367.2
+                                                                            ],
+                                                                            "color": 0,
+                                                                            "font": "Arial",
+                                                                            "size": 9.937604904174805,
+                                                                            "flags": 0,
+                                                                            "chars": [
+                                                                                {
+                                                                                    "bbox": [
+                                                                                        309.0,
+                                                                                        357.3,
+                                                                                        319.1,
+                                                                                        367.2
+                                                                                    ],
+                                                                                    "c": "\ubcf4",
+                                                                                    "origin": [
+                                                                                        308.9996643066406,
+                                                                                        366.1187744140625
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "bbox": [
+                                                                                        319.1,
+                                                                                        357.3,
+                                                                                        329.1,
+                                                                                        367.2
+                                                                                    ],
+                                                                                    "c": "\ud5d8",
+                                                                                    "origin": [
+                                                                                        319.078369140625,
+                                                                                        366.1187744140625
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "bbox": [
+                                                                                        328.9,
+                                                                                        357.3,
+                                                                                        339.0,
+                                                                                        367.2
+                                                                                    ],
+                                                                                    "c": "\ub8cc",
+                                                                                    "origin": [
+                                                                                        328.9176025390625,
+                                                                                        366.1187744140625
+                                                                                    ]
+                                                                                }
+                                                                            ],
+                                                                            "text": "\ubcf4\ud5d8\ub8cc",
+                                                                            "style": []
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        318.8,
+                                                                        357.3,
+                                                                        341.5,
+                                                                        367.2
+                                                                    ],
+                                                                    "wmode": 0,
+                                                                    "dir": [
+                                                                        1.0,
+                                                                        0.0
+                                                                    ],
+                                                                    "line_break": 0,
+                                                                    "spans": [
+                                                                        {
+                                                                            "bbox": [
+                                                                                318.8,
+                                                                                357.3,
+                                                                                338.7,
+                                                                                367.2
+                                                                            ],
+                                                                            "color": 0,
+                                                                            "font": "Arial",
+                                                                            "size": 9.937604904174805,
+                                                                            "flags": 0,
+                                                                            "chars": [
+                                                                                {
+                                                                                    "bbox": [
+                                                                                        318.8,
+                                                                                        357.3,
+                                                                                        328.9,
+                                                                                        367.2
+                                                                                    ],
+                                                                                    "c": "\ud5d8",
+                                                                                    "origin": [
+                                                                                        318.83966064453125,
+                                                                                        366.1187744140625
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "bbox": [
+                                                                                        328.7,
+                                                                                        357.3,
+                                                                                        338.7,
+                                                                                        367.2
+                                                                                    ],
+                                                                                    "c": "\ub8cc",
+                                                                                    "origin": [
+                                                                                        328.67889404296875,
+                                                                                        366.1187744140625
+                                                                                    ]
+                                                                                }
+                                                                            ],
+                                                                            "text": "\ud5d8\ub8cc",
+                                                                            "style": []
+                                                                        },
+                                                                        {
+                                                                            "bbox": [
+                                                                                338.8,
+                                                                                358.9,
+                                                                                341.5,
+                                                                                366.3
+                                                                            ],
+                                                                            "color": 0,
+                                                                            "font": "Helvetica",
+                                                                            "size": 9.956947326660156,
+                                                                            "flags": 22,
+                                                                            "chars": [
+                                                                                {
+                                                                                    "bbox": [
+                                                                                        338.8,
+                                                                                        358.9,
+                                                                                        341.5,
+                                                                                        366.3
+                                                                                    ],
+                                                                                    "c": " ",
+                                                                                    "origin": [
+                                                                                        338.7591552734375,
+                                                                                        366.1187744140625
+                                                                                    ]
+                                                                                }
+                                                                            ],
+                                                                            "text": " ",
+                                                                            "style": []
+                                                                        }
+                                                                    ]
+                                                                }
                                                             ]
                                                         }
-                                                    ],
-                                                    "text": "\ubcf4\ud5d8\ub8cc",
-                                                    "style": []
+                                                    ]
                                                 }
                                             ]
                                         },
                                         {
                                             "bbox": [
-                                                318.8,
-                                                357.3,
-                                                341.5,
-                                                367.2
+                                                242.2,
+                                                368.8,
+                                                405.4,
+                                                382.1
                                             ],
-                                            "wmode": 0,
-                                            "dir": [
-                                                1.0,
-                                                0.0
-                                            ],
-                                            "spans": [
+                                            "height": 12.300000000000011,
+                                            "cells": [
                                                 {
                                                     "bbox": [
-                                                        318.8,
-                                                        357.3,
-                                                        338.7,
-                                                        367.2
+                                                        242.2,
+                                                        368.8,
+                                                        405.4,
+                                                        382.1
                                                     ],
-                                                    "color": 0,
-                                                    "font": "Arial",
-                                                    "size": 9.937604904174805,
-                                                    "flags": 0,
-                                                    "chars": [
-                                                        {
-                                                            "bbox": [
-                                                                318.8,
-                                                                357.3,
-                                                                328.9,
-                                                                367.2
-                                                            ],
-                                                            "c": "\ud5d8",
-                                                            "origin": [
-                                                                318.83966064453125,
-                                                                366.1187744140625
-                                                            ]
-                                                        },
-                                                        {
-                                                            "bbox": [
-                                                                328.7,
-                                                                357.3,
-                                                                338.7,
-                                                                367.2
-                                                            ],
-                                                            "c": "\ub8cc",
-                                                            "origin": [
-                                                                328.67889404296875,
-                                                                366.1187744140625
-                                                            ]
-                                                        }
+                                                    "bg_color": null,
+                                                    "border_color": [
+                                                        0,
+                                                        0,
+                                                        0,
+                                                        0
                                                     ],
-                                                    "text": "\ud5d8\ub8cc",
-                                                    "style": []
-                                                },
-                                                {
-                                                    "bbox": [
-                                                        338.8,
-                                                        358.9,
-                                                        341.5,
-                                                        366.3
+                                                    "border_width": [
+                                                        0.0,
+                                                        0.0,
+                                                        0.0,
+                                                        0.0
                                                     ],
-                                                    "color": 0,
-                                                    "font": "Helvetica",
-                                                    "size": 9.956947326660156,
-                                                    "flags": 22,
-                                                    "chars": [
-                                                        {
-                                                            "bbox": [
-                                                                338.8,
-                                                                358.9,
-                                                                341.5,
-                                                                366.3
-                                                            ],
-                                                            "c": " ",
-                                                            "origin": [
-                                                                338.7591552734375,
-                                                                366.1187744140625
-                                                            ]
-                                                        }
+                                                    "merged_cells": [
+                                                        1,
+                                                        1
                                                     ],
-                                                    "text": " ",
-                                                    "style": []
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "bbox": [
-                                        304.1,
-                                        370.4,
-                                        346.4,
-                                        380.3
-                                    ],
-                                    "type": 0,
-                                    "alignment": 2,
-                                    "left_space": 62.0,
-                                    "right_space": 59.0,
-                                    "before_space": 3.1999999999999886,
-                                    "after_space": 0.0,
-                                    "line_space": 9.900000000000034,
-                                    "tab_stops": [],
-                                    "lines": [
-                                        {
-                                            "bbox": [
-                                                304.1,
-                                                370.4,
-                                                346.4,
-                                                380.3
-                                            ],
-                                            "wmode": 0,
-                                            "dir": [
-                                                1.0,
-                                                0.0
-                                            ],
-                                            "spans": [
-                                                {
-                                                    "bbox": [
-                                                        304.1,
-                                                        370.4,
-                                                        343.7,
-                                                        380.3
-                                                    ],
-                                                    "color": 0,
-                                                    "font": "Arial",
-                                                    "size": 9.899999999999991,
-                                                    "flags": 0,
-                                                    "chars": [
+                                                    "blocks": [
                                                         {
                                                             "bbox": [
                                                                 304.1,
                                                                 370.4,
-                                                                314.1,
-                                                                380.3
-                                                            ],
-                                                            "c": "\ub0a9",
-                                                            "origin": [
-                                                                304.07952880859375,
-                                                                379.1989440917969
-                                                            ]
-                                                        },
-                                                        {
-                                                            "bbox": [
-                                                                313.9,
-                                                                370.4,
-                                                                324.0,
-                                                                380.3
-                                                            ],
-                                                            "c": "\uc785",
-                                                            "origin": [
-                                                                313.91876220703125,
-                                                                379.1989440917969
-                                                            ]
-                                                        },
-                                                        {
-                                                            "bbox": [
-                                                                323.8,
-                                                                370.4,
-                                                                333.8,
-                                                                380.3
-                                                            ],
-                                                            "c": "\uae30",
-                                                            "origin": [
-                                                                323.75799560546875,
-                                                                379.1989440917969
-                                                            ]
-                                                        },
-                                                        {
-                                                            "bbox": [
-                                                                333.6,
-                                                                370.4,
-                                                                343.7,
-                                                                380.3
-                                                            ],
-                                                            "c": "\uac04",
-                                                            "origin": [
-                                                                333.59722900390625,
-                                                                379.1989440917969
-                                                            ]
-                                                        }
-                                                    ],
-                                                    "text": "\ub0a9\uc785\uae30\uac04",
-                                                    "style": []
-                                                },
-                                                {
-                                                    "bbox": [
-                                                        343.7,
-                                                        371.9,
-                                                        346.4,
-                                                        379.4
-                                                    ],
-                                                    "color": 0,
-                                                    "font": "Helvetica",
-                                                    "size": 9.95694351196289,
-                                                    "flags": 22,
-                                                    "chars": [
-                                                        {
-                                                            "bbox": [
-                                                                343.7,
-                                                                371.9,
                                                                 346.4,
-                                                                379.4
+                                                                380.3
                                                             ],
-                                                            "c": " ",
-                                                            "origin": [
-                                                                343.67901611328125,
-                                                                379.1989440917969
+                                                            "type": 0,
+                                                            "alignment": 2,
+                                                            "left_space": 0,
+                                                            "right_space": 0,
+                                                            "first_line_space": 0.0,
+                                                            "before_space": 1.599999999999966,
+                                                            "after_space": 0.0,
+                                                            "line_space": 9.900000000000034,
+                                                            "tab_stops": [],
+                                                            "left_space_total": 61.9,
+                                                            "right_space_total": 59.0,
+                                                            "lines": [
+                                                                {
+                                                                    "bbox": [
+                                                                        304.1,
+                                                                        370.4,
+                                                                        346.4,
+                                                                        380.3
+                                                                    ],
+                                                                    "wmode": 0,
+                                                                    "dir": [
+                                                                        1.0,
+                                                                        0.0
+                                                                    ],
+                                                                    "line_break": 0,
+                                                                    "spans": [
+                                                                        {
+                                                                            "bbox": [
+                                                                                304.1,
+                                                                                370.4,
+                                                                                343.7,
+                                                                                380.3
+                                                                            ],
+                                                                            "color": 0,
+                                                                            "font": "Arial",
+                                                                            "size": 9.899999999999991,
+                                                                            "flags": 0,
+                                                                            "chars": [
+                                                                                {
+                                                                                    "bbox": [
+                                                                                        304.1,
+                                                                                        370.4,
+                                                                                        314.1,
+                                                                                        380.3
+                                                                                    ],
+                                                                                    "c": "\ub0a9",
+                                                                                    "origin": [
+                                                                                        304.07952880859375,
+                                                                                        379.1989440917969
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "bbox": [
+                                                                                        313.9,
+                                                                                        370.4,
+                                                                                        324.0,
+                                                                                        380.3
+                                                                                    ],
+                                                                                    "c": "\uc785",
+                                                                                    "origin": [
+                                                                                        313.91876220703125,
+                                                                                        379.1989440917969
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "bbox": [
+                                                                                        323.8,
+                                                                                        370.4,
+                                                                                        333.8,
+                                                                                        380.3
+                                                                                    ],
+                                                                                    "c": "\uae30",
+                                                                                    "origin": [
+                                                                                        323.75799560546875,
+                                                                                        379.1989440917969
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "bbox": [
+                                                                                        333.6,
+                                                                                        370.4,
+                                                                                        343.7,
+                                                                                        380.3
+                                                                                    ],
+                                                                                    "c": "\uac04",
+                                                                                    "origin": [
+                                                                                        333.59722900390625,
+                                                                                        379.1989440917969
+                                                                                    ]
+                                                                                }
+                                                                            ],
+                                                                            "text": "\ub0a9\uc785\uae30\uac04",
+                                                                            "style": []
+                                                                        },
+                                                                        {
+                                                                            "bbox": [
+                                                                                343.7,
+                                                                                371.9,
+                                                                                346.4,
+                                                                                379.4
+                                                                            ],
+                                                                            "color": 0,
+                                                                            "font": "Helvetica",
+                                                                            "size": 9.95694351196289,
+                                                                            "flags": 22,
+                                                                            "chars": [
+                                                                                {
+                                                                                    "bbox": [
+                                                                                        343.7,
+                                                                                        371.9,
+                                                                                        346.4,
+                                                                                        379.4
+                                                                                    ],
+                                                                                    "c": " ",
+                                                                                    "origin": [
+                                                                                        343.67901611328125,
+                                                                                        379.1989440917969
+                                                                                    ]
+                                                                                }
+                                                                            ],
+                                                                            "text": " ",
+                                                                            "style": []
+                                                                        }
+                                                                    ]
+                                                                }
                                                             ]
                                                         }
-                                                    ],
-                                                    "text": " ",
-                                                    "style": []
+                                                    ]
                                                 }
                                             ]
                                         }
@@ -5006,13 +5201,16 @@
                                         373.7
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 12.4,
-                                    "right_space": 9.2,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 7.800000000000011,
                                     "after_space": 0.0,
                                     "line_space": 9.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 12.4,
+                                    "right_space_total": 9.2,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -5026,6 +5224,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -5163,13 +5362,16 @@
                                         380.3
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 5.8,
-                                    "right_space": 3.0,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 0.0,
                                     "after_space": 0.0,
                                     "line_space": 12.150000000000006,
                                     "tab_stops": [],
+                                    "left_space_total": 5.8,
+                                    "right_space_total": 3.0,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -5183,6 +5385,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 1,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -5282,6 +5485,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -5430,13 +5634,16 @@
                                         485.7
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 5.0,
-                                    "right_space": 2.5,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 92.15000000000003,
                                     "after_space": 0.0,
                                     "line_space": 10.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 5.0,
+                                    "right_space_total": 2.5,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -5450,6 +5657,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -5574,13 +5782,16 @@
                                         457.6
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 15.9,
-                                    "right_space": 13.2,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 64.05000000000001,
                                     "after_space": 0.0,
                                     "line_space": 10.900000000000034,
                                     "tab_stops": [],
+                                    "left_space_total": 15.9,
+                                    "right_space_total": 13.2,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -5594,6 +5805,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -5718,13 +5930,16 @@
                                         395.1
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 7.9,
-                                    "right_space": 5.2,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.5500000000000114,
                                     "after_space": 0.0,
                                     "line_space": 10.900000000000034,
                                     "tab_stops": [],
+                                    "left_space_total": 7.9,
+                                    "right_space_total": 5.2,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -5738,6 +5953,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -5904,13 +6120,16 @@
                                         395.1
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 30.8,
-                                    "right_space": 28.2,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.5500000000000114,
                                     "after_space": 0.0,
                                     "line_space": 10.900000000000034,
                                     "tab_stops": [],
+                                    "left_space_total": 30.8,
+                                    "right_space_total": 28.2,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -5924,6 +6143,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -6284,13 +6504,16 @@
                                         508.2
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 13.8,
-                                    "right_space": 11.0,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 114.55000000000001,
                                     "after_space": 0.0,
                                     "line_space": 11.0,
                                     "tab_stops": [],
+                                    "left_space_total": 13.8,
+                                    "right_space_total": 11.0,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -6304,6 +6527,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -6472,9 +6696,10 @@
                                         547.2
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
+                                    "alignment": 1,
                                     "left_space": 5.2,
                                     "right_space": 2.5,
+                                    "first_line_space": 0.0,
                                     "before_space": 0.0,
                                     "after_space": 0.0,
                                     "line_space": 13.00000000000002,
@@ -6482,6 +6707,8 @@
                                         9.8,
                                         22.9
                                     ],
+                                    "left_space_total": 5.2,
+                                    "right_space_total": 2.5,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -6495,6 +6722,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 1,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -6552,6 +6780,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 1,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -6693,6 +6922,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -6889,12 +7119,15 @@
                                     ],
                                     "type": 0,
                                     "alignment": 2,
-                                    "left_space": 15.5,
-                                    "right_space": 12.9,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 92.15000000000003,
                                     "after_space": 0.0,
                                     "line_space": 10.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 15.5,
+                                    "right_space_total": 12.9,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -6908,6 +7141,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -7032,13 +7266,16 @@
                                         410.8
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 7.9,
-                                    "right_space": 5.2,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 3.25,
                                     "after_space": 0.0,
                                     "line_space": 10.900000000000034,
                                     "tab_stops": [],
+                                    "left_space_total": 7.9,
+                                    "right_space_total": 5.2,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -7052,6 +7289,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -7218,13 +7456,16 @@
                                         410.8
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 13.4,
-                                    "right_space": 10.7,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 3.25,
                                     "after_space": 0.0,
                                     "line_space": 10.900000000000034,
                                     "tab_stops": [],
+                                    "left_space_total": 13.4,
+                                    "right_space_total": 10.7,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -7238,6 +7479,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -7723,13 +7965,16 @@
                                         432.8
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 5.0,
-                                    "right_space": 2.3,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 7.75,
                                     "after_space": 0.0,
                                     "line_space": 10.900000000000034,
                                     "tab_stops": [],
+                                    "left_space_total": 5.0,
+                                    "right_space_total": 2.3,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -7743,6 +7988,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -7922,13 +8168,16 @@
                                         439.3
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 13.4,
-                                    "right_space": 10.7,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 0.0,
                                     "after_space": 0.0,
                                     "line_space": 12.575000000000017,
                                     "tab_stops": [],
+                                    "left_space_total": 13.4,
+                                    "right_space_total": 10.7,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -7942,6 +8191,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 1,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -8413,6 +8663,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -8552,13 +8803,16 @@
                                         459.8
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 5.0,
-                                    "right_space": 2.3,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 8.299999999999955,
                                     "after_space": 0.0,
                                     "line_space": 10.900000000000034,
                                     "tab_stops": [],
+                                    "left_space_total": 5.0,
+                                    "right_space_total": 2.3,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -8572,6 +8826,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -8751,13 +9006,16 @@
                                         466.2
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 13.4,
-                                    "right_space": 10.7,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 0.0,
                                     "after_space": 0.0,
                                     "line_space": 12.799999999999983,
                                     "tab_stops": [],
+                                    "left_space_total": 13.4,
+                                    "right_space_total": 10.7,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -8771,6 +9029,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 1,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -9242,6 +9501,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -9520,13 +9780,16 @@
                                         487.2
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 5.0,
-                                    "right_space": 2.3,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 8.349999999999966,
                                     "after_space": 0.0,
                                     "line_space": 11.0,
                                     "tab_stops": [],
+                                    "left_space_total": 5.0,
+                                    "right_space_total": 2.3,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -9540,6 +9803,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -9719,13 +9983,16 @@
                                         493.8
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 13.4,
-                                    "right_space": 10.7,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 0.0,
                                     "after_space": 0.0,
                                     "line_space": 12.974999999999994,
                                     "tab_stops": [],
+                                    "left_space_total": 13.4,
+                                    "right_space_total": 10.7,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -9739,6 +10006,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 1,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -10210,6 +10478,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -10611,13 +10880,16 @@
                                         514.5
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 5.0,
-                                    "right_space": 2.3,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 7.9500000000000455,
                                     "after_space": 0.0,
                                     "line_space": 10.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 5.0,
+                                    "right_space_total": 2.3,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -10631,6 +10903,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -10810,13 +11083,16 @@
                                         521.0
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 4.8,
-                                    "right_space": 2.1,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 0.0,
                                     "after_space": 0.0,
                                     "line_space": 12.675000000000011,
                                     "tab_stops": [],
+                                    "left_space_total": 4.8,
+                                    "right_space_total": 2.1,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -10830,6 +11106,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 1,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -11301,6 +11578,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -11824,13 +12102,16 @@
                                         555.7
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 5.9,
-                                    "right_space": 3.2,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 22.25,
                                     "after_space": 0.0,
                                     "line_space": 11.0,
                                     "tab_stops": [],
+                                    "left_space_total": 5.9,
+                                    "right_space_total": 3.2,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -11844,6 +12125,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -11994,13 +12276,16 @@
                                         534.9
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 5.0,
-                                    "right_space": 2.3,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.5499999999999545,
                                     "after_space": 0.0,
                                     "line_space": 10.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 5.0,
+                                    "right_space_total": 2.3,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -12014,6 +12299,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -12193,13 +12479,16 @@
                                         555.7
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 32.5,
-                                    "right_space": 29.9,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 22.25,
                                     "after_space": 0.0,
                                     "line_space": 11.0,
                                     "tab_stops": [],
+                                    "left_space_total": 32.5,
+                                    "right_space_total": 29.9,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -12213,6 +12502,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -12601,13 +12891,16 @@
                                         548.8
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 5.0,
-                                    "right_space": 2.3,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.5499999999999545,
                                     "after_space": 0.0,
                                     "line_space": 10.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 5.0,
+                                    "right_space_total": 2.3,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -12621,6 +12914,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -12816,13 +13110,16 @@
                                         562.9
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 5.0,
-                                    "right_space": 2.3,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.4999999999998863,
                                     "after_space": 0.0,
                                     "line_space": 11.0,
                                     "tab_stops": [],
+                                    "left_space_total": 5.0,
+                                    "right_space_total": 2.3,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -12836,6 +13133,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -13031,13 +13329,16 @@
                                         576.9
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 5.0,
-                                    "right_space": 2.3,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.5499999999999545,
                                     "after_space": 0.0,
                                     "line_space": 10.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 5.0,
+                                    "right_space_total": 2.3,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -13051,6 +13352,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -13245,12 +13547,15 @@
                                     ],
                                     "type": 0,
                                     "alignment": 2,
-                                    "left_space": 36.2,
-                                    "right_space": 33.6,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 36.35000000000002,
                                     "after_space": 0.0,
                                     "line_space": 10.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 36.2,
+                                    "right_space_total": 33.6,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -13264,6 +13569,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -13389,13 +13695,16 @@
                                         590.8
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 7.9,
-                                    "right_space": 5.2,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.5499999999999545,
                                     "after_space": 0.0,
                                     "line_space": 10.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 7.9,
+                                    "right_space_total": 5.2,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -13409,6 +13718,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -13576,12 +13886,15 @@
                                     ],
                                     "type": 0,
                                     "alignment": 2,
-                                    "left_space": 66.7,
-                                    "right_space": 64.0,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 36.35000000000002,
                                     "after_space": 0.0,
                                     "line_space": 10.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 66.7,
+                                    "right_space_total": 64.0,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -13595,6 +13908,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -13720,13 +14034,16 @@
                                         625.6
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 10.4,
-                                    "right_space": 8.0,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 36.35000000000002,
                                     "after_space": 0.0,
                                     "line_space": 10.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 10.4,
+                                    "right_space_total": 8.0,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -13740,6 +14057,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -13877,13 +14195,16 @@
                                         604.9
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 7.9,
-                                    "right_space": 5.2,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.4999999999998863,
                                     "after_space": 0.0,
                                     "line_space": 11.0,
                                     "tab_stops": [],
+                                    "left_space_total": 7.9,
+                                    "right_space_total": 5.2,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -13897,6 +14218,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -14079,13 +14401,16 @@
                                         618.9
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 5.0,
-                                    "right_space": 2.3,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.5499999999999545,
                                     "after_space": 0.0,
                                     "line_space": 10.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 5.0,
+                                    "right_space_total": 2.3,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -14099,6 +14424,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -14294,13 +14620,16 @@
                                         632.8
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 5.0,
-                                    "right_space": 2.3,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.5499999999999545,
                                     "after_space": 0.0,
                                     "line_space": 10.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 5.0,
+                                    "right_space_total": 2.3,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -14314,6 +14643,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -14509,13 +14839,16 @@
                                         646.9
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 5.0,
-                                    "right_space": 2.3,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.4999999999998863,
                                     "after_space": 0.0,
                                     "line_space": 11.0,
                                     "tab_stops": [],
+                                    "left_space_total": 5.0,
+                                    "right_space_total": 2.3,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -14529,6 +14862,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -14724,13 +15058,16 @@
                                         660.9
                                     ],
                                     "type": 0,
-                                    "alignment": 4,
-                                    "left_space": 5.0,
-                                    "right_space": 2.3,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 1.5499999999999545,
                                     "after_space": 0.0,
                                     "line_space": 10.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 5.0,
+                                    "right_space_total": 2.3,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -14744,6 +15081,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [

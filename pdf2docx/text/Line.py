@@ -38,6 +38,9 @@ class Line(BBox):
         else:
             self.dir = [1.0, 0.0] # left -> right by default
 
+        # line break
+        self.line_break = raw.get('line_break', 0) # don't break line by default
+
         # Lines contained in text block may be re-grouped, so use an ID to track the parent block.
         # This ID can't be changed once set -> record the original parent extracted from PDF, 
         # so that we can determin whether two lines belong to a same original text block.
@@ -105,9 +108,10 @@ class Line(BBox):
     def store(self):
         res = super().store()
         res.update({
-            'wmode': self.wmode,
-            'dir': self.dir,
-            'spans': [
+            'wmode'     : self.wmode,
+            'dir'       : self.dir,
+            'line_break': self.line_break,
+            'spans'     : [
                 span.store() for span in self.spans
             ]
         })
@@ -155,6 +159,6 @@ class Line(BBox):
 
 
     def make_docx(self, p):
-        for span in self.spans:
-            span.make_docx(p)
+        for span in self.spans: span.make_docx(p)
+        if self.line_break: p.add_run('\n')
             

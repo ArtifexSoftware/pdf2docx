@@ -1,4 +1,5 @@
 {
+    "finalized": true,
     "width": 841.8897705078125,
     "height": 595.2755737304688,
     "margin": [
@@ -8,5 +9,5 @@
         72.0
     ],
     "blocks": [],
-    "paths": []
+    "shapes": []
 }
