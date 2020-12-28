@@ -124,8 +124,9 @@ def local_test(sub_path, filename, compare=False, make_test_case=False):
     pdf_file = os.path.join(output, sub_path, f'{filename}.pdf')
     docx_file = os.path.join(output, sub_path, f'{filename}.docx')
 
+    page_index = 0
     cv = Converter(pdf_file)
-    page = cv[0]
+    page = cv[page_index]
 
     # print(page.rotation, page.rotationMatrix)
     # print(page.transformationMatrix)
@@ -147,10 +148,10 @@ def local_test(sub_path, filename, compare=False, make_test_case=False):
     #     f.write(page.getSVGimage(text_as_path=False))
     
     # parse layout
-    cv.debug_page(0, docx_file)
+    cv.debug_page(page_index, docx_file)
     
     # # extract tables
-    # tables = cv.extract_tables([0])
+    # tables = cv.extract_tables([page_index])
     # for table in tables:
     #     print(table)
     

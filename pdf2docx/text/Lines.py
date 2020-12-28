@@ -201,7 +201,7 @@ class Lines(Collection):
 
             # left indentation implemented with tab
             pos = block.left_space + (line.bbox[idx]-block.bbox[idx])
-            if pos>block.left_space:
+            if pos>block.left_space and block.tab_stops: # sometimes set by first line indentation
                 add_stop(p, Pt(pos), Pt(current_pos))
 
             # add line

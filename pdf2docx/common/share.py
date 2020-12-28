@@ -44,10 +44,12 @@ class TextDirection(Enum):
 
 class TextAlignment(Enum):
     '''Block types.'''
-    LEFT    = 0b1000
-    CENTER  = 0b0100
-    RIGHT   = 0b0010
-    JUSTIFY = 0b0001
+    NONE    = -1 # none of left/right/center align -> need TAB stop
+    UNKNOWN = 0  # can't decide, e.g. single line only
+    LEFT    = 1
+    CENTER  = 2
+    RIGHT   = 3
+    JUSTIFY = 4
 
 
 class IText:

@@ -206,33 +206,36 @@ class TextBlock(Block):
         # while vertical text is on the contrary, so use f = -1 here
         idx0, idx1, f = (0, 2, 1.0) if self.is_horizontal_text else (3, 1, -1.0)
         
-        # the idea is to detect alignments based on internal lines and external bbox,
-        # the alignment mode fulfilled with both these two criteria is preferred.
-        int_mode = self._internal_alignments((idx0, idx1, f),
+        # decide text alignment by internal lines in first priority; if can't decide, check
+        # with page layout.
+        int_alignment = self._internal_alignment((idx0, idx1, f),
                         line_separate_threshold,
                         lines_left_aligned_threshold,
                         lines_right_aligned_threshold,
                         lines_center_aligned_threshold)
-        ext_mode = self._external_alignments(bbox, 
+        ext_alignment = self._external_alignment(bbox,  # set horizontal space additionally
                         (idx0, idx1, f),
-                        lines_center_aligned_threshold) # set horizontal space additionally
-        mode = int_mode & ext_mode
+                        lines_center_aligned_threshold)
+        self.alignment = int_alignment if int_alignment!=TextAlignment.UNKNOWN else ext_alignment
 
-        # now, decide the alignment accordingly
-        for align_mode in TextAlignment:
-            if align_mode.value==mode:
-                self.alignment = align_mode
-                break
-        else:
-            self.alignment = TextAlignment.LEFT # LEFT by default
+        # if still can't decide, set LEFT by default and ensure position by TAB stops
+        if self.alignment == TextAlignment.NONE:
+            self.alignment = TextAlignment.LEFT
 
-        # tab stops for block lines
-        if self.alignment != TextAlignment.LEFT: return
-
-        # NOTE: relative stop position to left boundary of block is calculated, so block.left_space is required
-        fun = lambda line: round((line.bbox[idx0]-self.bbox[idx0])*f, 1) # relative position to block
-        all_pos = set(map(fun, self.lines))
-        self.tab_stops = list(filter(lambda pos: pos>=constants.MINOR_DIST, all_pos))        
+            # NOTE: relative stop position to left boundary of block is calculated, 
+            # so block.left_space is required
+            fun = lambda line: round((line.bbox[idx0]-self.bbox[idx0])*f, 1) # relative position to block
+            all_pos = set(map(fun, self.lines))
+            self.tab_stops = list(filter(lambda pos: pos>=constants.MINOR_DIST, all_pos))
+            
+        # adjust left/right indentation
+        if self.alignment == TextAlignment.LEFT:
+            self.right_space *= 0.9
+        elif self.alignment == TextAlignment.RIGHT:
+            self.left_space *= 0.9
+        elif self.alignment == TextAlignment.CENTER:
+            self.left_space *= 0.1
+            self.right_space *= 0.1
 
 
     def parse_line_spacing(self):
@@ -311,27 +314,26 @@ class TextBlock(Block):
         pf.line_spacing = Pt(round(self.line_space, 1))
 
         # horizontal alignment
-        # for multi-lines paragraph, set both left and right indentation; this hard restriction may lead to
-        # unexpected line break especially different font used in docx. So, just add one side indentation for
-        # single line paragraph.
+        # - alignment mode
         if self.alignment==TextAlignment.LEFT:
-            pf.alignment = WD_ALIGN_PARAGRAPH.LEFT
-            pf.left_indent  = Pt(self.left_space)
+            pf.alignment = WD_ALIGN_PARAGRAPH.LEFT            
             # set tab stops to ensure line position
             for pos in self.tab_stops:
                 pf.tab_stops.add_tab_stop(Pt(self.left_space + pos))
-
         elif self.alignment==TextAlignment.RIGHT:
-            pf.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-            pf.right_indent  = Pt(self.right_space)
+            pf.alignment = WD_ALIGN_PARAGRAPH.RIGHT            
 
         elif self.alignment==TextAlignment.CENTER:
             pf.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
         else:
             pf.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-            pf.left_indent  = Pt(self.left_space)
-            pf.right_indent  = Pt(self.right_space)
+
+        # - paragraph indentation
+        pf.left_indent  = Pt(self.left_space)
+        pf.right_indent  = Pt(self.right_space)
+
+        # - first line indentation
+        if self.first_line_space: pf.first_line_indent = Pt(self.first_line_space)
 
         # add lines        
         self.lines.make_docx(p)
@@ -340,16 +342,12 @@ class TextBlock(Block):
 
 
 
-    def _internal_alignments(self, text_direction_param:tuple, 
+    def _internal_alignment(self, text_direction_param:tuple, 
                     line_separate_threshold:float,
                     lines_left_aligned_threshold:float,
                     lines_right_aligned_threshold:float,
                     lines_center_aligned_threshold:float):
         ''' Detect text alignment mode based on layout of internal lines. 
-            Return possibility of the alignments, left-center-right-justify e.g. 
-            - 0b1000 = left align
-            - 0b0100 = center align
-            - 0b1111 = possible to any alignment mode
             ---
             Args:
             - text_direction_param: (x0_index, x1_index, direction_factor), e.g. (0, 2, 1) for horizontal text, 
@@ -359,55 +357,60 @@ class TextBlock(Block):
         fun = lambda a,b: a.in_same_row(b)
         rows = self.lines.group(fun)
 
-        # just one row -> can't decide -> full possibility
-        if len(rows) < 2: return 0b1111
-
         # indexes based on text direction
         idx0, idx1, f = text_direction_param
 
         # --------------------------------------------------------------------------
-        # First priority: significant distance exists in any two adjacent lines -> align left
+        # First priority: significant distance exists in any two adjacent lines ->
+        # set unknown alignment temporarily. Assign left-align to it later and ensure
+        # exact position of each line by TAB stop. 
         # --------------------------------------------------------------------------
         for row in rows:
             if len(row)==1: continue
             for i in range(1, len(row)):
                 dis = (row[i].bbox[idx0]-row[i-1].bbox[idx1])*f
                 if dis >= line_separate_threshold:
-                    return 0b1000
+                    return TextAlignment.NONE
+
+        # just one row -> can't decide -> full possibility
+        if len(rows) < 2: return TextAlignment.UNKNOWN
 
         # --------------------------------------------------------------------------
-        # Then check alignment of internal lines
+        # Then check alignment of internal lines:
+        # - left-alignment based on lines excepting the first line
+        # - right-alignment based on lines excepting the last line
+        # the exact position of first line is considered by first-line-indent
+        # =========     =======   =========
+        # =========   =========     =======
+        # =========   =========     =======
+        # ======      =========     =====
         # --------------------------------------------------------------------------
         X0 = [lines[0].bbox[idx0]  for lines in rows]
         X1 = [lines[-1].bbox[idx1] for lines in rows]
         X  = [(x0+x1)/2.0 for (x0, x1) in zip(X0, X1)]
-
-        left_aligned   = abs(max(X0)-min(X0))<=lines_left_aligned_threshold
-        right_aligned  = abs(max(X1)-min(X1))<=lines_right_aligned_threshold
-        center_aligned = abs(max(X)-min(X))  <=lines_center_aligned_threshold # coarse margin for center alignment
-
-        # Note the case that all lines aligned left, but with last line removed, it becomes justify mode.
-        if left_aligned and len(rows)>=3: # at least 2 lines excepting the last line
-            X1 = X1[0:-1]
-            right_aligned = abs(max(X1)-min(X1))<=lines_right_aligned_threshold
-            if right_aligned: return 0b0001
-
-        # use bits to represent alignment status
-        mode = (int(left_aligned), int(center_aligned), int(right_aligned), 0)
-        res = 0
-        for i, x in enumerate(mode): res += x * 2**(3-i)
         
-        return res
+        left_aligned   = abs(max(X0[1:])-min(X0[1:]))<=lines_left_aligned_threshold
+        right_aligned  = abs(max(X1[0:-1])-min(X1[0:-1]))<=lines_right_aligned_threshold
+        center_aligned = abs(max(X)-min(X))<=lines_center_aligned_threshold # coarse margin for center alignment
+
+        if left_aligned and right_aligned and len(rows)>=3:
+            return TextAlignment.JUSTIFY
+        elif left_aligned:
+            self.first_line_space = rows[1][0].bbox[idx0] - rows[0][0].bbox[idx0]
+            return TextAlignment.LEFT
+        elif right_aligned:
+            self.first_line_space = rows[1][0].bbox[idx0] - rows[0][0].bbox[idx0]
+            return TextAlignment.RIGHT
+        elif center_aligned:
+            return TextAlignment.CENTER
+        else:
+            return TextAlignment.NONE
 
 
-    def _external_alignments(self, bbox:list, 
+    def _external_alignment(self, bbox:list, 
             text_direction_param:tuple,
             lines_center_aligned_threshold:float):
         ''' Detect text alignment mode based on the position to external bbox. 
-            Return possibility of the alignments, left-center-right-justify, e.g. 
-            - 0b1000 = left align
-            - 0b0100 = center align
-            - 0b1111 = possible to any alignment mode
             ---
             Args:
             - bbox: page or cell bbox where this text block locates in.
@@ -428,21 +431,7 @@ class TextBlock(Block):
         self.left_space  = d_left
         self.right_space = d_right
 
-        # first priority -> overall layout of block and bbox: 
-        # - when the width is as long as the bbox -> we can't decide the mode
-        # - when the width is half lower than the bbox -> check close to left or right side
-        width_ratio = (self.bbox[idx1]-self.bbox[idx0]) / (bbox[idx1]-bbox[idx0])
-        if width_ratio >= constants.FACTOR_MOST: 
-            return 0b1111
-        
-        elif width_ratio < 0.5:
-            return 0b1000 if abs(d_left) <= abs(d_right) else 0b0010
-        
-        # then, check if align center precisely
-        elif abs(d_center) < lines_center_aligned_threshold: 
-            return 0b0100
-
-        # otherwise, we can't decide it
+        if abs(d_center) < lines_center_aligned_threshold: 
+            return TextAlignment.CENTER
         else:
-            return 0b1111
-        
+            return TextAlignment.LEFT if abs(d_left) <= abs(d_right) else TextAlignment.RIGHT
