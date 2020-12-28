@@ -194,4 +194,4 @@ if __name__ == '__main__':
     local_test(sub_path, filename, compare=False, make_test_case=False)
 
     # batch mode
-    # for filename in filenames: local_test(filename, compare=True, make_test_case=True)
+    # for filename in filenames: local_test(sub_path, filename, compare=True, make_test_case=True)

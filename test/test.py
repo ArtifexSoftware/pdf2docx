@@ -66,20 +66,38 @@ class Utility:
 
     def verify_layout(self, threshold=0.95):
         ''' Check layout between benchmark and parsed one.'''
-        self._check_text_layout(threshold)
-        self._check_inline_image_layout(threshold)
-        self._check_float_image_layout(threshold)
-        self._check_table_layout(threshold)
+        sample_text_image_blocks = self.sample.blocks.text_blocks
+        test_text_image_blocks = self.test.blocks.text_blocks
+        
+        # text blocks
+        f = lambda block: block.is_text_block()
+        sample_text_blocks = list(filter(f, sample_text_image_blocks))
+        test_text_blocks   = list(filter(f, test_text_image_blocks))
+        self._check_text_layout(sample_text_blocks, test_text_blocks, threshold)
+
+        # inline images
+        sample_inline_images = self.sample.blocks.inline_image_blocks
+        test_inline_images = self.test.blocks.inline_image_blocks
+        self._check_inline_image_layout(sample_inline_images, test_inline_images, threshold)
+
+        # floating images
+        f = lambda block: block.is_float_image_block()
+        sample_float_images = list(filter(f, sample_text_image_blocks))
+        test_float_images = list(filter(f, test_text_image_blocks))
+        self._check_float_image_layout(sample_float_images, test_float_images, threshold)        
+
+        # table blocks
+        sample_tables = self.sample.blocks.table_blocks
+        test_tables = self.test.blocks.table_blocks        
+        self._check_table_layout(sample_tables, test_tables, threshold)
 
 
-    def _check_table_layout(self, threshold):
+    @staticmethod
+    def _check_table_layout(sample_tables, test_tables, threshold):
         '''Check table layout.
              - table contents are covered by text layout checking
              - check table structure
         '''
-        sample_tables = self.sample.blocks.table_blocks
-        test_tables = self.test.blocks.table_blocks
-
         # count of tables
         m, n = len(sample_tables), len(test_tables)
         assert m==n, f"\nThe count of parsed tables '{n}' is inconsistent with sample '{m}'"
@@ -93,26 +111,22 @@ class Utility:
                     assert matched, f'\n{msg}'
 
 
-    def _check_inline_image_layout(self, threshold):
+    @staticmethod
+    def _check_inline_image_layout(sample_inline_images, test_inline_images, threshold):
         '''Check image layout: bbox and vertical spacing.'''
-        sample_image_spans = self.sample.blocks.image_spans(level=1)
-        test_image_spans = self.test.blocks.image_spans(level=1)
-
         # count of images
-        m, n = len(sample_image_spans), len(test_image_spans)
+        m, n = len(sample_inline_images), len(test_inline_images)
         assert m==n, f"\nThe count of image blocks {n} is inconsistent with sample {m}"
 
         # check each image
-        for sample, test in zip(sample_image_spans, test_image_spans):
+        for sample, test in zip(sample_inline_images, test_inline_images):
             matched, msg = test.compare(sample, threshold)
             assert matched, f'\n{msg}'
     
 
-    def _check_float_image_layout(self, threshold):
+    @staticmethod
+    def _check_float_image_layout(sample_float_images, test_float_images, threshold):
         '''Check image layout: bbox and vertical spacing.'''
-        sample_float_images = self.sample.blocks.floating_image_blocks
-        test_float_images = self.test.blocks.floating_image_blocks
-
         # count of images
         m, n = len(sample_float_images), len(test_float_images)
         assert m==n, f"\nThe count of image blocks {n} is inconsistent with sample {m}"
@@ -123,14 +137,12 @@ class Utility:
             assert matched, f'\n{msg}'
 
 
-    def _check_text_layout(self, threshold):
+    @staticmethod
+    def _check_text_layout(sample_text_blocks, test_text_blocks, threshold):
         ''' Compare text layout and format. 
              - text layout is determined by vertical spacing
              - text format is defined in style attribute of TextSpan
         '''
-        sample_text_blocks = self.sample.blocks.text_blocks(level=1)
-        test_text_blocks = self.test.blocks.text_blocks(level=1)
-
         # count of blocks
         m, n = len(sample_text_blocks), len(test_text_blocks)
         assert m==n, f"\nThe count of text blocks {n} is inconsistent with sample {m}"

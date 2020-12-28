@@ -1,9 +1,10 @@
 {
+    "finalized": true,
     "width": 595.0,
     "height": 842.0,
     "margin": [
         28.5,
-        23.0,
+        27.0,
         14.25,
         14.5
     ],
@@ -16,13 +17,16 @@
                 813.0
             ],
             "type": 3,
-            "alignment": 8,
+            "alignment": 1,
             "left_space": 0.0,
             "right_space": 0.0,
+            "first_line_space": 0.0,
             "before_space": 14.25,
             "after_space": 0.0,
             "line_space": 0.0,
             "tab_stops": [],
+            "left_space_total": 0.0,
+            "right_space_total": 0.0,
             "rows": [
                 {
                     "bbox": [
@@ -66,13 +70,16 @@
                                         49.7
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
-                                    "left_space": 200.3,
-                                    "right_space": 200.3,
+                                    "alignment": 2,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 13.899999999999999,
                                     "after_space": 0.0,
                                     "line_space": 7.300000000000004,
                                     "tab_stops": [],
+                                    "left_space_total": 200.3,
+                                    "right_space_total": 200.3,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -86,6 +93,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -468,13 +476,16 @@
                                         113.1
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
+                                    "alignment": 1,
                                     "left_space": 0.7,
-                                    "right_space": 9.6,
+                                    "right_space": 0.7,
+                                    "first_line_space": 0.0,
                                     "before_space": 3.0750000000000064,
                                     "after_space": 0.0,
                                     "line_space": 11.224999999999998,
                                     "tab_stops": [],
+                                    "left_space_total": 0.7,
+                                    "right_space_total": 9.6,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -488,6 +499,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 1,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -675,6 +687,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -1018,6 +1031,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 1,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -1387,6 +1401,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 1,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -1509,6 +1524,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -1617,13 +1633,16 @@
                                         144.4
                                     ],
                                     "type": 2,
-                                    "alignment": 8,
+                                    "alignment": 1,
                                     "left_space": 80.59999999999997,
                                     "right_space": 0.0,
+                                    "first_line_space": 0.0,
                                     "before_space": 3.8500000000000014,
                                     "after_space": 0.0,
                                     "line_space": 0.0,
                                     "tab_stops": [],
+                                    "left_space_total": 0.0,
+                                    "right_space_total": 0.0,
                                     "rows": [
                                         {
                                             "bbox": [
@@ -1667,13 +1686,16 @@
                                                                 71.9
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 4,
-                                                            "left_space": 2.9,
-                                                            "right_space": 3.6,
+                                                            "alignment": 2,
+                                                            "left_space": 0,
+                                                            "right_space": 0,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 7.549999999999997,
                                                             "after_space": 0.0,
                                                             "line_space": 5.900000000000006,
                                                             "tab_stops": [],
+                                                            "left_space_total": 2.9,
+                                                            "right_space_total": 3.6,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -1687,6 +1709,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -1925,13 +1948,16 @@
                                                                 72.0
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 8,
+                                                            "alignment": 1,
                                                             "left_space": 6.6,
-                                                            "right_space": 21.4,
+                                                            "right_space": 6.6,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 7.349999999999994,
                                                             "after_space": 0.0,
                                                             "line_space": 6.200000000000003,
                                                             "tab_stops": [],
+                                                            "left_space_total": 6.6,
+                                                            "right_space_total": 21.4,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -1945,6 +1971,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -2092,13 +2119,16 @@
                                                                 71.9
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 8,
+                                                            "alignment": 1,
                                                             "left_space": 25.4,
-                                                            "right_space": 37.9,
+                                                            "right_space": 25.4,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 7.549999999999997,
                                                             "after_space": 0.0,
                                                             "line_space": 5.900000000000006,
                                                             "tab_stops": [],
+                                                            "left_space_total": 25.4,
+                                                            "right_space_total": 37.9,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -2112,6 +2142,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -2192,13 +2223,16 @@
                                                                 89.1
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 8,
+                                                            "alignment": 1,
                                                             "left_space": 2.9,
-                                                            "right_space": 14.1,
+                                                            "right_space": 2.9,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 7.3999999999999915,
                                                             "after_space": 0.0,
                                                             "line_space": 5.8999999999999915,
                                                             "tab_stops": [],
+                                                            "left_space_total": 2.9,
+                                                            "right_space_total": 14.1,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -2212,6 +2246,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -2385,13 +2420,16 @@
                                                                 89.1
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 2,
-                                                            "left_space": 64.9,
+                                                            "alignment": 3,
+                                                            "left_space": 35.9,
                                                             "right_space": 35.9,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 7.3999999999999915,
                                                             "after_space": 0.0,
                                                             "line_space": 5.8999999999999915,
                                                             "tab_stops": [],
+                                                            "left_space_total": 64.9,
+                                                            "right_space_total": 35.9,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -2405,6 +2443,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -2474,13 +2513,16 @@
                                                                 89.1
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 8,
+                                                            "alignment": 1,
                                                             "left_space": 6.2,
-                                                            "right_space": 11.6,
+                                                            "right_space": 6.2,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 7.3999999999999915,
                                                             "after_space": 0.0,
                                                             "line_space": 5.8999999999999915,
                                                             "tab_stops": [],
+                                                            "left_space_total": 6.2,
+                                                            "right_space_total": 11.6,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -2494,6 +2536,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -2694,12 +2737,15 @@
                                                             ],
                                                             "type": 0,
                                                             "alignment": 2,
-                                                            "left_space": 33.2,
-                                                            "right_space": 30.1,
+                                                            "left_space": 0,
+                                                            "right_space": 0,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 7.3999999999999915,
                                                             "after_space": 0.0,
                                                             "line_space": 5.8999999999999915,
                                                             "tab_stops": [],
+                                                            "left_space_total": 33.2,
+                                                            "right_space_total": 30.1,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -2713,6 +2759,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -2793,13 +2840,16 @@
                                                                 106.4
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 8,
+                                                            "alignment": 1,
                                                             "left_space": 2.9,
-                                                            "right_space": 25.4,
+                                                            "right_space": 2.9,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 7.5,
                                                             "after_space": 0.0,
                                                             "line_space": 5.900000000000006,
                                                             "tab_stops": [],
+                                                            "left_space_total": 2.9,
+                                                            "right_space_total": 25.4,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -2813,6 +2863,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -2986,13 +3037,16 @@
                                                                 106.4
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 8,
-                                                            "left_space": 2.9,
-                                                            "right_space": 0.6,
+                                                            "alignment": 2,
+                                                            "left_space": 0,
+                                                            "right_space": 0,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 7.5,
                                                             "after_space": 0.0,
                                                             "line_space": 5.900000000000006,
                                                             "tab_stops": [],
+                                                            "left_space_total": 2.9,
+                                                            "right_space_total": 0.6,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -3006,6 +3060,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -3281,13 +3336,16 @@
                                                                 123.6
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 8,
+                                                            "alignment": 1,
                                                             "left_space": 2.9,
-                                                            "right_space": 25.4,
+                                                            "right_space": 2.9,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 7.549999999999997,
                                                             "after_space": 0.0,
                                                             "line_space": 5.8999999999999915,
                                                             "tab_stops": [],
+                                                            "left_space_total": 2.9,
+                                                            "right_space_total": 25.4,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -3301,6 +3359,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -3448,13 +3507,16 @@
                                                                 123.6
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 8,
+                                                            "alignment": 1,
                                                             "left_space": 3.0,
-                                                            "right_space": 231.3,
+                                                            "right_space": 3.0,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 7.549999999999997,
                                                             "after_space": 0.0,
                                                             "line_space": 5.8999999999999915,
                                                             "tab_stops": [],
+                                                            "left_space_total": 3.0,
+                                                            "right_space_total": 231.3,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -3468,6 +3530,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -3550,13 +3613,16 @@
                                                                 140.9
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 8,
+                                                            "alignment": 1,
                                                             "left_space": 2.9,
-                                                            "right_space": 30.6,
+                                                            "right_space": 2.9,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 7.449999999999989,
                                                             "after_space": 0.0,
                                                             "line_space": 5.900000000000006,
                                                             "tab_stops": [],
+                                                            "left_space_total": 2.9,
+                                                            "right_space_total": 30.6,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -3570,6 +3636,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -3691,13 +3758,16 @@
                                                                 140.9
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 8,
+                                                            "alignment": 1,
                                                             "left_space": 3.0,
-                                                            "right_space": 231.3,
+                                                            "right_space": 3.0,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 7.449999999999989,
                                                             "after_space": 0.0,
                                                             "line_space": 5.900000000000006,
                                                             "tab_stops": [],
+                                                            "left_space_total": 3.0,
+                                                            "right_space_total": 231.3,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -3711,6 +3781,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -3801,13 +3872,16 @@
                                         215.6
                                     ],
                                     "type": 2,
-                                    "alignment": 8,
+                                    "alignment": 1,
                                     "left_space": 1.1000000000000014,
                                     "right_space": 0.0,
+                                    "first_line_space": 0.0,
                                     "before_space": 12.699999999999989,
                                     "after_space": 0.0,
                                     "line_space": 0.0,
                                     "tab_stops": [],
+                                    "left_space_total": 0.0,
+                                    "right_space_total": 0.0,
                                     "rows": [
                                         {
                                             "bbox": [
@@ -3852,12 +3926,15 @@
                                                             ],
                                                             "type": 0,
                                                             "alignment": 2,
-                                                            "left_space": 50.2,
-                                                            "right_space": 47.5,
+                                                            "left_space": 0,
+                                                            "right_space": 0,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 8.099999999999994,
                                                             "after_space": 0.0,
                                                             "line_space": 6.099999999999994,
                                                             "tab_stops": [],
+                                                            "left_space_total": 50.2,
+                                                            "right_space_total": 47.5,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -3871,6 +3948,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -4031,13 +4109,16 @@
                                                                 185.2
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 4,
-                                                            "left_space": 17.9,
-                                                            "right_space": 15.2,
+                                                            "alignment": 2,
+                                                            "left_space": 0,
+                                                            "right_space": 0,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 8.099999999999994,
                                                             "after_space": 0.0,
                                                             "line_space": 6.099999999999994,
                                                             "tab_stops": [],
+                                                            "left_space_total": 17.9,
+                                                            "right_space_total": 15.2,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -4051,6 +4132,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -4212,12 +4294,15 @@
                                                             ],
                                                             "type": 0,
                                                             "alignment": 2,
-                                                            "left_space": 24.7,
-                                                            "right_space": 21.9,
+                                                            "left_space": 0,
+                                                            "right_space": 0,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 8.099999999999994,
                                                             "after_space": 0.0,
                                                             "line_space": 6.099999999999994,
                                                             "tab_stops": [],
+                                                            "left_space_total": 24.7,
+                                                            "right_space_total": 21.9,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -4231,6 +4316,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -4365,13 +4451,16 @@
                                                                 185.2
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 4,
-                                                            "left_space": 11.2,
-                                                            "right_space": 8.3,
+                                                            "alignment": 2,
+                                                            "left_space": 0,
+                                                            "right_space": 0,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 8.099999999999994,
                                                             "after_space": 0.0,
                                                             "line_space": 6.099999999999994,
                                                             "tab_stops": [],
+                                                            "left_space_total": 11.2,
+                                                            "right_space_total": 8.3,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -4385,6 +4474,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -4571,13 +4661,16 @@
                                                                 185.2
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 4,
-                                                            "left_space": 19.1,
-                                                            "right_space": 16.2,
+                                                            "alignment": 2,
+                                                            "left_space": 0,
+                                                            "right_space": 0,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 8.099999999999994,
                                                             "after_space": 0.0,
                                                             "line_space": 6.099999999999994,
                                                             "tab_stops": [],
+                                                            "left_space_total": 19.1,
+                                                            "right_space_total": 16.2,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -4591,6 +4684,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -4829,13 +4923,16 @@
                                                                 185.2
                                                             ],
                                                             "type": 0,
-                                                            "alignment": 4,
-                                                            "left_space": 5.6,
-                                                            "right_space": 5.5,
+                                                            "alignment": 2,
+                                                            "left_space": 0,
+                                                            "right_space": 0,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 8.099999999999994,
                                                             "after_space": 0.0,
                                                             "line_space": 6.099999999999994,
                                                             "tab_stops": [],
+                                                            "left_space_total": 5.6,
+                                                            "right_space_total": 5.5,
                                                             "lines": [
                                                                 {
                                                                     "bbox": [
@@ -4849,6 +4946,7 @@
                                                                         1.0,
                                                                         0.0
                                                                     ],
+                                                                    "line_break": 0,
                                                                     "spans": [
                                                                         {
                                                                             "bbox": [
@@ -5235,13 +5333,16 @@
                                         299.6
                                     ],
                                     "type": 2,
-                                    "alignment": 8,
+                                    "alignment": 1,
                                     "left_space": 1.1000000000000014,
                                     "right_space": 0.0,
+                                    "first_line_space": 0.0,
                                     "before_space": 3.7500000000000284,
                                     "after_space": 0.0,
                                     "line_space": 0.0,
                                     "tab_stops": [],
+                                    "left_space_total": 0.0,
+                                    "right_space_total": 0.0,
                                     "rows": [
                                         {
                                             "bbox": [
@@ -5279,35 +5380,38 @@
                                                     "blocks": [
                                                         {
                                                             "bbox": [
-                                                                29.6,
-                                                                223.8,
-                                                                566.6,
-                                                                299.6
+                                                                30.0,
+                                                                224.2,
+                                                                566.2,
+                                                                299.2
                                                             ],
                                                             "type": 3,
-                                                            "alignment": 8,
-                                                            "left_space": -0.3999999999999986,
+                                                            "alignment": 1,
+                                                            "left_space": 0.0,
                                                             "right_space": 0.0,
-                                                            "before_space": 0.0,
+                                                            "first_line_space": 0.0,
+                                                            "before_space": 0.04999999999998295,
                                                             "after_space": 0.0,
                                                             "line_space": 0.0,
                                                             "tab_stops": [],
+                                                            "left_space_total": 0.0,
+                                                            "right_space_total": 0.0,
                                                             "rows": [
                                                                 {
                                                                     "bbox": [
-                                                                        29.6,
-                                                                        223.8,
-                                                                        566.6,
-                                                                        299.6
+                                                                        30.0,
+                                                                        224.2,
+                                                                        566.2,
+                                                                        299.2
                                                                     ],
-                                                                    "height": 16.099999999999994,
+                                                                    "height": 15.700000000000017,
                                                                     "cells": [
                                                                         {
                                                                             "bbox": [
-                                                                                29.6,
-                                                                                223.8,
+                                                                                30.0,
+                                                                                224.2,
                                                                                 184.2,
-                                                                                299.6
+                                                                                299.2
                                                                             ],
                                                                             "bg_color": null,
                                                                             "border_color": [
@@ -5335,13 +5439,16 @@
                                                                                         240.0
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
-                                                                                    "left_space": 5.6,
-                                                                                    "right_space": 103.8,
-                                                                                    "before_space": 10.0,
+                                                                                    "alignment": 1,
+                                                                                    "left_space": 5.2,
+                                                                                    "right_space": 5.2,
+                                                                                    "first_line_space": 0.0,
+                                                                                    "before_space": 9.600000000000023,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.2,
+                                                                                    "right_space_total": 103.8,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -5355,6 +5462,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -5501,13 +5609,16 @@
                                                                                         253.4
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
-                                                                                    "left_space": 5.6,
-                                                                                    "right_space": 122.2,
+                                                                                    "alignment": 1,
+                                                                                    "left_space": 5.2,
+                                                                                    "right_space": 5.2,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.5,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 5.900000000000006,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.2,
+                                                                                    "right_space_total": 122.2,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -5521,6 +5632,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -5602,13 +5714,16 @@
                                                                                         263.9
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
-                                                                                    "left_space": 5.6,
-                                                                                    "right_space": 71.9,
+                                                                                    "alignment": 1,
+                                                                                    "left_space": 5.2,
+                                                                                    "right_space": 5.2,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 4.599999999999994,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 5.899999999999977,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.2,
+                                                                                    "right_space_total": 71.9,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -5622,6 +5737,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -5820,13 +5936,16 @@
                                                                                         274.4
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
-                                                                                    "left_space": 5.6,
-                                                                                    "right_space": 32.5,
+                                                                                    "alignment": 1,
+                                                                                    "left_space": 5.2,
+                                                                                    "right_space": 5.2,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 4.600000000000023,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 5.899999999999977,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.2,
+                                                                                    "right_space_total": 32.5,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -5840,6 +5959,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -6142,13 +6262,16 @@
                                                                                         284.9
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
-                                                                                    "left_space": 5.6,
-                                                                                    "right_space": 44.5,
+                                                                                    "alignment": 1,
+                                                                                    "left_space": 5.2,
+                                                                                    "right_space": 5.2,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 4.600000000000023,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 5.899999999999977,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.2,
+                                                                                    "right_space_total": 44.5,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -6162,6 +6285,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -6487,7 +6611,7 @@
                                                                         {
                                                                             "bbox": [
                                                                                 184.2,
-                                                                                223.8,
+                                                                                224.2,
                                                                                 264.9,
                                                                                 239.9
                                                                             ],
@@ -6517,13 +6641,16 @@
                                                                                         240.0
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 2,
-                                                                                    "left_space": 32.6,
+                                                                                    "alignment": 3,
+                                                                                    "left_space": 24.7,
                                                                                     "right_space": 24.7,
-                                                                                    "before_space": 10.0,
+                                                                                    "first_line_space": 0.0,
+                                                                                    "before_space": 9.600000000000023,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 32.6,
+                                                                                    "right_space_total": 24.7,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -6537,6 +6664,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -6628,7 +6756,7 @@
                                                                         {
                                                                             "bbox": [
                                                                                 264.9,
-                                                                                223.8,
+                                                                                224.2,
                                                                                 330.9,
                                                                                 239.9
                                                                             ],
@@ -6658,13 +6786,16 @@
                                                                                         239.9
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
+                                                                                    "alignment": 1,
                                                                                     "left_space": 5.9,
-                                                                                    "right_space": 12.0,
-                                                                                    "before_space": 10.199999999999989,
+                                                                                    "right_space": 5.9,
+                                                                                    "first_line_space": 0.0,
+                                                                                    "before_space": 9.800000000000011,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 5.900000000000006,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.9,
+                                                                                    "right_space_total": 12.0,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -6678,6 +6809,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -6834,7 +6966,7 @@
                                                                         {
                                                                             "bbox": [
                                                                                 330.9,
-                                                                                223.8,
+                                                                                224.2,
                                                                                 435.9,
                                                                                 239.9
                                                                             ],
@@ -6864,13 +6996,16 @@
                                                                                         240.0
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 4,
-                                                                                    "left_space": 11.9,
-                                                                                    "right_space": 8.9,
-                                                                                    "before_space": 10.0,
+                                                                                    "alignment": 2,
+                                                                                    "left_space": 0,
+                                                                                    "right_space": 0,
+                                                                                    "first_line_space": 0.0,
+                                                                                    "before_space": 9.600000000000023,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 11.9,
+                                                                                    "right_space_total": 8.9,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -6884,6 +7019,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -7131,9 +7267,9 @@
                                                                         {
                                                                             "bbox": [
                                                                                 435.9,
-                                                                                223.8,
-                                                                                566.6,
-                                                                                299.6
+                                                                                224.2,
+                                                                                566.2,
+                                                                                299.2
                                                                             ],
                                                                             "bg_color": null,
                                                                             "border_color": [
@@ -7161,13 +7297,16 @@
                                                                                         280.4
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
+                                                                                    "alignment": 1,
                                                                                     "left_space": 5.9,
-                                                                                    "right_space": 112.7,
-                                                                                    "before_space": 50.69999999999999,
+                                                                                    "right_space": 5.9,
+                                                                                    "first_line_space": 0.0,
+                                                                                    "before_space": 50.30000000000001,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 5.899999999999977,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.9,
+                                                                                    "right_space_total": 112.3,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -7181,6 +7320,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -7237,9 +7377,9 @@
                                                                         184.2,
                                                                         239.9,
                                                                         435.9,
-                                                                        299.6
+                                                                        299.2
                                                                     ],
-                                                                    "height": 58.70000000000002,
+                                                                    "height": 58.29999999999998,
                                                                     "cells": [
                                                                         null,
                                                                         {
@@ -7247,7 +7387,7 @@
                                                                                 184.2,
                                                                                 239.9,
                                                                                 264.9,
-                                                                                299.6
+                                                                                299.2
                                                                             ],
                                                                             "bg_color": null,
                                                                             "border_color": [
@@ -7275,13 +7415,16 @@
                                                                                         253.5
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 2,
-                                                                                    "left_space": 32.6,
+                                                                                    "alignment": 3,
+                                                                                    "left_space": 21.7,
                                                                                     "right_space": 21.7,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.400000000000006,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 32.6,
+                                                                                    "right_space_total": 21.7,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -7295,6 +7438,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -7389,13 +7533,16 @@
                                                                                         267.0
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 2,
-                                                                                    "left_space": 32.6,
+                                                                                    "alignment": 3,
+                                                                                    "left_space": 22.4,
                                                                                     "right_space": 22.4,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.300000000000011,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 32.6,
+                                                                                    "right_space_total": 22.4,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -7409,6 +7556,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -7503,13 +7651,16 @@
                                                                                         280.5
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
-                                                                                    "left_space": 32.6,
+                                                                                    "alignment": 3,
+                                                                                    "left_space": 5.9,
                                                                                     "right_space": 5.9,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.300000000000011,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 32.6,
+                                                                                    "right_space_total": 5.9,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -7523,6 +7674,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -7669,13 +7821,16 @@
                                                                                         294.0
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 2,
-                                                                                    "left_space": 32.6,
+                                                                                    "alignment": 3,
+                                                                                    "left_space": 12.7,
                                                                                     "right_space": 12.7,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.300000000000011,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 32.6,
+                                                                                    "right_space_total": 12.7,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -7689,6 +7844,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -7808,7 +7964,7 @@
                                                                                 264.9,
                                                                                 239.9,
                                                                                 330.9,
-                                                                                299.6
+                                                                                299.2
                                                                             ],
                                                                             "bg_color": null,
                                                                             "border_color": [
@@ -7836,13 +7992,16 @@
                                                                                         253.4
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
+                                                                                    "alignment": 1,
                                                                                     "left_space": 5.9,
-                                                                                    "right_space": 18.3,
+                                                                                    "right_space": 5.9,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.599999999999994,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 5.900000000000006,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.9,
+                                                                                    "right_space_total": 18.3,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -7856,6 +8015,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -7989,13 +8149,16 @@
                                                                                         293.9
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
+                                                                                    "alignment": 1,
                                                                                     "left_space": 5.9,
-                                                                                    "right_space": 44.8,
+                                                                                    "right_space": 5.9,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 34.599999999999994,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 5.899999999999977,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.9,
+                                                                                    "right_space_total": 44.8,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -8009,6 +8172,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -8089,7 +8253,7 @@
                                                                                 330.9,
                                                                                 239.9,
                                                                                 435.9,
-                                                                                299.6
+                                                                                299.2
                                                                             ],
                                                                             "bg_color": null,
                                                                             "border_color": [
@@ -8117,13 +8281,16 @@
                                                                                         253.5
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
-                                                                                    "left_space": 11.9,
+                                                                                    "alignment": 3,
+                                                                                    "left_space": 5.9,
                                                                                     "right_space": 5.9,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.400000000000006,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 11.9,
+                                                                                    "right_space_total": 5.9,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -8137,6 +8304,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -8413,13 +8581,16 @@
                                                                                         267.0
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
+                                                                                    "alignment": 1,
                                                                                     "left_space": 11.9,
-                                                                                    "right_space": 16.4,
+                                                                                    "right_space": 11.9,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.300000000000011,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 11.9,
+                                                                                    "right_space_total": 16.4,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -8433,6 +8604,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -8657,13 +8829,16 @@
                                                                                         280.5
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
+                                                                                    "alignment": 1,
                                                                                     "left_space": 11.9,
-                                                                                    "right_space": 29.9,
+                                                                                    "right_space": 11.9,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.300000000000011,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 11.9,
+                                                                                    "right_space_total": 29.9,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -8677,6 +8852,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -8862,13 +9038,16 @@
                                                                                         294.0
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
+                                                                                    "alignment": 1,
                                                                                     "left_space": 11.9,
-                                                                                    "right_space": 36.7,
+                                                                                    "right_space": 11.9,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.300000000000011,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 11.9,
+                                                                                    "right_space_total": 36.7,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -8882,6 +9061,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -9121,13 +9301,16 @@
                                         383.6
                                     ],
                                     "type": 2,
-                                    "alignment": 8,
+                                    "alignment": 1,
                                     "left_space": 1.1000000000000014,
                                     "right_space": 0.0,
+                                    "first_line_space": 0.0,
                                     "before_space": 3.749999999999943,
                                     "after_space": 0.0,
                                     "line_space": 0.0,
                                     "tab_stops": [],
+                                    "left_space_total": 0.0,
+                                    "right_space_total": 0.0,
                                     "rows": [
                                         {
                                             "bbox": [
@@ -9165,35 +9348,38 @@
                                                     "blocks": [
                                                         {
                                                             "bbox": [
-                                                                29.6,
-                                                                307.9,
-                                                                566.6,
-                                                                383.6
+                                                                30.0,
+                                                                308.2,
+                                                                566.2,
+                                                                383.2
                                                             ],
                                                             "type": 3,
-                                                            "alignment": 8,
-                                                            "left_space": -0.3999999999999986,
+                                                            "alignment": 1,
+                                                            "left_space": 0.0,
                                                             "right_space": 0.0,
+                                                            "first_line_space": 0.0,
                                                             "before_space": 0.0,
                                                             "after_space": 0.0,
                                                             "line_space": 0.0,
                                                             "tab_stops": [],
+                                                            "left_space_total": 0.0,
+                                                            "right_space_total": 0.0,
                                                             "rows": [
                                                                 {
                                                                     "bbox": [
-                                                                        29.6,
-                                                                        307.9,
-                                                                        566.6,
-                                                                        383.6
+                                                                        30.0,
+                                                                        308.2,
+                                                                        566.2,
+                                                                        383.2
                                                                     ],
-                                                                    "height": 16.0,
+                                                                    "height": 15.699999999999989,
                                                                     "cells": [
                                                                         {
                                                                             "bbox": [
-                                                                                29.6,
-                                                                                307.9,
+                                                                                30.0,
+                                                                                308.2,
                                                                                 185.4,
-                                                                                383.6
+                                                                                383.2
                                                                             ],
                                                                             "bg_color": null,
                                                                             "border_color": [
@@ -9221,13 +9407,16 @@
                                                                                         324.0
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
-                                                                                    "left_space": 5.6,
-                                                                                    "right_space": 92.2,
-                                                                                    "before_space": 9.900000000000034,
+                                                                                    "alignment": 1,
+                                                                                    "left_space": 5.2,
+                                                                                    "right_space": 5.2,
+                                                                                    "first_line_space": 0.0,
+                                                                                    "before_space": 9.600000000000023,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.2,
+                                                                                    "right_space_total": 92.2,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -9241,6 +9430,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -9413,13 +9603,16 @@
                                                                                         337.4
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
-                                                                                    "left_space": 5.6,
-                                                                                    "right_space": 124.6,
+                                                                                    "alignment": 1,
+                                                                                    "left_space": 5.2,
+                                                                                    "right_space": 5.2,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.5,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 5.899999999999977,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.2,
+                                                                                    "right_space_total": 124.6,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -9433,6 +9626,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -9514,13 +9708,16 @@
                                                                                         347.9
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
-                                                                                    "left_space": 5.6,
-                                                                                    "right_space": 43.9,
+                                                                                    "alignment": 1,
+                                                                                    "left_space": 5.2,
+                                                                                    "right_space": 5.2,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 4.600000000000023,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 5.899999999999977,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.2,
+                                                                                    "right_space_total": 43.9,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -9534,6 +9731,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -9797,13 +9995,16 @@
                                                                                         358.4
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
-                                                                                    "left_space": 5.6,
-                                                                                    "right_space": 31.5,
+                                                                                    "alignment": 1,
+                                                                                    "left_space": 5.2,
+                                                                                    "right_space": 5.2,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 4.600000000000023,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 5.899999999999977,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.2,
+                                                                                    "right_space_total": 31.5,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -9817,6 +10018,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -10106,13 +10308,16 @@
                                                                                         368.9
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
-                                                                                    "left_space": 5.6,
-                                                                                    "right_space": 44.2,
+                                                                                    "alignment": 1,
+                                                                                    "left_space": 5.2,
+                                                                                    "right_space": 5.2,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 4.600000000000023,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 5.899999999999977,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.2,
+                                                                                    "right_space_total": 44.2,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -10126,6 +10331,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -10438,7 +10644,7 @@
                                                                         {
                                                                             "bbox": [
                                                                                 185.4,
-                                                                                307.9,
+                                                                                308.2,
                                                                                 264.9,
                                                                                 323.9
                                                                             ],
@@ -10468,13 +10674,16 @@
                                                                                         324.0
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 2,
-                                                                                    "left_space": 31.4,
+                                                                                    "alignment": 3,
+                                                                                    "left_space": 24.7,
                                                                                     "right_space": 24.7,
-                                                                                    "before_space": 9.900000000000034,
+                                                                                    "first_line_space": 0.0,
+                                                                                    "before_space": 9.600000000000023,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 31.4,
+                                                                                    "right_space_total": 24.7,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -10488,6 +10697,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -10579,7 +10789,7 @@
                                                                         {
                                                                             "bbox": [
                                                                                 264.9,
-                                                                                307.9,
+                                                                                308.2,
                                                                                 330.9,
                                                                                 323.9
                                                                             ],
@@ -10609,13 +10819,16 @@
                                                                                         323.9
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
+                                                                                    "alignment": 1,
                                                                                     "left_space": 5.9,
-                                                                                    "right_space": 12.0,
-                                                                                    "before_space": 10.100000000000023,
+                                                                                    "right_space": 5.9,
+                                                                                    "first_line_space": 0.0,
+                                                                                    "before_space": 9.800000000000011,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 5.899999999999977,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.9,
+                                                                                    "right_space_total": 12.0,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -10629,6 +10842,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -10785,7 +10999,7 @@
                                                                         {
                                                                             "bbox": [
                                                                                 330.9,
-                                                                                307.9,
+                                                                                308.2,
                                                                                 435.9,
                                                                                 323.9
                                                                             ],
@@ -10815,13 +11029,16 @@
                                                                                         324.0
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 4,
-                                                                                    "left_space": 11.9,
-                                                                                    "right_space": 8.9,
-                                                                                    "before_space": 9.900000000000034,
+                                                                                    "alignment": 2,
+                                                                                    "left_space": 0,
+                                                                                    "right_space": 0,
+                                                                                    "first_line_space": 0.0,
+                                                                                    "before_space": 9.600000000000023,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 11.9,
+                                                                                    "right_space_total": 8.9,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -10835,6 +11052,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -11082,9 +11300,9 @@
                                                                         {
                                                                             "bbox": [
                                                                                 435.9,
-                                                                                307.9,
-                                                                                566.6,
-                                                                                383.6
+                                                                                308.2,
+                                                                                566.2,
+                                                                                383.2
                                                                             ],
                                                                             "bg_color": null,
                                                                             "border_color": [
@@ -11112,13 +11330,16 @@
                                                                                         364.4
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
+                                                                                    "alignment": 1,
                                                                                     "left_space": 5.9,
-                                                                                    "right_space": 112.7,
-                                                                                    "before_space": 50.60000000000002,
+                                                                                    "right_space": 5.9,
+                                                                                    "first_line_space": 0.0,
+                                                                                    "before_space": 50.30000000000001,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 5.899999999999977,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.9,
+                                                                                    "right_space_total": 112.3,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -11132,6 +11353,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -11188,9 +11410,9 @@
                                                                         185.4,
                                                                         323.9,
                                                                         435.9,
-                                                                        383.6
+                                                                        383.2
                                                                     ],
-                                                                    "height": 58.700000000000045,
+                                                                    "height": 58.30000000000001,
                                                                     "cells": [
                                                                         null,
                                                                         {
@@ -11198,7 +11420,7 @@
                                                                                 185.4,
                                                                                 323.9,
                                                                                 264.9,
-                                                                                383.6
+                                                                                383.2
                                                                             ],
                                                                             "bg_color": null,
                                                                             "border_color": [
@@ -11226,13 +11448,16 @@
                                                                                         337.5
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 2,
-                                                                                    "left_space": 31.4,
+                                                                                    "alignment": 3,
+                                                                                    "left_space": 21.7,
                                                                                     "right_space": 21.7,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.400000000000034,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 31.4,
+                                                                                    "right_space_total": 21.7,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -11246,6 +11471,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -11340,13 +11566,16 @@
                                                                                         351.0
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 2,
-                                                                                    "left_space": 31.4,
+                                                                                    "alignment": 3,
+                                                                                    "left_space": 22.4,
                                                                                     "right_space": 22.4,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.300000000000011,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 31.4,
+                                                                                    "right_space_total": 22.4,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -11360,6 +11589,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -11454,13 +11684,16 @@
                                                                                         364.5
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
-                                                                                    "left_space": 31.4,
+                                                                                    "alignment": 3,
+                                                                                    "left_space": 5.9,
                                                                                     "right_space": 5.9,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.300000000000011,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 31.4,
+                                                                                    "right_space_total": 5.9,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -11474,6 +11707,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -11620,13 +11854,16 @@
                                                                                         378.0
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 2,
-                                                                                    "left_space": 31.4,
+                                                                                    "alignment": 3,
+                                                                                    "left_space": 12.7,
                                                                                     "right_space": 12.7,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.300000000000011,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 31.4,
+                                                                                    "right_space_total": 12.7,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -11640,6 +11877,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -11759,7 +11997,7 @@
                                                                                 264.9,
                                                                                 323.9,
                                                                                 330.9,
-                                                                                383.6
+                                                                                383.2
                                                                             ],
                                                                             "bg_color": null,
                                                                             "border_color": [
@@ -11787,13 +12025,16 @@
                                                                                         337.4
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
+                                                                                    "alignment": 1,
                                                                                     "left_space": 5.9,
-                                                                                    "right_space": 18.3,
+                                                                                    "right_space": 5.9,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.600000000000023,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 5.899999999999977,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.9,
+                                                                                    "right_space_total": 18.3,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -11807,6 +12048,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -11940,13 +12182,16 @@
                                                                                         377.9
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
+                                                                                    "alignment": 1,
                                                                                     "left_space": 5.9,
-                                                                                    "right_space": 44.8,
+                                                                                    "right_space": 5.9,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 34.60000000000002,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 5.899999999999977,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 5.9,
+                                                                                    "right_space_total": 44.8,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -11960,6 +12205,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -12040,7 +12286,7 @@
                                                                                 330.9,
                                                                                 323.9,
                                                                                 435.9,
-                                                                                383.6
+                                                                                383.2
                                                                             ],
                                                                             "bg_color": null,
                                                                             "border_color": [
@@ -12068,13 +12314,16 @@
                                                                                         337.5
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
-                                                                                    "left_space": 11.9,
+                                                                                    "alignment": 3,
+                                                                                    "left_space": 5.9,
                                                                                     "right_space": 5.9,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.400000000000034,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 11.9,
+                                                                                    "right_space_total": 5.9,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -12088,6 +12337,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -12364,13 +12614,16 @@
                                                                                         351.0
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 4,
-                                                                                    "left_space": 11.9,
-                                                                                    "right_space": 13.4,
+                                                                                    "alignment": 2,
+                                                                                    "left_space": 0,
+                                                                                    "right_space": 0,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.300000000000011,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 11.9,
+                                                                                    "right_space_total": 13.4,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -12384,6 +12637,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -12621,13 +12875,16 @@
                                                                                         364.5
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
+                                                                                    "alignment": 1,
                                                                                     "left_space": 11.9,
-                                                                                    "right_space": 29.9,
+                                                                                    "right_space": 11.9,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.300000000000011,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 11.9,
+                                                                                    "right_space_total": 29.9,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -12641,6 +12898,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -12826,13 +13084,16 @@
                                                                                         378.0
                                                                                     ],
                                                                                     "type": 0,
-                                                                                    "alignment": 8,
+                                                                                    "alignment": 1,
                                                                                     "left_space": 11.9,
-                                                                                    "right_space": 36.7,
+                                                                                    "right_space": 11.9,
+                                                                                    "first_line_space": 0.0,
                                                                                     "before_space": 7.300000000000011,
                                                                                     "after_space": 0.0,
                                                                                     "line_space": 6.199999999999989,
                                                                                     "tab_stops": [],
+                                                                                    "left_space_total": 11.9,
+                                                                                    "right_space_total": 36.7,
                                                                                     "lines": [
                                                                                         {
                                                                                             "bbox": [
@@ -12846,6 +13107,7 @@
                                                                                                 1.0,
                                                                                                 0.0
                                                                                             ],
+                                                                                            "line_break": 0,
                                                                                             "spans": [
                                                                                                 {
                                                                                                     "bbox": [
@@ -13085,13 +13347,16 @@
                                         405.7
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
+                                    "alignment": 1,
                                     "left_space": 0.7,
-                                    "right_space": 464.8,
+                                    "right_space": 0.7,
+                                    "first_line_space": 0.0,
                                     "before_space": 8.0,
                                     "after_space": 0.0,
                                     "line_space": 6.099999999999966,
                                     "tab_stops": [],
+                                    "left_space_total": 0.7,
+                                    "right_space_total": 464.8,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -13105,6 +13370,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -13370,13 +13636,16 @@
                                         431.1
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
+                                    "alignment": 1,
                                     "left_space": 12.0,
-                                    "right_space": 227.2,
+                                    "right_space": 12.0,
+                                    "first_line_space": 0.0,
                                     "before_space": 9.800000000000011,
                                     "after_space": 0.0,
                                     "line_space": 5.900000000000034,
                                     "tab_stops": [],
+                                    "left_space_total": 12.0,
+                                    "right_space_total": 227.2,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -13390,6 +13659,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -14227,13 +14497,16 @@
                                         654.7
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
+                                    "alignment": 1,
                                     "left_space": 0.7,
-                                    "right_space": 347.1,
+                                    "right_space": 0.7,
+                                    "first_line_space": 0.0,
                                     "before_space": 108.70000000000005,
                                     "after_space": 0.0,
                                     "line_space": 6.100000000000023,
                                     "tab_stops": [],
+                                    "left_space_total": 0.7,
+                                    "right_space_total": 347.1,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -14247,6 +14520,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -14856,13 +15130,16 @@
                                         691.5
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
+                                    "alignment": 1,
                                     "left_space": 0.7,
-                                    "right_space": 98.1,
+                                    "right_space": 0.7,
+                                    "first_line_space": 0.0,
                                     "before_space": 15.299999999999955,
                                     "after_space": 0.0,
                                     "line_space": 6.2000000000000455,
                                     "tab_stops": [],
+                                    "left_space_total": 0.7,
+                                    "right_space_total": 98.1,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -14876,6 +15153,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -15088,13 +15366,16 @@
                                         691.5
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
+                                    "alignment": 1,
                                     "left_space": 23.9,
-                                    "right_space": 75.7,
+                                    "right_space": 23.9,
+                                    "first_line_space": 0.0,
                                     "before_space": 15.299999999999955,
                                     "after_space": 0.0,
                                     "line_space": 6.2000000000000455,
                                     "tab_stops": [],
+                                    "left_space_total": 23.9,
+                                    "right_space_total": 75.7,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -15108,6 +15389,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -15229,13 +15511,16 @@
                                         691.5
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
+                                    "alignment": 1,
                                     "left_space": 67.4,
-                                    "right_space": 140.0,
+                                    "right_space": 67.4,
+                                    "first_line_space": 0.0,
                                     "before_space": 15.299999999999955,
                                     "after_space": 0.0,
                                     "line_space": 6.2000000000000455,
                                     "tab_stops": [],
+                                    "left_space_total": 67.4,
+                                    "right_space_total": 140.0,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -15249,6 +15534,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -15447,13 +15733,16 @@
                                         717.7
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
+                                    "alignment": 1,
                                     "left_space": 0.7,
-                                    "right_space": 98.8,
+                                    "right_space": 0.7,
+                                    "first_line_space": 0.0,
                                     "before_space": 10.100000000000023,
                                     "after_space": 0.0,
                                     "line_space": 6.100000000000023,
                                     "tab_stops": [],
+                                    "left_space_total": 0.7,
+                                    "right_space_total": 98.8,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -15467,6 +15756,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -15679,13 +15969,16 @@
                                         717.7
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
+                                    "alignment": 1,
                                     "left_space": 9.7,
-                                    "right_space": 83.9,
+                                    "right_space": 9.7,
+                                    "first_line_space": 0.0,
                                     "before_space": 10.100000000000023,
                                     "after_space": 0.0,
                                     "line_space": 6.100000000000023,
                                     "tab_stops": [],
+                                    "left_space_total": 9.7,
+                                    "right_space_total": 83.9,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -15699,6 +15992,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -15846,13 +16140,16 @@
                                         717.7
                                     ],
                                     "type": 0,
-                                    "alignment": 2,
-                                    "left_space": 42.6,
+                                    "alignment": 3,
+                                    "left_space": 33.2,
                                     "right_space": 33.2,
+                                    "first_line_space": 0.0,
                                     "before_space": 10.100000000000023,
                                     "after_space": 0.0,
                                     "line_space": 6.100000000000023,
                                     "tab_stops": [],
+                                    "left_space_total": 42.6,
+                                    "right_space_total": 33.2,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -15866,6 +16163,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -16026,13 +16324,16 @@
                                         717.7
                                     ],
                                     "type": 0,
-                                    "alignment": 8,
+                                    "alignment": 1,
                                     "left_space": 33.3,
-                                    "right_space": 67.3,
+                                    "right_space": 33.3,
+                                    "first_line_space": 0.0,
                                     "before_space": 10.100000000000023,
                                     "after_space": 0.0,
                                     "line_space": 6.100000000000023,
                                     "tab_stops": [],
+                                    "left_space_total": 33.3,
+                                    "right_space_total": 67.3,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -16046,6 +16347,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -16244,12 +16546,15 @@
                                     ],
                                     "type": 0,
                                     "alignment": 2,
-                                    "left_space": 244.1,
-                                    "right_space": 244.0,
+                                    "left_space": 0,
+                                    "right_space": 0,
+                                    "first_line_space": 0.0,
                                     "before_space": 38.60000000000002,
                                     "after_space": 0.0,
                                     "line_space": 5.899999999999977,
                                     "tab_stops": [],
+                                    "left_space_total": 244.1,
+                                    "right_space_total": 244.0,
                                     "lines": [
                                         {
                                             "bbox": [
@@ -16263,6 +16568,7 @@
                                                 1.0,
                                                 0.0
                                             ],
+                                            "line_break": 0,
                                             "spans": [
                                                 {
                                                     "bbox": [
@@ -16437,7 +16743,7 @@
             ]
         }
     ],
-    "paths": [
+    "shapes": [
         {
             "bbox": [
                 28.5,
