@@ -9,8 +9,11 @@ A group of Line objects.
 
 from docx.shared import Pt
 from .Line import Line
+from ..image.ImageSpan import ImageSpan
 from ..common.Collection import Collection
 from ..common.docx import add_stop
+from ..common.share import TextAlignment
+from ..common import constants
 
 
 class Lines(Collection):
@@ -191,14 +194,55 @@ class Lines(Collection):
         return groups
 
 
+    def parse_text_format(self, rect):
+        '''parse text format with style represented by rectangle shape.
+            ---
+            Args:
+            - rect: potential style shape applied on blocks
+        '''
+        flag = False
+
+        for line in self._instances:
+            # any intersection in this line?
+            intsec = rect.bbox & line.get_expand_bbox(constants.TINY_DIST)
+            
+            if not intsec: 
+                if rect.bbox.y1 < line.bbox.y0: break # lines must be sorted in advance
+                continue
+
+            # yes, then try to split the spans in this line
+            split_spans = []
+            for span in line.spans: 
+                # include image span directly
+                if isinstance(span, ImageSpan): split_spans.append(span)                   
+
+                # split text span with the format rectangle: span-intersection-span
+                else:
+                    spans = span.split(rect, line.is_horizontal_text)
+                    split_spans.extend(spans)
+                    flag = True
+                                            
+            # update line spans                
+            line.spans.reset(split_spans)
+
+        return flag
+
+
     def make_docx(self, p):
         '''Create lines in paragraph.'''
         block = self.parent        
         idx = 0 if block.is_horizontal_text else 3
         current_pos = block.left_space
 
-        for i, line in enumerate(self._instances):
+        # space for checking line break
+        if block.alignment == TextAlignment.RIGHT:
+            delta_space = block.left_space_total - block.left_space
+            idx_1 = idx
+        else:
+            delta_space = block.right_space_total - block.right_space
+            idx_1 = (idx+2)%4 # H: x1->2, or V: y0->1
 
+        for i, line in enumerate(self._instances):
             # left indentation implemented with tab
             pos = block.left_space + (line.bbox[idx]-block.bbox[idx])
             if pos>block.left_space and block.tab_stops: # sometimes set by first line indentation
@@ -211,17 +255,17 @@ class Lines(Collection):
             # change in docx due to different rendering mechanism like font, spacing. For instance, when
             # one paragraph row can't accommodate a Line, the hard break leads to an unnecessary empty row.
             # Since we can't 100% ensure a same structure, it's better to focus on the content - add line
-            # break only when it's necessary to, e.g. explicit free space exists.
-            idx_1 = (idx+2)%4 # H: x1->2, or V: y0->1
-            # no more lines after last line
-            if line==self._instances[-1]: 
+            # break only when it's necessary to, e.g. explicit free space exists.            
+            if line==self._instances[-1]: # no more lines after last line
                 line_break = False
             
             elif line.in_same_row(self._instances[i+1]):
                 line_break = False
             
-            # break line if free space accommodates the next line
-            elif abs(block.bbox[idx_1]-line.bbox[idx_1]) > abs(self._instances[i+1].bbox[idx_1]-self._instances[i+1].bbox[idx]):
+            # break line if free space accommodates the next line 
+            # it's conservative, actually break line if accommodates one word
+            elif abs(block.bbox[idx_1]-line.bbox[idx_1]) + delta_space > \
+                    abs(self._instances[i+1].bbox[idx_1]-self._instances[i+1].bbox[idx]):
                 line_break = True
             
             # break line if next line is a only a space (otherwise, MS Word leaves it in previous line)

@@ -24,6 +24,9 @@ class Block(BBox):
         self.right_space = raw.get('right_space', 0.0)
         self.first_line_space = raw.get('first_line_space', 0.0)
 
+        self.left_space_total = raw.get('left_space_total', 0.0)
+        self.right_space_total = raw.get('right_space_total', 0.0)
+
         # RELATIVE position of tab stops
         self.tab_stops = raw.get('tab_stops', []) 
 
@@ -120,15 +123,17 @@ class Block(BBox):
         '''Store attributes in json format.'''
         res = super().store()
         res.update({
-            'type'        : self._type.value,
-            'alignment'   : self.alignment.value,
-            'left_space'  : self.left_space,
-            'right_space' : self.right_space,
+            'type'             : self._type.value,
+            'alignment'        : self.alignment.value,
+            'left_space'       : self.left_space,
+            'right_space'      : self.right_space,
             'first_line_space' : self.first_line_space,
-            'before_space': self.before_space,
-            'after_space' : self.after_space,
-            'line_space'  : self.line_space,
-            'tab_stops'   : self.tab_stops
+            'before_space'     : self.before_space,
+            'after_space'      : self.after_space,
+            'line_space'       : self.line_space,
+            'tab_stops'        : self.tab_stops,
+            'left_space_total' : self.left_space,
+            'right_space_total': self.right_space
             })
         return res
 

@@ -149,7 +149,7 @@ class TextBlock(Block):
         '''parse text format with style represented by rectangles.
             ---
             Args:
-              - rects: Shapes, potential styles applied on blocks
+            - rects: Shapes, potential styles applied on blocks
         '''
         flag = False
 
@@ -162,29 +162,9 @@ class TextBlock(Block):
             # any intersection with current block?
             if not self.bbox.intersects(rect.bbox): continue
 
-            # yes, then go further to lines in block            
-            for line in self.lines:
-                # any intersection in this line?
-                intsec = rect.bbox & line.get_expand_bbox(constants.TINY_DIST)
-                
-                if not intsec: 
-                    if rect.bbox.y1 < line.bbox.y0: break # lines must be sorted in advance
-                    continue
-
-                # yes, then try to split the spans in this line
-                split_spans = []
-                for span in line.spans: 
-                    # include image span directly
-                    if isinstance(span, ImageSpan): split_spans.append(span)                   
-
-                    # split text span with the format rectangle: span-intersection-span
-                    else:
-                        spans = span.split(rect, line.is_horizontal_text)
-                        split_spans.extend(spans)
-                        flag = True
-                                                
-                # update line spans                
-                line.spans.reset(split_spans)
+            # yes, then go further to lines in block
+            if self.lines.parse_text_format(rect):
+                flag = True
 
         return flag
 
@@ -213,7 +193,7 @@ class TextBlock(Block):
                         lines_left_aligned_threshold,
                         lines_right_aligned_threshold,
                         lines_center_aligned_threshold)
-        ext_alignment = self._external_alignment(bbox,  # set horizontal space additionally
+        ext_alignment = self._external_alignment(bbox,
                         (idx0, idx1, f),
                         lines_center_aligned_threshold)
         self.alignment = int_alignment if int_alignment!=TextAlignment.UNKNOWN else ext_alignment
@@ -228,14 +208,19 @@ class TextBlock(Block):
             all_pos = set(map(fun, self.lines))
             self.tab_stops = list(filter(lambda pos: pos>=constants.MINOR_DIST, all_pos))
             
-        # adjust left/right indentation
+        # adjust left/right indentation to save tolerance space
         if self.alignment == TextAlignment.LEFT:
-            self.right_space *= 0.9
+            self.left_space = self.left_space_total
+            self.right_space = min(self.left_space_total, self.right_space_total)
         elif self.alignment == TextAlignment.RIGHT:
-            self.left_space *= 0.9
+            self.left_space = min(self.left_space_total, self.right_space_total)
+            self.right_space = self.right_space_total
         elif self.alignment == TextAlignment.CENTER:
-            self.left_space *= 0.1
-            self.right_space *= 0.1
+            self.left_space = 0
+            self.right_space = 0
+        else:
+            self.left_space = self.left_space_total
+            self.right_space = self.right_space_total
 
 
     def parse_line_spacing(self):
@@ -377,29 +362,31 @@ class TextBlock(Block):
 
         # --------------------------------------------------------------------------
         # Then check alignment of internal lines:
+        # When count of lines >= 3:
         # - left-alignment based on lines excepting the first line
         # - right-alignment based on lines excepting the last line
         # the exact position of first line is considered by first-line-indent
-        # =========     =======   =========
-        # =========   =========     =======
-        # =========   =========     =======
-        # ======      =========     =====
+        # =========     =======   =========  | =========   =========
+        # =========   =========     =======  |   =======   =======
+        # =========   =========     =======  |
+        # ======      =========     =====    |
         # --------------------------------------------------------------------------
         X0 = [lines[0].bbox[idx0]  for lines in rows]
         X1 = [lines[-1].bbox[idx1] for lines in rows]
         X  = [(x0+x1)/2.0 for (x0, x1) in zip(X0, X1)]
-        
-        left_aligned   = abs(max(X0[1:])-min(X0[1:]))<=lines_left_aligned_threshold
-        right_aligned  = abs(max(X1[0:-1])-min(X1[0:-1]))<=lines_right_aligned_threshold
+
+        if len(rows) >= 3: X0, X1 = X0[1:], X1[0:-1]
+        left_aligned   = abs(max(X0)-min(X0))<=lines_left_aligned_threshold
+        right_aligned  = abs(max(X1)-min(X1))<=lines_right_aligned_threshold
         center_aligned = abs(max(X)-min(X))<=lines_center_aligned_threshold # coarse margin for center alignment
 
-        if left_aligned and right_aligned and len(rows)>=3:
-            return TextAlignment.JUSTIFY
+        if left_aligned and right_aligned:
+            # need further external check if two lines only
+            return TextAlignment.JUSTIFY if len(rows)>=3 else TextAlignment.UNKNOWN
         elif left_aligned:
             self.first_line_space = rows[1][0].bbox[idx0] - rows[0][0].bbox[idx0]
             return TextAlignment.LEFT
         elif right_aligned:
-            self.first_line_space = rows[1][0].bbox[idx0] - rows[0][0].bbox[idx0]
             return TextAlignment.RIGHT
         elif center_aligned:
             return TextAlignment.CENTER
@@ -420,7 +407,7 @@ class TextBlock(Block):
         # indexes based on text direction
         idx0, idx1, f = text_direction_param
 
-        # position to the bbox
+        # distance to the bbox
         d_left   = round((self.bbox[idx0]-bbox[idx0])*f, 1) # left margin
         d_right  = round((bbox[idx1]-self.bbox[idx1])*f, 1) # right margin
         d_center = round((d_left-d_right)/2.0, 1)           # center margin
@@ -428,9 +415,10 @@ class TextBlock(Block):
         d_right  = max(d_right, 0.0)
 
         # NOTE: set horizontal space
-        self.left_space  = d_left
-        self.right_space = d_right
+        self.left_space_total  = d_left
+        self.right_space_total = d_right
 
+        # block location: left/center/right
         if abs(d_center) < lines_center_aligned_threshold: 
             return TextAlignment.CENTER
         else:
