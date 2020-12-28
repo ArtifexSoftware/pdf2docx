@@ -82,6 +82,7 @@ class Layout:
             'shape_merging_threshold'        : 0.5, # [0,1] merge shape if the intersection exceeds this value
             'shape_min_dimension'            : 2.0, # ignore shape if both width and height is lower than this value
             'line_overlap_threshold'         : 0.9, # [0,1] delete line if the intersection to other lines exceeds this value
+            'line_free_space_ratio_threshold': 0.06,# break line if the ratio of free space to entire line exceeds this value
             'line_merging_threshold'         : 2.0, # combine two lines if the x-distance is lower than this value
             'line_separate_threshold'        : 5.0, # two separate lines if the x-distance exceeds this value
             'lines_left_aligned_threshold'   : 1.0, # left aligned if delta left edge of two lines is lower than this value
@@ -434,8 +435,11 @@ class Layout:
         ''' Calculate external and internal vertical space for paragraph blocks under page context 
             or table context. It'll used as paragraph spacing and line spacing when creating paragraph.
         '''
-        self.blocks.parse_spacing(
+        args = (
             self.settings['line_separate_threshold'],
+            self.settings['line_free_space_ratio_threshold'],
             self.settings['lines_left_aligned_threshold'],
             self.settings['lines_right_aligned_threshold'],
-            self.settings['lines_center_aligned_threshold'])
+            self.settings['lines_center_aligned_threshold']
+        )
+        self.blocks.parse_spacing(*args)

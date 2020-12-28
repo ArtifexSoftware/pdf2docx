@@ -96,7 +96,7 @@ class Blocks(Collection):
         if len(groups) != len(self): return False
 
         # block lines level
-        for block in self.text_blocks(level=0):
+        for block in self.text_blocks:
             if not block.is_flow_layout(float_layout_tolerance): return False
         return True
 
@@ -301,12 +301,16 @@ class Blocks(Collection):
         return res
 
 
-    def parse_spacing(self,
-            line_separate_threshold:float,
-            lines_left_aligned_threshold:float,
-            lines_right_aligned_threshold:float,
-            lines_center_aligned_threshold:float):
+    def parse_spacing(self, *args):
         ''' Calculate external and internal vertical space for text blocks.
+            ---
+            Args:
+            - args:
+                - line_separate_threshold:float,
+                - line_free_space_ratio_threshold:float,
+                - lines_left_aligned_threshold:float,
+                - lines_right_aligned_threshold:float,
+                - lines_center_aligned_threshold:float
         
             - paragraph spacing is determined by the vertical distance to previous block. 
               For the first block, the reference position is top margin.
@@ -340,11 +344,7 @@ class Blocks(Collection):
             # - horizontal block -> take left boundary as reference
             # - vertical block   -> take bottom boundary as reference
             #---------------------------------------------------------
-            block.parse_horizontal_spacing(bbox,
-                    line_separate_threshold,
-                    lines_left_aligned_threshold,
-                    lines_right_aligned_threshold,
-                    lines_center_aligned_threshold)            
+            block.parse_horizontal_spacing(bbox, *args)            
 
             #---------------------------------------------------------
             # vertical space calculation
@@ -356,12 +356,7 @@ class Blocks(Collection):
                 dw = block[0][0].border_width[0] / 2.0 # use top border of the first cell
 
                 # calculate vertical spacing of blocks under this table
-                block.parse_spacing(
-                    line_separate_threshold,
-                    lines_left_aligned_threshold,
-                    lines_right_aligned_threshold,
-                    lines_center_aligned_threshold
-                )
+                block.parse_spacing(*args)
             
             else:
                 dw = 0.0

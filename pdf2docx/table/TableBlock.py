@@ -142,20 +142,12 @@ class TableBlock(Block):
         return True # always return True if table is parsed
 
 
-    def parse_spacing(self,
-                line_separate_threshold:float,
-                lines_left_aligned_threshold:float,
-                lines_right_aligned_threshold:float,
-                lines_center_aligned_threshold:float):
+    def parse_spacing(self, *args):
         ''' Calculate vertical space for blocks contained in table cells.'''
         for row in self._rows:
             for cell in row:
                 if not cell: continue
-                cell.blocks.parse_spacing(
-                    line_separate_threshold,
-                    lines_left_aligned_threshold,
-                    lines_right_aligned_threshold,
-                    lines_center_aligned_threshold)
+                cell.blocks.parse_spacing(*args)
 
 
     def make_docx(self, table):

@@ -33,7 +33,6 @@ from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 from .Lines import Lines
-from ..image.ImageSpan import ImageSpan
 from ..common.share import TextDirection, TextAlignment
 from ..common.Block import Block
 from ..common.share import rgb_component_from_name
@@ -80,7 +79,8 @@ class TextBlock(Block):
     def is_flow_layout(self, float_layout_tolerance:float, line_separate_threshold:float):
         '''Check if flow layout: same bottom-left point for lines in same row.'''
         # lines in same row
-        fun = lambda a, b: a.horizontally_align_with(b, factor=float_layout_tolerance)
+        fun = lambda a, b: a.horizontally_align_with(b, factor=float_layout_tolerance) and \
+                            not a.vertically_align_with(b, factor=constants.FACTOR_ALMOST) 
         groups = self.lines.group(fun)        
         
         idx = 0 if self.is_horizontal_text else 3
@@ -181,6 +181,7 @@ class TextBlock(Block):
 
     def parse_horizontal_spacing(self, bbox,
                     line_separate_threshold:float,
+                    line_free_space_ratio_threshold:float,
                     lines_left_aligned_threshold:float,
                     lines_right_aligned_threshold:float,
                     lines_center_aligned_threshold:float):
@@ -231,6 +232,9 @@ class TextBlock(Block):
         else:
             self.left_space = self.left_space_total
             self.right_space = self.right_space_total
+
+        # parse line break
+        self.lines.parse_line_break(line_free_space_ratio_threshold)
 
 
     def parse_line_spacing(self):
@@ -362,10 +366,10 @@ class TextBlock(Block):
         # --------------------------------------------------------------------------
         for row in rows:
             if len(row)==1: continue
-            for i in range(1, len(row)):
-                dis = (row[i].bbox[idx0]-row[i-1].bbox[idx1])*f
-                if dis >= line_separate_threshold:
-                    return TextAlignment.NONE
+            dis = [(row[i].bbox[idx0]-row[i-1].bbox[idx1])*f>=line_separate_threshold \
+                        for i in range(1, len(row))]
+            if any(dis):
+                return TextAlignment.NONE
 
         # just one row -> can't decide -> full possibility
         if len(rows) < 2: return TextAlignment.UNKNOWN
