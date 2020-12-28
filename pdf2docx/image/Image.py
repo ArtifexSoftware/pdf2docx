@@ -63,11 +63,11 @@ class ImagesExtractor:
         # - https://github.com/pymupdf/PyMuPDF/issues/257
         # - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/pdf_reference_archives/PDFReference.pdf
         doc = page.parent
-        for xref in page._getContents():
-            stream = doc._getXrefStream(xref).replace(b'BT', b'BT 3 Tr') \
+        for xref in page.get_contents():
+            stream = doc.xrefStream(xref).replace(b'BT', b'BT 3 Tr') \
                                              .replace(b'Tm', b'Tm 3 Tr') \
                                              .replace(b'Td', b'Td 3 Tr')
-            doc._updateStream(xref, stream)
+            doc.updateStream(xref, stream)
         
         # improve resolution
         # - https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-increase-image-resolution
