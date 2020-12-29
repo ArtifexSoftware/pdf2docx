@@ -328,11 +328,12 @@ class TextBlock(Block):
             pf.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
 
         # - paragraph indentation
-        pf.left_indent  = Pt(self.left_space)
+        # NOTE: first-line-indent should be excluded
+        pf.left_indent  = Pt(self.left_space-self.first_line_space)
         pf.right_indent  = Pt(self.right_space)
 
         # - first line indentation
-        if self.first_line_space: pf.first_line_indent = Pt(self.first_line_space)
+        pf.first_line_indent = Pt(self.first_line_space)
 
         # add lines        
         self.lines.make_docx(p)
@@ -398,7 +399,7 @@ class TextBlock(Block):
             # need further external check if two lines only
             return TextAlignment.JUSTIFY if len(rows)>=3 else TextAlignment.UNKNOWN
         elif left_aligned:
-            self.first_line_space = rows[1][0].bbox[idx0] - rows[0][0].bbox[idx0]
+            self.first_line_space = rows[0][0].bbox[idx0] - rows[1][0].bbox[idx0]
             return TextAlignment.LEFT
         elif right_aligned:
             return TextAlignment.RIGHT
