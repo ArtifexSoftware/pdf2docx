@@ -4,7 +4,7 @@
 Char object based on PDF raw dict extracted with PyMuPDF.
 
 @created: 2020-07-22
-@author: train8808@gmail.com
+
 ---
 
 refer to: https://pymupdf.readthedocs.io/en/latest/textpage.html
@@ -18,17 +18,17 @@ raw dict for Char
 '''
 
 
-from ..common.BBox import BBox
+from ..common.Element import Element
 from ..shape.Shape import Shape
 
 
-class Char(BBox):
+class Char(Element):
     '''Object representing a character.'''
     def __init__(self, raw:dict=None):
         if raw is None: raw = {}
         self.c = raw.get('c', '')
         self.origin = raw.get('origin', None)
-        super().__init__(raw)
+        super().__init__(raw) # NOTE: ignore parent element for Char instance
 
 
     def contained_in_rect(self, rect:Shape, horizontal:bool=True):

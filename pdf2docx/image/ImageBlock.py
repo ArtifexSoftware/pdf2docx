@@ -6,7 +6,7 @@ Definition of Image block objects.
 Note the raw image block will be merged into text block: Text > Line > Span.
 
 @created: 2020-07-22
-@author: train8808@gmail.com
+
 '''
 
 from io import BytesIO

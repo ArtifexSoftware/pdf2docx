@@ -4,7 +4,7 @@
 A group of Line objects.
 
 @created: 2020-07-24
-@author: train8808@gmail.com
+
 '''
 
 from docx.shared import Pt

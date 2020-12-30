@@ -4,7 +4,7 @@
 A group of TextSpan and ImageSpan objects.
 
 @created: 2020-07-23
-@author: train8808@gmail.com
+
 '''
 
 from ..common.Collection import Collection

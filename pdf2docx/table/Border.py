@@ -22,7 +22,7 @@ NOTE:
 Consider horizontal and vertical borders only.
 
 @created: 2020-08-29
-@author: train8808@gmail.com
+
 '''
 
 

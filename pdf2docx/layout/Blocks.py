@@ -3,7 +3,7 @@
 '''
 A group of Text/Image or Table block.
 @created: 2020-07-22
-@author: train8808@gmail.com
+
 '''
 
 from docx.shared import Pt

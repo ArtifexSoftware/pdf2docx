@@ -4,7 +4,7 @@
 A group of Rows objects in a table.
 
 @created: 2020-08-15
-@author: train8808@gmail.com
+
 '''
 
 from .Row import Row

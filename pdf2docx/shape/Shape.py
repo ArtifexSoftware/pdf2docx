@@ -7,7 +7,7 @@ Objects representing PDF stroke and filling extracted from Path:
 - Fill  : bbox of closed path filling area
 
 @created: 2020-09-15
-@author: train8808@gmail.com
+
 ---
 
 The semantic meaning of shape instance may be:
@@ -26,12 +26,12 @@ Data structure:
 '''
 
 import fitz
-from ..common.BBox import BBox
+from ..common.Element import Element
 from ..common.share import RectType
 from ..common import constants
 
 
-class Shape(BBox):
+class Shape(Element):
     ''' Shape object.'''
     def __init__(self, raw:dict=None):        
         if raw is None: raw = {}
@@ -95,9 +95,8 @@ class Stroke(Shape):
             self._start, self._end = self._end, self._start
 
         # width, color
+        super().__init__(raw) # type, color
         self.width = raw.get('width', 0.0)
-        self.color = raw.get('color', 0)
-        self.type = RectType.UNDEFINED # no type by default
 
         # update bbox
         super().update_bbox(self._to_rect())

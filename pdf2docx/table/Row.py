@@ -4,7 +4,7 @@
 Row in a table.
 
 @created: 2020-08-15
-@author: train8808@gmail.com
+
 '''
 
 from docx.enum.table import WD_ROW_HEIGHT
@@ -12,10 +12,10 @@ from docx.shared import Pt
 
 from .Cell import Cell
 from .Cells import Cells
-from ..common.BBox import BBox
+from ..common.Element import Element
 
 
-class Row(BBox):
+class Row(Element):
     '''Row in a table.'''
     def __init__(self, raw:dict=None):
         if raw is None: raw = {}

@@ -9,7 +9,7 @@ Square and Highlight considered.
 - https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
 
 @created: 2020-09-22
-@author: train8808@gmail.com
+
 '''
 
 

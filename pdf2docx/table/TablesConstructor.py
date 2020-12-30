@@ -15,10 +15,10 @@ Terms definition:
 
 
 @created: 2020-08-16
-@author: train8808@gmail.com
+
 '''
 
-from ..common.BBox import BBox
+from ..common.Element import Element
 from ..common import constants
 from ..layout.Blocks import Blocks
 from ..shape.Shapes import Shapes
@@ -79,7 +79,7 @@ class TablesConstructor:
         # assign text contents to each table
         self._blocks.assign_table_contents(unique_tables, settings)
 
-        return Blocks(unique_tables)
+        return Blocks(unique_tables) # this return is just for debug plot
 
 
     def stream_tables(self, 
@@ -158,7 +158,7 @@ class TablesConstructor:
             outer_borders = TablesConstructor._outer_borders(inner_bbox, outer_bbox)
 
             # explicit strokes/shadings in table region
-            rect = BBox().update_bbox(outer_bbox)
+            rect = Element().update_bbox(outer_bbox)
             explicit_strokes  = table_strokes.contained_in_bbox(rect.bbox)
             # NOTE: shading with any intersections should be counted to avoid missing any candidates
             explicit_shadings, _ = table_fillings.split_with_intersection(rect.bbox) 
@@ -181,7 +181,7 @@ class TablesConstructor:
         # assign text contents to each table
         self._blocks.assign_table_contents(unique_tables, settings)
 
-        return Blocks(unique_tables)
+        return Blocks(unique_tables) # this return is just for debug plot
 
 
     @staticmethod

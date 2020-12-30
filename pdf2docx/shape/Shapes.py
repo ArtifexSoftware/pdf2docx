@@ -4,14 +4,13 @@
 A group of Shape (Stroke or Fill) instances.
 
 @created: 2020-09-15
-@author: train8808@gmail.com
+
 '''
 
 from .Shape import Shape, Stroke, Fill
 from ..common.share import RectType, lazyproperty
 from ..common.Collection import Collection
 from ..common import share
-from ..common import constants
 
 
 class Shapes(Collection):

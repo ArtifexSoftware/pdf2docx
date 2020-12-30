@@ -4,7 +4,7 @@
 Layout objects based on PDF raw dict extracted with PyMuPDF.
 
 @created: 2020-07-22
-@author: train8808@gmail.com
+
 ---
 
 The raw page content extracted with PyMuPDF, `page.getText('rawdict')` is described per link:
@@ -39,7 +39,7 @@ from ..image.Image import ImagesExtractor
 from ..shape.Shapes import Shapes
 from ..shape.Paths import Paths
 from ..table.TablesConstructor import TablesConstructor
-from ..common.BBox import BBox
+from ..common.Element import Element
 from ..common.share import debug_plot
 from ..common import constants
 
@@ -291,8 +291,8 @@ class Layout:
         self.__preprocess_images(page, raw_layout)
         self.__preprocess_shapes(page, raw_layout)
         
-        # BBox is a base class processing coordinates, so set rotation matrix globally
-        BBox.set_rotation_matrix(page.rotationMatrix)
+        # Element is a base class processing coordinates, so set rotation matrix globally
+        Element.set_rotation_matrix(page.rotationMatrix)
 
         return raw_layout
 

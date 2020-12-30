@@ -4,7 +4,7 @@
 Text block objects based on PDF raw dict extracted with PyMuPDF.
 
 @created: 2020-07-22
-@author: train8808@gmail.com
+
 ---
 https://pymupdf.readthedocs.io/en/latest/textpage.html
 
