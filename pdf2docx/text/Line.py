@@ -18,6 +18,7 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
 '''
 
 from fitz import Point
+from collections import Iterable
 from ..common.Element import Element
 from ..common.share import TextDirection
 from .Spans import Spans
@@ -125,7 +126,7 @@ class Line(Element):
             Args:
               - span_or_list: a TextSpan or TextSpan list
         '''
-        if isinstance(span_or_list, (list, tuple)):
+        if isinstance(span_or_list, Iterable):
             for span in span_or_list:
                 self.add_span(span)
         else:
