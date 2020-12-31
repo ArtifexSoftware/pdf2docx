@@ -6,7 +6,7 @@ from time import perf_counter
 from multiprocessing import Pool, cpu_count
 import fitz
 from docx import Document
-from .layout.Layout import Layout
+from .page.Page import Page
 
 
 class Converter:
@@ -22,35 +22,39 @@ class Converter:
         self.filename_pdf = pdf_file        
 
         # fitz object to read pdf
-        self._doc_pdf = fitz.Document(pdf_file)
+        self._fitz_doc = fitz.Document(pdf_file)
+
+        # initialize pages
+        self.pages = [Page(fitz_page) for fitz_page in self._fitz_doc]
 
 
     def __getitem__(self, index):
+        num = self._fitz_doc.pageCount
         if isinstance(index, slice):
-            if index.stop is None or index.stop > self._doc_pdf.pageCount:
-                stop = self._doc_pdf.pageCount
+            if index.stop is None or index.stop > num:
+                stop = num
             else:
                 stop = index.stop
-            res = [self._doc_pdf[i] for i in range(stop)]
-            return res[index]
+            pages = [self.pages[i] for i in range(stop)]
+            return pages[index]
         else:
-            return self._doc_pdf[index]
+            try:
+                page = self.pages[index]
+            except IndexError:
+                msg = f'Page index {index} out of range'
+                raise IndexError(msg)
+            else:
+                return page
 
 
-    def __len__(self): return len(self._doc_pdf)
+    def __len__(self): return len(self.pages)
 
 
     @property
-    def doc_pdf(self): return self._doc_pdf
+    def doc_pdf(self): return self._fitz_doc
 
 
-    def close(self): self._doc_pdf.close()
-
-
-    @staticmethod
-    def parse(page:fitz.Page, config:dict=None):
-        ''' Parse one specified pdf `page` and return a Layout object.'''        
-        return Layout(page, config).parse()
+    def close(self): self._fitz_doc.close()
 
 
     def debug_page(self, i:int, docx_filename:str=None, debug_pdf=None, layout_file=None, config:dict=None):
@@ -77,12 +81,10 @@ class Converter:
         })
 
         # parse and make page
-        layouts = self.make_docx(docx_filename, pages=[i], config=config)
+        self.make_docx(docx_filename, pages=[i], config=config)
         
         # layout information for debugging
-        layouts[0].serialize(layout_file) 
-
-        return layouts[0]
+        pages[0].serialize(layout_file)
 
 
     def make_docx(self, docx_filename=None, start=0, end=None, pages=None, config:dict=None):
@@ -107,15 +109,13 @@ class Converter:
         # convert page by page
         t0 = perf_counter()        
         if config.get('multi_processing', False):
-            layouts = self._make_docx_multi_processing(docx_file, page_indexes, config)
+            self._make_docx_multi_processing(docx_file, page_indexes, config)
         else:
-            layouts = self._make_docx(docx_file, page_indexes, config)       
+            self._make_docx(docx_file, page_indexes, config)       
         print(f'\n{"-"*50}\nTerminated in {perf_counter()-t0}s.')
 
         # save docx
         docx_file.save(filename)
-
-        return layouts
 
 
     def extract_tables(self, start=0, end=None, pages=None, config:dict=None):
@@ -143,15 +143,10 @@ class Converter:
             - docx_file   : docx.Document, docx file write to
             - page_indexes: list[int], page indexes to parse
         '''
-        layouts = []
         num_pages = len(page_indexes)
         for i in page_indexes:
             print(f'\rProcessing Pages: {i+1}/{num_pages}...', end='', flush=True)
-            layout = self.parse(self.doc_pdf[i], config)            
-            layout.make_page(docx_file) # write to docx
-            layouts.append(layout)
-        
-        return layouts
+            self.pages[i].parse(config).make_docx(docx_file)
 
 
     def _make_docx_multi_processing(self, docx_file:Document, page_indexes:list, config:dict):
@@ -173,29 +168,29 @@ class Converter:
         pool = Pool()
         pool.map(self._make_docx_per_cpu, vectors, 1)
         
-        # read parsed layout data
-        raw_layouts = {}
+        # read parsed page data
+        raw_pages = {}
         for i in range(cpu):
             filename = f'{prefix_layout}-{i}.json'
             if not os.path.exists(filename): continue            
             with open(filename, 'r') as f:
-                raw_layouts.update(json.load(f))
+                raw_pages.update(json.load(f))
             os.remove(filename)
         
-        # restore layouts and create docx pages
+        # restore pages and create docx pages
         print()
         num_pages = len(page_indexes)
-        layouts = []
+        pages = []
         for page_index in page_indexes:
             key = str(page_index)
-            if key not in raw_layouts: continue
+            if key not in raw_pages: continue
 
             print(f'\rCreating Pages: {page_index+1}/{num_pages}...', end='')
-            layout = Layout()
-            layout.restore(raw_layouts[key]).make_page(docx_file)
-            layouts.append(layout)
+            layout = Page()
+            layout.restore(raw_pages[key]).make_docx(docx_file)
+            pages.append(layout)
         
-        return layouts
+        return pages
 
 
     @staticmethod
@@ -227,7 +222,7 @@ class Converter:
         seg_to = min(seg_from + seg_size, num_pages)
 
         res = {}
-        for i in range(seg_from, seg_to):  # work through our page segment
+        for i in range(seg_from, seg_to):  # work through page segment
             page_index = pages_indexes[i]
             print(f'\rParsing Pages: {page_index+1}/{num_pages} per CPU {idx}...', end='', flush=True)
 

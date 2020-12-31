@@ -1,3 +1,3 @@
 from .converter import Converter
-from .layout.Layout import Layout
+from .page.Page import Page
 from .main import parse

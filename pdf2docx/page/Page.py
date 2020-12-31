@@ -1,19 +1,17 @@
 # -*- coding: utf-8 -*-
 
 '''
-Layout objects based on PDF raw dict extracted with PyMuPDF.
-
+Page objects based on PDF raw dict extracted with PyMuPDF.
 @created: 2020-07-22
-
 ---
 
 The raw page content extracted with PyMuPDF, `page.getText('rawdict')` is described per link:
 https://pymupdf.readthedocs.io/en/latest/textpage.html
 
 In addition to the raw layout dict, some new features are also included, e.g.
-    - page margin
-    - rectangle shapes, for text format, annotations and table border/shading
-    - new block in table type
+- page margin
+- rectangle shapes, for text format, annotations and table border/shading
+- new block in table type
 
 {
     # raw dict
@@ -24,6 +22,8 @@ In addition to the raw layout dict, some new features are also included, e.g.
 
     # introduced dict
     ----------------------------
+    "id": 0, # page index
+    "finalized": True,
     "margin": [left, right, top, bottom],
     "shapes" : [{...}, {...}, ...]
 }
@@ -44,32 +44,22 @@ from ..common.share import debug_plot
 from ..common import constants
 
 
-class Layout:
+class Page:
     ''' Object representing the whole page, e.g. margins, blocks, shapes, spacing.'''
 
-    def __init__(self, parent=None, settings:dict=None):
+    def __init__(self, fitz_page=None):
         ''' Initialize page layout.
             ---
             Args:
-            - parent: fitz.Page, owner of this layout
-            - settings: global parameters for layout parsing
+            - fitz_page: source fitz.Page
         '''
-        # global configuration parameters
-        self.settings = self.__init_settings(settings)
-       
-        # initialize layout
-        data = self.__source_from_page(parent) if parent else {}
-        self.restore(data)
-
-        # whether this layout is finalized already
-        self.finalized = data.get('finalized', False)
-
-        # plot initial layout for debug purpose: settings['debug']=True
-        self.plot()
-
+        self.id = fitz_page.number # page index
+        self.settings = self.init_settings()
+        self.fitz_page = fitz_page
+        self.reset()
 
     @staticmethod
-    def __init_settings(settings:dict):
+    def init_settings(settings:dict=None):
         default = {
             'debug': False, # plot layout if True
             'connected_border_tolerance'     : 0.5, # two borders are intersected if the gap lower than this value
@@ -139,7 +129,7 @@ class Layout:
 
 
     def reset(self):
-        '''Reset Layout object.'''
+        '''Reset Page object.'''
         self.finalized = False
 
         # blocks representing text/table contents
@@ -152,10 +142,13 @@ class Layout:
         self._tables_constructor = TablesConstructor(parent=self)
 
 
-    def parse(self):
+    def parse(self, settings:dict=None):
         ''' Parse page layout.'''
-        # parse layout only once
-        if self.finalized: return self
+        # update parameters
+        self.settings = self.init_settings(settings)
+
+        # initialize layout based on source pdf page
+        self.load_source()
 
         # preprocessing, e.g. change block order, clean negative block
         self.clean_up_blocks()
@@ -182,6 +175,7 @@ class Layout:
     def store(self):
         '''Store parsed layout.'''
         return {
+            'id'    : self.id,
             'finalized': self.finalized,
             'width' : self.width,
             'height': self.height,
@@ -230,7 +224,7 @@ class Layout:
         return tables
 
 
-    def make_page(self, doc):
+    def make_docx(self, doc):
         ''' Create page based on layout data. 
             ---
             Args:
@@ -261,18 +255,25 @@ class Layout:
         section.bottom_margin = Pt(bottom)
 
         # add paragraph or table according to parsed block
-        self.blocks.make_page(doc)
+        self.blocks.make_docx(doc)
 
 
-    @debug_plot('Source Text Blocks')
-    def plot(self):
-        '''Plot initial blocks. It's generally called once Layout is initialized.'''
-        return self.blocks
-
-    
+        
     # ----------------------------------------------------
     # initialize layout methods
     # ----------------------------------------------------
+    @debug_plot('Source Text Blocks')
+    def load_source(self):
+        # initialize layout
+        data = self.__source_from_page(self.fitz_page) if self.fitz_page else {}
+        self.restore(data)
+
+        # whether this layout is finalized already
+        self.finalized = data.get('finalized', False)
+
+        return self.blocks
+
+
     def __source_from_page(self, page):
         '''Source data extracted from page by `PyMuPDF`.'''
         # source blocks

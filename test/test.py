@@ -24,7 +24,7 @@ more link:
 import os
 import json
 
-from pdf2docx import Converter, Layout, parse
+from pdf2docx import Converter, Page, parse
 from pdf2docx.text.TextSpan import TextSpan
 
 
@@ -51,14 +51,14 @@ class Utility:
         layout_file = os.path.join(self.layout_dir, f'{filename}.json')
         with open(layout_file, 'r') as f:
             raw_dict = json.load(f)
-        self.sample = Layout().restore(raw_dict)
+        self.sample = Page().restore(raw_dict)
 
         # parsed layout: first page only
         pdf_file = os.path.join(self.sample_dir, f'{filename}.pdf')
         docx_file = os.path.join(self.output_dir, f'{filename}.docx')
         cv = Converter(pdf_file)        
         layouts = cv.make_docx(docx_file, pages=[0])
-        self.test = layouts[0] # type: Layout
+        self.test = layouts[0] # type: Page
         cv.close()
 
         return self
