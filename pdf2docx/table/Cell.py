@@ -4,12 +4,12 @@
 Table Cell object.
 
 @created: 2020-07-23
-@author: train8808@gmail.com
+
 '''
 
 from docx.shared import Pt
 from ..text.TextBlock import TextBlock
-from ..common.BBox import BBox
+from ..common.Element import Element
 from ..common.share import rgb_component
 from ..common import docx, constants
 from ..layout import Blocks # avoid import conflict
@@ -17,7 +17,7 @@ from ..text.Line import Line
 from ..text.Lines import Lines
 
 
-class Cell(BBox):
+class Cell(Element):
     ''' Cell object.'''
     def __init__(self, raw:dict=None):
         if raw is None: raw = {}        

@@ -4,7 +4,7 @@
 Collection of Cell instances.
 
 @created: 2020-08-15
-@author: train8808@gmail.com
+
 '''
 
 from .Cell import Cell
@@ -24,3 +24,4 @@ class Cells(Collection):
         '''Override. Append a cell (allow empty cell, i.e. merged cells) and update bbox accordingly.'''
         self._instances.append(cell)
         self._update_bbox(cell)
+        cell.parent = self._parent # set parent

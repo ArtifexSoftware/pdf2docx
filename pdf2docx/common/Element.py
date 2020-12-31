@@ -7,9 +7,9 @@ Based on `PyMuPDF`, the coordinates are provided relative to the un-rotated page
 `pdf2docx` library works under real page coordinate system, i.e. with rotation considered. 
 So, any instances created by this Class are always applied a rotation matrix automatically.
 
-In other words, the bbox parameter used to create BBox instance MUST be relative to un-rotated
+In other words, the bbox parameter used to create Element instance MUST be relative to un-rotated
 CS. If final coordinates are provided, should update it after creating an empty object, e.g.
-`BBox().update_bbox(final_bbox)`.
+`Element().update_bbox(final_bbox)`.
 '''
 
 import copy
@@ -18,7 +18,7 @@ from .share import IText
 from . import constants
 
 
-class BBox(IText):
+class Element(IText):
     '''Boundary box with attribute in fitz.Rect type.'''
 
     # all coordinates are related to un-rotated page in PyMuPDF
@@ -39,14 +39,15 @@ class BBox(IText):
         return fitz.Matrix(a,b,c,d,0,0)
 
 
-    def __init__(self, raw:dict=None):
-        ''' Initialize BBox and convert to the real (rotation considered) page coordinate system.'''        
+    def __init__(self, raw:dict=None, parent=None):
+        ''' Initialize Element and convert to the real (rotation considered) page coordinate system.'''        
         self.bbox = fitz.Rect()
+        self._parent = parent # type: Element
 
         # NOTE: Any coordinates provided in raw is in original page CS (without considering page rotation).
         if raw is None: raw = {}
         if 'bbox' in raw:
-            rect = fitz.Rect(raw['bbox']) * BBox.ROTATION_MATRIX
+            rect = fitz.Rect(raw['bbox']) * Element.ROTATION_MATRIX
             self.update_bbox(rect)
 
 
@@ -59,11 +60,26 @@ class BBox(IText):
 
 
     # ------------------------------------------------
+    # parent element
+    # ------------------------------------------------
+    @property
+    def parent(self): return self._parent
+
+    @parent.setter
+    def parent(self, parent): self._parent = parent
+
+
+    # ------------------------------------------------
     # bbox operations
     # ------------------------------------------------
     def copy(self):
         '''make a deep copy.'''
-        return copy.deepcopy(self)
+        # NOTE: can't serialize data because parent is an Object,
+        # so set it None in advance.
+        parent, self.parent = self._parent, None
+        obj = copy.deepcopy(self)
+        self._parent = parent # set back parent
+        return obj
 
 
     def get_expand_bbox(self, dt:float):
@@ -75,50 +91,50 @@ class BBox(IText):
         '''Update current bbox to specified `rect`.
             ---
             Args:
-              - rect: fitz.rect or raw bbox like (x0, y0, x1, y1) in real page CS (with rotation considered).
+            - rect: fitz.rect or raw bbox like (x0, y0, x1, y1) in real page CS (with rotation considered).
         '''
         self.bbox = fitz.Rect([round(x,1) for x in rect])
         return self
 
 
-    def union_bbox(self, bbox):
-        '''Update current bbox to the union with specified `rect`.
+    def union_bbox(self, e):
+        '''Update current bbox to the union with specified Element.
             ---
             Args:
-              - bbox: BBox, the target to get union
+            - e: Element, the target to get union
         '''
-        return self.update_bbox(self.bbox | bbox.bbox)
+        return self.update_bbox(self.bbox | e.bbox)
 
 
     # --------------------------------------------
-    # location relationship to other Bbox
+    # location relationship to other Element instance
     # -------------------------------------------- 
-    def contains(self, bbox, threshold:float=1.0):
-        '''Whether given bbox is contained in this instance, with margin considered.'''
+    def contains(self, e, threshold:float=1.0):
+        '''Whether given element is contained in this instance, with margin considered.'''
         # it's not practical to set a general threshold to consider the margin, so two steps:
         # - set a coarse but acceptable area threshold,
         # - check the length in main direction strictly
 
-        if not bbox: return False
+        if not e: return False
 
         # A contains B => A & B = B
-        intersection = self.bbox & bbox.bbox
-        factor = round(intersection.getArea()/bbox.bbox.getArea(), 2)
+        intersection = self.bbox & e.bbox
+        factor = round(intersection.getArea()/e.bbox.getArea(), 2)
         if factor<threshold: return False
 
         # check length
         if self.bbox.width >= self.bbox.height:
-            return self.bbox.width+constants.MINOR_DIST >= bbox.bbox.width
+            return self.bbox.width+constants.MINOR_DIST >= e.bbox.width
         else:
-            return self.bbox.height+constants.MINOR_DIST >= bbox.bbox.height
+            return self.bbox.height+constants.MINOR_DIST >= e.bbox.height
    
 
-    def get_main_bbox(self, bbox, threshold:float=0.95):
-        ''' If the intersection with `bbox` exceeds the threshold, return the union of
-            these two bbox-es; else return None.
+    def get_main_bbox(self, e, threshold:float=0.95):
+        ''' If the intersection with `e` exceeds the threshold, return the union of
+            these two elements; else return None.
         '''
         bbox_1 = self.bbox
-        bbox_2 = bbox.bbox if hasattr(bbox, 'bbox') else fitz.Rect(bbox)
+        bbox_2 = e.bbox if hasattr(e, 'bbox') else fitz.Rect(e)
         
         # areas
         b = bbox_1 & bbox_2
@@ -132,11 +148,12 @@ class BBox(IText):
         return bbox_1 | bbox_2 if factor >= threshold else None
 
 
-    def vertically_align_with(self, bbox, factor:float=0.0, text_direction:bool=True):
-        ''' Check whether two boxes have enough intersection in vertical direction, i.e. perpendicular to reading direction.
+    def vertically_align_with(self, e, factor:float=0.0, text_direction:bool=True):
+        ''' Check whether two Element instances have enough intersection in vertical direction, 
+            i.e. perpendicular to reading direction.
             ---
             Args:
-              - bbox: BBox to check with
+              - e: Element object to check with
               - factor: threshold of overlap ratio, the larger it is, the higher probability the two bbox-es are aligned.
               - text_direction: consider text direction or not. True by default, from left to right if False.
 
@@ -156,24 +173,25 @@ class BBox(IText):
             L1+L2-L>factor*min(L1,L2)
             ```
         '''
-        if not bbox or not bool(self): return False
+        if not e or not bool(self): return False
 
         # text direction
         is_horizontal_text = self.is_horizontal_text if text_direction else True
         idx = 0 if is_horizontal_text else 1
 
         L1 = self.bbox[idx+2]-self.bbox[idx]
-        L2 = bbox.bbox[idx+2]-bbox.bbox[idx]
-        L = max(self.bbox[idx+2], bbox.bbox[idx+2]) - min(self.bbox[idx], bbox.bbox[idx])
+        L2 = e.bbox[idx+2]-e.bbox[idx]
+        L = max(self.bbox[idx+2], e.bbox[idx+2]) - min(self.bbox[idx], e.bbox[idx])
 
         return L1+L2-L>=factor*min(L1,L2)
 
 
-    def horizontally_align_with(self, bbox, factor:float=0.0, text_direction:bool=True):
-        ''' Check whether two boxes have enough intersection in horizontal direction, i.e. along the reading direction.
+    def horizontally_align_with(self, e, factor:float=0.0, text_direction:bool=True):
+        ''' Check whether two Element instances have enough intersection in horizontal direction, 
+            i.e. along the reading direction.
             ---
             Args:
-              - bbox: BBox to check with
+              - e: Element to check with
               - factor: threshold of overlap ratio, the larger it is, the higher probability the two bbox-es are aligned.
               - text_direction: consider text direction or not. True by default, from left to right if False.
 
@@ -189,56 +207,56 @@ class BBox(IText):
             L1+L2-L>factor*min(L1,L2)
             ```
         '''
-        if not bbox or not bool(self): return False
+        if not e or not bool(self): return False
 
         # text direction
         is_horizontal_text = self.is_horizontal_text if text_direction else True
         idx = 1 if is_horizontal_text else 0
         
         L1 = self.bbox[idx+2]-self.bbox[idx]
-        L2 = bbox.bbox[idx+2]-bbox.bbox[idx]
-        L = max(self.bbox[idx+2], bbox.bbox[idx+2]) - min(self.bbox[idx], bbox.bbox[idx])
+        L2 = e.bbox[idx+2]-e.bbox[idx]
+        L = max(self.bbox[idx+2], e.bbox[idx+2]) - min(self.bbox[idx], e.bbox[idx])
         return L1+L2-L>=factor*min(L1,L2)
 
 
-    def in_same_row(self, bbox):
-        ''' Check whether in same row/line with specified BBox instance. Note text direction.
+    def in_same_row(self, e):
+        ''' Check whether in same row/line with specified Element instance. Note text direction.
 
-            taking horizontal text as an example:
+            Taking horizontal text as an example:
             - yes: the bottom edge of each box is lower than the centerline of the other one;
             - otherwise, not in same row.
 
             Note the difference with method `horizontally_align_with`. They may not in same line, though
             aligned horizontally.
         '''
-        if not bbox or self.text_direction != bbox.text_direction:
+        if not e or self.text_direction != e.text_direction:
             return False
 
         # normal reading direction by default
         idx = 1 if self.is_horizontal_text else 0
 
         c1 = (self.bbox[idx] + self.bbox[idx+2]) / 2.0
-        c2 = (bbox.bbox[idx] + bbox.bbox[idx+2]) / 2.0
-        res = c1<=bbox.bbox[idx+2] and c2<=self.bbox[idx+2] # Note y direction under PyMuPDF context
+        c2 = (e.bbox[idx] + e.bbox[idx+2]) / 2.0
+        res = c1<=e.bbox[idx+2] and c2<=self.bbox[idx+2] # Note y direction under PyMuPDF context
         return res
 
 
     # ------------------------------------------------
     # others
     # ------------------------------------------------
-    def compare(self, bbox, threshold=0.9):
+    def compare(self, e, threshold=0.9):
         '''Whether has same type and bbox.'''
-        if not isinstance(bbox, self.__class__):
-            return False, f'Inconsistent type: {self.__class__.__name__} v.s. {bbox.__class__.__name__} (expected)'
+        if not isinstance(e, self.__class__):
+            return False, f'Inconsistent type: {self.__class__.__name__} v.s. {e.__class__.__name__} (expected)'
         
-        if not self.get_main_bbox(bbox, threshold):
-            return False, f'Inconsistent bbox: {self.bbox} v.s. {bbox.bbox}(expected)'
+        if not self.get_main_bbox(e, threshold):
+            return False, f'Inconsistent bbox: {self.bbox} v.s. {e.bbox}(expected)'
         
         return True, ''
 
 
     def store(self):
-        '''Store in json format.'''
+        '''Store bbox in json format.'''
         return { 'bbox': tuple([x for x in self.bbox]) }
 
     

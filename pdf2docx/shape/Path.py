@@ -4,7 +4,7 @@
 Objects representing PDF path (both stroke and filling) extracted from both pdf drawings and annotations.
 
 @created: 2020-09-22
-@author: train8808@gmail.com
+
 ---
 
 Data structure based on results of `page.getDrawings()`:

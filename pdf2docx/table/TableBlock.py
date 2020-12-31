@@ -4,7 +4,7 @@
 Table block object parsed from raw image and text blocks.
 
 @created: 2020-07-22
-@author: train8808@gmail.com
+
 ---
 
 {

@@ -4,7 +4,7 @@
 Text Span object based on PDF raw dict extracted with PyMuPDF.
 
 @created: 2020-07-22
-@author: train8808@gmail.com
+
 ---
 
 Refer to: https://pymupdf.readthedocs.io/en/latest/textpage.html
@@ -39,14 +39,14 @@ from docx.shared import Pt, RGBColor
 from docx.oxml.ns import qn
 
 from .Char import Char
-from ..common.BBox import BBox
+from ..common.Element import Element
 from ..common.share import RectType
 from ..common import constants
 from ..common import share, docx
 from ..shape.Shape import Shape
 
 
-class TextSpan(BBox):
+class TextSpan(Element):
     '''Object representing text span.'''
     def __init__(self, raw:dict=None):
         if raw is None: raw = {}
@@ -60,7 +60,7 @@ class TextSpan(BBox):
         # a list of dict: { 'type': int, 'color': int }
         self.style = raw.get('style', [])
         
-        # init bbox
+        # init text span element
         super().__init__(raw)
 
         # update bbox if no font is set

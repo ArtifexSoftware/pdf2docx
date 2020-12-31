@@ -4,17 +4,17 @@
 Base class for text/image/table blocks.
 
 @created: 2020-07-23
-@author: train8808@gmail.com
+
 '''
 
 from .share import BlockType, TextAlignment
-from .BBox import BBox
+from .Element import Element
 from . import constants
 
 
-class Block(BBox):
+class Block(Element):
     '''Base class for text/image/table blocks.'''
-    def __init__(self, raw:dict=None):        
+    def __init__(self, raw:dict=None, parent=None):        
         self._type = BlockType.UNDEFINED
 
         # horizontal spacing
@@ -35,7 +35,7 @@ class Block(BBox):
         self.after_space = raw.get('after_space', 0.0)        
         self.line_space = raw.get('line_space', 0.0)
 
-        super().__init__(raw)
+        super().__init__(raw, parent)
 
 
     def is_text_block(self):

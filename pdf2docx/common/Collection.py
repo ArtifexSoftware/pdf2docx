@@ -4,18 +4,19 @@
 A group of instances, e.g. instances, Spans, Shapes.
 
 @created: 2020-07-24
-@author: train8808@gmail.com
+
 '''
 
-from .BBox import BBox
+import fitz
+from .Element import Element
 from .share import IText, TextDirection, solve_rects_intersection, graph_bfs
 
 
 class BaseCollection:
     '''Base collection of specific instances.'''
     def __init__(self, instances:list=[]):
-        '''Init collection from a list of BBox instances.'''
-        self._instances = instances if instances else [] # type: list[BBox]
+        '''Init collection from a list of Element instances.'''
+        self._instances = instances if instances else [] # type: list[Element]
 
     def __getitem__(self, idx):
         try:
@@ -34,17 +35,17 @@ class BaseCollection:
     @property
     def bbox(self):
         '''bbox of combined collection.'''
-        res = BBox()
+        rect = fitz.Rect()
         for instance in self._instances:
-            res.union_bbox(instance)
-        return res.bbox
+            rect |= instance.bbox
+        return fitz.Rect([round(x,1) for x in rect]) # NOTE: round to avoid digital error
 
 
     def group(self, fun):
         ''' Group instances according to user defined criterion.
             ---
             Args:
-            - fun: function with 2 arguments representing 2 instances (BBox), and return bool
+            - fun: function with 2 arguments representing 2 instances (Element), and return bool
             
             Examples:
             ```
@@ -77,7 +78,7 @@ class BaseCollection:
 
     
     def group_by_connectivity(self, dx:float, dy:float):
-        ''' Collect connected bbox into same group.
+        ''' Collect connected instances into same group.
             ---
             Args:
             - dx, dy: x- and y- tolerances to define connectivity
@@ -113,13 +114,13 @@ class BaseCollection:
 class Collection(BaseCollection, IText):
     '''Collection of specific instances.'''
     def __init__(self, instances:list=[], parent=None):
-        '''Init collection from a list of BBox instances.'''
-        self._parent = parent # type: BBox
+        '''Init collection from a list of Element instances.'''
+        self._parent = parent # type: Element
         super().__init__(instances)
 
 
     @property
-    def parent(self): return self._parent   
+    def parent(self): return self._parent
 
 
     @property
@@ -144,41 +145,46 @@ class Collection(BaseCollection, IText):
         raise NotImplementedError
 
 
-    def _update_bbox(self, bbox:BBox):
-        '''Update parent of bbox, and the bbox of parent.'''
+    def _update_bbox(self, e:Element):
+        '''Update parent bbox.'''
         if not self._parent is None: # Note: `if self._parent` does not work here
-            self._parent.union_bbox(bbox)
+            self._parent.union_bbox(e)
 
 
-    def append(self, bbox:BBox):
+    def append(self, e:Element):
         '''Append an instance and update parent's bbox accordingly.'''
-        if not bbox: return
-        self._instances.append(bbox)
-        self._update_bbox(bbox)
+        if not e: return
+        self._instances.append(e)
+        self._update_bbox(e)
+
+        # set parent
+        if not self._parent is None:
+            e.parent = self._parent 
 
 
-    def extend(self, bboxes:list):
+    def extend(self, elements:list):
         '''Append a list of instances.'''
-        for bbox in bboxes:
-            self.append(bbox)
+        for e in elements:
+            self.append(e)
 
 
-    def reset(self, bboxes:list=[]):
+    def reset(self, elements:list=[]):
         '''Reset instances list.'''
         self._instances = []
-        self.extend(bboxes)
+        self.extend(elements)
         return self
 
 
-    def insert(self, nth:int, bbox:BBox):
-        '''Insert a BBox and update parent's bbox accordingly.'''
-        if not bbox: return
-        self._instances.insert(nth, bbox)
-        self._update_bbox(bbox)
+    def insert(self, nth:int, e:Element):
+        '''Insert a Element and update parent's bbox accordingly.'''
+        if not e: return
+        self._instances.insert(nth, e)
+        self._update_bbox(e)
+        e.parent = self._parent # set parent
 
     
     def pop(self, nth:int):
-        '''Insert a BBox and update parent's bbox accordingly.'''
+        '''Insert a Element and update parent's bbox accordingly.'''
         return self._instances.pop(nth)
 
 
@@ -187,9 +193,9 @@ class Collection(BaseCollection, IText):
             for normal reading direction: from top to bottom, from left to right.
         '''
         if self.is_horizontal_text:
-            self._instances.sort(key=lambda instance: (instance.bbox.y0, instance.bbox.x0, instance.bbox.x1))
+            self._instances.sort(key=lambda e: (e.bbox.y0, e.bbox.x0, e.bbox.x1))
         else:
-            self._instances.sort(key=lambda instance: (instance.bbox.x0, instance.bbox.y1, instance.bbox.y0))
+            self._instances.sort(key=lambda e: (e.bbox.x0, e.bbox.y1, e.bbox.y0))
         return self
 
 
@@ -198,9 +204,9 @@ class Collection(BaseCollection, IText):
             for normal reading direction: from left to right.
         '''
         if self.is_horizontal_text:
-            self._instances.sort(key=lambda instance: (instance.bbox.x0, instance.bbox.y0, instance.bbox.x1))
+            self._instances.sort(key=lambda e: (e.bbox.x0, e.bbox.y0, e.bbox.x1))
         else:
-            self._instances.sort(key=lambda instance: (instance.bbox.y1, instance.bbox.x0, instance.bbox.y0))
+            self._instances.sort(key=lambda e: (e.bbox.y1, e.bbox.x0, e.bbox.y0))
         return self
 
    
@@ -211,7 +217,7 @@ class Collection(BaseCollection, IText):
             - bbox: fitz.Rect
         '''
         instances = list(filter(
-            lambda instance: bbox.contains(instance.bbox), self._instances))
+            lambda e: bbox.contains(e.bbox), self._instances))
         return self.__class__(instances)
 
 

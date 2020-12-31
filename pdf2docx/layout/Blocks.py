@@ -3,7 +3,7 @@
 '''
 A group of Text/Image or Table block.
 @created: 2020-07-22
-@author: train8808@gmail.com
+
 '''
 
 from docx.shared import Pt
@@ -177,12 +177,16 @@ class Blocks(Collection):
 
     def identify_floating_images(self, float_image_ignorable_gap:float):
         ''' Identify floating image lines and convert to ImageBlock.'''
-        # group by connectivity
-        groups = self.group_by_connectivity(dx=-float_image_ignorable_gap, dy=-float_image_ignorable_gap)
+        # group lines by connectivity
+        lines = Lines()
+        for block in self._instances:
+            lines.extend(block.lines)
+        groups = lines.group_by_connectivity(dx=-float_image_ignorable_gap, dy=-float_image_ignorable_gap)
         
         # identify floating objects
         for group in filter(lambda group: len(group)>1, groups):
-            for block in group:
+            for line in group:
+                block = line.parent
                 # consider image block only (converted to text block)
                 if not block.is_inline_image_block(): continue
 
@@ -541,7 +545,7 @@ class Blocks(Collection):
             reset_paragraph_format(p, Pt(constants.MIN_LINE_SPACING)) # a small line height
 
         # Finally, add floating image to last paragraph
-        p = doc.add_paragraph() if not doc.paragraphs else doc.paragraphs[0]
+        p = doc.add_paragraph() if not doc.paragraphs else doc.paragraphs[-1]
         for image_block in self.floating_image_blocks:
             image_block.make_docx(p)
 

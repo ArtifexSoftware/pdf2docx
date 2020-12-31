@@ -3,7 +3,7 @@
 '''
 Text Line objects based on PDF raw dict extracted with PyMuPDF.
 @created: 2020-07-22
-@author: train8808@gmail.com
+
 ---
 
 Data structure of line in text block:
@@ -18,13 +18,14 @@ https://pymupdf.readthedocs.io/en/latest/textpage.html
 '''
 
 from fitz import Point
-from ..common.BBox import BBox
+from collections import Iterable
+from ..common.Element import Element
 from ..common.share import TextDirection
 from .Spans import Spans
 from ..image.ImageSpan import ImageSpan
 
 
-class Line(BBox):
+class Line(Element):
     '''Object representing a line in text block.'''
     def __init__(self, raw:dict=None):
         if raw is None: raw = {}
@@ -125,14 +126,14 @@ class Line(BBox):
             Args:
               - span_or_list: a TextSpan or TextSpan list
         '''
-        if isinstance(span_or_list, (list, tuple)):
+        if isinstance(span_or_list, Iterable):
             for span in span_or_list:
                 self.add_span(span)
         else:
             self.add_span(span_or_list)
 
 
-    def add_span(self, span:BBox):
+    def add_span(self, span:Element):
         '''Add span to current Line.'''
         self.spans.append(span)
 

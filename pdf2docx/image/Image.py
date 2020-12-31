@@ -32,7 +32,7 @@ import base64
 import fitz
 from io import BytesIO
 from ..common import docx
-from ..common.BBox import BBox
+from ..common.Element import Element
 from ..common.share import BlockType
 
 
@@ -160,7 +160,7 @@ class ImagesExtractor:
         return pix
 
 
-class Image(BBox):
+class Image(Element):
     '''Base image object.'''
 
     def __init__(self, raw:dict=None):

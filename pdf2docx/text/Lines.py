@@ -4,7 +4,7 @@
 A group of Line objects.
 
 @created: 2020-07-24
-@author: train8808@gmail.com
+
 '''
 
 from docx.shared import Pt
@@ -58,33 +58,69 @@ class Lines(Collection):
         ''' Merge lines aligned horizontally, e.g. make inline image as a span in text line.'''
         # skip if empty
         if not self._instances: return self
-    
+
+        # valid to merge lines on condition that every tow lines are in same row
+        def valid_joining_lines(line, candidates):
+            return all(line.in_same_row(_line) for _line in candidates)
+        
+        # merge lines
+        def get_merged_line(candidates):
+            line = candidates[0]
+            for c_line in candidates[1:]:
+                line.add(c_line.spans)
+            return line
+
         # sort lines
         self.sort()
 
         # check each line
         lines = Lines()
-        for line in self._instances:
-
-            # first line
-            if not lines: lines.append(line)
-            
+        candidates = [self._instances[0]] # first line
+        for i in range(1, len(self._instances)):
+            pre_line, line = self._instances[i-1], self._instances[i]
+           
             # ignore this line if overlap with previous line
-            elif line.get_main_bbox(lines[-1], threshold=line_overlap_threshold):
+            if line.get_main_bbox(pre_line, threshold=line_overlap_threshold):
                 print(f'Ignore Line "{line.text}" due to overlap')
+                continue
 
             # add line directly if not aligned horizontally with previous line
-            elif not line.in_same_row(lines[-1]):
-                lines.append(line)
+            if not line.in_same_row(pre_line):
+                to_join_line = False
 
             # if it exists x-distance obviously to previous line,
             # take it as a separate line as it is
-            elif abs(line.bbox.x0-lines[-1].bbox.x1) > line_merging_threshold:
-                lines.append(line) 
+            elif abs(line.bbox.x0-pre_line.bbox.x1) > line_merging_threshold:
+                to_join_line = False 
 
             # now, this line will be append to previous line as a span
             else:
-                lines[-1].add(list(line.spans))
+                to_join_line = True
+
+            # add line directly
+            if not to_join_line:
+                # merge candidate lines (if any)
+                if candidates: lines.append(get_merged_line(candidates))
+                candidates = []
+
+                # add this line
+                lines.append(line)
+            
+            # prepare for merging lines: valid
+            elif valid_joining_lines(line, candidates):
+                candidates.append(line)
+            
+            # prepare for merging lines: invalid -> add each line directly
+            else:
+                # release candidate lines
+                for c_line in candidates: lines.append(c_line)
+                candidates = []
+
+                # add this line
+                lines.append(line)
+
+        # NOTE: in case last group
+        if candidates: lines.append(get_merged_line(candidates))
 
         # update lines in block
         self.reset(lines)
