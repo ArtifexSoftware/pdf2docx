@@ -545,7 +545,7 @@ class Blocks(Collection):
             reset_paragraph_format(p, Pt(constants.MIN_LINE_SPACING)) # a small line height
 
         # Finally, add floating image to last paragraph
-        p = doc.add_paragraph() if not doc.paragraphs else doc.paragraphs[0]
+        p = doc.add_paragraph() if not doc.paragraphs else doc.paragraphs[-1]
         for image_block in self.floating_image_blocks:
             image_block.make_docx(p)
 
