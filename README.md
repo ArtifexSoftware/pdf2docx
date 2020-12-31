@@ -5,24 +5,25 @@
 ![pdf2docx-publish](https://github.com/dothinking/pdf2docx/workflows/pdf2docx-publish/badge.svg)
 ![GitHub](https://img.shields.io/github/license/dothinking/pdf2docx)
 
-- Parse text, table and layout from PDF file with `PyMuPDF`
+- Parse layout (text, image and table) from PDF file with `PyMuPDF`
 - Generate docx with `python-docx`
 
 ## Features
 
 - [x] Parse and re-create paragraph
-    - [x] text in horizontal direction: from left to right
-    - [x] text in vertical direction: from bottom to top
+    - [x] text in horizontal/vertical direction: from left to right, from bottom to top
     - [x] font style, e.g. font name, size, weight, italic and color
     - [x] text format, e.g. highlight, underline, strike-through
-    - [x] text alignment, e.g. left/right/center/justify
-    - [ ] list style
+    - [x] text alignment, e.g. left/right/center/justify    
     - [x] paragraph layout: horizontal alignment and vertical spacing
+    - [ ] list style
+    - [ ] href link
 
 - [x] Parse and re-create image
 	- [x] in-line image
     - [x] image in Gray/RGB/CMYK mode
     - [x] transparent image
+    - [x] floating image, i.e. picture behind text
 
 - [x] Parse and re-create table
     - [x] border style, e.g. width, color
@@ -41,7 +42,6 @@
 - Normal reading direction only
     - horizontal/vertical paragraph/line/word
     - no word transformation, e.g. rotation
-- No floating images
 
 
 ## Installation
@@ -74,80 +74,110 @@ $ pip uninstall pdf2docx
 
 ## Usage
 
+`pdf2docx` can be used as either CLI or a library.
+
+### Command Line Interface
+
 ```
 $ pdf2docx --help
 
 NAME
-    pdf2docx - Run the pdf2docx parser.
+    pdf2docx - Command line interface for pdf2docx.
 
 SYNOPSIS
-    pdf2docx PDF_FILE <flags>
+    pdf2docx COMMAND | -
 
 DESCRIPTION
-    Run the pdf2docx parser.
+    Command line interface for pdf2docx.
 
-POSITIONAL ARGUMENTS
-    PDF_FILE
-        PDF filename to read from
+COMMANDS
+    COMMAND is one of the following:
 
-FLAGS
-    --docx_file=DOCX_FILE
-        DOCX filename to write to
-    --start=START
-        first page to process, starting from zero
-    --end=END
-        last page to process, starting from zero
-    --pages=PAGES
-        range of pages
-    --multi_processing=MULTI_PROCESSING
+     convert
+       Convert pdf file to docx file.
 
-NOTES
-    You can also use flags syntax for POSITIONAL ARGUMENTS
+     debug
+       Convert one PDF page and plot layout information for debugging.
+
+     table
+       Extract table content from pdf pages.
 ```
 
-### By range of pages
+- By range of pages
+
+Specify pages range by `--start` (from the first page if omitted) and `--end` (to the last page if omitted). Note the page index is zero-based by default, but can turn it off by `--zero_based_index=False`, i.e. the first page index starts from 1.
+
+
+```bash
+$ pdf2docx convert test.pdf test.docx # all pages
+
+$ pdf2docx convert test.pdf test.docx --start=1 # from the second page to the end
+
+$ pdf2docx convert test.pdf test.docx --end=3 # from the first page to the third (index=2)
+
+$ pdf2docx convert test.pdf test.docx --start=1 --end=3 # the second and third pages
+
+$ pdf2docx convert test.pdf test.docx --start=1 --end=3 --zero_based_index=False # the first and second pages
 
 ```
-$ pdf2docx test.pdf test.docx --start=5 --end=10
+
+- By page numbers
+
+```bash
+$ pdf2docx convert test.pdf test.docx --pages=0,2,4 # the first, third and 5th pages
 ```
 
-### By page numbers
+- Multi-Processing
 
-```
-$ pdf2docx test.pdf test.docx --pages=5,7,9
-```
+```bash
+$ pdf2docx convert test.pdf test.docx --multi_processing=True # default count of CPU
 
-### Multi-Processing
-
-```
-$ pdf2docx test.pdf --multi_processing=True
+$ pdf2docx convert test.pdf test.docx --multi_processing=True --cpu_count=4
 ```
 
 
-### As a library
+### Python Library
+
+We can use either the `Converter` class or a wrapped method `parse()`.
+
+- `Converter`
 
 ```python
-''' With this library installed with 
-    `pip install pdf2docx`, or `python setup.py install`.
-'''
+from pdf2docx import Converter
 
+pdf_file = '/path/to/sample.pdf'
+docx_file = 'path/to/sample.docx'
+
+# convert pdf to docx
+cv = Converter(pdf_file)
+cv.convert(docx_file, start=0, end=None)
+cv.close()
+```
+
+
+- Wrapped method `parse()`
+
+```python
 from pdf2docx import parse
 
 pdf_file = '/path/to/sample.pdf'
 docx_file = 'path/to/sample.docx'
 
 # convert pdf to docx
-parse(pdf_file, docx_file, start=0, end=1)
+parse(pdf_file, docx_file, start=0, end=None)
 ```
 
 Or just to extract tables,
 
 ```python
-from pdf2docx import extract_tables
+from pdf2docx import Converter
 
 pdf_file = '/path/to/sample.pdf'
 
-tables = extract_tables(pdf_file, start=0, end=1)
+cv = Converter(pdf_file)
+tables = cv.extract_tables(start=0, end=1)
+cv.close()
+
 for table in tables:
     print(table)
 
