@@ -39,23 +39,33 @@ class PDF2DOCX:
                                 clip_image_res_ratio           : 3.0, resolution ratio (to 72dpi) when cliping page image
                                 curve_path_ratio               : 0.2, clip page bitmap if the component of curve paths exceeds this ratio
         '''
+        # index starts from zero or one
+        if not kwargs.get('zero_based_index', True):
+            start = max(start-1, 0)
+            if end: end -= 1
+            if pages: pages = [i-1 for i in pages]
+
         cv = Converter(pdf_file)
-        cv.make_docx(docx_file, start, end, pages, kwargs)
+        cv.convert(docx_file, start, end, pages, kwargs)
         cv.close()
     
 
     @staticmethod
-    def debug_page(pdf_file, page_index=0, docx_file=None, debug_pdf=None, layout_file='layout.json', **kwargs):
+    def debug(pdf_file, page_index=0, docx_file=None, debug_pdf=None, layout_file='layout.json', **kwargs):
         ''' Convert one PDF page and plot layout information for debugging.
 
             Args:
                 pdf_file (str) : PDF filename to read from
-                page_index (int): page index to convert
+                page_index (int): page index to convert (starting from zero if --zero_based_index=True)
                 docx_file (str): DOCX filename to write to (change extension from "pdf" to "docx" by default)
                 debug_pdf (str): new pdf file storing layout information (add prefix "debug_" by default)
                 layout_file (str): new json file storing parsed layout data (layout.json by default)
                 kwargs (dict)  : configuration parameters
         '''
+        # index starts from zero or one
+        if not kwargs.get('zero_based_index', True):
+            page_index = max(page_index-1, 0)
+
         cv = Converter(pdf_file)
         cv.debug_page(page_index, docx_file, debug_pdf, layout_file, kwargs)
         cv.close()
@@ -67,10 +77,15 @@ class PDF2DOCX:
         
             Args:
                 pdf_file (str) : PDF filename to read from
-                start (int)    : first page to process, starting from zero
-                end (int)      : last page to process, starting from zero
+                start (int)    : first page to process (starting from zero if --zero_based_index=True)
+                end (int)      : last page to process (starting from zero if --zero_based_index=True)
                 pages (list)   : range of pages
         '''
+        # index starts from zero or one
+        if not kwargs.get('zero_based_index', True):
+            start = max(start-1, 0)
+            if end: end -= 1
+            if pages: pages = [i-1 for i in pages]
 
         cv = Converter(pdf_file)
         tables = cv.extract_tables(start, end, pages, kwargs)

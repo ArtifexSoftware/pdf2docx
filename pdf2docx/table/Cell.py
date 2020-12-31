@@ -12,7 +12,7 @@ from ..text.TextBlock import TextBlock
 from ..common.Element import Element
 from ..common.share import rgb_component
 from ..common import docx, constants
-from ..layout import Blocks # avoid import conflict
+from ..page import Blocks # avoid import conflict
 from ..text.Line import Line
 from ..text.Lines import Lines
 
@@ -209,7 +209,7 @@ class Cell(Element):
         # But, docx requires at least one paragraph in each cell, otherwise resulting in a repair error. 
         if self.blocks:
             docx_cell._element.clear_content()
-            self.blocks.make_page(docx_cell)
+            self.blocks.make_docx(docx_cell)
 
 
     def _set_style(self, table, indexes):

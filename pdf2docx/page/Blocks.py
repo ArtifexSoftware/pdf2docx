@@ -45,7 +45,7 @@ class Blocks(Collection):
 
 
     def _update_bbox(self, block:Block):
-        ''' Override. The parent of block is generally Layout or Cell, which is not necessary to 
+        ''' Override. The parent of block is generally Page or Cell, which is not necessary to 
             update its bbox. So, do nothing but required here.
         '''
         pass
@@ -488,7 +488,7 @@ class Blocks(Collection):
         for block in self._instances: block.parse_text_format(rects)
 
 
-    def make_page(self, doc):
+    def make_docx(self, doc):
         ''' Create page based on parsed block structure. 
             ---
             Args:

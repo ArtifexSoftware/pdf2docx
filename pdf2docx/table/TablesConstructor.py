@@ -13,14 +13,12 @@ Terms definition:
 - Border object is introduced to determin borders of stream table. Border instance is a virtual border adaptive 
   in a certain range, then converted to a stroke once finalized, and finally applied to detect table border.
 
-
 @created: 2020-08-16
-
 '''
 
 from ..common.Element import Element
 from ..common import constants
-from ..layout.Blocks import Blocks
+from ..page.Blocks import Blocks
 from ..shape.Shapes import Shapes
 from ..text.Lines import Lines
 from .TableStructure import TableStructure
@@ -30,7 +28,7 @@ class TablesConstructor:
 
     def __init__(self, parent):
         '''Object parsing TableBlock.'''
-        self._parent = parent # Layout
+        self._parent = parent # Page
         self._blocks = parent.blocks if parent else None # type: Blocks
         self._shapes = parent.shapes if parent else None # type: Shapes
 

@@ -22,9 +22,7 @@ more link:
 '''
 
 import os
-import json
-
-from pdf2docx import Converter, Layout, parse
+from pdf2docx import Converter, parse
 from pdf2docx.text.TextSpan import TextSpan
 
 
@@ -47,19 +45,19 @@ class Utility:
 
     def init_test(self, filename):
         ''' Initialize parsed layout and benchmark layout.'''
-        # restore sample layout
-        layout_file = os.path.join(self.layout_dir, f'{filename}.json')
-        with open(layout_file, 'r') as f:
-            raw_dict = json.load(f)
-        self.sample = Layout().restore(raw_dict)
-
         # parsed layout: first page only
         pdf_file = os.path.join(self.sample_dir, f'{filename}.pdf')
         docx_file = os.path.join(self.output_dir, f'{filename}.docx')
         cv = Converter(pdf_file)        
-        layouts = cv.make_docx(docx_file, pages=[0])
-        self.test = layouts[0] # type: Layout
+        cv.convert(docx_file, pages=[0])
+        self.test = cv[0] # type: Page
         cv.close()
+
+        # restore sample layout
+        cv = Converter(pdf_file)
+        layout_file = os.path.join(self.layout_dir, f'{filename}.json')
+        cv.deserialize(layout_file)
+        self.sample = cv[0] # type: Page
 
         return self
 
@@ -289,6 +287,7 @@ class Test_Main(Utility):
         filename = 'demo-table'
         pdf_file = os.path.join(self.sample_dir, f'{filename}.pdf')
         tables = Converter(pdf_file).extract_tables(end=1)
+        print(tables)
 
         # compare the last table
         sample = [
