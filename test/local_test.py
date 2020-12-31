@@ -126,7 +126,7 @@ def local_test(sub_path, filename, compare=False, make_test_case=False):
 
     page_index = 0
     cv = Converter(pdf_file)
-    page = cv[page_index]
+    page = cv.fitz_doc[page_index]
 
     # print(page.rotation, page.rotationMatrix)
     # print(page.transformationMatrix)
@@ -191,7 +191,7 @@ if __name__ == '__main__':
 
     # single sample
     sub_path, filename = sys.argv[1:]
-    local_test(sub_path, filename, compare=False, make_test_case=False)
+    # local_test(sub_path, filename, compare=True, make_test_case=True)
 
     # batch mode
-    # for filename in filenames: local_test(sub_path, filename, compare=True, make_test_case=True)
+    for filename in filenames: local_test(sub_path, filename, compare=True, make_test_case=True)
