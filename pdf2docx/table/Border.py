@@ -48,8 +48,16 @@ class Border:
         '''
         # border type
         self.is_horizontal = border_type.upper()=='H'
-        self.finalized = False        # whether the position is determined
-        self.is_reference = reference # whether reference only border
+
+        # Whether the MAIN dimension (e.g. the vertical position for H-border) is determined.
+        # NOTE: the other dimension (e.g. the left/right position for H-border) is determined by boundary borders, 
+        # so a border is fully determined on condition that:
+        # - it is finalized, 
+        # - AND the boundary borders are also finalized. 
+        self.finalized = False
+
+        # Whether reference only border.
+        self.is_reference = reference
 
         # valid range
         self.set_border_range(border_range)
@@ -111,12 +119,13 @@ class Border:
     def finalize_by_value(self, value:float):
         ''' Finalize border with given position.'''
         # can be finalized only one time
-        if self.finalized or not self.is_valid(value): return self
+        if self.finalized or not self.is_valid(value): return False
 
         self._value = value
         self.finalized = True
         self.is_reference = False
-        return self
+
+        return True
 
 
     def finalize_by_stroke(self, stroke:Stroke):
@@ -125,7 +134,11 @@ class Border:
             NOTE:
             - the boundary borders may also be affected by this stroke shape.
             - border-like stroke may be an underline/strike-through.      
-        '''        
+        '''
+        # NOTE: don't do this: `if self.finalized: continue`, 
+        # because `self.finalized` just determed the main dimension, still need a chance to determin 
+        # the other dimension. 
+
         if self.is_horizontal:
             # x0, x1, and y of h-stroke
             low_pos, upper_pos = stroke.x0, stroke.x1
@@ -142,16 +155,15 @@ class Border:
         if low_pos > self._LBorder.URange and upper_pos < self._UBorder.LRange: return
 
         # now, finalize current border
-        self.finalize_by_value(value)
-        self.color = stroke.color
-        self.width = stroke.width
+        # NOTE: set border properties only if finalized by value successfully
+        if self.finalize_by_value(value):
+            self.color = stroke.color
+            self.width = stroke.width
+            stroke.type = RectType.BORDER  # update rect type as table border
 
-        # and, try to finalize boundary borders
+        # and, give a chance to finalize boundary borders no matter this border is finalized or not,
         self._LBorder.finalize_by_value(low_pos)
         self._UBorder.finalize_by_value(upper_pos)
-
-        # update rect type as table border
-        stroke.type = RectType.BORDER
 
 
     def to_stroke(self):
@@ -245,8 +257,8 @@ class Borders:
             for border in self._instances:
                 # horizontal stroke can finalize horizontal border only
                 if stroke.horizontal != border.is_horizontal: continue
-
-                border.finalize_by_stroke(stroke)
+                
+                border.finalize_by_stroke(stroke)                
 
 
     @staticmethod
