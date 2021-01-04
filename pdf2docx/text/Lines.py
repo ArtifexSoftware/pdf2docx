@@ -222,7 +222,7 @@ class Lines(Collection):
     def group_by_rows(self):
         ''' Group lines into rows.'''
         # split in rows, with original text block considered
-        groups = self.split(threshold=0.0)
+        groups = self.split(threshold=constants.FACTOR_A_FEW)
 
         # NOTE: increasing in y-direction is required!
         groups.sort(key=lambda group: group.bbox.y0)

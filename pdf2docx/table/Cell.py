@@ -162,7 +162,7 @@ class Cell(Element):
             table_lines.extend(sub_lines(block))
 
         # parse stream borders
-        strokes = TablesConstructor.stream_strokes(table_lines, outer_borders, showing_borders=[], showing_shadings=[])
+        strokes = TablesConstructor.stream_strokes(table_lines, outer_borders, explicit_strokes=[], explicit_shadings=[])
         if not strokes: return
 
         # parse table structure
