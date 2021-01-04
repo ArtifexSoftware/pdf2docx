@@ -30,7 +30,6 @@ In addition to the raw layout dict, some new features are also included, e.g.
 '''
 
 
-import json
 from collections import defaultdict
 from docx.shared import Pt
 from docx.enum.section import WD_SECTION
