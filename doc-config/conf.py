@@ -32,8 +32,7 @@ def get_version(fname):
         version = 'alpha'
 
     return version
-release = get_version('version.txt')
-
+release = get_version('../version.txt')
 
 # -- General configuration ---------------------------------------------------
 

@@ -19,19 +19,20 @@ src:
 	python setup.py bdist_wheel
 
 doc:
-	@if [ -f $(DOCSRC)/Makefile ] ; then \
-	    ( cd $(DOCSRC) && make html MODULEDIR=$(SRC) BUILDDIR=$(BUILD) ) || exit 1 ; \
+	@if [ -f "$(DOCSRC)/Makefile" ] ; then \
+	    ( cd "$(DOCSRC)" && make html MODULEDIR="$(SRC)" BUILDDIR="$(BUILD)" ) || exit 1 ; \
 	fi
-	@if [ -d $(BUILD)/html ] ; then \
-	    cp -r $(BUILD)/html $(DOCTARGET) ; \
+	@if [ -d "$(BUILD)/html" ] ; then \
+	    if [ -d "$(DOCTARGET)" ];  then rm -rf "$(DOCTARGET)" ; fi && \
+		cp -r "$(BUILD)/html" "$(DOCTARGET)" ; \
 	fi
 
 test:
-	@pytest -v $(TEST)/test.py --cov=$(SRC) --cov-report=xml
+	@pytest -v "$(TEST)/test.py" --cov="$(SRC)" --cov-report=xml
 
 clean:
-	@if [ -e $(DOCSRC)/Makefile ] ; then \
-	    ( cd $(DOCSRC) && make $@ BUILDDIR=$(BUILD)) || exit 1 ; \
+	@if [ -e "$(DOCSRC)/Makefile" ] ; then \
+	    ( cd "$(DOCSRC)" && make $@ BUILDDIR="$(BUILD)" ) || exit 1 ; \
 	fi
 	@for p in $(CLEANDIRS) ; do \
 	    if [ -d "$(TOPDIR)/$$p" ];  then rm -rf "$(TOPDIR)/$$p" ; fi ; \

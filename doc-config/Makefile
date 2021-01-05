@@ -8,7 +8,7 @@ TARGETDIR  = doctrees html
 .PHONY: html clean
 
 html: Makefile
-	@sphinx-apidoc -f -o "$(SOURCEDIR)" "$(MODULEDIR)" && \
+	@sphinx-apidoc -f -e -o "$(SOURCEDIR)" "$(MODULEDIR)" && \
 	sphinx-build -M html "$(SOURCEDIR)" "$(BUILDDIR)"
 
 clean:
