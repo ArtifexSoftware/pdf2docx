@@ -18,5 +18,4 @@ feature-*/
 build/
 dist/
 *egg-info/
-*.rst
-!index.rst
+pdf2docx*.rst
