@@ -98,7 +98,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-pdf2docx">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -176,8 +176,133 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pdf2docx-text-textspan-module">
-<h1>pdf2docx.text.TextSpan module<a class="headerlink" href="#pdf2docx-text-textspan-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pdf2docx.text.TextSpan">
+<span id="pdf2docx-text-textspan-module"></span><h1>pdf2docx.text.TextSpan module<a class="headerlink" href="#module-pdf2docx.text.TextSpan" title="Permalink to this headline">¶</a></h1>
+<p>Text Span object based on PDF raw dict extracted with PyMuPDF.</p>
+<p>&#64;created: 2020-07-22</p>
+<p>—</p>
+<p>Refer to: <a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/textpage.html">https://pymupdf.readthedocs.io/en/latest/textpage.html</a></p>
+<dl>
+<dt>data structure for Span</dt><dd><dl>
+<dt>{</dt><dd><p>‘bbox’: (x0,y0,x1,y1),
+‘color’: sRGB
+‘font’: fontname,
+‘size’: fontzise,
+‘flags’: fontflags,
+‘chars’: [ chars ],</p>
+<p>‘text’: text,
+‘style’: [</p>
+<blockquote>
+<div><dl class="simple">
+<dt>{</dt><dd><p>‘type’: int,
+‘color’: int</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt id="pdf2docx.text.TextSpan.TextSpan">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.text.TextSpan.</code><code class="sig-name descname">TextSpan</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextSpan.TextSpan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Element.Element</span></code></a></p>
+<p>Object representing text span.</p>
+<dl class="py method">
+<dt id="pdf2docx.text.TextSpan.TextSpan.add">
+<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">char</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.text.Char.html#pdf2docx.text.Char.Char" title="pdf2docx.text.Char.Char">pdf2docx.text.Char.Char</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextSpan.TextSpan.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add char and update bbox accordingly.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextSpan.TextSpan.cal_bbox">
+<code class="sig-name descname">cal_bbox</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextSpan.TextSpan.cal_bbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate bbox based on contained instances.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextSpan.TextSpan.font">
+<em class="property">property </em><code class="sig-name descname">font</code><a class="headerlink" href="#pdf2docx.text.TextSpan.TextSpan.font" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse raw font name, e.g.
+- split with ‘+’ and ‘-‘: BCDGEE+Calibri-Bold, BCDGEE+Calibri -&gt; Calibri
+- split with upper case : ArialNarrow -&gt; Arial Narrow, but exception: NSimSUN -&gt; NSimSUN
+- replace ‘,’ with blank: e.g. Ko Pub Dotum, Light -&gt; KoPubDotum Light</p>
+<p>NSimSUN refers to Chinese font name <cite>新宋体</cite>, so consider a localization mapping.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextSpan.TextSpan.intersects">
+<code class="sig-name descname">intersects</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rect</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextSpan.TextSpan.intersects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create new TextSpan object with chars contained in given bbox.
+—
+:param - rect: fitz.Rect, target bbox</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextSpan.TextSpan.lstrip">
+<code class="sig-name descname">lstrip</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextSpan.TextSpan.lstrip" title="Permalink to this definition">¶</a></dt>
+<dd><p>remove blanks at the left side, but keep one blank.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextSpan.TextSpan.make_docx">
+<code class="sig-name descname">make_docx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">paragraph</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextSpan.TextSpan.make_docx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add text span to a docx paragraph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextSpan.TextSpan.parse_text_style">
+<code class="sig-name descname">parse_text_style</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rect</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Shape" title="pdf2docx.shape.Shape.Shape">pdf2docx.shape.Shape.Shape</a></span></em>, <em class="sig-param"><span class="n">horizontal</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextSpan.TextSpan.parse_text_style" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse text style based on the position to a span bbox.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextSpan.TextSpan.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span></em>, <em class="sig-param"><span class="n">color</span><span class="p">:</span> <span class="n">tuple</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextSpan.TextSpan.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot bbox in PDF page.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextSpan.TextSpan.rstrip">
+<code class="sig-name descname">rstrip</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextSpan.TextSpan.rstrip" title="Permalink to this definition">¶</a></dt>
+<dd><p>remove blanks at the right side, but keep one blank.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextSpan.TextSpan.set_font">
+<code class="sig-name descname">set_font</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fontname</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextSpan.TextSpan.set_font" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set new font, and update font size, span/char bbox accordingly.</p>
+<p>It’s generally used for span with unnamed fonts.
+<a class="reference external" href="https://github.com/pymupdf/PyMuPDF/issues/642">https://github.com/pymupdf/PyMuPDF/issues/642</a></p>
+<p>In corner case, where the PDF file containing unnamed and not embedded fonts, the span bbox
+extracted from PyMuPDF is not correct. PyMuPDF provides feature to replace these unnamed fonts
+with specified fonts, then extract correct bbox from the updated PDF. Since we care less about
+the original PDF itself but its layout, the idea here is to set a default font for text spans
+with unnamed fonts, and estimate the updated bbox with method from <cite>fitz.TextWriter</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextSpan.TextSpan.split">
+<code class="sig-name descname">split</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rect</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Shape" title="pdf2docx.shape.Shape.Shape">pdf2docx.shape.Shape.Shape</a></span></em>, <em class="sig-param"><span class="n">horizontal</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextSpan.TextSpan.split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split span with the intersection: span-intersection-span.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextSpan.TextSpan.store">
+<code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextSpan.TextSpan.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store bbox in json format.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextSpan.TextSpan.text">
+<em class="property">property </em><code class="sig-name descname">text</code><a class="headerlink" href="#pdf2docx.text.TextSpan.TextSpan.text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Joining chars in text span</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

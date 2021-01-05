@@ -93,7 +93,7 @@
 <li class="toctree-l4 current"><a class="current reference internal" href="#">pdf2docx.main module</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-pdf2docx">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -169,8 +169,130 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pdf2docx-main-module">
-<h1>pdf2docx.main module<a class="headerlink" href="#pdf2docx-main-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pdf2docx.main">
+<span id="pdf2docx-main-module"></span><h1>pdf2docx.main module<a class="headerlink" href="#module-pdf2docx.main" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="pdf2docx.main.PDF2DOCX">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.main.</code><code class="sig-name descname">PDF2DOCX</code><a class="headerlink" href="#pdf2docx.main.PDF2DOCX" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Command line interface for pdf2docx.</p>
+<dl class="py method">
+<dt id="pdf2docx.main.PDF2DOCX.convert">
+<em class="property">static </em><code class="sig-name descname">convert</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdf_file</span></em>, <em class="sig-param"><span class="n">docx_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">start</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">end</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pages</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.main.PDF2DOCX.convert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert pdf file to docx file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pdf_file</strong> (<em>str</em>) – PDF filename to read from</p></li>
+<li><p><strong>docx_file</strong> (<em>str</em>) – DOCX filename to write to (change extension from “pdf” to “docx” by default)</p></li>
+<li><p><strong>start</strong> (<em>int</em>) – first page to process (starting from zero if –zero_based_index=True)</p></li>
+<li><p><strong>end</strong> (<em>int</em>) – last page to process (starting from zero if –zero_based_index=True)</p></li>
+<li><p><strong>pages</strong> (<em>list</em>) – range of pages</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – configuration parameters
+zero_based_index               : True, page index from 0 if True else 1
+multi_processing               : False, set multi-processes, especially for PDF with large pages
+cpu_count                      : cpu_count(), the count of cpu used for multi-processing
+connected_border_tolerance     : 0.5, two borders are intersected if the gap lower than this value
+max_border_width               : 6.0, max border width
+min_border_clearance           : 2.0, the minimum allowable clearance of two borders
+float_image_ignorable_gap      : 5.0, float image if the intersection exceeds this value
+float_layout_tolerance         : 0.1, [0,1] the larger of this value, the more tolerable of float layout
+page_margin_factor_top         : 0.5, [0,1] reduce top margin by factor
+page_margin_factor_bottom      : 0.5, [0,1] reduce bottom margin by factor
+shape_merging_threshold        : 0.5, [0,1] merge shape if the intersection exceeds this value
+shape_min_dimension            : 2.0, ignore shape if both width and height is lower than this value
+line_overlap_threshold         : 0.9, [0,1] delete line if the intersection to other lines exceeds this value
+line_merging_threshold         : 2.0, combine two lines if the x-distance is lower than this value
+line_separate_threshold        : 5.0, two separate lines if the x-distance exceeds this value
+lines_left_aligned_threshold   : 1.0, left aligned if delta left edge of two lines is lower than this value
+lines_right_aligned_threshold  : 1.0, right aligned if delta right edge of two lines is lower than this value
+lines_center_aligned_threshold : 2.0, center aligned if delta center of two lines is lower than this value
+clip_image_res_ratio           : 3.0, resolution ratio (to 72dpi) when cliping page image
+curve_path_ratio               : 0.2, clip page bitmap if the component of curve paths exceeds this ratio</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.main.PDF2DOCX.debug">
+<em class="property">static </em><code class="sig-name descname">debug</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdf_file</span></em>, <em class="sig-param"><span class="n">page_index</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">docx_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">debug_pdf</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">layout_file</span><span class="o">=</span><span class="default_value">'layout.json'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.main.PDF2DOCX.debug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert one PDF page and plot layout information for debugging.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pdf_file</strong> (<em>str</em>) – PDF filename to read from</p></li>
+<li><p><strong>page_index</strong> (<em>int</em>) – page index to convert (starting from zero if –zero_based_index=True)</p></li>
+<li><p><strong>docx_file</strong> (<em>str</em>) – DOCX filename to write to (change extension from “pdf” to “docx” by default)</p></li>
+<li><p><strong>debug_pdf</strong> (<em>str</em>) – new pdf file storing layout information (add prefix “<a href="#id1"><span class="problematic" id="id2">debug_</span></a>” by default)</p></li>
+<li><p><strong>layout_file</strong> (<em>str</em>) – new json file storing parsed layout data (layout.json by default)</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – configuration parameters</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.main.PDF2DOCX.table">
+<em class="property">static </em><code class="sig-name descname">table</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdf_file</span></em>, <em class="sig-param"><span class="n">start</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">end</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pages</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.main.PDF2DOCX.table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract table content from pdf pages.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pdf_file</strong> (<em>str</em>) – PDF filename to read from</p></li>
+<li><p><strong>start</strong> (<em>int</em>) – first page to process (starting from zero if –zero_based_index=True)</p></li>
+<li><p><strong>end</strong> (<em>int</em>) – last page to process (starting from zero if –zero_based_index=True)</p></li>
+<li><p><strong>pages</strong> (<em>list</em>) – range of pages</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="pdf2docx.main.main">
+<code class="sig-prename descclassname">pdf2docx.main.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.main.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="pdf2docx.main.parse">
+<code class="sig-prename descclassname">pdf2docx.main.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdf_file</span></em>, <em class="sig-param"><span class="n">docx_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">start</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">end</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pages</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.main.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert pdf file to docx file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pdf_file</strong> (<em>str</em>) – PDF filename to read from</p></li>
+<li><p><strong>docx_file</strong> (<em>str</em>) – DOCX filename to write to (change extension from “pdf” to “docx” by default)</p></li>
+<li><p><strong>start</strong> (<em>int</em>) – first page to process (starting from zero if –zero_based_index=True)</p></li>
+<li><p><strong>end</strong> (<em>int</em>) – last page to process (starting from zero if –zero_based_index=True)</p></li>
+<li><p><strong>pages</strong> (<em>list</em>) – range of pages</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – configuration parameters
+zero_based_index               : True, page index from 0 if True else 1
+multi_processing               : False, set multi-processes, especially for PDF with large pages
+cpu_count                      : cpu_count(), the count of cpu used for multi-processing
+connected_border_tolerance     : 0.5, two borders are intersected if the gap lower than this value
+max_border_width               : 6.0, max border width
+min_border_clearance           : 2.0, the minimum allowable clearance of two borders
+float_image_ignorable_gap      : 5.0, float image if the intersection exceeds this value
+float_layout_tolerance         : 0.1, [0,1] the larger of this value, the more tolerable of float layout
+page_margin_factor_top         : 0.5, [0,1] reduce top margin by factor
+page_margin_factor_bottom      : 0.5, [0,1] reduce bottom margin by factor
+shape_merging_threshold        : 0.5, [0,1] merge shape if the intersection exceeds this value
+shape_min_dimension            : 2.0, ignore shape if both width and height is lower than this value
+line_overlap_threshold         : 0.9, [0,1] delete line if the intersection to other lines exceeds this value
+line_merging_threshold         : 2.0, combine two lines if the x-distance is lower than this value
+line_separate_threshold        : 5.0, two separate lines if the x-distance exceeds this value
+lines_left_aligned_threshold   : 1.0, left aligned if delta left edge of two lines is lower than this value
+lines_right_aligned_threshold  : 1.0, right aligned if delta right edge of two lines is lower than this value
+lines_center_aligned_threshold : 2.0, center aligned if delta center of two lines is lower than this value
+clip_image_res_ratio           : 3.0, resolution ratio (to 72dpi) when cliping page image
+curve_path_ratio               : 0.2, clip page bitmap if the component of curve paths exceeds this ratio</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 
 

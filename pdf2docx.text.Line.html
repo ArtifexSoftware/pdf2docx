@@ -98,7 +98,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-pdf2docx">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -176,8 +176,102 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pdf2docx-text-line-module">
-<h1>pdf2docx.text.Line module<a class="headerlink" href="#pdf2docx-text-line-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pdf2docx.text.Line">
+<span id="pdf2docx-text-line-module"></span><h1>pdf2docx.text.Line module<a class="headerlink" href="#module-pdf2docx.text.Line" title="Permalink to this headline">¶</a></h1>
+<p>Text Line objects based on PDF raw dict extracted with PyMuPDF.
+&#64;created: 2020-07-22</p>
+<p>—</p>
+<p>Data structure of line in text block:
+{</p>
+<blockquote>
+<div><p>‘bbox’: (x0,y0,x1,y1),
+‘wmode’: m,
+‘dir’: [x,y],
+‘spans’: [ spans ]</p>
+</div></blockquote>
+<p>}</p>
+<p><a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/textpage.html">https://pymupdf.readthedocs.io/en/latest/textpage.html</a></p>
+<dl class="py class">
+<dt id="pdf2docx.text.Line.Line">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.text.Line.</code><code class="sig-name descname">Line</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Element.Element</span></code></a></p>
+<p>Object representing a line in text block.</p>
+<dl class="py method">
+<dt id="pdf2docx.text.Line.Line.add">
+<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">span_or_list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add span list to current Line.
+—
+:param - span_or_list: a TextSpan or TextSpan list</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.Line.Line.add_span">
+<code class="sig-name descname">add_span</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">span</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element">pdf2docx.common.Element.Element</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line.add_span" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add span to current Line.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.Line.Line.image_spans">
+<em class="property">property </em><code class="sig-name descname">image_spans</code><a class="headerlink" href="#pdf2docx.text.Line.Line.image_spans" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get image spans in this Line.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.Line.Line.intersects">
+<code class="sig-name descname">intersects</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rect</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line.intersects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create new Line object with spans contained in given bbox.
+—
+:param - rect: fitz.Rect, target bbox</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.Line.Line.make_docx">
+<code class="sig-name descname">make_docx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line.make_docx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.Line.Line.pid">
+<em class="property">property </em><code class="sig-name descname">pid</code><a class="headerlink" href="#pdf2docx.text.Line.Line.pid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get parent ID.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.Line.Line.same_parent_with">
+<code class="sig-name descname">same_parent_with</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">line</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line.same_parent_with" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if has same parent ID.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.Line.Line.store">
+<code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store bbox in json format.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.Line.Line.strip">
+<code class="sig-name descname">strip</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line.strip" title="Permalink to this definition">¶</a></dt>
+<dd><p>remove redundant blanks at the begin/end span.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.Line.Line.text">
+<em class="property">property </em><code class="sig-name descname">text</code><a class="headerlink" href="#pdf2docx.text.Line.Line.text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Joining span text.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.Line.Line.text_direction">
+<em class="property">property </em><code class="sig-name descname">text_direction</code><a class="headerlink" href="#pdf2docx.text.Line.Line.text_direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>from left to right.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Default text direction</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

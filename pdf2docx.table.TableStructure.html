@@ -98,7 +98,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-pdf2docx">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -176,8 +176,91 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pdf2docx-table-tablestructure-module">
-<h1>pdf2docx.table.TableStructure module<a class="headerlink" href="#pdf2docx-table-tablestructure-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pdf2docx.table.TableStructure">
+<span id="pdf2docx-table-tablestructure-module"></span><h1>pdf2docx.table.TableStructure module<a class="headerlink" href="#module-pdf2docx.table.TableStructure" title="Permalink to this headline">¶</a></h1>
+<p>Parsing table structure based on strokes and fills.</p>
+<p>&#64;created: 2020-08-16</p>
+<dl class="py class">
+<dt id="pdf2docx.table.TableStructure.CellStructure">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.table.TableStructure.</code><code class="sig-name descname">CellStructure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bbox</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TableStructure.CellStructure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="pdf2docx.table.TableStructure.CellStructure.is_merged">
+<em class="property">property </em><code class="sig-name descname">is_merged</code><a class="headerlink" href="#pdf2docx.table.TableStructure.CellStructure.is_merged" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.TableStructure.CellStructure.is_merging">
+<em class="property">property </em><code class="sig-name descname">is_merging</code><a class="headerlink" href="#pdf2docx.table.TableStructure.CellStructure.is_merging" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.TableStructure.CellStructure.parse_borders">
+<code class="sig-name descname">parse_borders</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h_strokes</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">v_strokes</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TableStructure.CellStructure.parse_borders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse cell borders from strokes.
+—
+Args:
+- h_strokes: a dict of y-coordinate v.s. horizontal strokes, e.g. {y0: [h1,h2,..], y1: [h3,h4,…]}
+- v_strokes: a dict of x-coordinates v.s. vertical strokes, e.g.  {x0: [v1,v2,..], x1: [v3,v4,…]}</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.TableStructure.CellStructure.parse_shading">
+<code class="sig-name descname">parse_shading</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fills</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes">pdf2docx.shape.Shapes.Shapes</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TableStructure.CellStructure.parse_shading" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse cell shading from fills.
+Args:
+- fills  : Fill shapes representing cell shading</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pdf2docx.table.TableStructure.TableStructure">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.table.TableStructure.</code><code class="sig-name descname">TableStructure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">strokes</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes">pdf2docx.shape.Shapes.Shapes</a></span></em>, <em class="sig-param"><span class="n">settings</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TableStructure.TableStructure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Parsing table structure based on strokes/fills.</p>
+<dl class="py method">
+<dt id="pdf2docx.table.TableStructure.TableStructure.bbox">
+<em class="property">property </em><code class="sig-name descname">bbox</code><a class="headerlink" href="#pdf2docx.table.TableStructure.TableStructure.bbox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.TableStructure.TableStructure.num_cols">
+<em class="property">property </em><code class="sig-name descname">num_cols</code><a class="headerlink" href="#pdf2docx.table.TableStructure.TableStructure.num_cols" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.TableStructure.TableStructure.num_rows">
+<em class="property">property </em><code class="sig-name descname">num_rows</code><a class="headerlink" href="#pdf2docx.table.TableStructure.TableStructure.num_rows" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.TableStructure.TableStructure.parse">
+<code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fills</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes">pdf2docx.shape.Shapes.Shapes</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TableStructure.TableStructure.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse table structure.
+—
+Args:
+- fills  : Fill shapes representing cell shading</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.TableStructure.TableStructure.to_table_block">
+<code class="sig-name descname">to_table_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TableStructure.TableStructure.to_table_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert parsed table structure to TableBlock instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.TableStructure.TableStructure.x_cols">
+<em class="property">property </em><code class="sig-name descname">x_cols</code><a class="headerlink" href="#pdf2docx.table.TableStructure.TableStructure.x_cols" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.TableStructure.TableStructure.y_rows">
+<em class="property">property </em><code class="sig-name descname">y_rows</code><a class="headerlink" href="#pdf2docx.table.TableStructure.TableStructure.y_rows" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
 
 

@@ -98,7 +98,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-pdf2docx">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -176,8 +176,144 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pdf2docx-text-textblock-module">
-<h1>pdf2docx.text.TextBlock module<a class="headerlink" href="#pdf2docx-text-textblock-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pdf2docx.text.TextBlock">
+<span id="pdf2docx-text-textblock-module"></span><h1>pdf2docx.text.TextBlock module<a class="headerlink" href="#module-pdf2docx.text.TextBlock" title="Permalink to this headline">¶</a></h1>
+<p>Text block objects based on PDF raw dict extracted with PyMuPDF.</p>
+<p>&#64;created: 2020-07-22</p>
+<p>—
+<a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/textpage.html">https://pymupdf.readthedocs.io/en/latest/textpage.html</a></p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p># raw dict
+# ——————————–
+‘type’: 0,
+‘bbox’: (x0,y0,x1,y1),
+‘lines’: [ lines ]</p>
+<p># introduced dict
+# ——————————–
+‘before_space’: bs,
+‘after_space’: as,
+‘line_space’: ls,</p>
+<p>‘alignment’: 0,
+‘left_space’: 10.0,
+‘right_space’: 0.0,</p>
+<p>‘tab_stops’: [15.4, 35.0]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<dl class="py class">
+<dt id="pdf2docx.text.TextBlock.TextBlock">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.text.TextBlock.</code><code class="sig-name descname">TextBlock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Block.html#pdf2docx.common.Block.Block" title="pdf2docx.common.Block.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Block.Block</span></code></a></p>
+<p>Text block.</p>
+<dl class="py method">
+<dt id="pdf2docx.text.TextBlock.TextBlock.add">
+<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">line_or_lines</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add line or lines to TextBlock.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextBlock.TextBlock.is_flow_layout">
+<code class="sig-name descname">is_flow_layout</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">float_layout_tolerance</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_separate_threshold</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.is_flow_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if flow layout: same bottom-left point for lines in same row.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextBlock.TextBlock.make_docx">
+<code class="sig-name descname">make_docx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.make_docx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create paragraph for a text block.
+—
+:param - p: docx paragraph instance</p>
+<p>NOTE:
+- the left position of paragraph set by paragraph indent, rather than TAB stop
+- hard line break is used for line in block.</p>
+<p>Generally, a pdf block is a docx paragraph, with block-&gt;line as line in paragraph.
+But without the context, it’s not able to recognize a block line as word wrap, or a
+separate line instead. A rough rule used here: block line will be treated as separate
+line, except this line and next line are indeed in the same line.</p>
+<p>Refer to python-docx doc for details on text format:
+- <a class="reference external" href="https://python-docx.readthedocs.io/en/latest/user/text.html">https://python-docx.readthedocs.io/en/latest/user/text.html</a>
+- <a class="reference external" href="https://python-docx.readthedocs.io/en/latest/api/enum/WdAlignParagraph.html#wdparagraphalignment">https://python-docx.readthedocs.io/en/latest/api/enum/WdAlignParagraph.html#wdparagraphalignment</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextBlock.TextBlock.parse_horizontal_spacing">
+<code class="sig-name descname">parse_horizontal_spacing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bbox</span></em>, <em class="sig-param"><span class="n">line_separate_threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_free_space_ratio_threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">lines_left_aligned_threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">lines_right_aligned_threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">lines_center_aligned_threshold</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.parse_horizontal_spacing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set horizontal spacing based on lines layout and page bbox.
+- The general spacing is determined by paragraph alignment and indentation.
+- The detailed spacing of block lines is determined by tab stops.</p>
+<p>Multiple alignment modes may exist in block (due to improper organized lines
+from PyMuPDF), e.g. some lines align left, and others right. In this case,
+LEFT alignment is set, and use TAB to position each line.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextBlock.TextBlock.parse_line_spacing">
+<code class="sig-name descname">parse_line_spacing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.parse_line_spacing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate average line spacing.</p>
+<p>The layout of pdf text block: line-space-line-space-line, excepting space before first line,
+i.e. space-line-space-line, when creating paragraph in docx. So, an average line height = space+line.</p>
+<p>Then, the height of first line can be adjusted by updating paragraph before-spacing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextBlock.TextBlock.parse_text_format">
+<code class="sig-name descname">parse_text_format</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rects</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.parse_text_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>parse text format with style represented by rectangles.
+—
+Args:
+- rects: Shapes, potential styles applied on blocks</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextBlock.TextBlock.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot block/line/span area, in PDF page.
+—</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Args:</dt><dd><ul class="simple">
+<li><p>page: fitz.Page object</p></li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextBlock.TextBlock.split">
+<code class="sig-name descname">split</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split contained lines vertically and create associated text blocks.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextBlock.TextBlock.store">
+<code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store attributes in json format.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextBlock.TextBlock.strip">
+<code class="sig-name descname">strip</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.strip" title="Permalink to this definition">¶</a></dt>
+<dd><p>strip each Line instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextBlock.TextBlock.text">
+<em class="property">property </em><code class="sig-name descname">text</code><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get text content in block, joning each line with `
+<a href="#id1"><span class="problematic" id="id2">`</span></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.TextBlock.TextBlock.text_direction">
+<em class="property">property </em><code class="sig-name descname">text_direction</code><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.text_direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>All lines contained in text block must have same text direction. Otherwise, set normal direction</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

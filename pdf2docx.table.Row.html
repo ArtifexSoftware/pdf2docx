@@ -98,7 +98,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-pdf2docx">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -176,8 +176,38 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pdf2docx-table-row-module">
-<h1>pdf2docx.table.Row module<a class="headerlink" href="#pdf2docx-table-row-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pdf2docx.table.Row">
+<span id="pdf2docx-table-row-module"></span><h1>pdf2docx.table.Row module<a class="headerlink" href="#module-pdf2docx.table.Row" title="Permalink to this headline">¶</a></h1>
+<p>Row in a table.</p>
+<p>&#64;created: 2020-08-15</p>
+<dl class="py class">
+<dt id="pdf2docx.table.Row.Row">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.table.Row.</code><code class="sig-name descname">Row</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Row.Row" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Element.Element</span></code></a></p>
+<p>Row in a table.</p>
+<dl class="py method">
+<dt id="pdf2docx.table.Row.Row.append">
+<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cell</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.table.Cell.html#pdf2docx.table.Cell.Cell" title="pdf2docx.table.Cell.Cell">pdf2docx.table.Cell.Cell</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Row.Row.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append cell to row and update bbox accordingly.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.Row.Row.make_docx">
+<code class="sig-name descname">make_docx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">table</span></em>, <em class="sig-param"><span class="n">idx_row</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Row.Row.make_docx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create docx table.
+—
+:param - table: docx table instance
+:param - idx_row: current row index</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.Row.Row.store">
+<code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Row.Row.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store bbox in json format.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

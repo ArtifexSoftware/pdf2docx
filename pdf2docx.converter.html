@@ -94,7 +94,7 @@
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.main.html">pdf2docx.main module</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-pdf2docx">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -170,8 +170,93 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pdf2docx-converter-module">
-<h1>pdf2docx.converter module<a class="headerlink" href="#pdf2docx-converter-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pdf2docx.converter">
+<span id="pdf2docx-converter-module"></span><h1>pdf2docx.converter module<a class="headerlink" href="#module-pdf2docx.converter" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="pdf2docx.converter.Converter">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.converter.</code><code class="sig-name descname">Converter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdf_file</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Read PDF file <cite>pdf_file</cite> with PyMuPDF to get raw layout data page by page, including text,
+image and the associated properties, e.g. bounding box, font, size, image width, height,
+then parse it with consideration for docx re-generation structure. Finally, generate docx
+with python-docx.</p>
+<dl class="py method">
+<dt id="pdf2docx.converter.Converter.close">
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.converter.Converter.convert">
+<code class="sig-name descname">convert</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">docx_filename</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">start</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">end</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pages</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">config</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.convert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert specified PDF pages to DOCX file.
+docx_filename : DOCX filename to write to
+start         : first page to process
+end           : last page to process
+pages         : range of pages
+config        : configuration parameters</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.converter.Converter.debug_page">
+<code class="sig-name descname">debug_page</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">docx_filename</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">debug_pdf</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">layout_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">config</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.debug_page" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse, create and plot single page for debug purpose.
+—
+Args:
+- i (int): page index to convert
+- docx_filename (str): DOCX filename to write to
+- debug_pdf (str): new pdf file storing layout information (add prefix “<a href="#id1"><span class="problematic" id="id2">debug_</span></a>” by default)
+- layout_file (str): new json file storing parsed layout data (layout.json by default)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.converter.Converter.deserialize">
+<code class="sig-name descname">deserialize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.deserialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load parsed pages from specified JSON file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.converter.Converter.extract_tables">
+<code class="sig-name descname">extract_tables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">end</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pages</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">config</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.extract_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract table contents from specified PDF pages.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.converter.Converter.fitz_doc">
+<em class="property">property </em><code class="sig-name descname">fitz_doc</code><a class="headerlink" href="#pdf2docx.converter.Converter.fitz_doc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.converter.Converter.make_docx">
+<code class="sig-name descname">make_docx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">docx_filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.make_docx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create docx file with converted pages. Note to run page parsing first.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.converter.Converter.parse">
+<code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page_indexes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">config</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse pages in specified page_indexes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.converter.Converter.restore">
+<code class="sig-name descname">restore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.restore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restore pages from parsed results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.converter.Converter.serialize">
+<code class="sig-name descname">serialize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.serialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write parsed pages to specified JSON file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.converter.Converter.store">
+<code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store parsed pages in dict format.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

@@ -98,7 +98,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-pdf2docx">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -176,8 +176,129 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pdf2docx-table-border-module">
-<h1>pdf2docx.table.Border module<a class="headerlink" href="#pdf2docx-table-border-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pdf2docx.table.Border">
+<span id="pdf2docx-table-border-module"></span><h1>pdf2docx.table.Border module<a class="headerlink" href="#module-pdf2docx.table.Border" title="Permalink to this headline">¶</a></h1>
+<p>Module to determin stream table borders.</p>
+<p>Though no exact borders exist for stream table, it’s better to simplify table structure by
+aligning borders as more as possible. Taking vertical borders for example, it can be moved
+in a valid range in horizontal direction, but restricted by top and bottom borders in vertical
+direction. It’s also true for horizontal borders.</p>
+<p>Accordingly, introduce <cite>Border</cite> object, which has the following attributes:
+- valid range, e. g. (100, 250);
+- boundary borders, e. g. (top_border, bottom_border) for v-border,</p>
+<blockquote>
+<div><p>or (left_border, right_border) for h-border.</p>
+</div></blockquote>
+<p>The target is to finalize the position in valid range, e. g. x=125 for v-border with valid range
+(120, 250). Then it’s y-direction is determined by its boundary borders, where the y-coordinates
+are finalized in same logic. Finally, this border is fixed since both x- and y- directions are
+determined.</p>
+<p>NOTE: consider horizontal and vertical borders only.</p>
+<p>&#64;created: 2020-08-29</p>
+<dl class="py class">
+<dt id="pdf2docx.table.Border.Border">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.table.Border.</code><code class="sig-name descname">Border</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">border_type</span><span class="o">=</span><span class="default_value">'h'</span></em>, <em class="sig-param"><span class="n">border_range</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tuple<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">borders</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tuple<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reference</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="pdf2docx.table.Border.Border.centerline">
+<em class="property">property </em><code class="sig-name descname">centerline</code><a class="headerlink" href="#pdf2docx.table.Border.Border.centerline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Center line of this border.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.Border.Border.finalize_by_stroke">
+<code class="sig-name descname">finalize_by_stroke</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stroke</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Stroke" title="pdf2docx.shape.Shape.Stroke">pdf2docx.shape.Shape.Stroke</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.finalize_by_stroke" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finalize border with specified stroke shape, which is generally a showing border-like shape.</p>
+<p>NOTE:
+- the boundary borders may also be affected by this stroke shape.
+- border-like stroke may be an underline/strike-through.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.Border.Border.finalize_by_value">
+<code class="sig-name descname">finalize_by_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.finalize_by_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finalize border with given position.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.Border.Border.get_boundary_borders">
+<code class="sig-name descname">get_boundary_borders</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.get_boundary_borders" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.Border.Border.is_valid">
+<code class="sig-name descname">is_valid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.is_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether the given position locates in the valid border range.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.Border.Border.set_border_range">
+<code class="sig-name descname">set_border_range</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">border_range</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.set_border_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set border valid ranges.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.Border.Border.set_boundary_borders">
+<code class="sig-name descname">set_boundary_borders</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">borders</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.set_boundary_borders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set boundary borders.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.Border.Border.to_stroke">
+<code class="sig-name descname">to_stroke</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.to_stroke" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert to border stroke.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.Border.Border.value">
+<em class="property">property </em><code class="sig-name descname">value</code><a class="headerlink" href="#pdf2docx.table.Border.Border.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finalized position, e.g. y-coordinate of horizontal border. Average value if not finalized.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pdf2docx.table.Border.Borders">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.table.Border.</code><code class="sig-name descname">Borders</code><a class="headerlink" href="#pdf2docx.table.Border.Borders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Collection of Border instances.</p>
+<dl class="py method">
+<dt id="pdf2docx.table.Border.Borders.add">
+<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">border</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#pdf2docx.table.Border.Border" title="pdf2docx.table.Border.Border">pdf2docx.table.Border.Border</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Borders.add" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.Border.Borders.extend">
+<code class="sig-name descname">extend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">borders</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Borders.extend" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.Border.Borders.finalize">
+<code class="sig-name descname">finalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">strokes</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes">pdf2docx.shape.Shapes.Shapes</a></span></em>, <em class="sig-param"><span class="n">fills</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes">pdf2docx.shape.Shapes.Shapes</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Borders.finalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finalize the position of all borders:
+- follow explicit stroke/border
+- follow explicit fill/shading
+- align h-borders or v-borders as more as possible to simplify the table structure.
+—
+Args:
+- strokes: a group of explicit border strokes.
+- fills: a group of explicit cell shadings.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pdf2docx.table.Border.HBorder">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.table.Border.</code><code class="sig-name descname">HBorder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">border_range</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tuple<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">borders</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tuple<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reference</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.HBorder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pdf2docx.table.Border.Border" title="pdf2docx.table.Border.Border"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.table.Border.Border</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pdf2docx.table.Border.VBorder">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.table.Border.</code><code class="sig-name descname">VBorder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">border_range</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tuple<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">borders</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tuple<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reference</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.VBorder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pdf2docx.table.Border.Border" title="pdf2docx.table.Border.Border"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.table.Border.Border</span></code></a></p>
+</dd></dl>
+
 </div>
 
 

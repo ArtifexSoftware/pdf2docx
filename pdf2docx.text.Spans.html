@@ -98,7 +98,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-pdf2docx">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -176,8 +176,39 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pdf2docx-text-spans-module">
-<h1>pdf2docx.text.Spans module<a class="headerlink" href="#pdf2docx-text-spans-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pdf2docx.text.Spans">
+<span id="pdf2docx-text-spans-module"></span><h1>pdf2docx.text.Spans module<a class="headerlink" href="#module-pdf2docx.text.Spans" title="Permalink to this headline">¶</a></h1>
+<p>A group of TextSpan and ImageSpan objects.</p>
+<p>&#64;created: 2020-07-23</p>
+<dl class="py class">
+<dt id="pdf2docx.text.Spans.Spans">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.text.Spans.</code><code class="sig-name descname">Spans</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">list</span> <span class="o">=</span> <span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Spans.Spans" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.Collection" title="pdf2docx.common.Collection.Collection"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Collection.Collection</span></code></a></p>
+<p>Text span list.</p>
+<dl class="py method">
+<dt id="pdf2docx.text.Spans.Spans.image_spans">
+<em class="property">property </em><code class="sig-name descname">image_spans</code><a class="headerlink" href="#pdf2docx.text.Spans.Spans.image_spans" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.Spans.Spans.restore">
+<code class="sig-name descname">restore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raws</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Spans.Spans.restore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct Collection from a list of dict.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.Spans.Spans.strip">
+<code class="sig-name descname">strip</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Spans.Spans.strip" title="Permalink to this definition">¶</a></dt>
+<dd><p>remove redundant blanks at the begin/end span.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.Spans.Spans.text_spans">
+<em class="property">property </em><code class="sig-name descname">text_spans</code><a class="headerlink" href="#pdf2docx.text.Spans.Spans.text_spans" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
 
 

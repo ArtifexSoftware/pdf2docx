@@ -98,7 +98,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-pdf2docx">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -176,8 +176,203 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pdf2docx-page-blocks-module">
-<h1>pdf2docx.page.Blocks module<a class="headerlink" href="#pdf2docx-page-blocks-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pdf2docx.page.Blocks">
+<span id="pdf2docx-page-blocks-module"></span><h1>pdf2docx.page.Blocks module<a class="headerlink" href="#module-pdf2docx.page.Blocks" title="Permalink to this headline">¶</a></h1>
+<p>A group of Text/Image or Table block.
+&#64;created: 2020-07-22</p>
+<dl class="py class">
+<dt id="pdf2docx.page.Blocks.Blocks">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.page.Blocks.</code><code class="sig-name descname">Blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">list</span> <span class="o">=</span> <span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.Collection" title="pdf2docx.common.Collection.Collection"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Collection.Collection</span></code></a></p>
+<p>Block collections.</p>
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.assign_table_contents">
+<code class="sig-name descname">assign_table_contents</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tables</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">settings</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.assign_table_contents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Text/Image/table block lines to associated cells of given tables.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.clean_up">
+<code class="sig-name descname">clean_up</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">float_image_ignorable_gap</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_overlap_threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_merging_threshold</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.clean_up" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preprocess blocks initialized from the raw layout.</p>
+<p>NOTE: this method works ONLY for layout initialized from raw dict extracted by <cite>page.getText()</cite>.
+Under this circumstance, it only exists text blocks since all raw image blocks are converted to
+text blocks.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.collect_stream_lines">
+<code class="sig-name descname">collect_stream_lines</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">potential_shadings</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">float_layout_tolerance</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_separate_threshold</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.collect_stream_lines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collect lines of text block, which may contained in a stream table region.
+—
+Args:
+- potential_shadings: a group of shapes representing potential cell shading</p>
+<p>NOTE: PyMuPDF may group multi-lines in a row as a text block while each line belongs to different
+cell. So, deep into line level here when collecting table contents regions.</p>
+<dl class="simple">
+<dt>Table may exist on the following conditions:</dt><dd><ul class="simple">
+<li><ol class="loweralpha simple">
+<li><p>lines in potential shading -&gt; determined by shapes</p></li>
+</ol>
+</li>
+<li><ol class="loweralpha simple" start="2">
+<li><p>lines in blocks are not connected sequently -&gt; determined by current block only</p></li>
+</ol>
+</li>
+<li><ol class="loweralpha simple" start="3">
+<li><p>multi-blocks are in a same row (horizontally aligned) -&gt; determined by two adjacent blocks</p></li>
+</ol>
+</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.identify_floating_images">
+<code class="sig-name descname">identify_floating_images</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">float_image_ignorable_gap</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.identify_floating_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identify floating image lines and convert to ImageBlock.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.inline_image_blocks">
+<em class="property">property </em><code class="sig-name descname">inline_image_blocks</code><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.inline_image_blocks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.is_flow_layout">
+<code class="sig-name descname">is_flow_layout</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">float_layout_tolerance</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.is_flow_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if flow layout:
+- no more blocks in same row
+- check further in table block lines level</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.join_horizontally">
+<code class="sig-name descname">join_horizontally</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">text_direction</span><span class="p">:</span> <span class="n">bool</span></em>, <em class="sig-param"><span class="n">line_overlap_threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_merging_threshold</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.join_horizontally" title="Permalink to this definition">¶</a></dt>
+<dd><p>Join lines in horizontally aligned blocks into new TextBlock.
+—
+Args:
+- text_direction: whether consider text direction.</p>
+<blockquote>
+<div><p>If True, detect text direction based on line direction;
+if False, use default direction: from left to right.</p>
+</div></blockquote>
+<p>This function converts potential float layout into flow layout, e.g.
+reposition inline images, so that make rebuilding such layout in docx possible.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.lattice_table_blocks">
+<em class="property">property </em><code class="sig-name descname">lattice_table_blocks</code><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.lattice_table_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get lattice table blocks contained in this Collection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.make_docx">
+<code class="sig-name descname">make_docx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">doc</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.make_docx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create page based on parsed block structure.
+—
+Args:
+- doc: python-docx Document or _Cell object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.parse_spacing">
+<code class="sig-name descname">parse_spacing</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.parse_spacing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate external and internal vertical space for text blocks.
+—
+Args:
+- args:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>line_separate_threshold:float,</p></li>
+<li><p>line_free_space_ratio_threshold:float,</p></li>
+<li><p>lines_left_aligned_threshold:float,</p></li>
+<li><p>lines_right_aligned_threshold:float,</p></li>
+<li><p>lines_center_aligned_threshold:float</p></li>
+</ul>
+</div></blockquote>
+<ul>
+<li><p>paragraph spacing is determined by the vertical distance to previous block.
+For the first block, the reference position is top margin.</p>
+<blockquote>
+<div><p>It’s easy to set before-space or after-space for a paragraph with python-docx,
+so, if current block is a paragraph, set before-space for it; if current block
+is not a paragraph, e.g. a table, set after-space for previous block (generally,
+previous block should be a paragraph).</p>
+</div></blockquote>
+</li>
+<li><p>line spacing is defined as the average line height in current block.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.parse_text_format">
+<code class="sig-name descname">parse_text_format</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rects</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.parse_text_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse text format with style represented by stroke/fill shapes.
+—
+Args:
+- rects: Shapes, potential styles applied on blocks</p>
+<p>NOTE: <cite>parse_text_format</cite> must be implemented by TextBlock, ImageBlock and TableBlock.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot blocks in PDF page.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.restore">
+<code class="sig-name descname">restore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raws</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.restore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restore Blocks from source dict.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.split_vertically">
+<code class="sig-name descname">split_vertically</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.split_vertically" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split the joined lines in vertical direction.</p>
+<p>With preceding joining step, current text block may contain lines coming from various original blocks.
+Considering that different text block may have different line properties, e.g. height, spacing,
+this function is to split them back to original text block. But the original layout may not reasonable for
+re-building docx, so a high priority is to split them vertically, which converts potential float layout to
+flow layout.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.store">
+<code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store attributes in json format.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.stream_table_blocks">
+<em class="property">property </em><code class="sig-name descname">stream_table_blocks</code><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.stream_table_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get stream table blocks contained in this Collection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.strip">
+<code class="sig-name descname">strip</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.strip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove redundant blanks exist in text block lines.
+Note these redundant blanks may affect bbox of text block.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.table_blocks">
+<em class="property">property </em><code class="sig-name descname">table_blocks</code><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.table_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get table blocks contained in this Collection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Blocks.Blocks.text_blocks">
+<em class="property">property </em><code class="sig-name descname">text_blocks</code><a class="headerlink" href="#pdf2docx.page.Blocks.Blocks.text_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get text/image blocks contained in this Collection.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

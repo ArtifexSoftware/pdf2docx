@@ -98,7 +98,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-pdf2docx">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -176,8 +176,42 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pdf2docx-text-char-module">
-<h1>pdf2docx.text.Char module<a class="headerlink" href="#pdf2docx-text-char-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pdf2docx.text.Char">
+<span id="pdf2docx-text-char-module"></span><h1>pdf2docx.text.Char module<a class="headerlink" href="#module-pdf2docx.text.Char" title="Permalink to this headline">¶</a></h1>
+<p>Char object based on PDF raw dict extracted with PyMuPDF.</p>
+<p>&#64;created: 2020-07-22</p>
+<p>—</p>
+<p>refer to: <a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/textpage.html">https://pymupdf.readthedocs.io/en/latest/textpage.html</a></p>
+<dl>
+<dt>raw dict for Char</dt><dd><dl class="simple">
+<dt>{</dt><dd><p>‘bbox’  : (x0, y0, x1, y1),
+‘c’     : str,
+‘origin’: (x,y)</p>
+</dd>
+</dl>
+<p>}</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt id="pdf2docx.text.Char.Char">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.text.Char.</code><code class="sig-name descname">Char</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Char.Char" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Element.Element</span></code></a></p>
+<p>Object representing a character.</p>
+<dl class="py method">
+<dt id="pdf2docx.text.Char.Char.contained_in_rect">
+<code class="sig-name descname">contained_in_rect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rect</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Shape" title="pdf2docx.shape.Shape.Shape">pdf2docx.shape.Shape.Shape</a></span></em>, <em class="sig-param"><span class="n">horizontal</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Char.Char.contained_in_rect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect whether locates in a rect, or has an intersection
+larger than half of the char bbox.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.text.Char.Char.store">
+<code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Char.Char.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store bbox in json format.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

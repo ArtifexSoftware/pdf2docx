@@ -98,7 +98,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-pdf2docx">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -176,8 +176,117 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pdf2docx-image-image-module">
-<h1>pdf2docx.image.Image module<a class="headerlink" href="#pdf2docx-image-image-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pdf2docx.image.Image">
+<span id="pdf2docx-image-image-module"></span><h1>pdf2docx.image.Image module<a class="headerlink" href="#module-pdf2docx.image.Image" title="Permalink to this headline">¶</a></h1>
+<p>Extract images from PDF and define the Image object.</p>
+<p>Image properties could be extracted with PyMuPDF method <cite>page.getText(‘rawdict’)</cite>:</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a>`
+# data structure defined in link:
+# <a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/textpage.html">https://pymupdf.readthedocs.io/en/latest/textpage.html</a></p>
+<dl>
+<dt>{</dt><dd><p>‘type’: 1,
+‘bbox’: (x0,y0,x1,y1),
+‘ext’: ‘png’,
+‘width’: w,
+‘height’: h,
+‘image’: b’’,</p>
+<p># — discard properties —
+‘colorspace’: n,
+‘xref’: xref, ‘yref’: yref, ‘bpc’: bpc</p>
+</dd>
+</dl>
+<div class="section" id="id3">
+<h2>}<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>But, the extracted image bytes may be different from the source images in PDF, especially
+png images with alpha channel. So, images are extracted separately, and stored in a similar
+structure.</p>
+<dl class="py class">
+<dt id="pdf2docx.image.Image.Image">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.image.Image.</code><code class="sig-name descname">Image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.Image.Image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Element.Element</span></code></a></p>
+<p>Base image object.</p>
+<dl class="py method">
+<dt id="pdf2docx.image.Image.Image.from_image">
+<code class="sig-name descname">from_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.Image.Image.from_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update with image block.
+—
+:param - image: Image, target image block</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.image.Image.Image.make_docx">
+<code class="sig-name descname">make_docx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">paragraph</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.Image.Image.make_docx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add image span to a docx paragraph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.image.Image.Image.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span></em>, <em class="sig-param"><span class="n">color</span><span class="p">:</span> <span class="n">tuple</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.Image.Image.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot image bbox with diagonal lines.
+—
+Args:
+- page: fitz.Page object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.image.Image.Image.store_image">
+<code class="sig-name descname">store_image</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.Image.Image.store_image" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.image.Image.Image.text">
+<em class="property">property </em><code class="sig-name descname">text</code><a class="headerlink" href="#pdf2docx.image.Image.Image.text" title="Permalink to this definition">¶</a></dt>
+<dd><p>“&lt;image&gt;”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Return an image placeholder</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pdf2docx.image.Image.ImagesExtractor">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.image.Image.</code><code class="sig-name descname">ImagesExtractor</code><a class="headerlink" href="#pdf2docx.image.Image.ImagesExtractor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Extract images from PDF.</p>
+<dl class="py method">
+<dt id="pdf2docx.image.Image.ImagesExtractor.clip_page">
+<em class="property">classmethod </em><code class="sig-name descname">clip_page</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span><span class="p">:</span> <span class="n">fitz.fitz.Page</span></em>, <em class="sig-param"><span class="n">bbox</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>fitz.fitz.Rect<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">zoom</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">3.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.Image.ImagesExtractor.clip_page" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clip page pixmap (without text) according to <cite>bbox</cite> (entire page by default).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.image.Image.ImagesExtractor.extract_images">
+<em class="property">classmethod </em><code class="sig-name descname">extract_images</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span><span class="p">:</span> <span class="n">fitz.fitz.Page</span></em>, <em class="sig-param"><span class="n">clip_image_res_ratio</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">3.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.Image.ImagesExtractor.extract_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get images dict based on image contents from <cite>Page.getImageList()</cite>.</p>
+<p>NOTE: Page.getImageList() contains each image only once, which may less than the real
+count if images in a page.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.image.Image.ImagesExtractor.recover_pixmap">
+<em class="property">static </em><code class="sig-name descname">recover_pixmap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">doc</span><span class="p">:</span> <span class="n">fitz.fitz.Document</span></em>, <em class="sig-param"><span class="n">item</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.Image.ImagesExtractor.recover_pixmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restore pixmap with soft mask considered.
+—
+- doc: fitz document
+- item: an image item got from page.getImageList()</p>
+<p>Read more:
+- <a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/document.html#Document.getPageImageList">https://pymupdf.readthedocs.io/en/latest/document.html#Document.getPageImageList</a>
+- <a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-handle-stencil-masks">https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-handle-stencil-masks</a>
+- <a class="reference external" href="https://github.com/pymupdf/PyMuPDF/issues/670">https://github.com/pymupdf/PyMuPDF/issues/670</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.image.Image.ImagesExtractor.to_raw_dict">
+<em class="property">classmethod </em><code class="sig-name descname">to_raw_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span><span class="p">:</span> <span class="n">fitz.fitz.Pixmap</span></em>, <em class="sig-param"><span class="n">bbox</span><span class="p">:</span> <span class="n">fitz.fitz.Rect</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.Image.ImagesExtractor.to_raw_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store Pixmap to raw dict.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 </div>
 
 
