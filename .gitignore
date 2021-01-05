@@ -4,6 +4,7 @@
 *.txt
 *.docx
 layout.json
+.vscode/
 
 # pdf testing files
 *.pdf
@@ -17,3 +18,6 @@ feature-*/
 build/
 dist/
 *egg-info/
+doc/
+*.rst
+!index.rst
