@@ -18,6 +18,5 @@ feature-*/
 build/
 dist/
 *egg-info/
-doc/
 *.rst
 !index.rst

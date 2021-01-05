@@ -2,8 +2,8 @@ name: pdf2docx-doc
 
 on:
   push:
-    branches:
-      - dev  # Set a branch name to trigger deployment
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   publish_doc:
@@ -28,14 +28,13 @@ jobs:
           python setup.py develop
 
       # build package for tags, e.g. 3.2.1 extracted from 'refs/tags/v3.2.1'
-      # echo ${GITHUB_REF#refs/tags/v} > version.txt
       - name: Create html doc
         run: |
-          echo 0.5.0 > version.txt
+          echo ${GITHUB_REF#refs/tags/v} > version.txt
           make doc
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./doc
+          publish_dir: ./build/html
