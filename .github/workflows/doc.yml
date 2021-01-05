@@ -25,7 +25,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install sphinx sphinx_rtd_theme
           pip install -r requirements.txt
-          python setup.py
+          python setup.py develop
 
       # build package for tags, e.g. 3.2.1 extracted from 'refs/tags/v3.2.1'
       # echo ${GITHUB_REF#refs/tags/v} > version.txt
