@@ -1,0 +1,7 @@
+pdf2docx.table.Row module
+=========================
+
+.. automodule:: pdf2docx.table.Row
+   :members:
+   :undoc-members:
+   :show-inheritance:

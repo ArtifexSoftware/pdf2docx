@@ -1,0 +1,21 @@
+pdf2docx.shape package
+======================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pdf2docx.shape.Path
+   pdf2docx.shape.Paths
+   pdf2docx.shape.Shape
+   pdf2docx.shape.Shapes
+
+Module contents
+---------------
+
+.. automodule:: pdf2docx.shape
+   :members:
+   :undoc-members:
+   :show-inheritance:

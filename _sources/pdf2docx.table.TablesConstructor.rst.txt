@@ -1,0 +1,7 @@
+pdf2docx.table.TablesConstructor module
+=======================================
+
+.. automodule:: pdf2docx.table.TablesConstructor
+   :members:
+   :undoc-members:
+   :show-inheritance:

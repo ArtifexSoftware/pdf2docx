@@ -1,0 +1,19 @@
+pdf2docx.page package
+=====================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pdf2docx.page.Blocks
+   pdf2docx.page.Page
+
+Module contents
+---------------
+
+.. automodule:: pdf2docx.page
+   :members:
+   :undoc-members:
+   :show-inheritance:

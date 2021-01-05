@@ -1,0 +1,7 @@
+pdf2docx.text.TextBlock module
+==============================
+
+.. automodule:: pdf2docx.text.TextBlock
+   :members:
+   :undoc-members:
+   :show-inheritance:

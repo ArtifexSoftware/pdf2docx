@@ -1,0 +1,7 @@
+pdf2docx.main module
+====================
+
+.. automodule:: pdf2docx.main
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,25 @@
+pdf2docx.table package
+======================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pdf2docx.table.Border
+   pdf2docx.table.Cell
+   pdf2docx.table.Cells
+   pdf2docx.table.Row
+   pdf2docx.table.Rows
+   pdf2docx.table.TableBlock
+   pdf2docx.table.TableStructure
+   pdf2docx.table.TablesConstructor
+
+Module contents
+---------------
+
+.. automodule:: pdf2docx.table
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,23 @@
+pdf2docx.common package
+=======================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pdf2docx.common.Block
+   pdf2docx.common.Collection
+   pdf2docx.common.Element
+   pdf2docx.common.constants
+   pdf2docx.common.docx
+   pdf2docx.common.share
+
+Module contents
+---------------
+
+.. automodule:: pdf2docx.common
+   :members:
+   :undoc-members:
+   :show-inheritance:

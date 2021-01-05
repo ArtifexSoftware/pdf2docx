@@ -1,0 +1,23 @@
+pdf2docx.text package
+=====================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pdf2docx.text.Char
+   pdf2docx.text.Line
+   pdf2docx.text.Lines
+   pdf2docx.text.Spans
+   pdf2docx.text.TextBlock
+   pdf2docx.text.TextSpan
+
+Module contents
+---------------
+
+.. automodule:: pdf2docx.text
+   :members:
+   :undoc-members:
+   :show-inheritance:
