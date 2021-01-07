@@ -29,7 +29,7 @@ class RectType(Enum):
 
 
 class TextDirection(Enum):
-    '''Test direction.
+    '''Text direction.
 
     * LEFT_RIGHT: from left to right within a line, and lines go from top to bottom
     * BOTTOM_TOP: from bottom to top within a line, and lines go from left to right
@@ -60,7 +60,7 @@ class IText:
     '''Text related interface considering text direction.'''
     @property
     def text_direction(self):
-        '''Text direction: from left to right by default.'''
+        '''Text direction is from left to right by default.'''
         return TextDirection.LEFT_RIGHT
 
     @property

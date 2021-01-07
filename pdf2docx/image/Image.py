@@ -1,29 +1,24 @@
 # -*- coding: utf-8 -*-
 
-'''
-Extract images from PDF and define the Image object.
+'''Extract images from PDF and define the Image object.
 
-Image properties could be extracted with PyMuPDF method `page.getText('rawdict')`:
+Image properties could be extracted with ``PyMuPDF`` method ``page.getText('rawdict')``. 
+Data structure defined in link https://pymupdf.readthedocs.io/en/latest/textpage.html::
 
-```
-# data structure defined in link: 
-# https://pymupdf.readthedocs.io/en/latest/textpage.html
+    {
+        'type': 1,
+        'bbox': (x0,y0,x1,y1),
+        'ext': 'png',
+        'width': w,
+        'height': h,
+        'image': b'',
 
-{
-    'type': 1,
-    'bbox': (x0,y0,x1,y1),
-    'ext': 'png',
-    'width': w,
-    'height': h,
-    'image': b'',
+        # --- discard properties ---
+        'colorspace': n,
+        'xref': xref, 'yref': yref, 'bpc': bpc
+    }
 
-    # --- discard properties ---
-    'colorspace': n,
-    'xref': xref, 'yref': yref, 'bpc': bpc
-}
-```
-
-But, the extracted image bytes may be different from the source images in PDF, especially
+However, the extracted image bytes may be different from the source images in PDF, especially
 png images with alpha channel. So, images are extracted separately, and stored in a similar
 structure.
 '''
@@ -41,7 +36,15 @@ class ImagesExtractor:
 
     @classmethod
     def to_raw_dict(cls, image:fitz.Pixmap, bbox:fitz.Rect):
-        '''Store Pixmap to raw dict.'''
+        """Store Pixmap ``image`` to raw dict.
+
+        Args:
+            image (fitz.Pixmap): Pixmap to store.
+            bbox (fitz.Rect): Boundary box the pixmap.
+
+        Returns:
+            dict: Raw dict of the pixmap.
+        """
         return {
             'type': BlockType.IMAGE.value,
             'bbox': tuple(bbox),
@@ -54,8 +57,16 @@ class ImagesExtractor:
 
     @classmethod
     def clip_page(cls, page:fitz.Page, bbox:fitz.Rect=None, zoom:float=3.0):
-        '''Clip page pixmap (without text) according to `bbox` (entire page by default).
-        '''
+        """Clip page pixmap (without text) according to ``bbox``.
+
+        Args:
+            page (fitz.Page): pdf page to extract.
+            bbox (fitz.Rect, optional): Target area to clip. Defaults to None, i.e. entire page.
+            zoom (float, optional): Improve resolution by this rate. Defaults to 3.0.
+
+        Returns:
+            dict: Raw dict of the extracted pixmap.
+        """        
         # hide text before clip the image only
         # render Tr: set the text rendering mode
         # - 3: neither fill nor stroke the text -> invisible
@@ -78,15 +89,19 @@ class ImagesExtractor:
 
 
     @classmethod
-    def extract_images(cls, 
-                page:fitz.Page,
-                clip_image_res_ratio:float=3.0 # resolution ratio of cliiped bitmap
-            ):
-        ''' Get images dict based on image contents from `Page.getImageList()`.
+    def extract_images(cls, page:fitz.Page, clip_image_res_ratio:float=3.0):
+        """Get images dict based on image contents from ``Page.getImageList()``.
 
-            NOTE: Page.getImageList() contains each image only once, which may less than the real
-            count if images in a page.
-        '''
+        Args:
+            page (fitz.Page): pdf page to extract images.
+            clip_image_res_ratio (float, optional): Resolution ratio of clipped bitmap. Defaults to 3.0.
+
+        Returns:
+            list: A list of extracted and recovered image raw dict.
+        
+        .. note::
+            ``Page.getImageList()`` contains each image only once, which may less than the real count of images in a page.
+        """
         # pdf document
         doc = page.parent
 
@@ -122,16 +137,21 @@ class ImagesExtractor:
 
     @staticmethod
     def recover_pixmap(doc:fitz.Document, item:list):
-        '''Restore pixmap with soft mask considered.
-            ---
-            - doc: fitz document
-            - item: an image item got from page.getImageList()
+        """Restore pixmap with soft mask considered.
+        
+        References:
 
-            Read more:
-            - https://pymupdf.readthedocs.io/en/latest/document.html#Document.getPageImageList        
-            - https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-handle-stencil-masks
-            - https://github.com/pymupdf/PyMuPDF/issues/670
-        '''
+            * https://pymupdf.readthedocs.io/en/latest/document.html#Document.getPageImageList        
+            * https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-handle-stencil-masks
+            * https://github.com/pymupdf/PyMuPDF/issues/670
+
+        Args:
+            doc (fitz.Document): pdf document.
+            item (list): image instance of ``page.getImageList()``.
+
+        Returns:
+            fitz.Pixmap: Recovered pixmap with soft mask considered.
+        """
         # data structure of `item`:
         # (xref, smask, width, height, bpc, colorspace, ...)
         x = item[0]  # xref of PDF image
@@ -180,15 +200,15 @@ class Image(Element):
 
     @property
     def text(self):
-        '''Return an image placeholder: "<image>".'''
+        '''Get an image placeholder ``<image>``.'''
         return '<image>'
 
 
     def from_image(self, image):
-        '''Update with image block.
-            ---
-            Args:
-              - image: Image, target image block
+        '''Update with image block/span.
+        
+        Args:
+            image (Image): Target image block/span.
         '''
         self.ext = image.ext
         self.width = image.width
@@ -199,10 +219,12 @@ class Image(Element):
 
 
     def store_image(self):
+        '''Store image with base64 encode.
+
+        * Encode image bytes with base64 -> base64 bytes
+        * Decode base64 bytes -> str -> so can be serialized in json formart
+        '''
         res = super().store()
-        # store image with base64 encode:
-        # - encode image bytes with base64 -> base64 bytes
-        # - decode base64 bytes -> str -> so can be serialized in json formart
         res.update({
             'ext': self.ext,
             'width': self.width,
@@ -214,10 +236,10 @@ class Image(Element):
 
 
     def plot(self, page, color:tuple):
-        '''Plot image bbox with diagonal lines.
-            ---
-            Args: 
-            - page: fitz.Page object
+        '''Plot image bbox with diagonal lines (for debug purpose).
+        
+        Args: 
+            page (fitz.Page): Plotting page.
         '''
         x0, y0, x1, y1 = self.bbox
         page.drawLine((x0, y0), (x1, y1), color=color, width=0.5)

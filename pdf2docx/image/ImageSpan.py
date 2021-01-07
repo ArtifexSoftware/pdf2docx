@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-'''
-Image Span based on same raw data structure with image block.
-
-@created: 2020-07-22
-
+'''Image span based on same raw data structure with Image block.
 '''
 
 from ..common import constants
@@ -19,9 +15,12 @@ class ImageSpan(Image):
 
     def intersects(self, rect):
         '''Create new ImageSpan object with image contained in given bbox.
-            ---
-            Args:
-            - rect: fitz.Rect, target bbox
+        
+        Args:
+            rect (fitz.Rect): Target bbox.
+        
+        Returns:
+            ImageSpan: A copy of itself if intersects with target; otherwise empty ImageSpan. 
         '''
         # add image span if most of of the image is contained in bbox
         if self.get_main_bbox(rect, constants.FACTOR_MAJOR):

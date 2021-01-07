@@ -303,7 +303,7 @@ class Element(IText):
 
 
     def store(self):
-        '''Store bbox in json format.'''
+        '''Store properties in raw dict.'''
         return { 'bbox': tuple([x for x in self.bbox]) }
 
     
