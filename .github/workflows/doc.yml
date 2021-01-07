@@ -2,8 +2,8 @@ name: pdf2docx-doc
 
 on:
   push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+    branches:
+      - dev
 
 jobs:
   publish_doc:
