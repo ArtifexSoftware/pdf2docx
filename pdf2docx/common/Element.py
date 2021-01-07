@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
-'''
-Object with a bounding box, e.g. Block, Line, Span.
+'''Object with a bounding box, e.g. Block, Line, Span.
 
-Based on `PyMuPDF`, the coordinates are provided relative to the un-rotated page; while this
-`pdf2docx` library works under real page coordinate system, i.e. with rotation considered. 
+Based on ``PyMuPDF``, the coordinates are provided relative to the un-rotated page; while this
+``pdf2docx`` library works under real page coordinate system, i.e. with rotation considered. 
 So, any instances created by this Class are always applied a rotation matrix automatically.
 
-In other words, the bbox parameter used to create Element instance MUST be relative to un-rotated
-CS. If final coordinates are provided, should update it after creating an empty object, e.g.
-`Element().update_bbox(final_bbox)`.
+In other words, the bbox parameter used to create ``Element`` instance MUST be relative to un-rotated
+CS. If final coordinates are provided, should update it after creating an empty object::
+
+    Element().update_bbox(final_bbox)
 '''
 
 import copy
@@ -28,6 +28,11 @@ class Element(IText):
 
     @classmethod
     def set_rotation_matrix(cls, rotation_matrix):
+        """Set global rotation matrix.
+
+        Args:
+            Rotation_matrix (fitz.Matrix): target matrix
+        """        
         if rotation_matrix and isinstance(rotation_matrix, fitz.Matrix):
             cls.ROTATION_MATRIX = rotation_matrix
 
@@ -83,26 +88,39 @@ class Element(IText):
 
 
     def get_expand_bbox(self, dt:float):
-        '''Get expanded bbox with margin dt in both x- and y- direction. Note this method doesn't change its bbox.'''
+        """Get expanded bbox with margin in both x- and y- direction.
+
+        Args:
+            dt (float): Expanding margin.
+
+        Returns:
+            fitz.Rect: Expanded bbox.
+        
+        .. note::
+            This method creates a new bbox, rather than changing the bbox of itself.
+        """        
         return self.bbox + (-dt, -dt, dt, dt)
 
 
     def update_bbox(self, rect):
-        '''Update current bbox to specified `rect`.
-            ---
-            Args:
-            - rect: fitz.rect or raw bbox like (x0, y0, x1, y1) in real page CS (with rotation considered).
+        '''Update current bbox to specified ``rect``.
+        
+        Args:
+            rect (fitz.Rect or list): bbox-like ``(x0, y0, x1, y1)`` in real page CS (with rotation considered).
         '''
         self.bbox = fitz.Rect([round(x,1) for x in rect])
         return self
 
 
     def union_bbox(self, e):
-        '''Update current bbox to the union with specified Element.
-            ---
-            Args:
-            - e: Element, the target to get union
-        '''
+        """Update current bbox to the union with specified Element.
+
+        Args:
+            e (Element): The target to get union
+
+        Returns:
+            Element: self
+        """ 
         return self.update_bbox(self.bbox | e.bbox)
 
 
@@ -110,7 +128,15 @@ class Element(IText):
     # location relationship to other Element instance
     # -------------------------------------------- 
     def contains(self, e, threshold:float=1.0):
-        '''Whether given element is contained in this instance, with margin considered.'''
+        """Whether given element is contained in this instance, with margin considered.
+
+        Args:
+            e (Element): Target element
+            threshold (float, optional): Intersection rate. Defaults to 1.0. The larger, the stricter.
+
+        Returns:
+            bool: [description]
+        """        
         # it's not practical to set a general threshold to consider the margin, so two steps:
         # - set a coarse but acceptable area threshold,
         # - check the length in main direction strictly
@@ -130,9 +156,15 @@ class Element(IText):
    
 
     def get_main_bbox(self, e, threshold:float=0.95):
-        ''' If the intersection with `e` exceeds the threshold, return the union of
-            these two elements; else return None.
-        '''
+        """If the intersection with ``e`` exceeds the threshold, return the union of these two elements; else return None.
+
+        Args:
+            e (Element): Target element.
+            threshold (float, optional): Intersection rate. Defaults to 0.95.
+
+        Returns:
+            fitz.Rect: Union bbox or None.
+        """
         bbox_1 = self.bbox
         bbox_2 = e.bbox if hasattr(e, 'bbox') else fitz.Rect(e)
         
@@ -149,15 +181,18 @@ class Element(IText):
 
 
     def vertically_align_with(self, e, factor:float=0.0, text_direction:bool=True):
-        ''' Check whether two Element instances have enough intersection in vertical direction, 
-            i.e. perpendicular to reading direction.
-            ---
-            Args:
-              - e: Element object to check with
-              - factor: threshold of overlap ratio, the larger it is, the higher probability the two bbox-es are aligned.
-              - text_direction: consider text direction or not. True by default, from left to right if False.
+        '''Check whether two Element instances have enough intersection in vertical direction, i.e. perpendicular to reading direction.
+        
+        Args:
+            e (Element): Object to check with
+            factor (float, optional): Threshold of overlap ratio, the larger it is, the higher probability the two bbox-es are aligned.
+            text_direction (bool, optional): Consider text direction or not. True by default, from left to right if False.
 
-            ```
+        Returns:
+            bool: [description]
+        
+        Examples::
+
             +--------------+
             |              |
             +--------------+ 
@@ -166,12 +201,10 @@ class Element(IText):
                     |                   |
                     +-------------------+
                             L2
-            ```
             
-            An enough intersection is defined based on the minimum width of two boxes:
-            ```
+        An enough intersection is defined based on the minimum width of two boxes::
+        
             L1+L2-L>factor*min(L1,L2)
-            ```
         '''
         if not e or not bool(self): return False
 
@@ -187,25 +220,23 @@ class Element(IText):
 
 
     def horizontally_align_with(self, e, factor:float=0.0, text_direction:bool=True):
-        ''' Check whether two Element instances have enough intersection in horizontal direction, 
-            i.e. along the reading direction.
-            ---
-            Args:
-              - e: Element to check with
-              - factor: threshold of overlap ratio, the larger it is, the higher probability the two bbox-es are aligned.
-              - text_direction: consider text direction or not. True by default, from left to right if False.
+        '''Check whether two Element instances have enough intersection in horizontal direction, i.e. along the reading direction.
+           
+        Args:
+            e (Element): Element to check with
+            factor (float, optional): threshold of overlap ratio, the larger it is, the higher probability the two bbox-es are aligned.
+            text_direction (bool, optional): consider text direction or not. True by default, from left to right if False.
 
-            ```
+        Examples::
+
             +--------------+
             |              | L1  +--------------------+
             +--------------+     |                    | L2
                                  +--------------------+
-            ```
             
-            An enough intersection is defined based on the minimum width of two boxes:
-            ```
+        An enough intersection is defined based on the minimum width of two boxes::
+        
             L1+L2-L>factor*min(L1,L2)
-            ```
         '''
         if not e or not bool(self): return False
 
@@ -220,15 +251,23 @@ class Element(IText):
 
 
     def in_same_row(self, e):
-        ''' Check whether in same row/line with specified Element instance. Note text direction.
+        """Check whether in same row/line with specified Element instance. With text direction considered.
+           
+           Taking horizontal text as an example:
+           
+           * yes: the bottom edge of each box is lower than the centerline of the other one;
+           * otherwise, not in same row.
 
-            Taking horizontal text as an example:
-            - yes: the bottom edge of each box is lower than the centerline of the other one;
-            - otherwise, not in same row.
+        Args:
+            e (Element): Target object.
 
-            Note the difference with method `horizontally_align_with`. They may not in same line, though
+        Returns:
+            bool: [description]
+        
+        .. note::
+            The difference to method ``horizontally_align_with``: they may not in same line, though 
             aligned horizontally.
-        '''
+        """
         if not e or self.text_direction != e.text_direction:
             return False
 
@@ -245,7 +284,15 @@ class Element(IText):
     # others
     # ------------------------------------------------
     def compare(self, e, threshold=0.9):
-        '''Whether has same type and bbox.'''
+        """Whether has same type and bbox with ``e``.
+
+        Args:
+            e (Element): Target object.
+            threshold (float, optional): Intersection rate representing how much two boxes are same. Defaults to 0.9.
+
+        Returns:
+            tuple: (True/False, message)
+        """        
         if not isinstance(e, self.__class__):
             return False, f'Inconsistent type: {self.__class__.__name__} v.s. {e.__class__.__name__} (expected)'
         
@@ -261,5 +308,5 @@ class Element(IText):
 
     
     def plot(self, page, stroke:tuple=(0,0,0), width:float=0.5, fill:tuple=None, dashes:str=None):
-        '''Plot bbox in PDF page.'''
+        '''Plot bbox in PDF page for debug purpose.'''
         page.drawRect(self.bbox, color=stroke, fill=fill, width=width, dashes=dashes, overlay=False, fill_opacity=0.5)

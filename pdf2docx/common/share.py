@@ -18,14 +18,7 @@ class BlockType(Enum):
 
 
 class RectType(Enum):
-    ''' Shape type in context:
-        - not defined   : -1
-        - highlight     : 0
-        - underline     : 1
-        - strike-through: 2
-        - table border  : 10
-        - cell shading  : 11
-    '''
+    '''Shape type in context.'''
     UNDEFINED = -1
     HIGHLIGHT = 0
     UNDERLINE = 1
@@ -36,16 +29,27 @@ class RectType(Enum):
 
 
 class TextDirection(Enum):
-    '''Block types.'''
+    '''Test direction.
+
+    * LEFT_RIGHT: from left to right within a line, and lines go from top to bottom
+    * BOTTOM_TOP: from bottom to top within a line, and lines go from left to right
+    '''
     IGNORE     = -1
-    LEFT_RIGHT = 0 # from left to right within a line, and lines go from top to bottom
-    BOTTOM_TOP = 1 # from bottom to top within a line, and lines go from left to right
+    LEFT_RIGHT = 0
+    BOTTOM_TOP = 1
 
 
 class TextAlignment(Enum):
-    '''Block types.'''
-    NONE    = -1 # none of left/right/center align -> need TAB stop
-    UNKNOWN = 0  # can't decide, e.g. single line only
+    '''Text alignment.
+
+    .. note::
+        The difference between ``NONE`` and ``UNKNOWN``: 
+
+        * NONE: none of left/right/center align -> need TAB stop
+        * UNKNOWN: can't decide, e.g. single line only
+    '''
+    NONE    = -1
+    UNKNOWN = 0 
     LEFT    = 1
     CENTER  = 2
     RIGHT   = 3
@@ -56,7 +60,7 @@ class IText:
     '''Text related interface considering text direction.'''
     @property
     def text_direction(self):
-        '''Default text direction: from left to right.'''
+        '''Text direction: from left to right by default.'''
         return TextDirection.LEFT_RIGHT
 
     @property
@@ -66,10 +70,12 @@ class IText:
 
     @property
     def is_vertical_text(self):
+        '''Check whether text direction is from bottom to top.'''
         return self.text_direction == TextDirection.BOTTOM_TOP
 
 
 class lazyproperty:
+    '''Calculate only once and cache property value.'''
     def __init__(self, func):
         self.func = func
 
@@ -86,6 +92,7 @@ class lazyproperty:
 # methods
 # -------------------------
 def is_number(str_number):
+    '''Whether can be converted to a float.'''
     try:
         float(str_number)
     except ValueError:
@@ -119,9 +126,11 @@ def rgb_component_from_name(name:str=''):
 
 
 def rgb_component(srgb:int):
-    ''' srgb value to R,G,B components, e.g. 16711680 -> (255, 0, 0).
-        
-        Equal to PyMuPDF built-in method: [int(255*x) for x in fitz.sRGB_to_pdf(x)]
+    '''srgb value to R,G,B components, e.g. 16711680 -> (255, 0, 0).
+    
+    Equal to PyMuPDF built-in method::
+
+        [int(255*x) for x in fitz.sRGB_to_pdf(x)]
     '''
     # decimal to hex: 0x...
     s = hex(srgb)[2:].zfill(6)
@@ -129,7 +138,7 @@ def rgb_component(srgb:int):
 
 
 def rgb_to_value(rgb:list):
-    '''RGB components to decimal value, e.g. (1,0,0) -> 16711680'''
+    '''RGB components to decimal value, e.g. (1,0,0) -> 16711680.'''
     res = 0
     for (i,x) in enumerate(rgb):
         res += int(x*(16**2-1)) * 16**(4-2*i)
@@ -137,7 +146,7 @@ def rgb_to_value(rgb:list):
 
 
 def cmyk_to_rgb(c:float, m:float, y:float, k:float, cmyk_scale:float=100):
-    ''' CMYK components to GRB value.'''
+    '''CMYK components to GRB value.'''
     r = (1.0 - c / float(cmyk_scale)) * (1.0 - k / float(cmyk_scale))
     g = (1.0 - m / float(cmyk_scale)) * (1.0 - k / float(cmyk_scale))
     b = (1.0 - y / float(cmyk_scale)) * (1.0 - k / float(cmyk_scale))
@@ -170,12 +179,13 @@ def rgb_value(components:list):
 # pdf plot
 # -------------------------
 def new_page(doc, width:float, height:float, title:str):
-    ''' Insert a new page with given title.
-        ---
-        Args:
-        - doc: fitz.Document
-        - width, height: page size
-        - title: page title shown in page
+    '''Insert a new page with given title.
+    
+    Args:
+        doc (fitz.Document): pdf document object.
+        width (float): Page width.
+        height (float): Page height.
+        title (str): Page title shown in page.
     '''
     # insert a new page
     page = doc.newPage(width=width, height=height)    
@@ -188,10 +198,10 @@ def new_page(doc, width:float, height:float, title:str):
 
 
 def debug_plot(title:str):
-    ''' Plot the returned objects of inner function.
-        ---        
-        Args:
-        - title: page title
+    '''Plot the returned objects of inner function.
+    
+    Args:
+        title (str): Page title.
     '''
     def wrapper(func):
         def inner(*args, **kwargs):
@@ -220,8 +230,6 @@ def debug_plot(title:str):
 # Implementation of solving Rectangle-Intersection Problem according algorithm proposed in
 # paper titled "A Rectangle-Intersection Algorithm with Limited Resource Requirements".
 # https://ieeexplore.ieee.org/document/5578313
-# - Performance
-# O(nlog n + k) time and O(n) space, where k is the count of intersection pairs
 # - Input
 # The rectangle is represented by its corner points, (x0, y0, x1, y1)
 # - Output
@@ -234,25 +242,27 @@ def debug_plot(title:str):
 # 4 Call procedure detect(V, H, 2n).
 
 def solve_rects_intersection(V:list, num:int, index_groups:list):
-    ''' divide and conque in x-direction.
-        ---
-        Args:
-        - V: rectangle-related x-edges data, [(index, Rect, x), (...), ...]
-        - num: count of V instances, equal to len(V)
-        - index_groups: target adjacent list for connectivity between rects
-        
-        ```
-        procedure detect(V, H, m):
+    '''Implementation of solving Rectangle-Intersection Problem.
+
+    Performance::
+
+        O(nlog n + k) time and O(n) space, where k is the count of intersection pairs.
+
+    Args:
+        V (list): Rectangle-related x-edges data, [(index, Rect, x), (...), ...].
+        num (int): Count of V instances, equal to len(V).
+        index_groups (list): Target adjacent list for connectivity between rects.
+    
+    Procedure ``detect(V, H, m)``::
+    
         if m < 2 then return else
         - let V1 be the first ⌊m/2⌋ and let V2 be the rest of the vertical edges in V in the sorted order;
-        - let S11 and S22 be the set of rectangles represented only in V1 and V2 but not spanning V2 and V1,
-            respectively;
+        - let S11 and S22 be the set of rectangles represented only in V1 and V2 but not spanning V2 and V1, respectively;
         - let S12 be the set of rectangles represented only in V1 and spanning V2; 
         - let S21 be the set of rectangles represented only in V2 and spanning V1
         - let H1 and H2 be the list of y-intervals corresponding to the elements of V1 and V2 respectively
         - stab(S12, S22); stab(S21, S11); stab(S12, S21)
         - detect(V1, H1, ⌊m/2⌋); detect(V2, H2, m − ⌊m/2⌋)
-        ```
     '''
     if num < 2: return
     
@@ -271,35 +281,33 @@ def solve_rects_intersection(V:list, num:int, index_groups:list):
     S21 = list(filter( lambda item: item[1][0]<=X0, right ))
     
     # intersection in x-direction is fullfilled, so check y-direction further
-    stab(S12, S22, index_groups)
-    stab(S21, S11, index_groups)
-    stab(S12, S21, index_groups)
+    _stab(S12, S22, index_groups)
+    _stab(S21, S11, index_groups)
+    _stab(S12, S21, index_groups)
 
     # recursive process
     solve_rects_intersection(left,  center_pos,     index_groups)
     solve_rects_intersection(right, num-center_pos, index_groups)
 
 
-def stab(S1:list, S2:list, index_groups:list):
+def _stab(S1:list, S2:list, index_groups:list):
     '''Check interval intersection in y-direction.
-
-        ```
-        procedure stab(A, B)
-            i := 1; j := 1
-            while i ≤ |A| and j ≤ |B|
-              if ai.y0 < bj.y0 then
-                k := j
-                while k ≤ |B| and bk.y0 < ai.y1
-                  reportPair(air, bks)
-                  k := k + 1
-                i := i + 1
-              else
-                k := i
-                while k ≤ |A| and ak.y0 < bj.y1
-                  reportPair(bjs, akr)
-                  k := k + 1
-                j := j + 1
-        ```
+    
+    Procedure ``stab(A, B)``::
+        i := 1; j := 1
+        while i ≤ |A| and j ≤ |B|
+            if ai.y0 < bj.y0 then
+            k := j
+            while k ≤ |B| and bk.y0 < ai.y1
+                reportPair(air, bks)
+                k := k + 1
+            i := i + 1
+            else
+            k := i
+            while k ≤ |A| and ak.y0 < bj.y1
+                reportPair(bjs, akr)
+                k := k + 1
+            j := j + 1
     '''
     if not S1 or not S2: return
 
@@ -314,28 +322,31 @@ def stab(S1:list, S2:list, index_groups:list):
         if a[1] < b[1]:
             k = j
             while k<len(S2) and S2[k][1][1] < a[3]:
-                report_pair(int(m/2), int(S2[k][0]/2), index_groups)
+                _report_pair(int(m/2), int(S2[k][0]/2), index_groups)
                 k += 1
             i += 1
         else:
             k = i
             while k<len(S1) and S1[k][1][1] < b[3]:
-                report_pair(int(S1[k][0]/2), int(n/2), index_groups)
+                _report_pair(int(S1[k][0]/2), int(n/2), index_groups)
                 k += 1
             j += 1
 
 
-def report_pair(i:int, j:int, index_groups:list):
+def _report_pair(i:int, j:int, index_groups:list):
     '''add pair (i,j) to adjacent list.'''
     index_groups[i].add(j)
     index_groups[j].add(i)
 
 
-def graph_bfs(graph):
-    '''Breadth First Search graph (may be disconnected graph), return a list of connected components.
-        ---
-        Args:
-        - graph: GRAPH represented by adjacent list, [set(1,2,3), set(...), ...]
+def graph_bfs(graph): 
+    '''Breadth First Search graph (may be disconnected graph).
+    
+    Args:
+        graph (list): GRAPH represented by adjacent list, [set(1,2,3), set(...), ...]
+    
+    Returns:
+        list: A list of connected components
     '''
     # search graph
     # NOTE: generally a disconnected graph
@@ -344,19 +355,19 @@ def graph_bfs(graph):
     for i in range(len(graph)):
         if i in counted_indexes: continue
         # connected component starts...
-        indexes = set(graph_bfs_from_node(graph, i))
+        indexes = set(_graph_bfs_from_node(graph, i))
         groups.append(indexes)
         counted_indexes.update(indexes)
 
     return groups
 
 
-def graph_bfs_from_node(graph, start):
+def _graph_bfs_from_node(graph, start):
     '''Breadth First Search connected graph with start node.
-        ---
-        Args:
-        - graph: GRAPH represented by adjacent list, [set(1,2,3), set(...), ...]
-        - start: index of any start vertex
+    
+    Args:
+        graph (list): GRAPH represented by adjacent list, [set(1,2,3), set(...), ...].
+        start (int): Index of any start vertex.
     '''
     search_queue = deque()    
     searched = set()
