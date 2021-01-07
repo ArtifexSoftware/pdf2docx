@@ -1,20 +1,16 @@
-.. pdf2docx documentation master file, created by
-   sphinx-quickstart on Tue Jan  5 12:48:33 2021.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to pdf2docx's documentation!
 ====================================
 
-`pdf2docx` is a Python library to parse PDF file with `PyMuPDF` and generate docx file with `python-docx`.
+``pdf2docx`` is a Python library to parse PDF file with ``PyMuPDF`` and generate docx file with ``python-docx``.
 
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   installation
+   quickstart
    modules
-
 
 
 Indices and tables
