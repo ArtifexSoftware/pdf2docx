@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
-'''
-A group of Text/Image or Table block.
-@created: 2020-07-22
-
+'''A group of ``TextBlock``, ``ImageBlock`` or ``TableBlock``.
 '''
 
 from docx.shared import Pt
@@ -24,7 +21,8 @@ class Blocks(Collection):
     '''Block collections.'''
     def __init__(self, instances:list=[], parent=None):
         ''' A collection of TextBlock and TableBlock instances. 
-            ImageBlock is converted to ImageSpan contained in TextBlock.'''
+            ImageBlock is converted to ImageSpan contained in TextBlock.
+        '''
         self._parent = parent # type: Block
         self._instances = []  # type: list[TextBlock or TableBlock]
 
@@ -74,6 +72,7 @@ class Blocks(Collection):
 
     @property
     def inline_image_blocks(self):
+        '''Get inline image blocks contained in this Collection.'''
         return list(filter(
             lambda block: block.is_inline_image_block(), self._instances))
 
@@ -86,9 +85,16 @@ class Blocks(Collection):
 
     
     def is_flow_layout(self, float_layout_tolerance:float):
-        '''Check if flow layout: 
-            - no more blocks in same row
-            - check further in table block lines level
+        '''Check if flow layout.
+
+        * no more blocks in same row
+        * check further in table block lines level
+
+        Args:
+            float_layout_tolerance (float): [description]
+
+        Returns:
+            bool: Whether flow layout.
         '''
         # block level
         fun = lambda a, b: a.horizontally_align_with(b, factor=float_layout_tolerance)
@@ -109,7 +115,14 @@ class Blocks(Collection):
 
 
     def restore(self, raws:list):
-        '''Restore Blocks from source dict.'''
+        '''Restore Blocks from source dict.
+
+        Args:
+            raws (list): A list of raw dicts representing text/image/table blocks.
+
+        Returns:
+            Blocks: self
+        '''
         for raw_block in raws:
             block_type = raw_block.get('type', -1) # type: int
             
@@ -140,12 +153,18 @@ class Blocks(Collection):
 
 
     def clean_up(self, float_image_ignorable_gap:float, line_overlap_threshold:float, line_merging_threshold:float):
-        ''' Preprocess blocks initialized from the raw layout.
+        """Preprocess blocks initialized from the raw layout.
 
-            NOTE: this method works ONLY for layout initialized from raw dict extracted by `page.getText()`.
+        Args:
+            float_image_ignorable_gap (float): Regarded as float image if the intersection exceeds this value.
+            line_overlap_threshold (float): Delete line if the intersection to other lines exceeds this value.
+            line_merging_threshold (float): Combine two lines if the x-distance is lower than this value.
+        
+        .. note::
+            This method works ONLY for layout initialized from raw dict extracted by ``page.getText()``.
             Under this circumstance, it only exists text blocks since all raw image blocks are converted to 
             text blocks.
-        '''
+        """
         if not self._instances: return
         # filter function:
         # - remove blocks out of page
@@ -168,15 +187,18 @@ class Blocks(Collection):
 
     
     def strip(self):
-        ''' Remove redundant blanks exist in text block lines. 
-            Note these redundant blanks may affect bbox of text block.
+        '''Remove redundant blanks exist in text block lines. These redundant blanks may affect bbox of text block.
         '''
         for block in self._instances: block.strip()
         return self
 
 
     def identify_floating_images(self, float_image_ignorable_gap:float):
-        ''' Identify floating image lines and convert to ImageBlock.'''
+        """Identify floating image lines and convert to ImageBlock.
+
+        Args:
+            float_image_ignorable_gap (float): Regarded as float image if the intersection exceeds this value.
+        """
         # group lines by connectivity
         lines = Lines()
         for block in self._instances:
@@ -201,7 +223,12 @@ class Blocks(Collection):
 
 
     def assign_table_contents(self, tables:list, settings:dict):
-        '''Add Text/Image/table block lines to associated cells of given tables.'''
+        """Add Text/Image/table block lines to associated cells of given tables.
+
+        Args:
+            tables (list): A list of TableBlock instances.
+            settings (dict): Table parsing parameters.
+        """
         if not tables: return
 
         # assign blocks to table region        
@@ -224,18 +251,20 @@ class Blocks(Collection):
     def collect_stream_lines(self, potential_shadings:list, 
             float_layout_tolerance:float, 
             line_separate_threshold:float):
-        ''' Collect lines of text block, which may contained in a stream table region.
-            ---
-            Args:
-            - potential_shadings: a group of shapes representing potential cell shading
-
-            NOTE: PyMuPDF may group multi-lines in a row as a text block while each line belongs to different
+        '''Collect lines of text block, which may contained in a stream table region.
+        
+        Args:
+            potential_shadings (list): a group of shapes representing potential cell shading
+        
+        .. note::
+            ``PyMuPDF`` may group multi-lines in a row as a text block while each line belongs to different
             cell. So, deep into line level here when collecting table contents regions.
             
-            Table may exist on the following conditions:
-             - (a) lines in potential shading -> determined by shapes
-             - (b) lines in blocks are not connected sequently -> determined by current block only
-             - (c) multi-blocks are in a same row (horizontally aligned) -> determined by two adjacent blocks
+        Table may exist on the following conditions:
+
+        * (a) lines in potential shading -> determined by shapes
+        * (b) lines in blocks are not connected sequently -> determined by current block only
+        * (c) multi-blocks are in a same row (horizontally aligned) -> determined by two adjacent blocks
              
         '''
         # get sub-lines from block
@@ -306,25 +335,16 @@ class Blocks(Collection):
 
 
     def parse_spacing(self, *args):
-        ''' Calculate external and internal vertical space for text blocks.
-            ---
-            Args:
-            - args:
-                - line_separate_threshold:float,
-                - line_free_space_ratio_threshold:float,
-                - lines_left_aligned_threshold:float,
-                - lines_right_aligned_threshold:float,
-                - lines_center_aligned_threshold:float
+        '''Calculate external and internal vertical space for text blocks.
         
-            - paragraph spacing is determined by the vertical distance to previous block. 
-              For the first block, the reference position is top margin.
-            
-                It's easy to set before-space or after-space for a paragraph with python-docx,
-                so, if current block is a paragraph, set before-space for it; if current block 
-                is not a paragraph, e.g. a table, set after-space for previous block (generally, 
-                previous block should be a paragraph).
-            
-            - line spacing is defined as the average line height in current block.
+        * Paragraph spacing is determined by the vertical distance to previous block.
+          For the first block, the reference position is top margin.
+        * Line spacing is defined as the average line height in current block.
+
+        It's easy to set before-space or after-space for a paragraph with ``python-docx``,
+        so, if current block is a paragraph, set before-space for it; if current block is 
+        not a paragraph, e.g. a table, set after-space for previous block (generally, 
+        previous block should be a paragraph).
         '''
         if not self._instances: return
 
@@ -414,15 +434,15 @@ class Blocks(Collection):
                 text_direction:bool, 
                 line_overlap_threshold:float, 
                 line_merging_threshold:float):
-        ''' Join lines in horizontally aligned blocks into new TextBlock.
-            ---
-            Args:
-            - text_direction: whether consider text direction.
-              If True, detect text direction based on line direction;
-              if False, use default direction: from left to right.
+        '''Join lines in horizontally aligned blocks into new TextBlock.
 
-            This function converts potential float layout into flow layout, e.g. 
-            reposition inline images, so that make rebuilding such layout in docx possible.
+        This function converts potential float layout into flow layout, e.g. 
+        reposition inline images, so that make rebuilding such layout in docx possible.
+        
+        Args:
+            text_direction (bool): Whether consider text direction. 
+                                   Detect text direction based on line direction if True, 
+                                   otherwise use default direction, i.e. from left to right.
         '''
         # get horizontally aligned blocks group by group
         fun = lambda a,b: a.horizontally_align_with(b, factor=0.0, text_direction=text_direction)
@@ -456,13 +476,13 @@ class Blocks(Collection):
 
 
     def split_vertically(self):
-        ''' Split the joined lines in vertical direction.
+        '''Split the joined lines in vertical direction.
 
-            With preceding joining step, current text block may contain lines coming from various original blocks.
-            Considering that different text block may have different line properties, e.g. height, spacing, 
-            this function is to split them back to original text block. But the original layout may not reasonable for
-            re-building docx, so a high priority is to split them vertically, which converts potential float layout to
-            flow layout.
+        With preceding joining step, current text block may contain lines coming from various original blocks.
+        Considering that different text block may have different line properties, e.g. height, spacing, 
+        this function is to split them back to original text block. But the original layout may not reasonable for
+        re-building docx, so a high priority is to split them vertically, which converts potential float layout to
+        flow layout.
         '''
         blocks = [] # type: list[TextBlock]
         for block in self._instances:
@@ -478,21 +498,22 @@ class Blocks(Collection):
 
     def parse_text_format(self, rects):
         '''Parse text format with style represented by stroke/fill shapes.
-            ---
-            Args:
-            - rects: Shapes, potential styles applied on blocks
-
-            NOTE: `parse_text_format` must be implemented by TextBlock, ImageBlock and TableBlock.
+        
+        Args:
+            rects (Shapes): Potential styles applied on blocks.
+        
+        .. note::
+            ``parse_text_format()`` must be implemented by TextBlock, ImageBlock and TableBlock.
         '''
         # parse text block style one by one
         for block in self._instances: block.parse_text_format(rects)
 
 
     def make_docx(self, doc):
-        ''' Create page based on parsed block structure. 
-            ---
-            Args:
-            - doc: python-docx Document or _Cell object
+        '''Create page based on parsed block structure. 
+        
+        Args:
+            doc (Document, _Cell): The container to make docx content.
         '''
         pre_table = False
         for block in self._instances:
@@ -551,7 +572,7 @@ class Blocks(Collection):
 
   
     def plot(self, page):
-        '''Plot blocks in PDF page.'''
+        '''Plot blocks in PDF page for debug purpose.'''
         # different plot options for table block:
         #                       cell_content    border_style   border_color         note
         # lattice table ONLY        N               Y               -           temp Blocks with parent=None
@@ -570,7 +591,7 @@ class Blocks(Collection):
 
     @staticmethod
     def _assign_block_to_tables(block:Block, tables:list, blocks_in_tables:list, blocks:list):
-        '''Collect blocks contained in table region `blocks_in_tables` and rest text blocks in `blocks`.'''
+        '''Collect blocks contained in table region ``blocks_in_tables`` and rest text blocks in ``blocks``.'''
         # lines in block for further check if necessary
         lines = block.lines if block.is_text_image_block() else Lines()
 

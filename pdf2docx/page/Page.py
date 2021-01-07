@@ -1,32 +1,30 @@
 # -*- coding: utf-8 -*-
 
-'''
-Page objects based on PDF raw dict extracted with PyMuPDF.
-@created: 2020-07-22
----
+'''Page objects based on PDF raw dict extracted with ``PyMuPDF``.
 
-The raw page content extracted with PyMuPDF, `page.getText('rawdict')` is described per link:
-https://pymupdf.readthedocs.io/en/latest/textpage.html
+The raw page content extracted with ``PyMuPDF`` API ``page.getText('rawdict')`` 
+is described per `link <https://pymupdf.readthedocs.io/en/latest/textpage.html>`_:: 
+
+    {
+        # raw dict
+        ----------------------------
+        "width" : w,
+        "height": h,    
+        "blocks": [{...}, {...}, ...],
+
+        # introduced dict
+        ----------------------------
+        "id": 0, # page index
+        "finalized": True,
+        "margin": [left, right, top, bottom],
+        "shapes" : [{...}, {...}, ...]
+    }
 
 In addition to the raw layout dict, some new features are also included, e.g.
-- page margin
-- rectangle shapes, for text format, annotations and table border/shading
-- new block in table type
 
-{
-    # raw dict
-    ----------------------------
-    "width" : w,
-    "height": h,    
-    "blocks": [{...}, {...}, ...],
-
-    # introduced dict
-    ----------------------------
-    "id": 0, # page index
-    "finalized": True,
-    "margin": [left, right, top, bottom],
-    "shapes" : [{...}, {...}, ...]
-}
+* page margin
+* rectangle shapes, for text format, annotations and table border/shading
+* new block in table type
 '''
 
 
@@ -44,7 +42,7 @@ from ..common import constants
 
 
 class Page:
-    ''' Object representing the whole page, e.g. margins, blocks, shapes, spacing.'''
+    '''Object representing the whole page, e.g. margins, blocks, shapes, spacing.'''
 
     def __init__(self, fitz_page=None):
         ''' Initialize page layout.
@@ -59,6 +57,7 @@ class Page:
 
     @staticmethod
     def init_settings(settings:dict=None):
+        '''Initialize and update parameters.'''
         default = {
             'debug': False, # plot layout if True
             'connected_border_tolerance'     : 0.5, # two borders are intersected if the gap lower than this value
@@ -142,7 +141,7 @@ class Page:
 
 
     def parse(self, settings:dict=None):
-        ''' Parse page layout.'''
+        '''Parse page layout.'''
         # update parameters
         self.settings = self.init_settings(settings)
 
@@ -172,7 +171,7 @@ class Page:
 
 
     def store(self):
-        '''Store parsed layout.'''
+        '''Store parsed layout in dict format.'''
         return {
             'id'    : self.id,
             'finalized': int(self.finalized),
@@ -221,16 +220,10 @@ class Page:
 
 
     def make_docx(self, doc):
-        ''' Create page based on layout data. 
-            ---
-            Args:
-            - doc: python-docx.Document object
-
-            To avoid incorrect page break from original document, a new page section
-            is created for each page.
-
-            The vertical postion of paragraph/table is defined by space_before or 
-            space_after property of a paragraph.
+        '''Create page based on layout data. 
+        
+        Args:
+            doc (Document): ``python-docx`` document object
         '''
         # new page section
         # a default section is created when initialize the document,
@@ -260,7 +253,7 @@ class Page:
     # ----------------------------------------------------
     @debug_plot('Source Text Blocks')
     def load_source(self):
-        # initialize layout
+        '''Initialize layout extracted with ``PyMuPDF``.'''
         data = self.__source_from_page(self.fitz_page) if self.fitz_page else {}
         self.restore(data)
 
@@ -268,7 +261,7 @@ class Page:
 
 
     def __source_from_page(self, page):
-        '''Source data extracted from page by `PyMuPDF`.'''
+        '''Source data extracted from page by ``PyMuPDF``.'''
         # source blocks
         # NOTE: all these coordinates are relative to un-rotated page
         # https://pymupdf.readthedocs.io/en/latest/page.html#modifying-pages
@@ -292,15 +285,20 @@ class Page:
 
 
     def __preprocess_images(self, page, raw):
-        ''' Adjust image blocks. Image block extracted by `page.getText('rawdict')` doesn't contain alpha channel data,
-            so it needs to get page images by `page.getImageList()` and then recover them. However, `Page.getImageList()` 
-            contains each image only once, while `page.getText('rawdict')` generates image blocks for every image location,
-            whether or not there are any duplicates. See PyMuPDF doc:
-            https://pymupdf.readthedocs.io/en/latest/textpage.html#dictionary-structure-of-extractdict-and-extractrawdict
+        '''Adjust image blocks. 
+        
+        Image block extracted by ``page.getText('rawdict')`` doesn't contain alpha channel data,
+        so it needs to get page images by ``page.getImageList()`` and then recover them. However, 
+        ``Page.getImageList()`` contains each image only once, while ``page.getText('rawdict')`` 
+        generates image blocks for every image location, whether or not there are any duplicates. 
+        See PyMuPDF doc:
+
+        https://pymupdf.readthedocs.io/en/latest/textpage.html#dictionary-structure-of-extractdict-and-extractrawdict
             
-            So, a compromise:
-            - get image contents with `page.getImageList()` -> ensure correct images
-            - get image location with `page.getText('rawdict')` -> ensure correct locations
+        Above all, a compromise:
+
+        * Get image contents with ``page.getImageList()`` -> ensure correct images
+        * Get image location with ``page.getText('rawdict')`` -> ensure correct locations
         '''
         # recover image blocks
         recovered_images = ImagesExtractor.extract_images(page, self.settings['clip_image_res_ratio'])
@@ -339,7 +337,7 @@ class Page:
 
     @debug_plot('Source Paths')
     def __preprocess_shapes(self, page, raw):
-        ''' Identify iso-oriented paths and convert vector graphic paths to pixmap.'''
+        '''Identify iso-oriented paths and convert vector graphic paths to pixmap.'''
         # extract paths ed by `page.getDrawings()`
         raw_paths = page.getDrawings()
 
@@ -426,9 +424,7 @@ class Page:
  
 
     def parse_spacing(self):
-        ''' Calculate external and internal vertical space for paragraph blocks under page context 
-            or table context. It'll used as paragraph spacing and line spacing when creating paragraph.
-        '''
+        '''Calculate external and internal vertical space for Blocks instances.'''
         args = (
             self.settings['line_separate_threshold'],
             self.settings['line_free_space_ratio_threshold'],
