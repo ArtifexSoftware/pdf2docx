@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 
-'''
-Text block objects based on PDF raw dict extracted with PyMuPDF.
+'''Text block objects based on PDF raw dict extracted with ``PyMuPDF``.
 
-@created: 2020-07-22
-
----
-https://pymupdf.readthedocs.io/en/latest/textpage.html
+Data structure based on this `link <https://pymupdf.readthedocs.io/en/latest/textpage.html>`_::
 
     {
         # raw dict
@@ -58,14 +54,16 @@ class TextBlock(Block):
 
     @property
     def text(self):
-        '''Get text content in block, joning each line with `\n`.'''
+        '''Get text content in block, joning each line with ``\\n``.'''
         lines_text = [line.text for line in self.lines]
         return '\n'.join(lines_text)
 
     
     @property
     def text_direction(self):
-        '''All lines contained in text block must have same text direction. Otherwise, set normal direction'''            
+        '''All lines contained in text block must have same text direction. 
+        Otherwise, set normal direction.
+        '''            
         res = set(line.text_direction for line in self.lines)
         # consider two text direction only:  left-right, bottom-top
         if TextDirection.IGNORE in res:
@@ -77,7 +75,7 @@ class TextBlock(Block):
 
 
     def is_flow_layout(self, float_layout_tolerance:float, line_separate_threshold:float):
-        '''Check if flow layout: same bottom-left point for lines in same row.'''
+        '''Check if flow layout, i.e. same bottom-left point for lines in same row.'''
         # lines in same row
         fun = lambda a, b: a.horizontally_align_with(b, factor=float_layout_tolerance) and \
                             not a.vertically_align_with(b, factor=constants.FACTOR_ALMOST) 
@@ -118,7 +116,11 @@ class TextBlock(Block):
 
 
     def split(self):
-        ''' Split contained lines vertically and create associated text blocks.'''
+        '''Split contained lines vertically and create associated text blocks.
+
+        Returns:
+            list: Split text blocks.
+        '''
         blocks = [] # type: list[TextBlock]
         for lines in self.lines.split(threshold=constants.FACTOR_A_FEW):
             text_block = TextBlock()
@@ -129,15 +131,15 @@ class TextBlock(Block):
 
 
     def strip(self):
-        '''strip each Line instance.'''
+        '''Strip each Line instance.'''
         self.lines.strip()
 
 
     def plot(self, page):
-        '''Plot block/line/span area, in PDF page.
-           ---
-            Args: 
-              - page: fitz.Page object
+        '''Plot block/line/span area for debug purpose.
+        
+        Args:
+            page (fitz.Page): pdf page.
         '''
         # block border in blue
         blue = rgb_component_from_name('blue')   
@@ -156,10 +158,10 @@ class TextBlock(Block):
 
 
     def parse_text_format(self, rects):
-        '''parse text format with style represented by rectangles.
-            ---
-            Args:
-            - rects: Shapes, potential styles applied on blocks
+        '''Parse text format with style represented by rectangles.
+        
+        Args:
+            rects (Shapes): Shapes representing potential styles applied on blocks.
         '''
         flag = False
 
@@ -186,12 +188,13 @@ class TextBlock(Block):
                     lines_right_aligned_threshold:float,
                     lines_center_aligned_threshold:float):
         ''' Set horizontal spacing based on lines layout and page bbox.
-            - The general spacing is determined by paragraph alignment and indentation.
-            - The detailed spacing of block lines is determined by tab stops.
+        
+        * The general spacing is determined by paragraph alignment and indentation.
+        * The detailed spacing of block lines is determined by tab stops.
 
-            Multiple alignment modes may exist in block (due to improper organized lines
-            from PyMuPDF), e.g. some lines align left, and others right. In this case,
-            LEFT alignment is set, and use TAB to position each line.
+        Multiple alignment modes may exist in block (due to improper organized lines
+        from ``PyMuPDF``), e.g. some lines align left, and others right. In this case,
+        **LEFT** alignment is set, and use ``TAB`` to position each line.
         '''
         # NOTE: in PyMuPDF CS, horizontal text direction is same with positive x-axis,
         # while vertical text is on the contrary, so use f = -1 here
@@ -240,10 +243,11 @@ class TextBlock(Block):
     def parse_line_spacing(self):
         '''Calculate average line spacing.
 
-            The layout of pdf text block: line-space-line-space-line, excepting space before first line, 
-            i.e. space-line-space-line, when creating paragraph in docx. So, an average line height = space+line.
+        The layout of pdf text block: line-space-line-space-line, excepting space before first line, 
+        i.e. space-line-space-line, when creating paragraph in docx. So, an average line height is 
+        ``space+line``.
 
-            Then, the height of first line can be adjusted by updating paragraph before-spacing.
+        Then, the height of first line can be adjusted by updating paragraph before-spacing.
         '''
 
         # check text direction
@@ -282,23 +286,18 @@ class TextBlock(Block):
 
 
     def make_docx(self, p):
-        ''' Create paragraph for a text block.
-            ---
-            Args:
-              - p: docx paragraph instance
+        '''Create paragraph for a text block.
 
-            NOTE:
-            - the left position of paragraph set by paragraph indent, rather than TAB stop
-            - hard line break is used for line in block.
+        Refer to ``python-docx`` doc for details on text format:
 
-            Generally, a pdf block is a docx paragraph, with block->line as line in paragraph.
-            But without the context, it's not able to recognize a block line as word wrap, or a 
-            separate line instead. A rough rule used here: block line will be treated as separate 
-            line, except this line and next line are indeed in the same line.
+        * https://python-docx.readthedocs.io/en/latest/user/text.html
+        * https://python-docx.readthedocs.io/en/latest/api/enum/WdAlignParagraph.html#wdparagraphalignment
+        
+        Args:
+            p (Paragraph): ``python-docx`` paragraph instance.
 
-            Refer to python-docx doc for details on text format:
-            - https://python-docx.readthedocs.io/en/latest/user/text.html
-            - https://python-docx.readthedocs.io/en/latest/api/enum/WdAlignParagraph.html#wdparagraphalignment
+        .. note::
+            The left position of paragraph is set by paragraph indent, rather than ``TAB`` stop.
         '''
         pf = docx.reset_paragraph_format(p)
 
@@ -347,11 +346,11 @@ class TextBlock(Block):
                     lines_left_aligned_threshold:float,
                     lines_right_aligned_threshold:float,
                     lines_center_aligned_threshold:float):
-        ''' Detect text alignment mode based on layout of internal lines. 
-            ---
-            Args:
-            - text_direction_param: (x0_index, x1_index, direction_factor), e.g. (0, 2, 1) for horizontal text, 
-            while (3, 1, -1) for vertical text.
+        '''Detect text alignment mode based on layout of internal lines. 
+        
+        Args:
+            text_direction_param (tuple): ``(x0_index, x1_index, direction_factor)``, 
+                e.g. ``(0, 2, 1)`` for horizontal text, while ``(3, 1, -1)`` for vertical text.
         '''
         # get lines in each physical row
         fun = lambda a,b: a.in_same_row(b)
@@ -412,12 +411,12 @@ class TextBlock(Block):
     def _external_alignment(self, bbox:list, 
             text_direction_param:tuple,
             lines_center_aligned_threshold:float):
-        ''' Detect text alignment mode based on the position to external bbox. 
-            ---
-            Args:
-            - bbox: page or cell bbox where this text block locates in.
-            - text_direction_param: (x0_index, x1_index, direction_factor), e.g. (0, 2, 1) for horizontal text, 
-            while (3, 1, -1) for vertical text.
+        '''Detect text alignment mode based on the position to external bbox. 
+        
+        Args:
+            bbox (list): Page or Cell bbox where this text block locates in.
+            text_direction_param (tuple): ``(x0_index, x1_index, direction_factor)``, e.g. 
+                ``(0, 2, 1)`` for horizontal text, while ``(3, 1, -1)`` for vertical text.
         '''
         # indexes based on text direction
         idx0, idx1, f = text_direction_param

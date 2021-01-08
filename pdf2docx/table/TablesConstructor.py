@@ -1,19 +1,22 @@
 # -*- coding: utf-8 -*-
 
-'''
-Parsing table blocks:
-- lattice table: explicit borders represented by strokes
-- stream table : borderless table recognized from layout of text blocks.
+'''Parsing table blocks.
+
+* ``lattice table``: explicit borders represented by strokes.
+* ``stream table`` : borderless table recognized from layout of text blocks.
 
 Terms definition:
-- from appearance aspect, we say stroke and fill, the former looks like a line, while the later an area
-- from semantic aspect, we say border (cell border) and shading (cell shading)
-- an explicit border is determined by a certain stroke, while a stroke may also represent an underline of text
-- an explicit shading is determined by a fill, while a fill may also represent a highlight of text
-- Border object is introduced to determin borders of stream table. Border instance is a virtual border adaptive 
-  in a certain range, then converted to a stroke once finalized, and finally applied to detect table border.
 
-@created: 2020-08-16
+* From appearance aspect, we say ``stroke`` and ``fill``, the former looks like a line, 
+  while the later an area.
+* From semantic aspect, we say ``border`` (cell border) and ``shading`` (cell shading).
+* An explicit border is determined by a certain stroke, while a stroke may also represent 
+  an underline of text.
+* An explicit shading is determined by a fill, while a fill may also represent a highlight 
+  of text.
+* Border object is introduced to determin borders of stream table. Border instance is a 
+  virtual border adaptive in a certain range, then converted to a stroke once finalized, 
+  and finally applied to detect table border.
 '''
 
 from ..common.Element import Element
@@ -25,24 +28,36 @@ from .TableStructure import TableStructure
 from .Border import HBorder, VBorder, Borders
 
 class TablesConstructor:
+    '''Object parsing TableBlock.'''
 
     def __init__(self, parent):
-        '''Object parsing TableBlock.'''
         self._parent = parent # Page
         self._blocks = parent.blocks if parent else None # type: Blocks
         self._shapes = parent.shapes if parent else None # type: Shapes
 
 
     def lattice_tables(self, 
-            connected_border_tolerance:float, # two borders are intersected if the gap lower than this value
-            min_border_clearance:float,       # the minimum allowable clearance of two borders
-            max_border_width:float,           # max border width
-            float_layout_tolerance:float,     # [0,1] the larger of this value, the more tolerable of flow layout
-            line_overlap_threshold:float,     # [0,1] delete line if the intersection to other lines exceeds this value
-            line_merging_threshold:float ,    # combine two lines if the x-distance is lower than this value
-            line_separate_threshold:float     # two separate lines if the x-distance exceeds this value
-            ):
-        '''Parse table with explicit borders/shadings represented by rectangle shapes.'''
+                connected_border_tolerance:float,
+                min_border_clearance:float,
+                max_border_width:float,
+                float_layout_tolerance:float,
+                line_overlap_threshold:float,
+                line_merging_threshold:float,
+                line_separate_threshold:float):
+        """Parse table with explicit borders/shadings represented by rectangle shapes.
+
+        Args:
+            connected_border_tolerance (float): Two borders are intersected if the gap lower than this value.
+            min_border_clearance (float): The minimum allowable clearance of two borders.
+            max_border_width (float): Max border width.
+            float_layout_tolerance (float): The larger of this value, the more tolerable of flow layout.
+            line_overlap_threshold (float): Delete line if the intersection to other lines exceeds this value.
+            line_merging_threshold (float): Combine two lines if the x-distance is lower than this value.
+            line_separate_threshold (float): Two separate lines if the x-distance exceeds this value.
+
+        Returns:
+            Blocks: A collection of parsed lattice tables.
+        """        
         # group stroke shapes: each group may be a potential table
         grouped_strokes = self._shapes.table_strokes \
             .group_by_connectivity(dx=connected_border_tolerance, dy=connected_border_tolerance)
@@ -88,8 +103,10 @@ class TablesConstructor:
                 line_merging_threshold:float,
                 line_separate_threshold:float
             ):
-        ''' Parse table with layout of text/image blocks, and update borders with explicit borders 
-            represented by rectangle shapes.
+        '''Parse table with layout of text/image blocks, and update borders with explicit borders 
+        represented by rectangle shapes.
+
+        Refer to ``lattice_tables`` for arguments description.
         '''
         # all explicit borders and shadings
         table_strokes = self._shapes.table_strokes
@@ -184,14 +201,18 @@ class TablesConstructor:
 
     @staticmethod
     def stream_strokes(lines:Lines, outer_borders:tuple, explicit_strokes:Shapes, explicit_shadings:Shapes):
-        ''' Parsing borders mainly based on content lines contained in cells, and update borders 
-            (position and style) with explicit borders represented by rectangle shapes.
-            ---
-            Args:
-            - lines: Lines, contained in table cells
-            - outer_borders: (top, bottom, left, right), boundary borders of table
-            - explicit_strokes: showing borders in a stream table; can be empty.
-            - explicit_shadings: showing shadings in a stream table; can be empty.
+        '''Parsing borders mainly based on content lines contained in cells, 
+        and update borders (position and style) with explicit borders represented 
+        by rectangle shapes.
+        
+        Args:
+            lines (Lines): lines Contained in table cells.
+            outer_borders (tuple): Boundary borders of table, ``(top, bottom, left, right)``. 
+            explicit_strokes (Shapes): Showing borders in a stream table; can be empty.
+            explicit_shadings (Shapes): Showing shadings in a stream table; can be empty.
+        
+        Returns:
+            Shapes: Parsed strokes representing table borders.
         '''
         borders = Borders()
 
@@ -236,8 +257,9 @@ class TablesConstructor:
 
     @staticmethod
     def _outer_borders(inner_bbox, outer_bbox):
-        '''Initialize outer Border instances according to lower and upper bboxes.
-            ```
+        '''Initialize outer Border instances according to lower and upper bbox-es.
+
+        ::
             +--------------------------------->
             |
             | Y0 +------------------------+     + outer bbox
@@ -250,7 +272,6 @@ class TablesConstructor:
             | Y1 +------------------------+
             |    X0                       X1
             v
-            ```
         '''
         x0, y0, x1, y1 = inner_bbox
         X0, Y0, X1, Y1 = outer_bbox
@@ -270,25 +291,31 @@ class TablesConstructor:
 
     @staticmethod
     def _inner_borders(lines:Lines, outer_borders:tuple):
-        ''' Calculate the surrounding borders of given lines.
-            ---
-            Args:
-            - lines: lines in table cells
-            - outer_borders: boundary borders of table region
+        '''Calculate the surrounding borders of given ``lines``.
+        These borders construct table cells. 
+        
+        Considering the re-building of cell content in docx, 
 
-            These borders construct table cells. Considering the re-building of cell content in docx, 
-            - only one bbox is allowed in a line;
-            - but multi-lines are allowed in a cell.
+        * Only one bbox is allowed in a line; but
+        * multi-lines are allowed in a cell.
 
-            Two purposes of stream table: 
-            - rebuild layout, e.g. text layout with two columns
-            - parsing real borderless table
+        Two purposes of stream table: 
 
-            It's controdictory that the former needn't to deep into row level, just 1 x N table convenient for layout recreation;
-            instead, the later should, M x N table for each cell precisely. So, the principle determining stream tables borders:
-            - vertical borders contributes the table structure, so border.is_reference=False
-            - horizontal borders are for reference when n_column=2, border.is_reference=True
-            - during deeper recursion, h-borders become outer borders: it turns valuable when count of detected columns >= 2 
+        * Rebuild layout, e.g. text layout with two columns, and
+        * parsing real borderless table.
+
+        It's controdictory that the former needn't to deep into row level, just ``1xN`` table 
+        convenient for layout recreation; instead, the later should, ``MxN`` table for each 
+        cell precisely. So, the principle determining stream tables borders:
+
+        * Vertical borders contributes the table structure, so ``border.is_reference=False``.
+        * Horizontal borders are for reference when ``n_column=2``, in this case ``border.is_reference=True``.
+        * During deeper recursion, h-borders become outer borders: it turns valuable when count 
+          of detected columns >= 2.
+        
+        Args:
+            lines (Lines): Lines in table cells.
+            outer_borders (tuple): Boundary borders of table region.
         '''
         # trying: deep into cells        
         cols_lines = lines.group_by_columns()
@@ -329,7 +356,7 @@ class TablesConstructor:
             row_num = len(rows_lines)
             if row_num == 1: continue
 
-            # collect bboxes row by row
+            # collect bbox-es row by row
             bottom = None
             for j in range(row_num):
                 # top row border, after the first round, the bottom border of the i-th row becomes 

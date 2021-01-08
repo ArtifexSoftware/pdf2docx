@@ -1,26 +1,23 @@
 # -*- coding: utf-8 -*-
 
 '''
-Objects representing PDF path (both stroke and filling) extracted from both pdf drawings and annotations.
+Objects representing PDF path (stroke and filling) extracted from pdf drawings and annotations.
 
-@created: 2020-09-22
+Data structure based on results of ``page.getDrawings()``::
 
----
-
-Data structure based on results of `page.getDrawings()`:
-{
-    'color': (x,x,x) or None,  # stroke color
-    'fill' : (x,x,x) or None,  # fill color
-    'width': float,            # line width
-    'closePath': bool,         # whether to connect last and first point
-    'rect' : rect,             # page area covered by this path
-    'items': [                 # list of draw commands: lines, rectangle or curves.
-        ("l", p1, p2),         # a line from p1 to p2
-        ("c", p1, p2, p3, p4), # cubic Bézier curve from p1 to p4, p2 and p3 are the control points
-        ("re", rect),          # a rect
-    ],
-    ...
-}
+    {
+        'color': (x,x,x) or None,  # stroke color
+        'fill' : (x,x,x) or None,  # fill color
+        'width': float,            # line width
+        'closePath': bool,         # whether to connect last and first point
+        'rect' : rect,             # page area covered by this path
+        'items': [                 # list of draw commands: lines, rectangle or curves.
+            ("l", p1, p2),         # a line from p1 to p2
+            ("c", p1, p2, p3, p4), # cubic Bézier curve from p1 to p4, p2 and p3 are the control points
+            ("re", rect),          # a rect
+        ],
+        ...
+    }
 '''
 
 import fitz
@@ -39,14 +36,29 @@ class Segment:
 
 
 class L(Segment):
-    '''Line path with source ("l", p1, p2)'''
+    '''Line path with source ``("l", p1, p2)``.'''
     @property
     def is_iso_oriented(self):
+        '''Whether horizontal or vertical line.'''
         x0, y0 = self.points[0]
         x1, y1 = self.points[1]
         return abs(x1-x0)<=1e-3 or abs(y1-y0)<=1e-3
 
     def to_strokes(self, width:float, color:list):
+        """Convert to stroke dict.
+
+        Args:
+            width (float): Specify width for the stroke.
+            color (list): Specify color for the stroke.
+
+        Returns:
+            list: A list of ``Stroke`` dicts. 
+        
+        .. note::
+            A line corresponds to one stroke, but considering the consistence, 
+            the return stroke dict is append to a list. So, the length of list 
+            is always 1.
+        """ 
         strokes = []
         strokes.append({
                 'start': tuple(self.points[0]),
@@ -58,7 +70,7 @@ class L(Segment):
 
 
 class R(Segment):
-    '''Rect path with source ("re", rect)'''
+    '''Rect path with source ``("re", rect)``.'''
     def __init__(self, item):
         self.rect = item[1]
 
@@ -66,6 +78,18 @@ class R(Segment):
     def is_iso_oriented(self): return True
 
     def to_strokes(self, width:float, color:list):
+        """Convert each edge to stroke dict.
+
+        Args:
+            width (float): Specify width for the stroke.
+            color (list): Specify color for the stroke.
+
+        Returns:
+            list: A list of ``Stroke`` dicts. 
+        
+        .. note::
+            One Rect path is converted to a list of 4 stroke dicts.
+        """
         # corner points
         # NOTE: center line of path without stroke width considered
         x0, y0, x1, y1 = self.rect
@@ -85,7 +109,7 @@ class R(Segment):
 
 
 class C(Segment):
-    '''Bezier curve path with source ("c", p1, p2, p3, p4)'''
+    '''Bezier curve path with source ``("c", p1, p2, p3, p4)``.'''
     pass
 
 
@@ -115,7 +139,11 @@ class Segments:
 
 
     def cal_bbox(self):
-        '''bbox of Segments. Note for iso-oriented segments, bbox.getArea()==0.'''
+        '''Bbox of Segments. 
+        
+        .. note::
+            For iso-oriented segments, ``bbox.getArea()==0``.
+        '''
         # rectangle area
         if len(self._instances)==1 and isinstance(self._instances[0], R):
             return self._instances[0].rect
@@ -131,7 +159,15 @@ class Segments:
 
 
     def to_strokes(self, width:float, color:list):
-        '''Convert each segment to a stroke.'''
+        """Convert each segment to a ``Stroke`` dict.
+
+        Args:
+            width (float): Specify stroke width.
+            color (list): Specify stroke color.
+
+        Returns:
+            list: A list of ``Stroke`` dicts.
+        """        
         strokes = []
         for segment in self._instances: 
             strokes.extend(segment.to_strokes(width, color))
@@ -139,7 +175,14 @@ class Segments:
     
 
     def to_fill(self, color:list):
-        '''Convert segment closed area to a fill.'''
+        """Convert segment closed area to a ``Fill`` dict.
+
+        Args:
+            color (list): Specify fill color.
+
+        Returns:
+            dict: ``Fill`` dict.
+        """        
         return {
             'bbox' : list(self.bbox), 
             'color': rgb_value(color)
@@ -147,7 +190,7 @@ class Segments:
 
 
 class Path:
-    '''Path extracted from PDF, consist of one or more segments.'''
+    '''Path extracted from PDF, consist of one or more ``Segments``.'''
 
     def __init__(self, raw:dict):
         '''Init path in un-rotated page CS.'''
@@ -158,7 +201,7 @@ class Path:
         self.items = [] # type: list[Segments]
         self.bbox = fitz.Rect()
         close_path, w = raw['closePath'], raw['width']
-        for segments in self.group_segments(raw['items']):
+        for segments in self._group_segments(raw['items']):
             S = Segments(segments, close_path)
             self.items.append(S)
 
@@ -169,7 +212,15 @@ class Path:
 
 
     @staticmethod
-    def group_segments(items):
+    def _group_segments(items):
+        """Group connected segments.
+
+        Args:
+            items (dict): Raw dict extracted from ``page.getDrawings()``.
+
+        Returns:
+            list: A list of segments list.
+        """        
         segments, segments_list = [], []
         cursor = None
         for item in items:
@@ -214,8 +265,9 @@ class Path:
     @property
     def is_iso_oriented(self):
         '''It is iso-oriented on condition that:
-            - all Lines are iso-oriented
-            - the count of iso-oriented Lines is larger than Curves
+
+        * All Lines are iso-oriented, and
+        * the count of iso-oriented Lines is larger than Curves
         '''
         line_cnt, curve_cnt = 0, 0
         for segments in self.items:
@@ -228,7 +280,11 @@ class Path:
 
 
     def to_shapes(self):
-        ''' Convert path to shapes: stroke or fill.'''
+        """Convert path to ``Shape`` raw dicts.
+
+        Returns:
+            list: A list of ``Shape`` dict.
+        """        
         stroke_color = self.raw.get('color', None)
         fill_color = self.raw.get('fill', None)
         width = self.raw.get('width', 0.0)
@@ -247,7 +303,11 @@ class Path:
 
 
     def to_strokes(self, width:float, color:list):
-        '''Convert path segments to strokes.'''
+        '''Convert path to ``Stroke`` raw dicts.
+
+        Returns:
+            list: A list of ``Stroke`` dict.
+        '''
         strokes = []        
         for segments in self.items:
             strokes.extend(segments.to_strokes(width, color))        
@@ -255,7 +315,14 @@ class Path:
 
 
     def to_fills(self, color:list):
-        '''Convert fill path to rectangular bbox, though the real filling area is not a rectangle.'''
+        '''Convert path to ``Fill`` raw dicts.
+
+        Returns:
+            list: A list of ``Fill`` dict.
+        
+        .. note::
+            The real filling area of this path may be not a rectangle.        
+        '''
         fills = []        
         for segments in self.items:
             fills.append(segments.to_fill(color))        
@@ -263,7 +330,14 @@ class Path:
 
 
     def plot(self, canvas):
-        ''' Plot path https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
+        ''' Plot path for debug purpose.
+
+        Args:
+            canvas: ``PyMuPDF`` drawing canvas by ``page.newShape()``.
+
+        Reference:
+        
+            https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
         '''
         # draw each entry of the 'items' list
         for item in self.raw.get('items', []):

@@ -1,15 +1,9 @@
 # -*- coding: utf-8 -*-
 
-'''
-Char object based on PDF raw dict extracted with PyMuPDF.
+'''Char object based on PDF raw dict extracted with ``PyMuPDF``.
 
-@created: 2020-07-22
+Data structure refer to this `link <https://pymupdf.readthedocs.io/en/latest/textpage.html>`_::
 
----
-
-refer to: https://pymupdf.readthedocs.io/en/latest/textpage.html
-
-raw dict for Char
     {
         'bbox'  : (x0, y0, x1, y1), 
         'c'     : str, 
@@ -32,9 +26,19 @@ class Char(Element):
 
 
     def contained_in_rect(self, rect:Shape, horizontal:bool=True):
-        ''' Detect whether locates in a rect, or has an intersection 
-            larger than half of the char bbox.
-        '''
+        """Detect whether it locates in a rect.
+
+        Args:
+            rect (Shape): Target rect to check.
+            horizontal (bool, optional): Text direction is horizontal if True. Defaults to True.
+
+        Returns:
+            bool: Whether a Char locates in target rect.
+        
+        .. note::
+            It's considered as contained in the target rect if the intersection is larger than 
+            half of the char bbox.
+        """ 
         # char in rect?
         if self.bbox in rect.bbox:
             return True
