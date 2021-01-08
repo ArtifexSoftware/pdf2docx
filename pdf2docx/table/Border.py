@@ -1,26 +1,25 @@
 # -*- coding: utf-8 -*-
 
-'''
-Module to determin stream table borders.
+'''Module to determin stream table borders.
 
 Though no exact borders exist for stream table, it's better to simplify table structure by
 aligning borders as more as possible. Taking vertical borders for example, it can be moved 
 in a valid range in horizontal direction, but restricted by top and bottom borders in vertical 
 direction. It's also true for horizontal borders.
 
-Accordingly, introduce `Border` object, which has the following attributes:
-- valid range, e. g. (100, 250);
-- boundary borders, e. g. (top_border, bottom_border) for v-border, 
-                       or (left_border, right_border) for h-border.
+Accordingly, introduce ``Border`` object, which has the following attributes:
 
-The target is to finalize the position in valid range, e. g. x=125 for v-border with valid range 
-(120, 250). Then it's y-direction is determined by its boundary borders, where the y-coordinates 
+* Valid range, e.g. ``(100, 250)``;
+* Boundary borders, e.g. ``(top_border, bottom_border)`` for v-border,
+  or ``(left_border, right_border)`` for h-border.
+
+The target is to finalize the position in valid range, e.g. ``x=125`` for v-border with valid range 
+``(120, 250)``. Then it's y-direction is determined by its boundary borders, where the y-coordinates 
 are finalized in same logic. Finally, this border is fixed since both x- and y- directions are 
 determined.
 
-NOTE: consider horizontal and vertical borders only.
-
-@created: 2020-08-29
+.. note::
+    Consider horizontal and vertical borders only.
 '''
 
 from collections import defaultdict
@@ -31,17 +30,18 @@ from ..common.share import RectType, rgb_value
 
 
 class Border:
+    '''Border for stream table.'''
 
     def __init__(self, border_type='h', border_range:tuple=None, borders:tuple=None, reference:bool=False):
         '''Border for stream table.
-            ---
-            Args:
-            - border_type: 'h' - horizontal border; 'v' - vertical border
-            - border_range: valid range, e.g. (x0, x1) for vertical border
-            - borders: boundary borders, e.g. top and bottom horizontal borders for current vertical border; 
-            left and right vertical borders for current horizontal border. 
-            - reference: reference Border is used to show a potential case, which converts to table border when finalized;
-            otherwise, it is ignored.
+        
+        Args:
+            border_type (str): ``h`` - horizontal border; ``v`` - vertical border.
+            border_range (tuple): Valid range, e.g. ``(x0, x1)`` for vertical border.
+            borders (tuple): Boundary borders in ``Border`` type, e.g. 
+        top and bottom horizontal borders for current vertical border; 
+        left and right vertical borders for current horizontal border. 
+            reference (bool): Reference Border is converted to table border when finalized; otherwise, it is ignored.
             
         '''
         # border type
@@ -73,7 +73,9 @@ class Border:
     
     @property
     def value(self):
-        ''' Finalized position, e.g. y-coordinate of horizontal border. Average value if not finalized.'''
+        '''Finalized position, e.g. y-coordinate of horizontal border. 
+        Average value if not finalized.
+        '''
         return self._value if self.finalized else (self.LRange+self.URange)/2.0
 
 
@@ -87,13 +89,27 @@ class Border:
 
 
     def is_valid(self, value:float):
-        '''Whether the given position locates in the valid border range.'''
+        '''Whether the given position locates in the valid border range.
+
+            Args:
+                value (float): Target position.
+            
+            Returns:
+                bool: Valid position or not.
+        '''
         # consider margin here, but pay attention to underline which may be counted
         return (self.LRange-constants.MINOR_DIST) <= value <= (self.URange+constants.MINOR_DIST) 
 
 
-    def set_border_range(self, border_range):
-        '''Set border valid ranges.'''
+    def set_border_range(self, border_range:tuple=None):
+        """Set border valid ranges.
+
+        Args:
+            border_range (tuple, optional): Lower/upper range to set. Defaults to None.
+
+        Returns:
+            Border: self
+        """ 
         if border_range:
             x0, x1 = border_range
         else:
@@ -103,8 +119,15 @@ class Border:
         return self
 
 
-    def set_boundary_borders(self, borders):
-        '''Set boundary borders.'''
+    def set_boundary_borders(self, borders:tuple=None):
+        """Set boundary borders.
+
+        Args:
+            borders (tuple, optional): Lower/upper boundary borders to set. Defaults to None.
+
+        Returns:
+            Border: self
+        """
         if borders:
             lower_border, upper_border = borders
         else:
@@ -115,11 +138,20 @@ class Border:
 
 
     def get_boundary_borders(self):
+        '''Get boundary borders.
+
+        Returns:
+            tuple: ``(lower b-border, upper b-border)``
+        '''
         return (self._LBorder, self._UBorder)
 
 
     def finalize_by_value(self, value:float):
-        ''' Finalize border with given position.'''
+        '''Finalize border with given position.
+
+        Args:
+            value (float): Target position.
+        '''
         # can be finalized only one time
         if self.finalized or not self.is_valid(value): return False
 
@@ -131,11 +163,14 @@ class Border:
 
 
     def finalize_by_stroke(self, stroke:Stroke):
-        ''' Finalize border with specified stroke shape, which is generally a showing border-like shape.
-             
-            NOTE:
-            - the boundary borders may also be affected by this stroke shape.
-            - border-like stroke may be an underline/strike-through.      
+        '''Finalize border with specified stroke shape, which is generally a showing border-like shape.
+
+        Args:
+            stroke (Stroke): Target stroke to finalize this border.
+
+        .. note::
+            * The boundary borders may also be affected by this stroke shape.
+            * The border-like stroke may be an underline or strike-through.      
         '''
         # NOTE: don't do this: `if self.finalized: continue`, 
         # because `self.finalized` just determed the main dimension, still need a chance to determin 
@@ -191,7 +226,7 @@ class VBorder(Border):
 
 
 class Borders:
-    '''Collection of Border instances.'''
+    '''Collection of ``Border`` instances.'''
     def __init__(self):
         ''' Init collection with empty borders.'''
         self._instances = [] # type: list[Border]
@@ -211,14 +246,18 @@ class Borders:
 
 
     def finalize(self, strokes:Shapes, fills:Shapes):
-        ''' Finalize the position of all borders:
-            - follow explicit stroke/border
-            - follow explicit fill/shading
-            - align h-borders or v-borders as more as possible to simplify the table structure.
-            ---
-            Args:
-            - strokes: a group of explicit border strokes.
-            - fills: a group of explicit cell shadings.
+        '''Finalize the position of all borders.
+        
+        Args:
+            strokes (Shapes): A group of explicit border strokes.
+            fills (Shapes): A group of explicit cell shadings.
+
+        .. note::
+            A border is finalized in priority below:
+            
+            * Follow explicit stroke/border.
+            * Follow explicit fill/shading.
+            * Align h-borders or v-borders as more as possible to simplify the table structure.            
         '''
         # add dummy borders to be finalized by explicit strokes/fillings
         self._add_full_dummy_borders()
@@ -269,18 +308,20 @@ class Borders:
 
     @staticmethod
     def _finalize_by_layout(borders:list):
-        ''' Finalize the position of all borders: align borders as more as possible to simplify the table structure.
-            ---
-            Args:
-            - borders: a list of HBorder or VBorder instances
-            
-            Taking finalizing vertical borders for example:
-            - initialize a list of x-coordinates, [x0, x1, x2, ...], with the interval points of each border
-            - every two adjacent x-coordinates forms an interval for checking, [x0, x1], [x1, x2], ...
-            - for each interval, count the intersection status of center point, x=(x0+x1)/2.0, with all borders
-            - sort center point with the count of intersections in decent order
-            - finalize borders with x-coordinate of center points in sorting order consequently
-            - terminate the process when all borders are finalized
+        '''Finalize the position of all borders: 
+        align borders as more as possible to simplify the table structure.
+
+        Taking finalizing vertical borders for example:
+
+        * initialize a list of x-coordinates, ``[x0, x1, x2, ...]``, with the interval points of each border
+        * every two adjacent x-coordinates forms an interval for checking, ``[x0, x1]``, ``[x1, x2]``, ...
+        * for each interval, count the intersection status of center point, ``x=(x0+x1)/2.0``, with all borders
+        * sort center point with the count of intersections in decent order
+        * finalize borders with x-coordinate of center points in sorting order consequently
+        * terminate the process when all borders are finalized
+        
+        Args:
+            borders (list): A list of ``HBorder`` or ``VBorder`` instances.
         '''
         # collect interval points and sort in x-increasing order
         x_points = set()
@@ -324,10 +365,11 @@ class Borders:
 
 
     def _add_full_dummy_borders(self):
-        '''Add reference borders to build full lattices since the original borders
-           extracted from contents may be not able to represent the real structure.
-           Then, the reference borders has a chance to be finalized by explicit stroke
-           or fillings.
+        '''Add reference borders to build full lattices.
+        
+        The original borders extracted from contents may be not able to represent the real 
+        structure. Then, the reference borders has a chance to be finalized by explicit stroke 
+        or fillings.
         '''
         h_borders = list(filter(lambda border: border.is_horizontal, self._instances))
         v_borders = list(filter(lambda border: not border.is_horizontal, self._instances))

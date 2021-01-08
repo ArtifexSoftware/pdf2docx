@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-'''
-Collection of Cell instances.
-
-@created: 2020-08-15
-
+'''Collection of Cell instances.
 '''
 
 from .Cell import Cell
@@ -14,7 +10,11 @@ from ..common.Collection import Collection
 class Cells(Collection):
     '''A group of Cells.'''
     def restore(self, raws:list):
-        '''restore Cells from source dict.'''
+        '''Restore Cells from source dict.
+
+        Args:
+            raws (list): A list of source dict.
+        '''
         for raw in raws:
             cell = Cell(raw)
             self.append(cell)

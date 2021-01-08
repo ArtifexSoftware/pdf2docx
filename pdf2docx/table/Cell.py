@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-'''
-Table Cell object.
-
-@created: 2020-07-23
-
+'''Table Cell object.
 '''
 
 from docx.shared import Pt
@@ -18,7 +14,7 @@ from ..text.Lines import Lines
 
 
 class Cell(Element):
-    ''' Cell object.'''
+    '''Cell object.'''
     def __init__(self, raw:dict=None):
         if raw is None: raw = {}        
         self.bg_color     = raw.get('bg_color', None) # type: int
@@ -40,19 +36,22 @@ class Cell(Element):
 
     @property
     def working_bbox(self):
-        '''bbox with border width considered.'''
+        '''Bbox with border considered.'''
         x0, y0, x1, y1 = self.bbox
         w_top, w_right, w_bottom, w_left = self.border_width
         return (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
 
     
     def compare(self, cell, threshold:float=0.9):
-        '''whether has same structure with given Cell.
-            ---
-            Args:
-              - cell: Cell instance to compare
-              - threshold: two bboxes are considered same if the overlap area exceeds threshold.
-        '''
+        """Whether has same structure with given Cell.
+
+        Args:
+            cell (Cell): Target cell to compare.
+            threshold (float, optional): Considered as same bbox if exceeds this value. Defaults to 0.9.
+
+        Returns:
+            tuple: ``(True or False, message)``
+        """
         # bbox
         res, msg = super().compare(cell, threshold)
         if not res: return res, msg
@@ -90,12 +89,13 @@ class Cell(Element):
 
     def plot(self, page, content:bool=True, style:bool=True, color:tuple=None):
         '''Plot cell.
-            ---
-            Args:
-              - page: fitz.Page object
-              - content: plot text blocks if True
-              - style: plot cell style if True, e.g. border width, shading; otherwise draw table border only
-              - color: table border color when style=False              
+        
+        Args:
+            page (fitz.Page): pdf page.
+            content (bool): Plot text blocks if True.
+            style (bool): Plot cell style if True, e.g. border width, shading; 
+                otherwise draw table border only.
+            color (bool): Table border color when ``style=False``.            
         '''        
         # plot cell style
         if style:
@@ -119,12 +119,13 @@ class Cell(Element):
 
 
     def add(self, block):
-        ''' Add block to this cell. 
-            ---
-            Arg:
-            - block: text block or table block
-
-            Note: If it's a text block and partly contained in a cell, it must deep into line -> span -> char.
+        '''Add block to this cell. 
+        
+        Args:
+            block (TextBlock, TableBlock): Text/table block to add.
+        
+        .. note::
+            If a text block is partly contained in a cell, it must deep into line -> span -> char.
         '''
         # add block directly if fully contained in cell
         if self.contains(block, constants.FACTOR_ALMOST):
@@ -177,10 +178,10 @@ class Cell(Element):
 
     def make_docx(self, table, indexes):
         '''Set cell style and assign contents.
-            ---
-            Args:
-              - table: docx table instance
-              - indexes: (i, j), row and column indexes
+        
+        Args:
+            table (Table): ``python-docx`` table instance.
+            indexes (tuple): Row and column indexes, ``(i, j)``.
         '''        
         # set cell style, e.g. border, shading, cell width
         self._set_style(table, indexes)
@@ -213,12 +214,12 @@ class Cell(Element):
 
 
     def _set_style(self, table, indexes):
-        ''' Set python-docx cell style, e.g. border, shading, width, row height, 
-            based on cell block parsed from PDF.
-            ---
-            Args:
-              - table: python-docx table object
-              - indexes: (i, j) index of current cell in table
+        '''Set ``python-docx`` cell style, e.g. border, shading, width, row height, 
+        based on cell block parsed from PDF.
+        
+        Args:
+            table (Table): ``python-docx`` table object.
+            indexes (tuple): ``(i, j)`` index of current cell in table.
         '''
         i, j = indexes
         docx_cell = table.cell(i, j)
