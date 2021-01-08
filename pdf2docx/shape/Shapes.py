@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-'''
-A group of Shape (Stroke or Fill) instances.
-
-@created: 2020-09-15
-
+'''A group of ``Shape`` instances.
 '''
 
 from .Shape import Shape, Stroke, Fill
@@ -14,9 +10,9 @@ from ..common import share
 
 
 class Shapes(Collection):
-
+    ''' A collection of ``Shape`` instances: ``Stroke`` or ``Fill``.'''
     def __init__(self, instances:list=[], parent=None):
-        ''' A collection of Shape instances: Stroke or Fill.'''
+        
         super().__init__(instances, parent)
 
         # properties for context type of shape, e.g. 
@@ -30,7 +26,7 @@ class Shapes(Collection):
 
 
     def restore(self, raws:list):
-        '''Initialize Stroke/Fill from dicts.'''
+        '''Initialize ``Stroke``/``Fill`` from dicts.'''
         # distinguish Stroke and Fill: whether keys 'start' and 'end' exist in dict
         for raw in raws:
             shape = Stroke(raw) if 'start' in raw else Fill(raw)
@@ -68,34 +64,40 @@ class Shapes(Collection):
 
     @property
     def table_strokes(self):
-        '''potential table borders.'''
+        '''Potential table borders.'''
         return self._table_strokes
 
     
     @property
     def table_fillings(self):
-        '''potential table shadings.'''
+        '''Potential table shadings.'''
         return self._table_fillings
 
 
     @property
     def text_highlights(self):
-        '''potential text highlights.'''
+        '''Potential text highlights.'''
         return self._text_highlights
 
 
     @property
     def text_underlines_strikes(self):
-        '''potential text underlines and strike-through lines.'''
+        '''Potential text underlines and strike-through lines.'''
         return self._text_underlines_strikes
 
 
     def clean_up(self, max_border_width:float, shape_merging_threshold:float, shape_min_dimension:float):
-        '''Clean rectangles:
-            - delete rectangles fully contained in another one (beside, they have same bg-color)
-            - join intersected and horizontally aligned rectangles with same height and bg-color
-            - join intersected and vertically aligned rectangles with same width and bg-color
-        '''
+        """Clean rectangles.
+
+        * Delete rectangles fully contained in another one (beside, they have same bg-color).
+        * Join intersected and horizontally aligned rectangles with same height and bg-color.
+        * Join intersected and vertically aligned rectangles with same width and bg-color.
+
+        Args:
+            max_border_width (float): The max border width.
+            shape_merging_threshold (float): Merge shape if the intersection exceeds this value.
+            shape_min_dimension (float): Ignore shape if both width and height is lower than this value.
+        """
         if not self._instances: return
         
         # sort in reading order
@@ -146,7 +148,9 @@ class Shapes(Collection):
 
     def detect_initial_categories(self):
         ''' Detect shape type based on the position to text blocks. 
-            It should run right after `clean_up()`.
+
+        .. note::
+            It should be run right after ``clean_up()``.
         '''
         # reset all
         self._table_strokes.reset()
@@ -190,7 +194,11 @@ class Shapes(Collection):
     
 
     def plot(self, page):
-        '''Plot shapes in PDF page.'''
+        '''Plot shapes for debug purpose.
+        
+        Args:
+            page (fitz.Page): pdf page.
+        '''
         # different colors are used to show the shapes in detected semantic types
         # Due to overlaps between Stroke and Fill related groups, some shapes are plot twice.
 
