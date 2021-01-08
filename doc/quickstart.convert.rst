@@ -1,9 +1,11 @@
 Convert PDF
 =======================
 
-We can use either the ``Converter`` class or a wrapped method ``parse()``.
+We can use either the :py:class:`~pdf2docx.converter.Converter` class 
+or a wrapped method :py:meth:`~pdf2docx.main.parse`. 
 
-* Converter class
+
+* Option 1
 
 ::
 
@@ -19,7 +21,7 @@ We can use either the ``Converter`` class or a wrapped method ``parse()``.
 
 
 
-* parse() method
+* Option 2
 
 ::
 
@@ -30,3 +32,7 @@ We can use either the ``Converter`` class or a wrapped method ``parse()``.
 
   # convert pdf to docx
   parse(pdf_file, docx_file, start=0, end=None)
+
+
+.. note::
+  Refer to :py:meth:`~pdf2docx.converter.Converter.convert` for detailed description on above arguments.

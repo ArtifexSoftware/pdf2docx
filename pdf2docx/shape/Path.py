@@ -142,7 +142,7 @@ class Segments:
         '''Bbox of Segments. 
         
         .. note::
-        For iso-oriented segments, ``bbox.getArea()==0``.
+            For iso-oriented segments, ``bbox.getArea()==0``.
         '''
         # rectangle area
         if len(self._instances)==1 and isinstance(self._instances[0], R):
