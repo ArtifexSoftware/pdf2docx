@@ -24,6 +24,7 @@ class RectType(Enum):
     UNDERLINE = 1
     STRIKE = 2
     UNDERLINE_OR_STRIKE = 5
+    HYPERLINK = 7
     BORDER = 10
     SHADING = 11
 

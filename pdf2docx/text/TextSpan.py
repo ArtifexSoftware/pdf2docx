@@ -21,7 +21,8 @@ this `link <https://pymupdf.readthedocs.io/en/latest/textpage.html>`_::
         'style': [
             {
                 'type': int,
-                'color': int
+                'color': int,
+                'uri': str    # for hyperlink
             },
             ...
         ]
@@ -257,7 +258,7 @@ class TextSpan(Element):
             bbox = (intsec.x0, intsec.y0, intsec.x1, intsec.y1)
             split_span = self.copy().update_bbox(bbox)
             split_span.chars = self.chars[pos:pos_end]            
-            split_span.parse_text_style(rect, horizontal)  # update style
+            split_span._parse_text_format(rect, horizontal)  # update style
             split_spans.append(split_span)
 
         # right part if exists
@@ -273,7 +274,7 @@ class TextSpan(Element):
         return split_spans
 
 
-    def parse_text_style(self, rect: Shape, horizontal:bool=True):
+    def _parse_text_format(self, rect: Shape, horizontal:bool=True):
         """Parse text style based on the position to a rect shape.
 
         Args:
@@ -282,11 +283,20 @@ class TextSpan(Element):
 
         Returns:
             bool: Parsed text style successfully or not.
-        """        
+        """
 
-        # consider text format type only
+        # Skip table border/shading
         if rect.type==RectType.BORDER or rect.type==RectType.SHADING:
             return False
+        
+        # set hyperlink
+        elif rect.type==RectType.HYPERLINK:
+            self.style.append({
+                'type': rect.type.value,
+                'color': rect.color,
+                'uri': rect.uri
+            })
+            return True
 
         # considering text direction
         idx = 1 if horizontal else 0

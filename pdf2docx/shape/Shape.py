@@ -5,20 +5,38 @@
 * Stroke: consider only the horizontal or vertical path segments
 * Fill  : bbox of closed path filling area
 
-The semantic meaning of shape instance may be:
+Hyperlink in ``PyMuPDF`` is represented as uri and its rectangular area (hot-area), while the
+applied text isn't extracted explicitly. To reuse the process that identifying applied text of
+text style shape (e.g. underline and highlight), hyperlink is also abstracted to be a ``Shape``.
+
+.. note::
+    The evident difference of hyperlink shape to text style shape is: 
+    the :py:class:`~pdf2docx.common.share.RectType` of hyperlink shape is determined in advance,
+    while text style shape needs to be identified by the position to associated text blocks.
+
+Above all, the semantic meaning of shape instance may be:
 
 * strike through line of text
 * under line of text
 * highlight area of text
 * table border
 * cell shading
+* hyperlink
 
 Data structure::
 
     {
         'type': int,
         'bbox': (x0, y0, x1, y1),
-        'color': srgb_value
+        'color': srgb_value,
+
+        # for Stroke
+        'start': (x0, y0),
+        'end': (x1, y1),
+        'width': float,
+
+        # for Hyperlink
+        'uri': str
     }
 '''
 
@@ -31,10 +49,19 @@ from ..common import constants
 class Shape(Element):
     ''' Shape object.'''
     def __init__(self, raw:dict=None):        
-        if raw is None: raw = {}
-        self.type = RectType.UNDEFINED # no type by default
+        raw = raw or {}
         self.color = raw.get('color', 0)
-        super().__init__(raw)
+        super().__init__(raw) # bbox
+
+        # set rect type
+        raw_type = raw.get('type', RectType.UNDEFINED.value) # UNDEFINED by default
+        for t in RectType:
+            if t.value==raw_type:
+                rect_type = t
+                break
+        else:
+            rect_type = RectType.UNDEFINED
+        self.type = rect_type
     
     @property
     def is_determined(self): return self.type != RectType.UNDEFINED
@@ -90,7 +117,8 @@ class Stroke(Shape):
     ''' Horizontal or vertical stroke of a path. 
         The semantic meaning may be table border, or text style line like underline and strike-through.
     '''
-    def __init__(self, raw:dict={}):
+    def __init__(self, raw:dict=None):
+        raw = raw or {}
         # convert start/end point to real page CS
         self._start = fitz.Point(raw.get('start', (0.0, 0.0))) * Stroke.ROTATION_MATRIX
         self._end = fitz.Point(raw.get('end', (0.0, 0.0))) * Stroke.ROTATION_MATRIX
@@ -260,3 +288,33 @@ class Fill(Shape):
                 return RectType.SHADING
         
         return RectType.UNDEFINED # can't be determined by this block
+
+
+class Hyperlink(Shape):
+    '''Rectangular area, i.e. ``hot area`` for a hyperlink. 
+    
+    Hyperlink in ``PyMuPDF`` is represented as uri and its hot area, while the applied text isn't extracted 
+    explicitly. To reuse the process that identifying applied text of text style shape (e.g. underline and 
+    highlight), hyperlink is also abstracted to be a ``Shape``.
+    '''
+
+    def __init__(self, raw:dict={}):
+        '''Initialize from raw dict. Note the type must be determined in advance.'''
+        if raw is None: raw = {}
+        super().__init__(raw)
+
+        # set uri
+        self.uri = raw.get('uri', '')
+        
+
+    def store(self):
+        res = super().store()
+        res.update({
+            'uri': self.uri
+        })
+        return res
+
+
+    def semantic_type(self, blocks:list=None):
+        """Semantic type of Hyperlink shape is determined, i.e. ``RectType.HYPERLINK``."""
+        return RectType.HYPERLINK

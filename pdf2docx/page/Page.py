@@ -37,7 +37,7 @@ from ..shape.Shapes import Shapes
 from ..shape.Paths import Paths
 from ..table.TablesConstructor import TablesConstructor
 from ..common.Element import Element
-from ..common.share import debug_plot
+from ..common.share import RectType, debug_plot
 from ..common import constants
 
 
@@ -351,7 +351,33 @@ class Page:
         raw['blocks'].extend(images)
         raw['shapes'] = shapes
 
+        # Hyperlink is considered as a Shape
+        hyperlinks = self.__preprocess_hyperlinks(page)
+        raw['shapes'].extend(hyperlinks)
+
         return paths
+    
+
+    @staticmethod
+    def __preprocess_hyperlinks(page):
+        """Get source hyperlink dicts.
+
+        Args:
+            page (fitz.Page): pdf page.
+
+        Returns:
+            list: A list of source hyperlink dict.
+        """
+        hyperlinks = []
+        for link in page.getLinks():
+            if link['kind']!=2: continue # consider internet address only
+            hyperlinks.append({
+                'type': RectType.HYPERLINK.value,
+                'bbox': tuple(link['from']),
+                'uri' : link['uri']
+            })
+
+        return hyperlinks
 
 
     # ----------------------------------------------------
@@ -418,7 +444,9 @@ class Page:
     @debug_plot('Final Layout')
     def parse_text_format(self):
         '''Parse text format in both page and table context.'''
-        text_shapes = list(self.shapes.text_underlines_strikes) + list(self.shapes.text_highlights)
+        text_shapes =   list(self.shapes.text_underlines_strikes) + \
+                        list(self.shapes.text_highlights) + \
+                        list(self.shapes.hyperlinks)
         self.blocks.parse_text_format(text_shapes)
         return self.blocks
  

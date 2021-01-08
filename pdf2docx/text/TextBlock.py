@@ -29,7 +29,7 @@ from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 from .Lines import Lines
-from ..common.share import TextDirection, TextAlignment
+from ..common.share import RectType, TextDirection, TextAlignment
 from ..common.Block import Block
 from ..common.share import rgb_component_from_name
 from ..common import constants
@@ -169,7 +169,8 @@ class TextBlock(Block):
         for rect in rects:
 
             # a same style rect applies on only one block
-            if rect.is_determined: continue
+            # EXCEPTION: hyperlink shape is determined in advance
+            if rect.type!=RectType.HYPERLINK and rect.is_determined: continue
 
             # any intersection with current block?
             if not self.bbox.intersects(rect.bbox): continue
