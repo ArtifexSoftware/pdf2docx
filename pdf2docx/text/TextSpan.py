@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
 
-'''
-Text Span object based on PDF raw dict extracted with PyMuPDF.
+'''Text Span object based on PDF raw dict extracted with ``PyMuPDF``.
 
-@created: 2020-07-22
+Data structure for Span refer to 
+this `link <https://pymupdf.readthedocs.io/en/latest/textpage.html>`_::
 
----
-
-Refer to: https://pymupdf.readthedocs.io/en/latest/textpage.html
-
-data structure for Span
     {
         # raw dict
         ---------------------------
@@ -70,11 +65,12 @@ class TextSpan(Element):
     @property
     def font(self):
         '''Parse raw font name, e.g. 
-            - split with '+' and '-': BCDGEE+Calibri-Bold, BCDGEE+Calibri -> Calibri
-            - split with upper case : ArialNarrow -> Arial Narrow, but exception: NSimSUN -> NSimSUN
-            - replace ',' with blank: e.g. Ko Pub Dotum, Light -> KoPubDotum Light
         
-            NSimSUN refers to Chinese font name `新宋体`, so consider a localization mapping.
+        * Split with ``+`` and ``-``: BCDGEE+Calibri-Bold, BCDGEE+Calibri -> Calibri.
+        * Split with upper case : ArialNarrow -> Arial Narrow, but exception: NSimSUN -> NSimSUN.
+        * Replace ``,`` with blank: e.g. Ko Pub Dotum, Light -> KoPubDotum Light.
+        
+        NSimSUN refers to Chinese font name `新宋体`, so consider a localization mapping.
         '''
         # process on '+' and '-'
         font_name = self._font.split('+')[-1]
@@ -98,23 +94,27 @@ class TextSpan(Element):
 
     
     def cal_bbox(self):
-        '''calculate bbox based on contained instances.'''
+        '''Calculate bbox based on contained instances.'''
         bbox = fitz.Rect()
         for char in self.chars: bbox |= char.bbox
         return bbox
 
 
     def set_font(self, fontname):
-        ''' Set new font, and update font size, span/char bbox accordingly.
+        '''Set new font, and update font size, span/char bbox accordingly.
 
-            It's generally used for span with unnamed fonts.
-            https://github.com/pymupdf/PyMuPDF/issues/642
+        It's generally used for span with unnamed fonts. 
+        See this `issue <https://github.com/pymupdf/PyMuPDF/issues/642>`_.        
 
-            In corner case, where the PDF file containing unnamed and not embedded fonts, the span bbox
-            extracted from PyMuPDF is not correct. PyMuPDF provides feature to replace these unnamed fonts
-            with specified fonts, then extract correct bbox from the updated PDF. Since we care less about
-            the original PDF itself but its layout, the idea here is to set a default font for text spans 
-            with unnamed fonts, and estimate the updated bbox with method from `fitz.TextWriter`.
+        In corner case, where the PDF file containing unnamed and not embedded fonts, the span bbox
+        extracted from ``PyMuPDF`` is not correct. ``PyMuPDF`` provides feature to replace these 
+        unnamed fonts with specified fonts, then extract correct bbox from the updated PDF. Since we 
+        care less about the original PDF itself but its layout, the idea here is to set a default font 
+        for text spans with unnamed fonts, and estimate the updated bbox with method from 
+        ``fitz.TextWriter``.
+
+        Args:
+            fontname (str): Font name.
         '''
         # set new font
         font = fitz.Font(fontname)
@@ -156,7 +156,7 @@ class TextSpan(Element):
 
     
     def lstrip(self):
-        '''remove blanks at the left side, but keep one blank.'''
+        '''Remove blanks at the left side, but keep one blank.'''
         original_text = self.text
         if not original_text.startswith(' '*2): return False
 
@@ -168,7 +168,7 @@ class TextSpan(Element):
     
 
     def rstrip(self):
-        '''remove blanks at the right side, but keep one blank.'''
+        '''Remove blanks at the right side, but keep one blank.'''
         original_text = self.text
         if not original_text.endswith(' '*2): return False
 
@@ -199,7 +199,15 @@ class TextSpan(Element):
 
 
     def split(self, rect:Shape, horizontal:bool=True):
-        '''Split span with the intersection: span-intersection-span.'''
+        """Split span with the intersection: span-intersection-span.
+
+        Args:
+            rect (Shape): Target shape to split this text span.
+            horizontal (bool, optional): Text direction. Defaults to True.
+
+        Returns:
+            list: Split text spans.
+        """        
         # any intersection in this span?
         # NOTE: didn't consider the case that an underline is out of a span
         intsec = rect.bbox & self.bbox
@@ -266,7 +274,15 @@ class TextSpan(Element):
 
 
     def parse_text_style(self, rect: Shape, horizontal:bool=True):
-        '''Parse text style based on the position to a span bbox.'''
+        """Parse text style based on the position to a rect shape.
+
+        Args:
+            rect (Shape): Target rect shape reprenting potential text style.
+            horizontal (bool, optional): Horizontal text direction. Defaults to True.
+
+        Returns:
+            bool: Parsed text style successfully or not.
+        """        
 
         # consider text format type only
         if rect.type==RectType.BORDER or rect.type==RectType.SHADING:
@@ -315,9 +331,9 @@ class TextSpan(Element):
 
     def intersects(self, rect):
         '''Create new TextSpan object with chars contained in given bbox.
-            ---
-            Args:
-              - rect: fitz.Rect, target bbox
+        
+        Args:
+            rect (fitz.Rect): Target bbox.
         '''
         # add span directly if fully contained in bbox
         if rect.contains(self.bbox):
