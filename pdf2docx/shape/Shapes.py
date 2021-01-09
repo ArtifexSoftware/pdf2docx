@@ -3,7 +3,7 @@
 '''A group of ``Shape`` instances.
 '''
 
-from .Shape import Shape, Stroke, Fill
+from .Shape import Shape, Stroke, Fill, Hyperlink
 from ..common.share import RectType, lazyproperty
 from ..common.Collection import Collection
 from ..common import share
@@ -26,10 +26,15 @@ class Shapes(Collection):
 
 
     def restore(self, raws:list):
-        '''Initialize ``Stroke``/``Fill`` from dicts.'''
-        # distinguish Stroke and Fill: whether keys 'start' and 'end' exist in dict
+        '''Initialize ``Stroke``, ``Fill`` and ``Hyperlink`` from dicts.'''
+        # Distinguish specified type by key like `start`, `end` and `uri`.
         for raw in raws:
-            shape = Stroke(raw) if 'start' in raw else Fill(raw)
+            if 'start' in raw:
+                shape = Stroke(raw)
+            elif 'uri' in raw:
+                shape = Hyperlink(raw)
+            else:
+                shape = Fill(raw)
             # add to list
             self.append(shape)
         
@@ -59,6 +64,14 @@ class Shapes(Collection):
         # white bg-color is by default, so ignore those fillings
         instances = list(filter(
             lambda shape: isinstance(shape, Fill) and shape.color != share.rgb_value((1,1,1)), self._instances))
+        return Shapes(instances)
+
+
+    @lazyproperty
+    def hyperlinks(self):
+        ''' Hyperlink Shapes.'''
+        instances = list(filter(
+            lambda shape: isinstance(shape, Hyperlink), self._instances))
         return Shapes(instances)
 
 
@@ -111,23 +124,17 @@ class Shapes(Collection):
                         (shape.bbox.width>=shape_min_dimension or shape.bbox.height>=shape_min_dimension)
         shapes = filter(f, self._instances)
 
-        # merge shapes if:
-        # - same filling color, and
-        # - intersected in same raw/col, or overlapped significantly
+        # merge shapes if same filling color and significant overlap
         shapes_unique = [] # type: list [Shape]
         for shape in shapes:
             for ref_shape in shapes_unique:
                 # Do nothing if these two shapes in different bg-color
-                if ref_shape.color!=shape.color: continue     
+                if ref_shape.color!=shape.color: continue
 
-                # # combine two shapes in a same row if any intersection exists
-                # if shape.in_same_row(ref_shape): 
-                #     main_bbox = shape.get_main_bbox(ref_shape, 0.0)
+                # add hyperlink as it is
+                if shape.type==RectType.HYPERLINK or ref_shape.type==RectType.HYPERLINK: continue
 
-                # # combine two shapes if they have a large intersection
-                # else:
                 main_bbox = shape.get_main_bbox(ref_shape, threshold=shape_merging_threshold)
-
                 if main_bbox:
                     ref_shape.update_bbox(main_bbox)
                     break            
@@ -137,11 +144,11 @@ class Shapes(Collection):
         # convert Fill instance to Stroke if looks like stroke
         shapes = []
         for shape in shapes_unique:
-            if isinstance(shape, Stroke):
-                shapes.append(shape)
-            else:
+            if isinstance(shape, Fill):
                 stroke = shape.to_stroke(max_border_width)
                 shapes.append(stroke if stroke else shape)
+            else:
+                shapes.append(shape)
 
         self.reset(shapes)
 
@@ -170,7 +177,10 @@ class Shapes(Collection):
             rect_type = shape.semantic_type(blocks)     # type: RectType
 
             # set the type if succeeded
-            if rect_type==RectType.UNDERLINE_OR_STRIKE:
+            if rect_type==RectType.HYPERLINK:
+                continue
+
+            elif rect_type==RectType.UNDERLINE_OR_STRIKE:
                 self._text_underlines_strikes.append(shape)
             
             elif rect_type==RectType.SHADING:

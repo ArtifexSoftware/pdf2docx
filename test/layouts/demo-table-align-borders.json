@@ -322,7 +322,13 @@
                                                                 }
                                                             ],
                                                             "text": "\u677f\u6750\u51b2\u538b\u6210\u5f62\u7684\u6676\u4f53\u5851\u6027\u6709\u9650\u5143\u6a21\u62df",
-                                                            "style": []
+                                                            "style": [
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://d.wanfangdata.com.cn/Periodical_jxgcxb200801033.aspx"
+                                                                }
+                                                            ]
                                                         }
                                                     ]
                                                 }
@@ -665,6 +671,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e6%9d%8e%e5%a4%a7%e6%b0%b8%22+DBID%3aWF_QK"
                                                                 }
                                                             ]
                                                         },
@@ -767,6 +778,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bc%a0%e5%b0%91%e7%9d%bf%22+DBID%3aWF_QK"
                                                                 }
                                                             ]
                                                         },
@@ -869,6 +885,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bd%ad%e9%a2%96%e7%ba%a2%22+DBID%3aWF_QK"
                                                                 }
                                                             ]
                                                         },
@@ -971,6 +992,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%88%98%e5%ae%88%e8%8d%a3%22+DBID%3aWF_QK"
                                                                 }
                                                             ]
                                                         },
@@ -1073,6 +1099,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e4%bb%87%e7%b4%a0%e8%90%8d%22+DBID%3aWF_QK"
                                                                 }
                                                             ]
                                                         },
@@ -1253,6 +1284,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22LI+Dayong%22+DBID%3aWF_QK"
                                                                 }
                                                             ]
                                                         },
@@ -1485,6 +1521,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22ZHANG+Shaorui%22+DBID%3aWF_QK"
                                                                 }
                                                             ]
                                                         },
@@ -1534,7 +1575,7 @@
                                                             "bbox": [
                                                                 422.5,
                                                                 43.3,
-                                                                438.6,
+                                                                438.5,
                                                                 51.3
                                                             ],
                                                             "color": 214145,
@@ -1600,6 +1641,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22PENG+Yinghong%22+DBID%3aWF_QK"
                                                                 }
                                                             ]
                                                         },
@@ -1830,6 +1876,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22PENG+Yinghong%22+DBID%3aWF_QK"
                                                                 }
                                                             ]
                                                         },
@@ -2049,6 +2100,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22LIU+Shourong%22+DBID%3aWF_QK"
                                                                 }
                                                             ]
                                                         },
@@ -2242,6 +2298,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22QIU+Suping%22+DBID%3aWF_QK"
                                                                 }
                                                             ]
                                                         }
@@ -2484,7 +2545,7 @@
                                                             "bbox": [
                                                                 130.5,
                                                                 67.3,
-                                                                446.6,
+                                                                446.5,
                                                                 75.3
                                                             ],
                                                             "color": 214145,
@@ -3356,6 +3417,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%8a%e6%b5%b7%e4%ba%a4%e9%80%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e4%b8%8e%e5%8a%a8%e5%8a%9b%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e4%b8%8a%e6%b5%b7%2c200030%22+DBID%3aWF_QK"
                                                                 }
                                                             ]
                                                         },
@@ -3807,6 +3873,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%8a%e6%b5%b7%e4%ba%a4%e9%80%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e4%b8%8e%e5%8a%a8%e5%8a%9b%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e4%b8%8a%e6%b5%b7%2c200030%22+DBID%3aWF_QK"
                                                                 }
                                                             ]
                                                         },
@@ -4195,6 +4266,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%ad%e5%9b%bd%e5%86%9c%e4%b8%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e5%8c%97%e4%ba%ac%2c100083%22+DBID%3aWF_QK"
                                                                 }
                                                             ]
                                                         }
@@ -4488,6 +4564,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%ad%e5%9b%bd%e5%86%9c%e4%b8%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e5%8c%97%e4%ba%ac%2c100083%22+DBID%3aWF_QK"
                                                                 }
                                                             ]
                                                         }
@@ -4783,6 +4864,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://c.wanfangdata.com.cn/periodical-jxgcxb.aspx"
                                                                 }
                                                             ]
                                                         },
@@ -5607,6 +5693,11 @@
                                                                 {
                                                                     "type": 1,
                                                                     "color": 214145
+                                                                },
+                                                                {
+                                                                    "type": 7,
+                                                                    "color": 0,
+                                                                    "uri": "http://c.wanfangdata.com.cn/periodical-jxgcxb.aspx"
                                                                 }
                                                             ]
                                                         }
@@ -6775,6 +6866,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22NAKAMACHI+E%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -6942,6 +7038,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22HIRAIWA+K%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -7122,6 +7223,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22MORIMOTO+H%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -7939,6 +8045,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e1.aspx"
                                         }
                                     ]
                                 }
@@ -9011,6 +9122,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e1.aspx"
                                         }
                                     ]
                                 },
@@ -9335,6 +9451,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22NAKAMACHI+E%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -9463,6 +9584,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22DONG+X%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -10514,6 +10640,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e2.aspx"
                                         }
                                     ]
                                 }
@@ -11300,6 +11431,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e2.aspx"
                                         }
                                     ]
                                 },
@@ -11624,6 +11760,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22TAKAHASHI+H%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -11817,6 +11958,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22MOTOHASHI+H%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -11997,6 +12143,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22TSUCHIDA+S%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -12814,6 +12965,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e3.aspx"
                                         }
                                     ]
                                 }
@@ -13162,6 +13318,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22ANAND+L%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -13433,6 +13594,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22BALASUBRAMANIAN+S%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -14250,6 +14416,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e4.aspx"
                                         }
                                     ]
                                 },
@@ -14600,6 +14771,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22CHOI+S+H%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -14741,6 +14917,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22CHO+J+H%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -14869,6 +15050,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22OH+K+H%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -15764,6 +15950,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e5.aspx"
                                         }
                                     ]
                                 },
@@ -16101,6 +16292,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22RAABE+D%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -16255,6 +16451,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22ROTERS+F%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -17254,6 +17455,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e6.aspx"
                                         }
                                     ]
                                 },
@@ -17500,6 +17706,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%af%8c%e7%94%b0%e4%bd%b3%e5%ae%8f%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -17576,6 +17787,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e8%83%a1%e5%b9%b3%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -17717,6 +17933,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e7.aspx"
                                         }
                                     ]
                                 },
@@ -18015,6 +18236,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22BUNGE+H+J%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -18533,6 +18759,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e8.aspx"
                                         }
                                     ]
                                 },
@@ -18818,6 +19049,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22PIERCE+D%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -18985,6 +19221,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22ASARO+R+J%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -19178,6 +19419,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22NEEDLEMAN+A%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -20060,6 +20306,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e9.aspx"
                                         }
                                     ]
                                 }
@@ -20196,6 +20447,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e9.aspx"
                                         }
                                     ]
                                 },
@@ -20494,6 +20750,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22PIERCE+D%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -20648,6 +20909,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22SHIH+C+F%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -20841,6 +21107,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22NEEDLEMAN+A%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -20877,7 +21148,7 @@
                                     "bbox": [
                                         181.5,
                                         426.4,
-                                        381.6,
+                                        381.5,
                                         434.4
                                     ],
                                     "color": 214145,
@@ -21541,6 +21812,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e10.aspx"
                                         }
                                     ]
                                 },
@@ -21722,6 +21998,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e6%af%9b%e5%8d%ab%e6%b0%91%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -21967,6 +22248,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e11.aspx"
                                         }
                                     ]
                                 },
@@ -22200,6 +22486,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bc%a0%e5%b0%91%e7%9d%bf%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -22289,6 +22580,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e6%9d%8e%e5%a4%a7%e6%b0%b8%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -22378,6 +22674,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bd%ad%e9%a2%96%e7%ba%a2%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -22662,6 +22963,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/Periodical_clkxygy200404010.aspx"
                                         }
                                     ]
                                 },
@@ -22897,6 +23203,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://c.wanfangdata.com.cn/periodical-clkxygy.aspx"
                                         }
                                     ]
                                 },
@@ -23481,6 +23792,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bc%a0%e5%b0%91%e7%9d%bf%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -23570,6 +23886,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e6%9d%8e%e5%a4%a7%e6%b0%b8%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -23659,6 +23980,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e7%bd%97%e5%ba%94%e5%85%b5%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -23748,6 +24074,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bd%ad%e9%a2%96%e7%ba%a2%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -24032,6 +24363,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/Periodical_clyjxb200406011.aspx"
                                         }
                                     ]
                                 },
@@ -24189,6 +24525,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://c.wanfangdata.com.cn/periodical-clyjxb.aspx"
                                         }
                                     ]
                                 },
@@ -28232,6 +28573,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e6%9d%a8%e6%a2%85%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -28321,6 +28667,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e8%91%a3%e6%b9%98%e6%80%80%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -28475,6 +28826,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22YANG+Mei%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -28720,6 +29076,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22DONG+Xiang-huai%22+DBID%3aWF_QK"
                                         }
                                     ]
                                 },
@@ -28991,6 +29352,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://d.wanfangdata.com.cn/Periodical_shjtdxxb200805008.aspx"
                                         }
                                     ]
                                 },
@@ -29174,6 +29540,11 @@
                                         {
                                             "type": 1,
                                             "color": 214145
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://c.wanfangdata.com.cn/periodical-shjtdxxb.aspx"
                                         }
                                     ]
                                 }
@@ -33247,6 +33618,116 @@
             "shapes": [
                 {
                     "bbox": [
+                        371.5,
+                        18.0,
+                        471.5,
+                        38.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://www.wanfangdata.com.cn/"
+                },
+                {
+                    "bbox": [
+                        50.2,
+                        24.0,
+                        242.2,
+                        36.0
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/Periodical_jxgcxb200801033.aspx"
+                },
+                {
+                    "bbox": [
+                        130.5,
+                        42.2,
+                        154.5,
+                        50.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e6%9d%8e%e5%a4%a7%e6%b0%b8%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        166.5,
+                        42.2,
+                        190.5,
+                        50.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bc%a0%e5%b0%91%e7%9d%bf%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        202.5,
+                        42.2,
+                        226.5,
+                        50.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bd%ad%e9%a2%96%e7%ba%a2%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        238.5,
+                        42.2,
+                        262.5,
+                        50.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%88%98%e5%ae%88%e8%8d%a3%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        274.5,
+                        42.2,
+                        298.5,
+                        50.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e4%bb%87%e7%b4%a0%e8%90%8d%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        310.5,
+                        42.2,
+                        346.5,
+                        50.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22LI+Dayong%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        358.5,
+                        42.2,
+                        410.5,
+                        50.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22ZHANG+Shaorui%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        422.5,
+                        42.2,
+                        438.5,
+                        50.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22PENG+Yinghong%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
                         130.4,
                         51.0,
                         154.6,
@@ -33399,6 +33880,39 @@
                 },
                 {
                     "bbox": [
+                        130.5,
+                        54.2,
+                        162.5,
+                        62.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22PENG+Yinghong%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        174.5,
+                        54.2,
+                        222.5,
+                        62.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22LIU+Shourong%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        234.5,
+                        54.2,
+                        274.5,
+                        62.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22QIU+Suping%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
                         130.4,
                         63.0,
                         162.6,
@@ -33453,6 +33967,17 @@
                         63.2
                     ],
                     "width": 0.3999999999999986
+                },
+                {
+                    "bbox": [
+                        130.5,
+                        66.2,
+                        446.5,
+                        74.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%8a%e6%b5%b7%e4%ba%a4%e9%80%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e4%b8%8e%e5%8a%a8%e5%8a%9b%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e4%b8%8a%e6%b5%b7%2c200030%22+DBID%3aWF_QK"
                 },
                 {
                     "bbox": [
@@ -33475,6 +34000,28 @@
                 },
                 {
                     "bbox": [
+                        130.5,
+                        78.2,
+                        294.5,
+                        86.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%8a%e6%b5%b7%e4%ba%a4%e9%80%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e4%b8%8e%e5%8a%a8%e5%8a%9b%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e4%b8%8a%e6%b5%b7%2c200030%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        306.5,
+                        78.2,
+                        450.5,
+                        86.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%ad%e5%9b%bd%e5%86%9c%e4%b8%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e5%8c%97%e4%ba%ac%2c100083%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
                         130.4,
                         87.0,
                         294.6,
@@ -33510,6 +34057,17 @@
                         87.2
                     ],
                     "width": 0.4000000000000057
+                },
+                {
+                    "bbox": [
+                        130.5,
+                        90.2,
+                        214.5,
+                        98.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%ad%e5%9b%bd%e5%86%9c%e4%b8%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e5%8c%97%e4%ba%ac%2c100083%22+DBID%3aWF_QK"
                 },
                 {
                     "bbox": [
@@ -33532,6 +34090,17 @@
                 },
                 {
                     "bbox": [
+                        130.5,
+                        106.2,
+                        178.5,
+                        114.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://c.wanfangdata.com.cn/periodical-jxgcxb.aspx"
+                },
+                {
+                    "bbox": [
                         130.4,
                         115.0,
                         178.6,
@@ -33548,6 +34117,17 @@
                         115.2
                     ],
                     "width": 0.4000000000000057
+                },
+                {
+                    "bbox": [
+                        130.5,
+                        118.2,
+                        294.5,
+                        126.2
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://c.wanfangdata.com.cn/periodical-jxgcxb.aspx"
                 },
                 {
                     "bbox": [
@@ -33580,6 +34160,50 @@
                 },
                 {
                     "bbox": [
+                        58.2,
+                        191.3,
+                        102.2,
+                        199.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22NAKAMACHI+E%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        106.2,
+                        191.3,
+                        142.2,
+                        199.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22HIRAIWA+K%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        146.2,
+                        191.3,
+                        186.2,
+                        199.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22MORIMOTO+H%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        189.5,
+                        191.3,
+                        425.5,
+                        199.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e1.aspx"
+                },
+                {
+                    "bbox": [
                         58.1,
                         200.1,
                         102.3,
@@ -33653,6 +34277,17 @@
                         200.3
                     ],
                     "width": 0.4000000000000057
+                },
+                {
+                    "bbox": [
+                        50.2,
+                        209.3,
+                        362.2,
+                        217.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e1.aspx"
                 },
                 {
                     "bbox": [
@@ -33675,6 +34310,39 @@
                 },
                 {
                     "bbox": [
+                        58.2,
+                        227.3,
+                        102.2,
+                        235.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22NAKAMACHI+E%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        106.2,
+                        227.3,
+                        130.2,
+                        235.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22DONG+X%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        133.5,
+                        227.3,
+                        441.5,
+                        235.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e2.aspx"
+                },
+                {
+                    "bbox": [
                         58.1,
                         236.1,
                         102.3,
@@ -33729,6 +34397,17 @@
                         236.3
                     ],
                     "width": 0.4000000000000057
+                },
+                {
+                    "bbox": [
+                        50.2,
+                        245.3,
+                        274.2,
+                        253.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e2.aspx"
                 },
                 {
                     "bbox": [
@@ -33751,6 +34430,50 @@
                 },
                 {
                     "bbox": [
+                        58.2,
+                        263.3,
+                        102.2,
+                        271.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22TAKAHASHI+H%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        106.2,
+                        263.3,
+                        150.2,
+                        271.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22MOTOHASHI+H%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        154.2,
+                        263.3,
+                        194.2,
+                        271.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22TSUCHIDA+S%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        197.5,
+                        263.3,
+                        433.5,
+                        271.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e3.aspx"
+                },
+                {
+                    "bbox": [
                         58.1,
                         272.1,
                         102.3,
@@ -33827,6 +34550,39 @@
                 },
                 {
                     "bbox": [
+                        58.2,
+                        299.3,
+                        86.2,
+                        307.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22ANAND+L%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        90.2,
+                        299.3,
+                        158.2,
+                        307.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22BALASUBRAMANIAN+S%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        161.5,
+                        299.3,
+                        397.5,
+                        307.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e4.aspx"
+                },
+                {
+                    "bbox": [
                         58.1,
                         308.1,
                         86.3,
@@ -33881,6 +34637,50 @@
                         308.3
                     ],
                     "width": 0.39999999999997726
+                },
+                {
+                    "bbox": [
+                        58.2,
+                        317.3,
+                        90.2,
+                        325.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22CHOI+S+H%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        94.2,
+                        317.3,
+                        122.2,
+                        325.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22CHO+J+H%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        126.2,
+                        317.3,
+                        150.2,
+                        325.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22OH+K+H%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        153.5,
+                        317.3,
+                        413.5,
+                        325.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e5.aspx"
                 },
                 {
                     "bbox": [
@@ -33960,6 +34760,39 @@
                 },
                 {
                     "bbox": [
+                        58.2,
+                        335.3,
+                        86.2,
+                        343.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22RAABE+D%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        90.2,
+                        335.3,
+                        122.2,
+                        343.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22ROTERS+F%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        125.5,
+                        335.3,
+                        417.5,
+                        343.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e6.aspx"
+                },
+                {
+                    "bbox": [
                         58.1,
                         344.1,
                         86.3,
@@ -34014,6 +34847,39 @@
                         344.3
                     ],
                     "width": 0.39999999999997726
+                },
+                {
+                    "bbox": [
+                        58.2,
+                        353.3,
+                        90.2,
+                        361.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%af%8c%e7%94%b0%e4%bd%b3%e5%ae%8f%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        94.2,
+                        353.3,
+                        110.2,
+                        361.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e8%83%a1%e5%b9%b3%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        113.5,
+                        353.3,
+                        169.5,
+                        361.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e7.aspx"
                 },
                 {
                     "bbox": [
@@ -34074,6 +34940,28 @@
                 },
                 {
                     "bbox": [
+                        58.2,
+                        371.3,
+                        94.2,
+                        379.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22BUNGE+H+J%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        97.5,
+                        371.3,
+                        241.5,
+                        379.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e8.aspx"
+                },
+                {
+                    "bbox": [
                         58.1,
                         380.1,
                         94.3,
@@ -34109,6 +34997,50 @@
                         380.3
                     ],
                     "width": 0.39999999999997726
+                },
+                {
+                    "bbox": [
+                        58.2,
+                        389.3,
+                        90.2,
+                        397.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22PIERCE+D%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        94.2,
+                        389.3,
+                        130.2,
+                        397.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22ASARO+R+J%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        134.2,
+                        389.3,
+                        178.2,
+                        397.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22NEEDLEMAN+A%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        181.5,
+                        389.3,
+                        437.5,
+                        397.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e9.aspx"
                 },
                 {
                     "bbox": [
@@ -34185,6 +35117,17 @@
                         398.3
                     ],
                     "width": 0.39999999999997726
+                },
+                {
+                    "bbox": [
+                        50.2,
+                        407.3,
+                        74.2,
+                        415.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e9.aspx"
                 },
                 {
                     "bbox": [
@@ -34207,6 +35150,50 @@
                 },
                 {
                     "bbox": [
+                        62.2,
+                        425.3,
+                        94.2,
+                        433.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22PIERCE+D%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        98.2,
+                        425.3,
+                        130.2,
+                        433.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22SHIH+C+F%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        134.2,
+                        425.3,
+                        178.2,
+                        433.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22NEEDLEMAN+A%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        181.5,
+                        425.3,
+                        381.5,
+                        433.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e10.aspx"
+                },
+                {
+                    "bbox": [
                         62.1,
                         434.1,
                         94.3,
@@ -34283,6 +35270,28 @@
                 },
                 {
                     "bbox": [
+                        62.2,
+                        443.3,
+                        86.2,
+                        451.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e6%af%9b%e5%8d%ab%e6%b0%91%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        89.5,
+                        443.3,
+                        209.5,
+                        451.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e11.aspx"
+                },
+                {
+                    "bbox": [
                         62.1,
                         452.1,
                         86.3,
@@ -34318,6 +35327,61 @@
                         452.3
                     ],
                     "width": 0.39999999999997726
+                },
+                {
+                    "bbox": [
+                        62.2,
+                        461.3,
+                        86.2,
+                        469.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bc%a0%e5%b0%91%e7%9d%bf%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        90.2,
+                        461.3,
+                        114.2,
+                        469.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e6%9d%8e%e5%a4%a7%e6%b0%b8%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        118.2,
+                        461.3,
+                        142.2,
+                        469.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bd%ad%e9%a2%96%e7%ba%a2%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        145.5,
+                        461.3,
+                        277.5,
+                        469.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/Periodical_clkxygy200404010.aspx"
+                },
+                {
+                    "bbox": [
+                        321.5,
+                        461.3,
+                        377.5,
+                        469.3
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://c.wanfangdata.com.cn/periodical-clkxygy.aspx"
                 },
                 {
                     "bbox": [
@@ -34426,6 +35490,72 @@
                 },
                 {
                     "bbox": [
+                        93.5,
+                        508.4,
+                        117.5,
+                        516.4
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bc%a0%e5%b0%91%e7%9d%bf%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        121.5,
+                        508.4,
+                        145.5,
+                        516.4
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e6%9d%8e%e5%a4%a7%e6%b0%b8%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        149.5,
+                        508.4,
+                        173.5,
+                        516.4
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e7%bd%97%e5%ba%94%e5%85%b5%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        177.5,
+                        508.4,
+                        201.5,
+                        516.4
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bd%ad%e9%a2%96%e7%ba%a2%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        204.9,
+                        508.4,
+                        348.9,
+                        516.4
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/Periodical_clyjxb200406011.aspx"
+                },
+                {
+                    "bbox": [
+                        356.2,
+                        508.4,
+                        404.2,
+                        516.4
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://c.wanfangdata.com.cn/periodical-clyjxb.aspx"
+                },
+                {
+                    "bbox": [
                         93.4,
                         517.2,
                         117.6,
@@ -34540,6 +35670,72 @@
                 },
                 {
                     "bbox": [
+                        93.5,
+                        560.4,
+                        109.5,
+                        568.4
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e6%9d%a8%e6%a2%85%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        113.5,
+                        560.4,
+                        137.5,
+                        568.4
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e8%91%a3%e6%b9%98%e6%80%80%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        141.5,
+                        560.4,
+                        173.5,
+                        568.4
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22YANG+Mei%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        177.5,
+                        560.4,
+                        237.5,
+                        568.4
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22DONG+Xiang-huai%22+DBID%3aWF_QK"
+                },
+                {
+                    "bbox": [
+                        240.9,
+                        560.4,
+                        376.9,
+                        568.4
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/Periodical_shjtdxxb200805008.aspx"
+                },
+                {
+                    "bbox": [
+                        384.2,
+                        560.4,
+                        448.2,
+                        568.4
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://c.wanfangdata.com.cn/periodical-shjtdxxb.aspx"
+                },
+                {
+                    "bbox": [
                         93.4,
                         569.2,
                         109.6,
@@ -34651,6 +35847,28 @@
                         569.4000000000001
                     ],
                     "width": 0.39999999999997726
+                },
+                {
+                    "bbox": [
+                        93.5,
+                        610.4,
+                        117.5,
+                        618.4
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bc%a0%e5%b0%91%e7%9d%bf%22+DBID%3aWF_XW"
+                },
+                {
+                    "bbox": [
+                        120.9,
+                        610.4,
+                        256.9,
+                        618.4
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://d.wanfangdata.com.cn/Thesis_Y654917.aspx"
                 },
                 {
                     "bbox": [

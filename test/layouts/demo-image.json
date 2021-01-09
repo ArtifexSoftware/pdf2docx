@@ -2538,7 +2538,7 @@
                                     "bbox": [
                                         90.0,
                                         560.2,
-                                        165.8,
+                                        163.5,
                                         571.3
                                     ],
                                     "color": 0,
@@ -2740,7 +2740,23 @@
                                                 160.3267059326172,
                                                 568.510009765625
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "Example Source:",
+                                    "style": []
+                                },
+                                {
+                                    "bbox": [
+                                        163.5,
+                                        560.2,
+                                        165.8,
+                                        571.3
+                                    ],
+                                    "color": 0,
+                                    "font": "Calibri",
+                                    "size": 11.039999961853027,
+                                    "flags": 2,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 163.3,
@@ -2755,8 +2771,14 @@
                                             ]
                                         }
                                     ],
-                                    "text": "Example Source: ",
-                                    "style": []
+                                    "text": " ",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "https://github.com/marketplace"
+                                        }
+                                    ]
                                 },
                                 {
                                     "bbox": [
@@ -3166,6 +3188,11 @@
                                         {
                                             "type": 1,
                                             "color": 255
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "https://github.com/marketplace"
                                         }
                                     ]
                                 },
@@ -3173,7 +3200,7 @@
                                     "bbox": [
                                         310.7,
                                         560.2,
-                                        313.2,
+                                        312.9,
                                         571.3
                                     ],
                                     "color": 0,
@@ -3196,7 +3223,13 @@
                                         }
                                     ],
                                     "text": " ",
-                                    "style": []
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "https://github.com/marketplace"
+                                        }
+                                    ]
                                 }
                             ]
                         }
@@ -3426,6 +3459,17 @@
                 }
             ],
             "shapes": [
+                {
+                    "bbox": [
+                        163.5,
+                        558.0,
+                        312.9,
+                        583.4
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "https://github.com/marketplace"
+                },
                 {
                     "bbox": [
                         165.9,
