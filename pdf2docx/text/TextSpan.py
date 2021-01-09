@@ -367,10 +367,27 @@ class TextSpan(Element):
 
 
     def make_docx(self, paragraph):
-        '''Add text span to a docx paragraph.'''
-        # set text
-        docx_span = paragraph.add_run(self.text)        
+        '''Add text span to a docx paragraph, and set text style, e.g. font, color, underline, hyperlink, etc.
 
+        .. note::
+            Hyperlink and its style is parsed separately from pdf. For instance, regarding a general hyperlink with an
+            underline, the text and uri is parsed as hyperlink itself, while the underline is treated as a normal text
+            style.
+        '''
+        # Create hyperlink in particular, otherwise add a run directly
+        for style in self.style:
+            if style['type']==RectType.HYPERLINK.value and self.text.strip():
+                docx_run = docx.add_hyperlink(paragraph, style['uri'], self.text)
+                break
+        else:
+            docx_run = paragraph.add_run(self.text)
+        
+        # set text style, e.g. font, underline and highlight
+        self._set_text_format(docx_run)
+
+
+    def _set_text_format(self, docx_run):
+        '''Set text format for ``python-docx.run`` object.'''
         # set style
         # https://python-docx.readthedocs.io/en/latest/api/text.html#docx.text.run.Font
 
@@ -381,26 +398,26 @@ class TextSpan(Element):
         # bit 2: serifed (2^2)
         # bit 3: monospaced (2^3)
         # bit 4: bold (2^4)
-        docx_span.superscript = bool(self.flags & 2**0)
-        docx_span.italic = bool(self.flags & 2**1)
-        docx_span.bold = bool(self.flags & 2**4)
+        docx_run.superscript = bool(self.flags & 2**0)
+        docx_run.italic = bool(self.flags & 2**1)
+        docx_run.bold = bool(self.flags & 2**4)
 
         # font name
         font_name = self.font
-        docx_span.font.name = font_name
-        docx_span._element.rPr.rFonts.set(qn('w:eastAsia'), font_name) # set font for chinese characters
-        docx_span.font.color.rgb = RGBColor(*share.rgb_component(self.color))
+        docx_run.font.name = font_name
+        docx_run._element.rPr.rFonts.set(qn('w:eastAsia'), font_name) # set font for chinese characters
+        docx_run.font.color.rgb = RGBColor(*share.rgb_component(self.color))
 
         # font size
         # NOTE: only x.0 and x.5 is accepted in docx, so set character scaling accordingly
         # if the font size doesn't meet this condition.
         font_size = round(self.size*2)/2.0
-        docx_span.font.size = Pt(font_size)
+        docx_run.font.size = Pt(font_size)
 
         # adjust by set scaling
         scale = self.size / font_size
         if abs(scale-1.0)>=0.01:
-            docx.set_char_scaling(docx_span, scale)
+            docx.set_char_scaling(docx_run, scale)
         
         # font style parsed from PDF rectangles: 
         # e.g. highlight, underline, strike-through-line
@@ -410,18 +427,18 @@ class TextSpan(Element):
             # Built-in method is provided to set highlight in python-docx, but supports only limited colors;
             # so, set character shading instead if out of highlight color scope
             if t==RectType.HIGHLIGHT.value:
-                docx.set_char_shading(docx_span, style['color'])
+                docx.set_char_shading(docx_run, style['color'])
 
             # underline set with built-in method `font.underline` has a same color with text.
             # so, try to set a different color with xml if necessary
             elif t==RectType.UNDERLINE.value:
                 if self.color==style['color']:
-                    docx_span.font.underline = True
+                    docx_run.font.underline = True
                 else:
-                    docx.set_char_underline(docx_span, style['color'])
+                    docx.set_char_underline(docx_run, style['color'])
             
             # same color with text for strike line
             elif t==RectType.STRIKE.value:
-                docx_span.font.strike = True
+                docx_run.font.strike = True
 
         

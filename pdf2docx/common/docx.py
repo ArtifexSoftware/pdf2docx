@@ -11,6 +11,7 @@ from docx.oxml.xmlchemy import BaseOxmlElement, OneAndOnlyOne
 from docx.enum.text import WD_COLOR_INDEX
 from docx.image.exceptions import UnrecognizedImageError
 from docx.table import _Cell
+from docx.opc.constants import RELATIONSHIP_TYPE
 
 from .share import rgb_value
 from . import constants
@@ -143,6 +144,55 @@ def set_char_underline(p_run, srgb:int):
     c = hex(srgb)[2:].zfill(6)
     xml = r'<w:u {} w:val="single" w:color="{}"/>'.format(nsdecls('w'), c)
     p_run._r.get_or_add_rPr().insert(0, parse_xml(xml))
+
+
+def add_hyperlink(paragraph, url, text):
+    """Create a hyperlink within a paragraph object.
+
+    Reference:
+
+        https://github.com/python-openxml/python-docx/issues/74#issuecomment-215678765
+
+    Args:
+        paragraph (Paragraph): ``python-docx`` paragraph adding the hyperlink to.
+        url (str): The required url.
+        text (str): The text displayed for the url.
+
+    Returns: 
+        Run: A Run object containing the hyperlink.
+    """
+
+    # This gets access to the document.xml.rels file and gets a new relation id value
+    part = paragraph.part
+    r_id = part.relate_to(url, RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
+
+    # Create the w:hyperlink tag and add needed values
+    hyperlink = OxmlElement('w:hyperlink')
+    hyperlink.set(qn('r:id'), r_id, )
+    hyperlink.set(qn('w:history'), '1')
+
+    # Create a w:r element
+    new_run = OxmlElement('w:r')
+
+    # Create a new w:rPr element
+    rPr = OxmlElement('w:rPr')
+
+    # Create a w:rStyle element, note this currently does not add the hyperlink style as its not in
+    # the default template, I have left it here in case someone uses one that has the style in it
+    rStyle = OxmlElement('w:rStyle')
+    rStyle.set(qn('w:val'), 'Hyperlink')
+
+    # Join all the xml elements together add add the required text to the w:r element
+    rPr.append(rStyle)
+    new_run.append(rPr)
+    new_run.text = text
+    hyperlink.append(new_run)
+
+    # Create a new Run object and add the hyperlink into it
+    r = paragraph.add_run()
+    r._r.append(hyperlink)
+
+    return r
 
 
 # ---------------------------------------------------------
