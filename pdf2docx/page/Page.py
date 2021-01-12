@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 
-'''Page objects based on PDF raw dict extracted with ``PyMuPDF``.
+'''Page object parsed with PDF raw dict.
 
-The raw page content extracted with ``PyMuPDF`` API ``page.getText('rawdict')`` 
-is described per `link <https://pymupdf.readthedocs.io/en/latest/textpage.html>`_:: 
+In addition to base structure described in :py:class:`~pdf2docx.page.RawPage`, 
+some new features are also included, e.g.
+
+* page margin
+* parsed table block and nested layout
+
+::
 
     {
         # raw dict
@@ -15,45 +20,35 @@ is described per `link <https://pymupdf.readthedocs.io/en/latest/textpage.html>`
         # introduced dict
         ----------------------------
         "id": 0, # page index
-        "finalized": True,
         "margin": [left, right, top, bottom],
         "shapes" : [{...}, {...}, ...]
     }
 
-In addition to the raw layout dict, some new features are also included, e.g.
-
-* page margin
-* rectangle shapes, for text format, annotations and table border/shading
-* new block in table type
 '''
 
-
-from collections import defaultdict
 from docx.shared import Pt
 from docx.enum.section import WD_SECTION
-from .Blocks import Blocks
-from ..image.Image import ImagesExtractor
-from ..shape.Shapes import Shapes
-from ..shape.Paths import Paths
-from ..table.TablesConstructor import TablesConstructor
-from ..common.Element import Element
-from ..common.share import RectType, debug_plot
+from ..common.share import debug_plot
 from ..common import constants
+from .RawPage import RawPage
+from .Layout import Layout
 
 
-class Page:
+class Page(RawPage):
     '''Object representing the whole page, e.g. margins, blocks, shapes, spacing.'''
 
     def __init__(self, fitz_page=None):
         ''' Initialize page layout.
-            ---
-            Args:
-            - fitz_page: source fitz.Page
+        
+        Args:
+            fitz_page (fitz.Page): Source pdf page.
         '''
-        self.id = fitz_page.number # page index
+        super().__init__(fitz_page)
         self.settings = self.init_settings()
-        self.fitz_page = fitz_page
-        self.reset()
+        self.width = self.height = 0
+        self.layout = Layout(parent=self)
+        self.finalized = False
+
 
     @staticmethod
     def init_settings(settings:dict=None):
@@ -91,53 +86,45 @@ class Page:
 
 
     @property
+    def margin(self):
+        return self.layout.margin(self.settings['page_margin_factor_top'], \
+            self.settings['page_margin_factor_bottom'], constants.ITP)
+
+
+    @property
     def working_bbox(self):
         '''bbox with margin considered.'''
         x0, y0, x1, y1 = self.bbox
         L, R, T, B = self.margin
         return (x0+L, y0+T, x1-R, y1-B)
+    
+
+    def store(self):
+        '''Store parsed layout in dict format.'''
+        res = {
+            'id'    : self.id,
+            'width' : self.width,
+            'height': self.height,
+            'margin': self.margin
+        }
+        res.update(self.layout.store())
+        return res
 
 
-    @property
-    def margin(self):
-        '''Calculate page margin, (left, right, top, bottom).'''
-        # return normal page margin if no blocks exist
-        if not self.blocks and not self.shapes: return (constants.ITP, ) * 4
+    def restore(self, data:dict):
+        '''Restore Layout from parsed results.'''
+        # page width/height
+        self.width = data.get('width', 0.0)
+        self.height = data.get('height', 0.0)
+        
+        # initialize layout  blocks and shapes
+        self.layout.restore(data)
 
-        x0, y0, x1, y1 = self.bbox
-        u0, v0, u1, v1 = self.blocks.bbox | self.shapes.bbox
+        # Suppose layout is finalized when restored; otherwise, set False explicitly
+        # out of this method.
+        self.finalized = True
 
-        # margin
-        left = max(u0-x0, 0.0)
-        right = max(x1-u1-constants.MINOR_DIST, 0.0)
-        top = max(v0-y0, 0.0)
-        bottom = max(y1-v1, 0.0)
-
-        # reduce calculated top/bottom margin to leave some free space
-        top *= self.settings['page_margin_factor_top']
-        bottom *= self.settings['page_margin_factor_bottom']
-
-        # use normal margin if calculated margin is large enough
-        return (
-            min(constants.ITP, left), 
-            min(constants.ITP, right), 
-            min(constants.ITP, top), 
-            min(constants.ITP, bottom)
-            )
-
-
-    def reset(self):
-        '''Reset Page object.'''
-        self.finalized = False
-
-        # blocks representing text/table contents
-        self.blocks = Blocks(parent=self)
-
-        # shapes representing table border, shading and text style like underline, highlight
-        self.shapes = Shapes(parent=self)
-
-        # table parser
-        self._tables_constructor = TablesConstructor(parent=self)
+        return self
 
 
     def parse(self, settings:dict=None):
@@ -146,60 +133,12 @@ class Page:
         self.settings = self.init_settings(settings)
 
         # initialize layout based on source pdf page
-        self.load_source()
+        self._load_source()
 
-        # preprocessing, e.g. change block order, clean negative block
-        self.clean_up_blocks()
-        self.clean_up_shapes() # based on cleaned blocks
-    
-        # parse table blocks: 
-        #  - table structure/format recognized from rectangles
-        self.parse_lattice_tables()
-        
-        #  - cell contents extracted from text blocks
-        self.parse_stream_tables()
-
-        # parse text format, e.g. highlight, underline
-        self.parse_text_format()
-        
-        # paragraph / line spacing        
-        self.parse_spacing()
+        # parse layout
+        self.layout.parse(self.settings)
 
         self.finalized = True
-
-        return self
-
-
-    def store(self):
-        '''Store parsed layout in dict format.'''
-        return {
-            'id'    : self.id,
-            'finalized': int(self.finalized),
-            'width' : self.width,
-            'height': self.height,
-            'margin': self.margin,
-            'blocks': self.blocks.store(),
-            'shapes': self.shapes.store(),
-        }
-
-
-    def restore(self, data:dict):
-        '''Restore Layout from parsed results.'''
-        # reset attributes
-        self.reset()
-
-        # page width/height
-        self.width = data.get('width', 0.0)
-        self.height = data.get('height', 0.0)
-        
-        # initialize blocks
-        self.blocks.restore(data.get('blocks', []))
-
-        # initialize shapes: to add rectangles later
-        self.shapes.restore(data.get('shapes', []))
-
-        # whether this layout is finalized already
-        self.finalized = data.get('finalized', True)
 
         return self
 
@@ -209,9 +148,9 @@ class Page:
         # check table
         tables = [] # type: list[ list[list[str]] ]
         if self.settings['extract_stream_table']:
-            collections = self.blocks.table_blocks
+            collections = self.layout.blocks.table_blocks
         else:
-            collections = self.blocks.lattice_table_blocks
+            collections = self.layout.blocks.lattice_table_blocks
         
         for table_block in collections:
             tables.append(table_block.text)
@@ -244,220 +183,12 @@ class Page:
         section.bottom_margin = Pt(bottom)
 
         # add paragraph or table according to parsed block
-        self.blocks.make_docx(doc)
+        self.layout.blocks.make_docx(doc)
 
-
-        
-    # ----------------------------------------------------
-    # initialize layout methods
-    # ----------------------------------------------------
-    @debug_plot('Source Text Blocks')
-    def load_source(self):
-        '''Initialize layout extracted with ``PyMuPDF``.'''
-        data = self.__source_from_page(self.fitz_page) if self.fitz_page else {}
-        self.restore(data)
-
-        return self.blocks
-
-
-    def __source_from_page(self, page):
-        '''Source data extracted from page by ``PyMuPDF``.'''
-        # source blocks
-        # NOTE: all these coordinates are relative to un-rotated page
-        # https://pymupdf.readthedocs.io/en/latest/page.html#modifying-pages
-        raw_layout = page.getText('rawdict')
-
-        # page size: though 'width', 'height' are contained in `raw_dict`, 
-        # they are based on un-rotated page. So, update page width/height 
-        # to right direction in case page is rotated
-        *_, w, h = page.rect # always reflecting page rotation
-        raw_layout.update({ 'width' : w, 'height': h })
-        self.width, self.height = w, h
-
-        # pre-processing for layout blocks and shapes based on parent page
-        self.__preprocess_images(page, raw_layout)
-        self.__preprocess_shapes(page, raw_layout)
-        
-        # Element is a base class processing coordinates, so set rotation matrix globally
-        Element.set_rotation_matrix(page.rotationMatrix)
-
-        return raw_layout
-
-
-    def __preprocess_images(self, page, raw):
-        '''Adjust image blocks. 
-        
-        Image block extracted by ``page.getText('rawdict')`` doesn't contain alpha channel data,
-        so it needs to get page images by ``page.getImageList()`` and then recover them. However, 
-        ``Page.getImageList()`` contains each image only once, while ``page.getText('rawdict')`` 
-        generates image blocks for every image location, whether or not there are any duplicates. 
-        See PyMuPDF doc:
-
-        https://pymupdf.readthedocs.io/en/latest/textpage.html#dictionary-structure-of-extractdict-and-extractrawdict
-            
-        Above all, a compromise:
-
-        * Get image contents with ``page.getImageList()`` -> ensure correct images
-        * Get image location with ``page.getText('rawdict')`` -> ensure correct locations
-        '''
-        # recover image blocks
-        recovered_images = ImagesExtractor.extract_images(page, self.settings['clip_image_res_ratio'])
-
-        # group original image blocks by image contents
-        image_blocks_group = defaultdict(list)
-        for block in raw['blocks']:
-            if block['type'] != 1: continue
-            block['type'] = -1 # "delete" it temporally
-            image_blocks_group[hash(block['image'])].append(block)
-        
-        def same_images(img, img_list):
-            bbox = list(map(round, img['bbox']))
-            for _img in img_list:
-                if list(map(round, _img['bbox']))==bbox: return True
-            return False
-
-        # An example to show complicated things here:
-        # - images in `page.getImageList`: [a, b, c]
-        # - images in `page.getText`     : [a1, a2, b, d]
-        # (1) a -> a1, a2: an image in page maps to multi-instances in raw dict
-        # (2) c: an image in page may not exist in raw dict -> so, add it
-        # (3) d: an image in raw dict may not exist in page -> so, delete it
-        for image in recovered_images:
-            for k, image_blocks in image_blocks_group.items():
-                if not same_images(image, image_blocks): continue
-                for image_block in image_blocks:
-                    image_block['type'] = 1 # add it back
-                    image_block['image'] = image['image']
-                break
-
-            # an image outside the page is not counted in page.getText(), so let's add it here
-            else:
-                raw['blocks'].append(image)
-
-
-    @debug_plot('Source Paths')
-    def __preprocess_shapes(self, page, raw):
-        '''Identify iso-oriented paths and convert vector graphic paths to pixmap.'''
-        # extract paths ed by `page.getDrawings()`
-        raw_paths = page.getDrawings()
-
-        # paths to shapes or images
-        paths = Paths(parent=self).restore(raw_paths)
-        images, shapes = paths.to_images_and_shapes(
-            page,
-            self.settings['curve_path_ratio'], 
-            self.settings['clip_image_res_ratio']
-            )
-        raw['blocks'].extend(images)
-        raw['shapes'] = shapes
-
-        # Hyperlink is considered as a Shape
-        hyperlinks = self.__preprocess_hyperlinks(page)
-        raw['shapes'].extend(hyperlinks)
-
-        return paths
     
-
-    @staticmethod
-    def __preprocess_hyperlinks(page):
-        """Get source hyperlink dicts.
-
-        Args:
-            page (fitz.Page): pdf page.
-
-        Returns:
-            list: A list of source hyperlink dict.
-        """
-        hyperlinks = []
-        for link in page.getLinks():
-            if link['kind']!=2: continue # consider internet address only
-            hyperlinks.append({
-                'type': RectType.HYPERLINK.value,
-                'bbox': tuple(link['from']),
-                'uri' : link['uri']
-            })
-
-        return hyperlinks
-
-
-    # ----------------------------------------------------
-    # wraping Blocks and Shapes methods
-    # ----------------------------------------------------
-    @debug_plot('Cleaned Shapes')
-    def clean_up_shapes(self):
-        '''Clean up shapes and detect semantic types.'''
-        # clean up shapes, e.g. remove negative or duplicated instances
-        self.shapes.clean_up(self.settings['max_border_width'], 
-                            self.settings['shape_merging_threshold'],
-                            self.settings['shape_min_dimension'])
-
-        # detect semantic type based on the positions to text blocks, 
-        # e.g. table border v.s. text underline, table shading v.s. text highlight.
-        # NOTE:
-        # stroke shapes are grouped on connectivity to each other, but in some cases, 
-        # the gap between borders and underlines/strikes are very close, which leads
-        # to an incorrect table structure. So, it's required to distinguish them in
-        # advance, though we needn't to ensure 100% accuracy.
-        self.shapes.detect_initial_categories()
-
-        return self.shapes
-
-
-    @debug_plot('Cleaned Blocks')
-    def clean_up_blocks(self):
-        '''Clean up blocks and calculate page margin accordingly.'''
-        # clean up bad blocks, e.g. overlapping, out of page
-        self.blocks.clean_up(self.settings['float_image_ignorable_gap'],
-                        self.settings['line_overlap_threshold'],
-                        self.settings['line_merging_threshold'])
-
-        return self.blocks
-
-
-    @debug_plot('Lattice Table Structure')
-    def parse_lattice_tables(self):
-        '''Parse table structure based on explicit stroke shapes.'''
-        return self._tables_constructor.lattice_tables(
-                self.settings['connected_border_tolerance'],
-                self.settings['min_border_clearance'],
-                self.settings['max_border_width'],
-                self.settings['float_layout_tolerance'],
-                self.settings['line_overlap_threshold'],
-                self.settings['line_merging_threshold'],
-                self.settings['line_separate_threshold']
-            )
-
-
-    @debug_plot('Stream Table Structure')
-    def parse_stream_tables(self):
-        '''Parse table structure based on layout of blocks.'''
-        return self._tables_constructor.stream_tables(
-                self.settings['min_border_clearance'],
-                self.settings['max_border_width'],
-                self.settings['float_layout_tolerance'],
-                self.settings['line_overlap_threshold'],
-                self.settings['line_merging_threshold'],
-                self.settings['line_separate_threshold']
-            )
-
-
-    @debug_plot('Final Layout')
-    def parse_text_format(self):
-        '''Parse text format in both page and table context.'''
-        text_shapes =   list(self.shapes.text_underlines_strikes) + \
-                        list(self.shapes.text_highlights) + \
-                        list(self.shapes.hyperlinks)
-        self.blocks.parse_text_format(text_shapes)
-        return self.blocks
- 
-
-    def parse_spacing(self):
-        '''Calculate external and internal vertical space for Blocks instances.'''
-        args = (
-            self.settings['line_separate_threshold'],
-            self.settings['line_free_space_ratio_threshold'],
-            self.settings['lines_left_aligned_threshold'],
-            self.settings['lines_right_aligned_threshold'],
-            self.settings['lines_center_aligned_threshold']
-        )
-        self.blocks.parse_spacing(*args)
+    @debug_plot('Source Text Blocks')
+    def _load_source(self):
+        '''Initialize layout extracted with ``PyMuPDF``.'''
+        self.restore(self.raw_dict)
+        self.finalized = False  # just restored from raw dict, not parsed yet
+        return self.layout.blocks

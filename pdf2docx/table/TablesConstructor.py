@@ -19,6 +19,7 @@ Terms definition:
   and finally applied to detect table border.
 '''
 
+
 from ..common.Element import Element
 from ..common import constants
 from ..page.Blocks import Blocks
@@ -28,12 +29,12 @@ from .TableStructure import TableStructure
 from .Border import HBorder, VBorder, Borders
 
 class TablesConstructor:
-    '''Object parsing TableBlock.'''
+    '''Object parsing ``TableBlock`` for specified ``Layout``.'''
 
     def __init__(self, parent):
-        self._parent = parent # Page
-        self._blocks = parent.blocks if parent else None # type: Blocks
-        self._shapes = parent.shapes if parent else None # type: Shapes
+        self._parent = parent # Layout
+        self._blocks = parent.blocks # type: Blocks
+        self._shapes = parent.shapes # type: Shapes
 
 
     def lattice_tables(self, 
@@ -89,8 +90,9 @@ class TablesConstructor:
             # add table to page level
             table.set_lattice_table_block()
 
-        # assign text contents to each table
-        self._blocks.assign_table_contents(unique_tables, settings)
+        # assign blocks/shapes to each table
+        self._blocks.assign_to_tables(unique_tables)
+        self._shapes.assign_to_tables(unique_tables)
 
         return Blocks(unique_tables) # this return is just for debug plot
 
@@ -193,8 +195,9 @@ class TablesConstructor:
             # set type: stream table
             table.set_stream_table_block()
 
-        # assign text contents to each table
-        self._blocks.assign_table_contents(unique_tables, settings)
+        # assign blocks/shapes to each table
+        self._blocks.assign_to_tables(unique_tables)
+        self._shapes.assign_to_tables(unique_tables)
 
         return Blocks(unique_tables) # this return is just for debug plot
 

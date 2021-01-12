@@ -167,15 +167,6 @@ class Block(Element):
         return True
 
 
-    def parse_text_format(self, *args, **kwargs):
-        """Parse text format.
-
-        Raises:
-            NotImplementedError
-        """
-        raise NotImplementedError
-
-
     def make_docx(self, *args, **kwargs):
         """Create associated docx element.
 

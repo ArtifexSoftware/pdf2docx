@@ -3,27 +3,27 @@
 '''Table Cell object.
 '''
 
+
 from docx.shared import Pt
-from ..text.TextBlock import TextBlock
 from ..common.Element import Element
 from ..common.share import rgb_component
 from ..common import docx, constants
-from ..page import Blocks # avoid import conflict
+from ..text.TextBlock import TextBlock
 from ..text.Line import Line
 from ..text.Lines import Lines
-
+from ..page import Layout # avoid import conflict
 
 class Cell(Element):
     '''Cell object.'''
     def __init__(self, raw:dict=None):
-        if raw is None: raw = {}        
+        raw = raw or {}        
         self.bg_color     = raw.get('bg_color', None) # type: int
         self.border_color = raw.get('border_color', (0,0,0,0)) # type: tuple [int]
         self.border_width = raw.get('border_width', (0,0,0,0)) # type: tuple [float]
         self.merged_cells = raw.get('merged_cells', (1,1)) # type: tuple [int]
 
-        # collect blocks
-        self.blocks = Blocks.Blocks(parent=self).restore(raw.get('blocks', []))
+        # layout
+        self.layout = Layout.Layout(parent=self).restore(raw)
 
         super().__init__(raw)
 
@@ -31,7 +31,7 @@ class Cell(Element):
     @property
     def text(self):
         '''Text contained in this cell.'''
-        return '\n'.join([block.text for block in self.blocks]) if bool(self) else None
+        return '\n'.join([block.text for block in self.layout.blocks]) if bool(self) else None
 
 
     @property
@@ -80,7 +80,7 @@ class Cell(Element):
                 'border_color': self.border_color,
                 'border_width': self.border_width,
                 'merged_cells': self.merged_cells,
-                'blocks': self.blocks.store()
+                'blocks': self.layout.blocks.store()
             })
             return res
         else:
@@ -115,10 +115,10 @@ class Cell(Element):
             super().plot(page, stroke=color, fill=None)
 
         # plot blocks contained in cell
-        if content: self.blocks.plot(page)
+        if content: self.layout.blocks.plot(page)
 
 
-    def add(self, block):
+    def add_block(self, block):
         '''Add block to this cell. 
         
         Args:
@@ -129,7 +129,7 @@ class Cell(Element):
         '''
         # add block directly if fully contained in cell
         if self.contains(block, constants.FACTOR_ALMOST):
-            self.blocks.append(block)
+            self.layout.blocks.append(block)
             return
         
         # add nothing if no intersection
@@ -142,7 +142,18 @@ class Cell(Element):
         split_block = TextBlock()
         lines = [line.intersects(self.bbox) for line in block.lines]
         split_block.add(lines)
-        self.blocks.append(split_block)
+        self.layout.blocks.append(split_block)
+
+
+    def add_shape(self, shape):
+        '''Add shape to this cell. 
+        
+        Args:
+            shape (Shape): Shape to add.
+        '''
+        # add shape if contained in cell
+        if self.contains(shape, constants.FACTOR_ALMOST):
+            self.shapes.append(shape)
 
 
     def set_stream_table_layout(self, settings:dict):
@@ -159,7 +170,7 @@ class Cell(Element):
         def sub_lines(block): # get sub-lines from block
             return block.lines if block.is_text_image_block() else [Line().update_bbox(block.bbox)]
         table_lines = Lines()
-        for block in self.blocks:
+        for block in self.layout.blocks:
             table_lines.extend(sub_lines(block))
 
         # parse stream borders
@@ -173,7 +184,7 @@ class Cell(Element):
 
         # parse table content
         table.set_stream_table_block()
-        self.blocks.assign_table_contents([table], settings)
+        self.layout.blocks.assign_table_contents([table], settings)
 
 
     def make_docx(self, table, indexes):
@@ -208,9 +219,9 @@ class Cell(Element):
         # NOTE: there exists an empty paragraph already in each cell, which should be deleted first to
         # avoid unexpected layout. `docx_cell._element.clear_content()` works here.
         # But, docx requires at least one paragraph in each cell, otherwise resulting in a repair error. 
-        if self.blocks:
+        if self.layout.blocks:
             docx_cell._element.clear_content()
-            self.blocks.make_docx(docx_cell)
+            self.layout.blocks.make_docx(docx_cell)
 
 
     def _set_style(self, table, indexes):
@@ -260,5 +271,5 @@ class Cell(Element):
         docx.set_cell_margins(docx_cell, start=0, end=0)
 
         # set vertical direction if contained text blocks are in vertical direction
-        if self.blocks.is_vertical_text:
+        if self.layout.blocks.is_vertical_text:
             docx.set_vertical_cell_direction(docx_cell)

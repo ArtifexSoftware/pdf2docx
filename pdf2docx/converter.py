@@ -76,10 +76,11 @@ class Converter:
         num_pages = len(indexes)
         for i, idx in enumerate(indexes, start=1):
             print(f'\rParsing Page {idx+1}: {i}/{num_pages}...', end='', flush=True)
-            try:
-                self._pages[idx].parse(kwargs)
-            except Exception as e:
-                print(f'\nIgnore page due to error: {e}', flush=True)
+            # try:
+            #     self._pages[idx].parse(kwargs)
+            # except Exception as e:
+            #     print(f'\nIgnore page due to error: {e}', flush=True)
+            self._pages[idx].parse(kwargs)
 
         return self
 
@@ -112,10 +113,11 @@ class Converter:
         for i, page in enumerate(parsed_pages, start=1):
             if not page.finalized: continue # ignore unparsed pages
             print(f'\rCreating Page {page.id+1}: {i}/{num_pages}...', end='')
-            try:
-                page.make_docx(docx_file)
-            except Exception as e:
-                print(f'Ignore page due to error: {e}', flush=True)
+            # try:
+            #     page.make_docx(docx_file)
+            # except Exception as e:
+            #     print(f'Ignore page due to error: {e}', flush=True)
+            page.make_docx(docx_file)
 
         # save docx
         docx_file.save(filename)

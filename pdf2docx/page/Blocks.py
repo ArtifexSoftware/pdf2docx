@@ -19,11 +19,11 @@ from ..table.Cell import Cell
 
 class Blocks(Collection):
     '''Block collections.'''
-    def __init__(self, instances:list=[], parent=None):
+    def __init__(self, instances:list=None, parent=None):
         ''' A collection of TextBlock and TableBlock instances. 
             ImageBlock is converted to ImageSpan contained in TextBlock.
         '''
-        self._parent = parent # type: Block
+        self._parent = parent # type: Layout.Layout
         self._instances = []  # type: list[TextBlock or TableBlock]
 
         # NOTE: no changes on floating image blocks once identified, so store them here
@@ -34,7 +34,7 @@ class Blocks(Collection):
         # NOTE: for a converted image block
         # - isinstance(image_block, TextBlock)==True
         # - image_block.is_text_block()==False
-        for block in instances:
+        for block in (instances or []):
             if isinstance(block, ImageBlock):
                 text_block = block.to_text_block()
                 self.append(text_block)
@@ -43,7 +43,7 @@ class Blocks(Collection):
 
 
     def _update_bbox(self, block:Block):
-        ''' Override. The parent of block is generally Page or Cell, which is not necessary to 
+        ''' Override. The parent is generally ``Layout`` or ``Cell``, which is not necessary to 
             update its bbox. So, do nothing but required here.
         '''
         pass
@@ -115,7 +115,7 @@ class Blocks(Collection):
 
 
     def restore(self, raws:list):
-        '''Restore Blocks from source dict.
+        '''Clean current instances and restore them from source dict.
 
         Args:
             raws (list): A list of raw dicts representing text/image/table blocks.
@@ -123,6 +123,7 @@ class Blocks(Collection):
         Returns:
             Blocks: self
         '''
+        self.reset()  # clean current instances
         for raw_block in raws:
             block_type = raw_block.get('type', -1) # type: int
             
@@ -152,38 +153,48 @@ class Blocks(Collection):
         return self
 
 
-    def clean_up(self, float_image_ignorable_gap:float, line_overlap_threshold:float, line_merging_threshold:float):
-        """Preprocess blocks initialized from the raw layout.
+    def clean_up(self):
+        """Clean up blocks.
 
-        Args:
-            float_image_ignorable_gap (float): Regarded as float image if the intersection exceeds this value.
-            line_overlap_threshold (float): Delete line if the intersection to other lines exceeds this value.
-            line_merging_threshold (float): Combine two lines if the x-distance is lower than this value.
-        
+        * remove blocks out of page
+        * remove transformed text: text direction is not (1, 0) or (0, -1)
+        * remove empty blocks
+
         .. note::
             This method works ONLY for layout initialized from raw dict extracted by ``page.getText()``.
             Under this circumstance, it only exists text blocks since all raw image blocks are converted to 
             text blocks.
         """
         if not self._instances: return
-        # filter function:
-        # - remove blocks out of page
-        # - remove transformed text: text direction is not (1, 0) or (0, -1)
-        # - remove empty blocks
+        
         page_bbox = self.parent.bbox
         f = lambda block:   block.bbox.intersects(page_bbox) and \
                             block.text.strip() and (
                             block.is_horizontal_text or block.is_vertical_text)
         self.reset(filter(f, self._instances))
-           
+
+
+    def merge(self, float_image_ignorable_gap:float, line_overlap_threshold:float, line_merging_threshold:float):
+        """Preprocess blocks initialized from the raw layout.
+
+        Args:
+            float_image_ignorable_gap (float): Regarded as float image if the intersection exceeds this value.
+            line_overlap_threshold (float): Delete line if the intersection to other lines exceeds this value.
+            line_merging_threshold (float): Combine two lines if the x-distance is lower than this value.
+        """
         # merge blocks horizontally, e.g. remove overlap blocks, since no floating elements are supported
         # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
-        self.strip() \
-            .sort_in_reading_order() \
-            .identify_floating_images(float_image_ignorable_gap) \
-            .join_horizontally(text_direction=False, 
-                            line_overlap_threshold=line_overlap_threshold,
-                            line_merging_threshold=line_merging_threshold)
+        if self.parent.is_page_level:
+            self.strip() \
+                .sort_in_reading_order() \
+                .identify_floating_images(float_image_ignorable_gap) \
+                .join_horizontally(text_direction=False, 
+                                line_overlap_threshold=line_overlap_threshold,
+                                line_merging_threshold=line_merging_threshold)
+        else:
+            self.join_horizontally(text_direction=True, 
+                                line_overlap_threshold=line_overlap_threshold,
+                                line_merging_threshold=line_merging_threshold).split_vertically()
 
     
     def strip(self):
@@ -222,12 +233,11 @@ class Blocks(Collection):
         return self
 
 
-    def assign_table_contents(self, tables:list, settings:dict):
+    def assign_to_tables(self, tables:list):
         """Add Text/Image/table block lines to associated cells of given tables.
 
         Args:
             tables (list): A list of TableBlock instances.
-            settings (dict): Table parsing parameters.
         """
         if not tables: return
 
@@ -241,7 +251,7 @@ class Blocks(Collection):
         for table, blocks_in_table in zip(tables, blocks_in_tables):
             # no contents for this table
             if not blocks_in_table: continue
-            table.set_table_contents(blocks_in_table, settings)
+            table.set_blocks(blocks_in_table)
 
         # sort in natural reading order and update layout blocks
         blocks.extend(tables)
@@ -351,7 +361,7 @@ class Blocks(Collection):
         # bbox of blocks
         # - page level, e.g. blocks in top layout
         # - table level, e.g. blocks in table cell
-        bbox = self.parent.working_bbox
+        bbox = self.parent.bbox
 
         # check text direction for vertical space calculation:
         # - normal reading direction (from left to right)    -> the reference boundary is top border, i.e. bbox[1].
@@ -378,9 +388,6 @@ class Blocks(Collection):
             # size should be excluded from the calculated vertical spacing
             if block.is_table_block():
                 dw = block[0][0].border_width[0] / 2.0 # use top border of the first cell
-
-                # calculate vertical spacing of blocks under this table
-                block.parse_spacing(*args)
             
             else:
                 dw = 0.0
@@ -501,12 +508,10 @@ class Blocks(Collection):
         
         Args:
             rects (Shapes): Potential styles applied on blocks.
-        
-        .. note::
-            ``parse_text_format()`` must be implemented by TextBlock, ImageBlock and TableBlock.
         '''
         # parse text block style one by one
-        for block in self._instances: block.parse_text_format(rects)
+        for block in filter(lambda e: e.is_text_block(), self._instances): 
+            block.parse_text_format(rects)
 
 
     def make_docx(self, doc):

@@ -10,9 +10,9 @@ from .share import IText, TextDirection, solve_rects_intersection, graph_bfs
 
 class BaseCollection:
     '''Base collection of specific instances.'''
-    def __init__(self, instances:list=[]):
+    def __init__(self, instances:list=None):
         '''Init collection from a list of Element instances.'''
-        self._instances = instances if instances else [] # type: list[Element]
+        self._instances = instances or [] # type: list[Element]
 
     def __getitem__(self, idx):
         try:
@@ -119,7 +119,7 @@ class BaseCollection:
 
 class Collection(BaseCollection, IText):
     '''Collection of specific instances.'''
-    def __init__(self, instances:list=[], parent=None):
+    def __init__(self, instances:list=None, parent=None):
         '''Init collection from a list of Element instances.'''
         self._parent = parent # type: Element
         super().__init__(instances)

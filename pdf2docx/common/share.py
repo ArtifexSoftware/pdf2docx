@@ -209,18 +209,18 @@ def debug_plot(title:str):
             # execute function
             objects = func(*args, **kwargs)
 
-            # check if plot page
-            page = args[0] # Page object
-            debug = page.settings.get('debug', False)
-            doc = page.settings.get('debug_doc', None)
-            filename = page.settings.get('debug_filename', None)
+            # # check if plot page
+            # page = args[0] # Page object
+            # debug = page.settings.get('debug', False)
+            # doc = page.settings.get('debug_doc', None)
+            # filename = page.settings.get('debug_filename', None)
 
-            if objects and debug and doc is not None:                
-                # create a new page
-                page = new_page(doc, page.width, page.height, title)
-                # plot objects, e.g. text blocks, shapes, tables...
-                objects.plot(page)
-                doc.save(filename)
+            # if objects and debug and doc is not None:                
+            #     # create a new page
+            #     page = new_page(doc, page.width, page.height, title)
+            #     # plot objects, e.g. text blocks, shapes, tables...
+            #     objects.plot(page)
+            #     doc.save(filename)
 
             return objects
         return inner

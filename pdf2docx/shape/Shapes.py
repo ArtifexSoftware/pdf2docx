@@ -11,7 +11,7 @@ from ..common import share
 
 class Shapes(Collection):
     ''' A collection of ``Shape`` instances: ``Stroke`` or ``Fill``.'''
-    def __init__(self, instances:list=[], parent=None):
+    def __init__(self, instances:list=None, parent=None):
         
         super().__init__(instances, parent)
 
@@ -26,7 +26,8 @@ class Shapes(Collection):
 
 
     def restore(self, raws:list):
-        '''Initialize ``Stroke``, ``Fill`` and ``Hyperlink`` from dicts.'''
+        '''Clean current instances and restore them from source dicts.'''
+        self.reset()
         # Distinguish specified type by key like `start`, `end` and `uri`.
         for raw in raws:
             if 'start' in raw:
@@ -202,6 +203,45 @@ class Shapes(Collection):
                 else:
                     self._text_highlights.append(shape)
     
+
+    def assign_to_tables(self, tables:list):
+        """Add Shape to associated cells of given tables.
+
+        Args:
+            tables (list): A list of TableBlock instances.
+        """
+        if not tables: return
+
+        # assign shapes to table region        
+        shapes_in_tables = [[] for _ in tables] # type: list[list[Shape]]
+        shapes = []   # type: list[Shape]
+        for shape in self._instances:
+            if shape.is_determined:
+                shapes.append(shape)
+                continue
+
+            for table, shapes_in_table in zip(tables, shapes_in_tables):
+                # fully contained in one table
+                if table.bbox.contains(shape.bbox):
+                    shapes_in_table.append(shape)
+                    break
+
+                # not possible in current table, then check next table
+                elif not table.bbox.intersects(shape.bbox):
+                    continue
+            
+            # Now, this shape belongs to previous layout
+            else:
+                shapes.append(shape)
+
+        # assign shapes to associated cells
+        for table, shapes_in_table in zip(tables, shapes_in_tables):
+            # no contents for this table
+            if not shapes_in_table: continue
+            table.set_shapes(shapes_in_table)
+
+        self.reset(shapes).sort_in_reading_order()
+
 
     def plot(self, page):
         '''Plot shapes for debug purpose.
