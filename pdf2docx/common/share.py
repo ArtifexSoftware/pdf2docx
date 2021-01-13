@@ -210,7 +210,7 @@ def debug_plot(title:str, show=True):
             objects = func(*args, **kwargs)
 
             # check if plot page
-            page = args[0] if hasattr(args[0], 'settings') else args[1] # Page object
+            page = args[0] # Page object
             debug = page.settings.get('debug', False)
             doc = page.settings.get('debug_doc', None)
             filename = page.settings.get('debug_filename', None)

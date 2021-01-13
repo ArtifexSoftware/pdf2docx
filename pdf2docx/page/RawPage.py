@@ -3,7 +3,7 @@
 '''A wrapper of ``fitz.Page`` to extract source contents.
 
 The raw page content extracted with ``PyMuPDF`` API ``page.getText('rawdict')`` 
-is described per link <https://pymupdf.readthedocs.io/en/latest/textpage.html>:: 
+is described per link https://pymupdf.readthedocs.io/en/latest/textpage.html:: 
 
     {
         # raw dict
@@ -14,7 +14,6 @@ is described per link <https://pymupdf.readthedocs.io/en/latest/textpage.html>::
 
         # introduced dict
         ----------------------------
-        "id": 0, # page index
         "shapes" : [{...}, {...}, ...]
     }
 

@@ -153,12 +153,17 @@ class Blocks(Collection):
         return self
 
 
-    def clean_up(self):
-        """Clean up blocks.
+    def clean_up_page_layout(self, float_image_ignorable_gap:float, line_overlap_threshold:float, line_merging_threshold:float):
+        """Clean up blocks in page level.
 
         * remove blocks out of page
         * remove transformed text: text direction is not (1, 0) or (0, -1)
         * remove empty blocks
+
+        Args:
+            float_image_ignorable_gap (float): Regarded as float image if the intersection exceeds this value.
+            line_overlap_threshold (float): Delete line if the intersection to other lines exceeds this value.
+            line_merging_threshold (float): Combine two lines if the x-distance is lower than this value.
 
         .. note::
             This method works ONLY for layout initialized from raw dict extracted by ``page.getText()``.
@@ -173,28 +178,29 @@ class Blocks(Collection):
                             block.is_horizontal_text or block.is_vertical_text)
         self.reset(filter(f, self._instances))
 
+        # merge blocks horizontally, e.g. remove overlap blocks, since no floating elements are supported
+        # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
+        self.strip() \
+            .sort_in_reading_order() \
+            .identify_floating_images(float_image_ignorable_gap) \
+            .join_horizontally(text_direction=False, 
+                            line_overlap_threshold=line_overlap_threshold,
+                            line_merging_threshold=line_merging_threshold)
 
-    def merge(self, float_image_ignorable_gap:float, line_overlap_threshold:float, line_merging_threshold:float):
-        """Preprocess blocks initialized from the raw layout.
+
+    def clean_up_cell_layout(self, line_overlap_threshold:float, line_merging_threshold:float):
+        """Clean up blocks in cell level.
 
         Args:
-            float_image_ignorable_gap (float): Regarded as float image if the intersection exceeds this value.
             line_overlap_threshold (float): Delete line if the intersection to other lines exceeds this value.
             line_merging_threshold (float): Combine two lines if the x-distance is lower than this value.
         """
-        # merge blocks horizontally, e.g. remove overlap blocks, since no floating elements are supported
-        # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
-        if self.parent.is_page_level:
-            self.strip() \
-                .sort_in_reading_order() \
-                .identify_floating_images(float_image_ignorable_gap) \
-                .join_horizontally(text_direction=False, 
-                                line_overlap_threshold=line_overlap_threshold,
-                                line_merging_threshold=line_merging_threshold)
-        else:
-            self.join_horizontally(text_direction=True, 
-                                line_overlap_threshold=line_overlap_threshold,
-                                line_merging_threshold=line_merging_threshold).split_vertically()
+        if not self._instances: return
+
+        self.join_horizontally(text_direction=True, 
+                            line_overlap_threshold=line_overlap_threshold,
+                            line_merging_threshold=line_merging_threshold) \
+            .split_vertically()
 
     
     def strip(self):
@@ -233,11 +239,12 @@ class Blocks(Collection):
         return self
 
 
-    def assign_to_tables(self, tables:list):
+    def assign_to_tables(self, tables:list, *args):
         """Add Text/Image/table block lines to associated cells of given tables.
 
         Args:
             tables (list): A list of TableBlock instances.
+            args (tuple) : Parameters for cleaning up blocks in assigned cell.
         """
         if not tables: return
 
@@ -251,7 +258,7 @@ class Blocks(Collection):
         for table, blocks_in_table in zip(tables, blocks_in_tables):
             # no contents for this table
             if not blocks_in_table: continue
-            table.set_blocks(blocks_in_table)
+            table.assign_blocks(blocks_in_table, *args)
 
         # sort in natural reading order and update layout blocks
         blocks.extend(tables)

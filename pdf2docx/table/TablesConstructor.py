@@ -41,25 +41,18 @@ class TablesConstructor:
                 connected_border_tolerance:float,
                 min_border_clearance:float,
                 max_border_width:float,
-                float_layout_tolerance:float,
                 line_overlap_threshold:float,
-                line_merging_threshold:float,
-                line_separate_threshold:float):
+                line_merging_threshold:float):
         """Parse table with explicit borders/shadings represented by rectangle shapes.
 
         Args:
             connected_border_tolerance (float): Two borders are intersected if the gap lower than this value.
             min_border_clearance (float): The minimum allowable clearance of two borders.
             max_border_width (float): Max border width.
-            float_layout_tolerance (float): The larger of this value, the more tolerable of flow layout.
             line_overlap_threshold (float): Delete line if the intersection to other lines exceeds this value.
             line_merging_threshold (float): Combine two lines if the x-distance is lower than this value.
-            line_separate_threshold (float): Two separate lines if the x-distance exceeds this value.
-
-        Returns:
-            Blocks: A collection of parsed lattice tables.
         """
-        if not self._shapes: return None
+        if not self._shapes: return
 
         # group stroke shapes: each group may be a potential table
         grouped_strokes = self._shapes.table_strokes \
@@ -72,11 +65,7 @@ class TablesConstructor:
         tables = Blocks()
         settings = {
             'min_border_clearance': min_border_clearance,
-            'max_border_width': max_border_width,
-            'float_layout_tolerance': float_layout_tolerance,
-            'line_overlap_threshold': line_overlap_threshold,
-            'line_merging_threshold': line_merging_threshold,
-            'line_separate_threshold': line_separate_threshold
+            'max_border_width': max_border_width
         }
         for strokes in grouped_strokes:
             # potential shadings in this table region
@@ -93,10 +82,8 @@ class TablesConstructor:
             table.set_lattice_table_block()
 
         # assign blocks/shapes to each table
-        self._blocks.assign_to_tables(unique_tables)
+        self._blocks.assign_to_tables(unique_tables, line_overlap_threshold, line_merging_threshold)
         self._shapes.assign_to_tables(unique_tables)
-
-        return Blocks(unique_tables) # this return is just for debug plot
 
 
     def stream_tables(self, 
@@ -157,11 +144,7 @@ class TablesConstructor:
         tables = Blocks()
         settings = {
             'min_border_clearance': min_border_clearance,
-            'max_border_width': max_border_width,
-            'float_layout_tolerance': float_layout_tolerance,
-            'line_overlap_threshold': line_overlap_threshold,
-            'line_merging_threshold': line_merging_threshold,
-            'line_separate_threshold': line_separate_threshold
+            'max_border_width': max_border_width
         }
         for table_lines in tables_lines:
             # bounding box
@@ -202,10 +185,8 @@ class TablesConstructor:
             table.set_stream_table_block()
 
         # assign blocks/shapes to each table
-        self._blocks.assign_to_tables(unique_tables)
+        self._blocks.assign_to_tables(unique_tables, line_overlap_threshold, line_merging_threshold)
         self._shapes.assign_to_tables(unique_tables)
-
-        return Blocks(unique_tables) # this return is just for debug plot
 
 
     @staticmethod

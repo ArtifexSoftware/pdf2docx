@@ -3,15 +3,12 @@
 '''Table Cell object.
 '''
 
-
 from docx.shared import Pt
 from ..common.Element import Element
-from ..common.share import rgb_component
 from ..common import docx, constants
 from ..text.TextBlock import TextBlock
-from ..text.Line import Line
-from ..text.Lines import Lines
 from ..page import Layout # avoid import conflict
+
 
 class Cell(Element):
     '''Cell object.'''
@@ -93,14 +90,26 @@ class Cell(Element):
         self.layout.blocks.plot(page)
 
 
-    def add_block(self, block):
-        '''Add block to this cell. 
+    def assign_blocks(self, blocks:list, *args):
+        '''Add blocks to this cell. 
         
         Args:
-            block (TextBlock, TableBlock): Text/table block to add.
+            blocks (list): a list of text/table block to add.
+            args (tuple) : Parameters for cleaning up blocks.
         
         .. note::
             If a text block is partly contained in a cell, it must deep into line -> span -> char.
+        '''
+        for block in blocks: 
+            self._assign_block(block)
+        self.layout.blocks.clean_up_cell_layout(*args)
+    
+
+    def _assign_block(self, block):
+        '''Add block to this cell. 
+        
+        Args:
+            block (TextBlock, TableBlock): Text/table block to add. 
         '''
         # add block directly if fully contained in cell
         if self.contains(block, constants.FACTOR_ALMOST):
@@ -120,46 +129,16 @@ class Cell(Element):
         self.layout.blocks.append(split_block)
 
 
-    def add_shape(self, shape):
-        '''Add shape to this cell. 
+    def assign_shapes(self, shapes:list):
+        '''Add shapes to this cell. 
         
         Args:
-            shape (Shape): Shape to add.
+            shapes (list): a list of Shape instance to add.
         '''
         # add shape if contained in cell
-        if self.bbox & shape.bbox:
-            self.layout.shapes.append(shape)
-
-
-    def set_stream_table_layout(self, settings:dict):
-        '''Set stream table layout to ensure any float layout converted to flow layout.'''
-        # create nest table if float layout still exists
-        from .TablesConstructor import TablesConstructor
-        from .TableStructure import TableStructure
-
-        # bbox range of stream table
-        inner_bbox, outer_bbox = self.working_bbox, self.working_bbox
-        outer_borders = TablesConstructor._outer_borders(inner_bbox, outer_bbox)
-
-        # stream table contents        
-        def sub_lines(block): # get sub-lines from block
-            return block.lines if block.is_text_image_block() else [Line().update_bbox(block.bbox)]
-        table_lines = Lines()
-        for block in self.layout.blocks:
-            table_lines.extend(sub_lines(block))
-
-        # parse stream borders
-        strokes = TablesConstructor.stream_strokes(table_lines, outer_borders, explicit_strokes=[], explicit_shadings=[])
-        if not strokes: return
-
-        # parse table structure
-        strokes.sort_in_reading_order() # required
-        table = TableStructure(strokes, settings).parse(fills=[]).to_table_block()
-        if not table: return
-
-        # parse table content
-        table.set_stream_table_block()
-        self.layout.blocks.assign_table_contents([table], settings)
+        for shape in shapes:
+            if self.bbox & shape.bbox: self.layout.shapes.append(shape)
+        self.layout.shapes.detect_initial_categories()
 
 
     def make_docx(self, table, indexes):

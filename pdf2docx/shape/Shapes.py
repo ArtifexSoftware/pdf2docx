@@ -245,7 +245,7 @@ class Shapes(Collection):
         for table, shapes_in_table in zip(tables, shapes_in_tables):
             # no contents for this table
             if not shapes_in_table: continue
-            table.set_shapes(shapes_in_table)
+            table.assign_shapes(shapes_in_table)
 
         self.reset(shapes).sort_in_reading_order()
 

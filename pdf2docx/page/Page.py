@@ -216,10 +216,24 @@ class Page(RawPage):
         return self.layout.blocks
     
 
+    @debug_plot('Cleaned Shapes')
+    def _clean_up_layout(self):
+        '''Preprocessing all blocks and shapes from page level (run only once), 
+        e.g. change block order, clean negative block.
+        '''
+        self.layout.clean_up(self.settings)
+        return self.layout.shapes
+
+
     @debug_plot('Final Layout')
     def _parse_layout(self):
         '''A wrapper of parsing layout for debug plot purpose.'''
-        self.layout.parse(self)
+        # clean up
+        self._clean_up_layout() # promote for debug ploting
+
+        # parse layout
+        self.layout.parse(self.settings)
+
         return self.layout.blocks
 
 

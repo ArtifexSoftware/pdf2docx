@@ -96,34 +96,34 @@ class TableBlock(Block):
         })
         return res
 
-    def set_blocks(self, blocks:list):
+
+    def assign_blocks(self, blocks:list, *args):
         '''Assign ``blocks`` to associated cell.
 
         Args:
             blocks (list): A list of text/table blocks.
+            args (tuple) : Parameters for cleaning up blocks.
         '''
         for row in self._rows:
             for cell in row:
                 if not cell: continue
-                # check candidate blocks
-                for block in blocks: cell.add_block(block)
+                cell.assign_blocks(blocks, *args)
 
 
-    def set_shapes(self, shapes:list):
+    def assign_shapes(self, shapes:list):
         '''Assign ``shapes`` to associated cell.
 
         Args:
-            shapes (list): A list of text/table shapes.
+            shapes (list): A list of Shape.
         '''
         for row in self._rows:
             for cell in row:
                 if not cell: continue
-                # check candidate shapes
-                for shape in shapes: cell.add_shape(shape)
+                cell.assign_shapes(shapes)
 
 
-    def parse(self, page):
-        '''Parse cell layout.
+    def parse(self, settings:dict):
+        '''Parse layout under cell level.
 
         Args:
             settings (dict): Layout parsing parameters.
@@ -131,7 +131,7 @@ class TableBlock(Block):
         for row in self._rows:
             for cell in row:
                 if not cell: continue
-                cell.layout.parse(page)
+                cell.layout.parse(settings)
 
 
     def plot(self, page):

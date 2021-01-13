@@ -10,7 +10,6 @@ from .Blocks import Blocks
 from ..shape.Shapes import Shapes
 from ..table.TablesConstructor import TablesConstructor
 from ..table.Cell import Cell
-from ..common.share import debug_plot
 
 
 class Layout:
@@ -58,87 +57,64 @@ class Layout:
         return self
 
 
-    def parse(self, page):
+    def parse(self, settings:dict):
         '''Parse layout.
 
         Args:
-            page (Page): Page object.
+            settings (dict): Layout parsing parameters.
         '''
-        # preprocessing all blocks and shapes from page level (run only once), 
-        # e.g. change block order, clean negative block
-        self._clean_up(page)
-
-        # pre-process blocks and shapes
-        self._preprocess(page)
-
         # parse layout by top-down mode
+        # TODO
     
         # parse layout by bottom-up mode
-        self._parse_layout_bottom_up(page)
+        self._parse_layout_bottom_up(settings)
 
         # parse sub-layout, i.e. layout under table block
         for block in filter(lambda e: e.is_table_block(), self.blocks):
-            block.parse(page)
+            block.parse(settings)
 
 
     # ----------------------------------------------------
     # wraping Blocks and Shapes methods
     # ----------------------------------------------------
-    def _clean_up(self, page):
+    def clean_up(self, settings:dict):
         '''Clean up blocks and shapes, e.g. remove negative or duplicated instances.
 
         .. note::
             This method is for Page level only since it runs once for all.
         '''
-        if not self.is_page_level: return
-
         # clean up blocks first
-        self.blocks.clean_up()
+        self.blocks.clean_up_page_layout(settings['float_image_ignorable_gap'],
+                            settings['line_overlap_threshold'],
+                            settings['line_merging_threshold'])
 
-        # clean up shapes
-        settings = page.settings
+        # clean up shapes        
         self.shapes.clean_up(settings['max_border_width'], 
                             settings['shape_merging_threshold'],
                             settings['shape_min_dimension'])
         
         # set page margin
         self._parent.cal_margin()
-    
 
-    @debug_plot('Cleaned Shapes')
-    def _preprocess(self, page):
-        '''pre-process blocks and shapes for layout parsing, e.g. detect semantic type of shapes, 
-        e.g. table border v.s. text underline, table shading v.s. text highlight..'''
-        settings = page.settings
-        # blocks
-        self.blocks.merge(settings['float_image_ignorable_gap'],
-                            settings['line_overlap_threshold'],
-                            settings['line_merging_threshold'])
-        # shapes
+        # detect semantic type of shapes
         self.shapes.detect_initial_categories()
 
-        return self.shapes    
 
-
-    def _parse_layout_bottom_up(self, page):
+    def _parse_layout_bottom_up(self, settings:dict):
         '''Parse layout from bottom to up: 
         
         * detect single explicit table first,
         * then table and text block forms upper layout, i.e. stream table
         * finally parse text format and spacing.
         '''
-        settings = page.settings
-
         # parse table blocks: 
         #  - table structure/format recognized from rectangles        
         self._tables_constructor.lattice_tables(
                             settings['connected_border_tolerance'],
                             settings['min_border_clearance'],
                             settings['max_border_width'],
-                            settings['float_layout_tolerance'],
                             settings['line_overlap_threshold'],
-                            settings['line_merging_threshold'],
-                            settings['line_separate_threshold'])
+                            settings['line_merging_threshold'])
         
         #  - cell contents extracted from text blocks
         self._tables_constructor.stream_tables(
