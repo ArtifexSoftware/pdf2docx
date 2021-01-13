@@ -44,10 +44,15 @@ class Page(RawPage):
             fitz_page (fitz.Page): Source pdf page.
         '''
         super().__init__(fitz_page)
-        self.settings = self.init_settings()
-        self.width = self.height = 0
+        self.id = -1
+        self._margin = (0,) * 4
+        self.settings = self.init_settings()        
         self.layout = Layout(parent=self)
-        self.finalized = False
+        self._finalized = False
+
+
+    @property
+    def finalized(self): return self._finalized
 
 
     @staticmethod
@@ -87,8 +92,12 @@ class Page(RawPage):
 
     @property
     def margin(self):
-        return self.layout.margin(self.settings['page_margin_factor_top'], \
-            self.settings['page_margin_factor_bottom'], constants.ITP)
+        """Get page margin.
+
+        Returns:
+            tuple: ``(left, right, top, bottom)``.
+        """        
+        return self._margin
 
 
     @property
@@ -113,16 +122,20 @@ class Page(RawPage):
 
     def restore(self, data:dict):
         '''Restore Layout from parsed results.'''
+        # page id
+        self.id = data.get('id', -1)
+
         # page width/height
         self.width = data.get('width', 0.0)
         self.height = data.get('height', 0.0)
+        self._margin = data.get('margin', (0,) * 4)
         
         # initialize layout  blocks and shapes
         self.layout.restore(data)
 
         # Suppose layout is finalized when restored; otherwise, set False explicitly
         # out of this method.
-        self.finalized = True
+        self._finalized = True
 
         return self
 
@@ -136,15 +149,20 @@ class Page(RawPage):
         self._load_source()
 
         # parse layout
-        self.layout.parse(self.settings)
+        self._parse_layout()
 
-        self.finalized = True
+        self._finalized = True
 
         return self
 
 
     def extract_tables(self):
-        '''Extract content from tables.'''
+        '''Extract content from tables (top layout only).
+        
+        .. note::
+            Before running this method, the page layout must be either parsed from source 
+            page or restored from parsed data.
+        '''
         # check table
         tables = [] # type: list[ list[list[str]] ]
         if self.settings['extract_stream_table']:
@@ -160,6 +178,10 @@ class Page(RawPage):
 
     def make_docx(self, doc):
         '''Create page based on layout data. 
+
+        .. note::
+            Before running this method, the page layout must be either parsed from source 
+            page or restored from parsed data.
         
         Args:
             doc (Document): ``python-docx`` document object
@@ -190,5 +212,43 @@ class Page(RawPage):
     def _load_source(self):
         '''Initialize layout extracted with ``PyMuPDF``.'''
         self.restore(self.raw_dict)
-        self.finalized = False  # just restored from raw dict, not parsed yet
+        self._finalized = False  # just restored from raw dict, not parsed yet
         return self.layout.blocks
+    
+
+    @debug_plot('Final Layout')
+    def _parse_layout(self):
+        '''A wrapper of parsing layout for debug plot purpose.'''
+        self.layout.parse(self)
+        return self.layout.blocks
+
+
+    def cal_margin(self):
+        """Calculate and set page margin.
+
+        .. note::
+            Ensure this method is run right after cleaning up the layout, so the page margin is 
+            calculated based on valid layout, and stay constant.
+        """
+        # return default margin if no blocks exist
+        if not self.layout.blocks and not self.layout.shapes: return (constants.ITP, ) * 4
+
+        x0, y0, x1, y1 = self.bbox
+        u0, v0, u1, v1 = self.layout.blocks.bbox | self.layout.shapes.bbox
+
+        # margin
+        left = max(u0-x0, 0.0)
+        right = max(x1-u1-constants.MINOR_DIST, 0.0)
+        top = max(v0-y0, 0.0)
+        bottom = max(y1-v1, 0.0)
+
+        # reduce calculated top/bottom margin to leave some free space
+        top *= self.settings['page_margin_factor_top']
+        bottom *= self.settings['page_margin_factor_bottom']
+
+        # use normal margin if calculated margin is large enough
+        self._margin = (
+            min(constants.ITP, round(left, 1)), 
+            min(constants.ITP, round(right, 1)), 
+            min(constants.ITP, round(top, 1)), 
+            min(constants.ITP, round(bottom, 1)))

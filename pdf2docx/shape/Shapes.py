@@ -158,6 +158,12 @@ class Shapes(Collection):
         ''' Detect shape type based on the position to text blocks. 
 
         .. note::
+            Stroke shapes are grouped on connectivity to each other, but in some cases, 
+            the gap between borders and underlines/strikes are very close, which leads
+            to an incorrect table structure. So, it's required to distinguish them in
+            advance, though we needn't to ensure 100% accuracy.
+
+        .. note::
             It should be run right after ``clean_up()``.
         '''
         # reset all
@@ -216,7 +222,8 @@ class Shapes(Collection):
         shapes_in_tables = [[] for _ in tables] # type: list[list[Shape]]
         shapes = []   # type: list[Shape]
         for shape in self._instances:
-            if shape.is_determined:
+            # exclude explicit table borders which belongs to current layout
+            if shape.type in (RectType.BORDER, RectType.SHADING):
                 shapes.append(shape)
                 continue
 

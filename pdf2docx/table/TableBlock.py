@@ -122,7 +122,7 @@ class TableBlock(Block):
                 for shape in shapes: cell.add_shape(shape)
 
 
-    def parse(self, settings:dict=None):
+    def parse(self, page):
         '''Parse cell layout.
 
         Args:
@@ -131,10 +131,10 @@ class TableBlock(Block):
         for row in self._rows:
             for cell in row:
                 if not cell: continue
-                cell.layout.parse(settings)
+                cell.layout.parse(page)
 
 
-    def plot(self, page, content:bool, style:bool, color:tuple):
+    def plot(self, page):
         '''Plot table block, i.e. cell/line/span, for debug purpose.
         
         Args:
@@ -146,7 +146,7 @@ class TableBlock(Block):
         for row in self._rows:
             for cell in row:                
                 if not cell: continue  # ignore merged cells   
-                cell.plot(page, content=content, style=style, color=color)
+                cell.plot(page)
 
 
     def make_docx(self, table):

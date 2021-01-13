@@ -87,35 +87,10 @@ class Cell(Element):
             return None
 
 
-    def plot(self, page, content:bool=True, style:bool=True, color:tuple=None):
-        '''Plot cell.
-        
-        Args:
-            page (fitz.Page): pdf page.
-            content (bool): Plot text blocks if True.
-            style (bool): Plot cell style if True, e.g. border width, shading; 
-                otherwise draw table border only.
-            color (bool): Table border color when ``style=False``.            
-        '''        
-        # plot cell style
-        if style:
-            # border color and width
-            bc = [x/255.0 for x in rgb_component(self.border_color[0])]
-            w = self.border_width[0]
-
-            # shading color
-            if self.bg_color != None:
-                sc = [x/255.0 for x in rgb_component(self.bg_color)] 
-            else:
-                sc = None
-            super().plot(page, stroke=bc, fill=sc, width=w)
-        
-        # or just cell borders for illustration
-        else:
-            super().plot(page, stroke=color, fill=None)
-
-        # plot blocks contained in cell
-        if content: self.layout.blocks.plot(page)
+    def plot(self, page):
+        '''Plot cell and its sub-layout.'''        
+        super().plot(page)
+        self.layout.blocks.plot(page)
 
 
     def add_block(self, block):
@@ -152,8 +127,8 @@ class Cell(Element):
             shape (Shape): Shape to add.
         '''
         # add shape if contained in cell
-        if self.contains(shape, constants.FACTOR_ALMOST):
-            self.shapes.append(shape)
+        if self.bbox & shape.bbox:
+            self.layout.shapes.append(shape)
 
 
     def set_stream_table_layout(self, settings:dict):

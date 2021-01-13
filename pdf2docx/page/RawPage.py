@@ -21,7 +21,6 @@ is described per link <https://pymupdf.readthedocs.io/en/latest/textpage.html>::
 In addition to the raw layout dict, rectangle shapes are also included.
 '''
 
-
 from collections import defaultdict
 from ..image.Image import ImagesExtractor
 from ..shape.Paths import Paths
@@ -32,33 +31,40 @@ from ..common.share import RectType, debug_plot
 class RawPage:
     '''A wrapper of ``fitz.Page`` to extract source contents.'''
 
-    def __init__(self, fitz_page):
+    def __init__(self, fitz_page=None):
         ''' Initialize page layout.
         
         Args:
-            fitz_page (fitz.Page): Source pdf page. Not None.
+            fitz_page (fitz.Page): Source pdf page.
         '''
-        self.id = fitz_page.number # page index
-        self.fitz_page = fitz_page        
+        self.fitz_page = fitz_page
+        self.width, self.height = 0, 0
 
 
     @property
     def raw_dict(self):
         '''Source data extracted from page by ``PyMuPDF``.'''
+        if not self.fitz_page: return {}
+
+        raw_layout = {'id': self.fitz_page.number}
+
         # source blocks
         # NOTE: all these coordinates are relative to un-rotated page
         # https://pymupdf.readthedocs.io/en/latest/page.html#modifying-pages
-        raw_layout = self.fitz_page.getText('rawdict')
+        raw_layout.update(
+            self.fitz_page.getText('rawdict')
+        )
 
         # page size: though 'width', 'height' are contained in `raw_dict`, 
         # they are based on un-rotated page. So, update page width/height 
         # to right direction in case page is rotated
         *_, w, h = self.fitz_page.rect # always reflecting page rotation
         raw_layout.update({ 'width' : w, 'height': h })
+        self.width, self.height = w, h
 
         # pre-processing for layout blocks and shapes based on parent page
-        self._preprocess_images(self.fitz_page, raw_layout)
-        self._preprocess_shapes(self.fitz_page, raw_layout)
+        self._preprocess_images(raw_layout)
+        self._preprocess_shapes(raw_layout)
         
         # Element is a base class processing coordinates, so set rotation matrix globally
         Element.set_rotation_matrix(self.fitz_page.rotationMatrix)
@@ -66,7 +72,7 @@ class RawPage:
         return raw_layout
 
 
-    def _preprocess_images(self, page, raw):
+    def _preprocess_images(self, raw):
         '''Adjust image blocks. 
         
         Image block extracted by ``page.getText('rawdict')`` doesn't contain alpha channel data,
@@ -83,7 +89,8 @@ class RawPage:
         * Get image location with ``page.getText('rawdict')`` -> ensure correct locations
         '''
         # recover image blocks
-        recovered_images = ImagesExtractor.extract_images(page, self.settings['clip_image_res_ratio'])
+        recovered_images = ImagesExtractor.extract_images(self.fitz_page, 
+                                            self.settings['clip_image_res_ratio'])
 
         # group original image blocks by image contents
         image_blocks_group = defaultdict(list)
@@ -118,15 +125,15 @@ class RawPage:
 
 
     @debug_plot('Source Paths')
-    def _preprocess_shapes(self, page, raw):
+    def _preprocess_shapes(self, raw):
         '''Identify iso-oriented paths and convert vector graphic paths to pixmap.'''
         # extract paths ed by `page.getDrawings()`
-        raw_paths = page.getDrawings()
+        raw_paths = self.fitz_page.getDrawings()
 
         # paths to shapes or images
         paths = Paths(parent=self).restore(raw_paths)
         images, shapes = paths.to_images_and_shapes(
-            page,
+            self.fitz_page,
             self.settings['curve_path_ratio'], 
             self.settings['clip_image_res_ratio']
             )
@@ -134,7 +141,7 @@ class RawPage:
         raw['shapes'] = shapes
 
         # Hyperlink is considered as a Shape
-        hyperlinks = self._preprocess_hyperlinks(page)
+        hyperlinks = self._preprocess_hyperlinks(self.fitz_page)
         raw['shapes'].extend(hyperlinks)
 
         return paths

@@ -58,7 +58,9 @@ class TablesConstructor:
 
         Returns:
             Blocks: A collection of parsed lattice tables.
-        """        
+        """
+        if not self._shapes: return None
+
         # group stroke shapes: each group may be a potential table
         grouped_strokes = self._shapes.table_strokes \
             .group_by_connectivity(dx=connected_border_tolerance, dy=connected_border_tolerance)
@@ -187,7 +189,11 @@ class TablesConstructor:
             # parse table structure
             strokes.sort_in_reading_order() # required
             table = TableStructure(strokes, settings).parse(explicit_shadings).to_table_block()
-            tables.append(table)
+
+            # NOTE: ignore stream table with only one cell since it's of no use; 
+            #       but when it has an explicit background, accept it.
+            if table.num_rows*table.num_cols>1 or explicit_shadings:
+                tables.append(table)
 
         # check if any intersection with previously parsed tables
         unique_tables = self._remove_floating_tables(tables)
