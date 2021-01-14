@@ -40,17 +40,13 @@ class TablesConstructor:
     def lattice_tables(self, 
                 connected_border_tolerance:float,
                 min_border_clearance:float,
-                max_border_width:float,
-                line_overlap_threshold:float,
-                line_merging_threshold:float):
+                max_border_width:float):
         """Parse table with explicit borders/shadings represented by rectangle shapes.
 
         Args:
             connected_border_tolerance (float): Two borders are intersected if the gap lower than this value.
             min_border_clearance (float): The minimum allowable clearance of two borders.
             max_border_width (float): Max border width.
-            line_overlap_threshold (float): Delete line if the intersection to other lines exceeds this value.
-            line_merging_threshold (float): Combine two lines if the x-distance is lower than this value.
         """
         if not self._shapes: return
 
@@ -90,8 +86,6 @@ class TablesConstructor:
                 min_border_clearance:float, 
                 max_border_width:float,
                 float_layout_tolerance:float,
-                line_overlap_threshold:float,
-                line_merging_threshold:float,
                 line_separate_threshold:float
             ):
         '''Parse table with layout of text/image blocks, and update borders with explicit borders 

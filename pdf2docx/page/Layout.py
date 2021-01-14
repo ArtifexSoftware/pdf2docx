@@ -112,17 +112,13 @@ class Layout:
         self._tables_constructor.lattice_tables(
                             settings['connected_border_tolerance'],
                             settings['min_border_clearance'],
-                            settings['max_border_width'],
-                            settings['line_overlap_threshold'],
-                            settings['line_merging_threshold'])
+                            settings['max_border_width'])
         
         #  - cell contents extracted from text blocks
         self._tables_constructor.stream_tables(
                             settings['min_border_clearance'],
                             settings['max_border_width'],
                             settings['float_layout_tolerance'],
-                            settings['line_overlap_threshold'],
-                            settings['line_merging_threshold'],
                             settings['line_separate_threshold'])
 
         # parse text format, e.g. highlight, underline
