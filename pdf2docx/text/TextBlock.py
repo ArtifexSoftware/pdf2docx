@@ -74,33 +74,9 @@ class TextBlock(Block):
             return TextDirection.LEFT_RIGHT
 
 
-    def is_flow_layout(self, float_layout_tolerance:float, line_separate_threshold:float):
-        '''Check if flow layout. To define a flow layout, lines in same row must:
-        
-        * have enough overlap in vertical direction.
-        * have no significant gap between adjacent two lines.
-        '''
-        # group lines in same row
-        fun = lambda a, b: a.horizontally_align_with(b, factor=float_layout_tolerance) and \
-                            not a.vertically_align_with(b, factor=constants.FACTOR_ALMOST) 
-        groups = self.lines.group(fun)        
-        
-        # check each row
-        idx = 0 if self.is_horizontal_text else 3
-        for lines in groups:
-            num = len(lines)
-            if num==1: continue
-
-            # check vertical overlap
-            if not all(line.in_same_row(lines[0]) for line in lines):
-                return False
-
-            # check distance between lines
-            for i in range(1, num):
-                dis = abs(lines[i].bbox[idx]-lines[i-1].bbox[(idx+2)%4])
-                if dis >= line_separate_threshold: return False
-
-        return True
+    def is_flow_layout(self, *args):
+        '''Check if flow layout'''
+        return self.lines.is_flow_layout(*args)
 
 
     def store(self):

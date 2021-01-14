@@ -84,29 +84,6 @@ class Blocks(Collection):
             lambda block: block.is_text_image_block(), self._instances))
 
     
-    def is_flow_layout(self, float_layout_tolerance:float):
-        '''Check if flow layout.
-
-        * no more blocks in same row
-        * check further in table block lines level
-
-        Args:
-            float_layout_tolerance (float): [description]
-
-        Returns:
-            bool: Whether flow layout.
-        '''
-        # block level
-        fun = lambda a, b: a.horizontally_align_with(b, factor=float_layout_tolerance)
-        groups = self.group(fun)
-        if len(groups) != len(self): return False
-
-        # block lines level
-        for block in self.text_blocks:
-            if not block.is_flow_layout(float_layout_tolerance): return False
-        return True
-
-
     def store(self):
         '''Store attributes in json format.'''
         res = super().store()
@@ -481,18 +458,22 @@ class Blocks(Collection):
         return self
 
 
-    def split_back(self):
-        '''Split the joined lines back to original text block.
+    def split_back(self, *args):
+        '''Split the joined lines back to original text block if possible.
 
         With preceding joining step, current text block may contain lines coming from various original blocks.
         Considering that different text block may have different line properties, e.g. height, spacing, 
         this function is to split them back to original text block. 
+
+        .. note::
+            Don't split block if the splitting breaks flow layout, e.g. two blocks (i.e. two paragraphs in docx) 
+            in same row.
         '''
         blocks = [] # type: list[TextBlock]
         lines = Lines()
         # collect lines for further step, or table block directly
         for block in self._instances:
-            if block.is_text_image_block():
+            if block.is_text_image_block() and block.is_flow_layout(*args):
                 lines.extend(block.lines)
             else:
                 blocks.append(block)
@@ -504,8 +485,6 @@ class Blocks(Collection):
             blocks.append(text_block)
        
         self.reset(blocks).sort_in_reading_order()
-
-        return self
 
 
     def parse_text_format(self, rects):

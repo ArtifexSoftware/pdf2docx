@@ -99,11 +99,7 @@ class Cell(Element):
         .. note::
             If a text block is partly contained in a cell, it must deep into line -> span -> char.
         '''
-        for block in blocks: 
-            self._assign_block(block)
-
-        # split contained lines back to original blocks
-        self.layout.blocks.split_back() 
+        for block in blocks: self._assign_block(block)
     
 
     def _assign_block(self, block):

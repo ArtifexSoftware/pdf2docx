@@ -182,7 +182,9 @@ class TablesConstructor:
         # assign blocks/shapes to each table
         self._blocks.assign_to_tables(unique_tables)
         self._shapes.assign_to_tables(unique_tables)
-        
+
+        # NOTE: set blocks in current level back to original layout if possible
+        self._blocks.split_back(float_layout_tolerance, line_separate_threshold)        
 
 
     @staticmethod
