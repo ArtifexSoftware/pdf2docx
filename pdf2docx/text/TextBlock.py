@@ -75,20 +75,25 @@ class TextBlock(Block):
 
 
     def is_flow_layout(self, float_layout_tolerance:float, line_separate_threshold:float):
-        '''Check if flow layout, i.e. same bottom-left point for lines in same row.'''
-        # lines in same row
+        '''Check if flow layout. To define a flow layout, lines in same row must:
+        
+        * have enough overlap in vertical direction.
+        * have no significant gap between adjacent two lines.
+        '''
+        # group lines in same row
         fun = lambda a, b: a.horizontally_align_with(b, factor=float_layout_tolerance) and \
                             not a.vertically_align_with(b, factor=constants.FACTOR_ALMOST) 
         groups = self.lines.group(fun)        
         
+        # check each row
         idx = 0 if self.is_horizontal_text else 3
         for lines in groups:
             num = len(lines)
             if num==1: continue
 
-            # check bottom-left point of lines
-            points = set([line.bbox[(idx+3)%4] for line in lines])
-            if max(points)-min(points)>constants.MINOR_DIST: return False
+            # check vertical overlap
+            if not all(line.in_same_row(lines[0]) for line in lines):
+                return False
 
             # check distance between lines
             for i in range(1, num):
