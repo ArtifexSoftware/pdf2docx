@@ -84,7 +84,7 @@ class Layout:
             This method is for Page level only since it runs once for all.
         '''
         # clean up blocks first
-        self.blocks.clean_up_page_layout(settings['float_image_ignorable_gap'],
+        self.blocks.clean_up(settings['float_image_ignorable_gap'],
                             settings['line_overlap_threshold'],
                             settings['line_merging_threshold'])
 

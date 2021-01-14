@@ -97,17 +97,16 @@ class TableBlock(Block):
         return res
 
 
-    def assign_blocks(self, blocks:list, *args):
+    def assign_blocks(self, blocks:list):
         '''Assign ``blocks`` to associated cell.
 
         Args:
             blocks (list): A list of text/table blocks.
-            args (tuple) : Parameters for cleaning up blocks.
         '''
         for row in self._rows:
             for cell in row:
                 if not cell: continue
-                cell.assign_blocks(blocks, *args)
+                cell.assign_blocks(blocks)
 
 
     def assign_shapes(self, shapes:list):

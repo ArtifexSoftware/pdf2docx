@@ -120,21 +120,6 @@ class TextBlock(Block):
             self.lines.append(line_or_lines)
 
 
-    def split(self):
-        '''Split contained lines vertically and create associated text blocks.
-
-        Returns:
-            list: Split text blocks.
-        '''
-        blocks = [] # type: list[TextBlock]
-        for lines in self.lines.split(threshold=constants.FACTOR_A_FEW):
-            text_block = TextBlock()
-            text_block.lines.reset(list(lines))
-            blocks.append(text_block)
-        
-        return blocks
-
-
     def strip(self):
         '''Strip each Line instance.'''
         self.lines.strip()

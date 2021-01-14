@@ -126,30 +126,14 @@ class Lines(Collection):
         self.reset(lines)
 
 
-    def split(self, threshold:float):
-        '''Split vertical lines 
-        and try to make lines in same original text block grouped together.
+    def split_back(self):
+        '''Split lines into groups same with original text block.
 
-        To the first priority considering docx recreation, horizontally aligned lines must be 
-        assigned to same group. After that, if only one line in each group, lines in same 
-        original text block can be group together again even though they are in different 
-        physical lines.
+        Returns:
+            list: A list of Lines contained in same original text block.
         '''
-        # split vertically
-        # set a non-zero but small factor to avoid just overlaping in same edge
-        fun = lambda a,b: a.horizontally_align_with(b, factor=threshold)
-        groups = self.group(fun) 
-
-        # check count of lines in each group
-        for group in groups:
-            if len(group) > 1: # first priority
-                break
-        
-        # now one line per group -> docx recreation is fullfilled, 
-        # then consider lines in same original text block
-        else:
-            fun = lambda a,b: a.same_parent_with(b)
-            groups = self.group(fun)
+        fun = lambda a,b: a.same_parent_with(b)
+        groups = self.group(fun)
 
         # NOTE: group() may destroy the order of lines, so sort in line level
         for group in groups: group.sort()
@@ -228,7 +212,18 @@ class Lines(Collection):
     def group_by_rows(self):
         '''Group lines into rows.'''
         # split in rows, with original text block considered
-        groups = self.split(threshold=constants.FACTOR_A_FEW)
+        fun = lambda a,b: a.horizontally_align_with(b, factor=constants.FACTOR_A_FEW)
+        groups = self.group(fun) 
+
+        # check count of lines in each group: first priority
+        for group in groups:
+            if len(group)>1: break
+        
+        # now one line per group -> docx recreation is fullfilled, 
+        # then consider lines in same original text block
+        else:
+            fun = lambda a,b: a.same_parent_with(b)
+            groups = self.group(fun)
 
         # NOTE: increasing in y-direction is required!
         groups.sort(key=lambda group: group.bbox.y0)

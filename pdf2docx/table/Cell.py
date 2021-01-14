@@ -90,19 +90,20 @@ class Cell(Element):
         self.layout.blocks.plot(page)
 
 
-    def assign_blocks(self, blocks:list, *args):
+    def assign_blocks(self, blocks:list):
         '''Add blocks to this cell. 
         
         Args:
             blocks (list): a list of text/table block to add.
-            args (tuple) : Parameters for cleaning up blocks.
         
         .. note::
             If a text block is partly contained in a cell, it must deep into line -> span -> char.
         '''
         for block in blocks: 
             self._assign_block(block)
-        self.layout.blocks.clean_up_cell_layout(*args)
+
+        # split contained lines back to original blocks
+        self.layout.blocks.split_back() 
     
 
     def _assign_block(self, block):

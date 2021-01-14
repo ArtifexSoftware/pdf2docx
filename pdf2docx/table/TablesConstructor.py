@@ -82,7 +82,7 @@ class TablesConstructor:
             table.set_lattice_table_block()
 
         # assign blocks/shapes to each table
-        self._blocks.assign_to_tables(unique_tables, line_overlap_threshold, line_merging_threshold)
+        self._blocks.assign_to_tables(unique_tables)
         self._shapes.assign_to_tables(unique_tables)
 
 
@@ -174,8 +174,10 @@ class TablesConstructor:
             strokes.sort_in_reading_order() # required
             table = TableStructure(strokes, settings).parse(explicit_shadings).to_table_block()
 
-            # NOTE: ignore stream table with only one column since it's of no use
-            if table.num_cols>1: tables.append(table)
+            # NOTE: ignore stream table with only one column since it's of no use;
+            #       but when it has an explicit background, accept it.
+            if table.num_cols>1 or any(row[0].bg_color for row in table): 
+                tables.append(table)
 
         # check if any intersection with previously parsed tables
         unique_tables = self._remove_floating_tables(tables)
@@ -184,7 +186,7 @@ class TablesConstructor:
             table.set_stream_table_block()
 
         # assign blocks/shapes to each table
-        self._blocks.assign_to_tables(unique_tables, line_overlap_threshold, line_merging_threshold)
+        self._blocks.assign_to_tables(unique_tables)
         self._shapes.assign_to_tables(unique_tables)
         
 

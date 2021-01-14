@@ -153,7 +153,7 @@ class Blocks(Collection):
         return self
 
 
-    def clean_up_page_layout(self, float_image_ignorable_gap:float, line_overlap_threshold:float, line_merging_threshold:float):
+    def clean_up(self, float_image_ignorable_gap:float, line_overlap_threshold:float, line_merging_threshold:float):
         """Clean up blocks in page level.
 
         * remove blocks out of page
@@ -186,23 +186,7 @@ class Blocks(Collection):
             .join_horizontally(text_direction=False, 
                             line_overlap_threshold=line_overlap_threshold,
                             line_merging_threshold=line_merging_threshold)
-
-
-    def clean_up_cell_layout(self, line_overlap_threshold:float, line_merging_threshold:float):
-        """Clean up blocks in cell level.
-
-        Args:
-            line_overlap_threshold (float): Delete line if the intersection to other lines exceeds this value.
-            line_merging_threshold (float): Combine two lines if the x-distance is lower than this value.
-        """
-        if not self._instances: return
-
-        self.join_horizontally(text_direction=True, 
-                            line_overlap_threshold=line_overlap_threshold,
-                            line_merging_threshold=line_merging_threshold) \
-            .split_vertically() # split back to original blocks
-
-    
+   
     def strip(self):
         '''Remove redundant blanks exist in text block lines. These redundant blanks may affect bbox of text block.
         '''
@@ -239,12 +223,11 @@ class Blocks(Collection):
         return self
 
 
-    def assign_to_tables(self, tables:list, *args):
+    def assign_to_tables(self, tables:list):
         """Add Text/Image/table block lines to associated cells of given tables.
 
         Args:
             tables (list): A list of TableBlock instances.
-            args (tuple) : Parameters for cleaning up blocks in assigned cell.
         """        
         if not tables: return
 
@@ -258,7 +241,7 @@ class Blocks(Collection):
         for table, blocks_in_table in zip(tables, blocks_in_tables):
             # no contents for this table
             if not blocks_in_table: continue
-            table.assign_blocks(blocks_in_table, *args)
+            table.assign_blocks(blocks_in_table)
 
         # sort in natural reading order and update layout blocks
         blocks.extend(tables)
@@ -486,7 +469,7 @@ class Blocks(Collection):
             # because average line height is used when create docx. However, the contained lines 
             # may be not reasonable after this step. So, this is just a pre-processing step focusing 
             # on processing lines in horizontal direction, e.g. merging inline image to its text line.
-            # A further step, e.g. `split_vertically()`, must be applied before final making docx.
+            # Further steps, e.g. split back to original blocks, must be applied before further parsing.
             final_block.lines.join(line_overlap_threshold, line_merging_threshold)
 
             blocks.append(final_block)
@@ -498,21 +481,27 @@ class Blocks(Collection):
         return self
 
 
-    def split_vertically(self):
-        '''Split the joined lines in vertical direction.
+    def split_back(self):
+        '''Split the joined lines back to original text block.
 
         With preceding joining step, current text block may contain lines coming from various original blocks.
         Considering that different text block may have different line properties, e.g. height, spacing, 
-        this function is to split them back to original text block. But the original layout may not reasonable for
-        re-building docx, so a high priority is to split them vertically, which converts potential float layout to
-        flow layout.
+        this function is to split them back to original text block. 
         '''
         blocks = [] # type: list[TextBlock]
+        lines = Lines()
+        # collect lines for further step, or table block directly
         for block in self._instances:
             if block.is_text_image_block():
-                blocks.extend(block.split())
+                lines.extend(block.lines)
             else:
-                blocks.append(block)        
+                blocks.append(block)
+        
+        # regroup lines
+        for group_lines in lines.split_back():
+            text_block = TextBlock()
+            text_block.lines.reset(group_lines)
+            blocks.append(text_block)
        
         self.reset(blocks).sort_in_reading_order()
 
