@@ -14,11 +14,11 @@
     - [x] text in horizontal/vertical direction: from left to right, from bottom to top
     - [x] font style, e.g. font name, size, weight, italic and color
     - [x] text format, e.g. highlight, underline, strike-through
-    - [x] text alignment, e.g. left/right/center/justify    
+    - [x] text alignment, e.g. left/right/center/justify
+    - [x] external hyper link
     - [x] paragraph layout: horizontal alignment and vertical spacing
     - [ ] list style
-    - [ ] href link
-
+    
 - [x] Parse and re-create image
 	- [x] in-line image
     - [x] image in Gray/RGB/CMYK mode
@@ -30,7 +30,8 @@
     - [x] shading style, i.e. background color
     - [x] merged cells
     - [x] vertical direction cell
-    - [x] table with partly hidden borders    
+    - [x] table with partly hidden borders
+    - [x] nested tables
 
 - [x] Parsing pages with multi-processing
 
