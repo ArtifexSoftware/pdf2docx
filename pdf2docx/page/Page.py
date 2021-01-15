@@ -218,10 +218,14 @@ class Page(RawPage):
 
     @debug_plot('Cleaned Shapes')
     def _clean_up_layout(self):
-        '''Preprocessing all blocks and shapes from page level (run only once), 
-        e.g. change block order, clean negative block.
+        '''Clean shapes and blocks, e.g. change block order, clean negative block, 
+        and set page margin accordingly. 
         '''
         self.layout.clean_up(self.settings)
+
+        # set page margin based on cleaned layout
+        self._margin = self._cal_margin()
+        
         return self.layout.shapes
 
 
@@ -237,7 +241,7 @@ class Page(RawPage):
         return self.layout.blocks
 
 
-    def cal_margin(self):
+    def _cal_margin(self):
         """Calculate and set page margin.
 
         .. note::
@@ -261,7 +265,7 @@ class Page(RawPage):
         bottom *= self.settings['page_margin_factor_bottom']
 
         # use normal margin if calculated margin is large enough
-        self._margin = (
+        return (
             min(constants.ITP, round(left, 1)), 
             min(constants.ITP, round(right, 1)), 
             min(constants.ITP, round(top, 1)), 

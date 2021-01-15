@@ -19,8 +19,8 @@ Terms definition:
   and finally applied to detect table border.
 '''
 
-
 from ..common.Element import Element
+from ..common.Collection import Collection
 from ..common import constants
 from ..page.Blocks import Blocks
 from ..shape.Shapes import Shapes
@@ -50,9 +50,32 @@ class TablesConstructor:
         """
         if not self._shapes: return
 
+        def remove_overlap(instances:list):
+            '''Delete group when it's contained in a certain group.'''
+            # group instances if contained in other instance
+            fun = lambda a, b: a.bbox.contains(b.bbox) or b.bbox.contains(a.bbox)
+            groups = Collection(instances).group(fun)
+            unique_groups = []
+            for group_instances in groups:
+                if len(group_instances)==1: 
+                    instance = group_instances[0]
+                
+                # contained groups: keep the largest one
+                else:
+                    sorted_group = sorted(group_instances, 
+                        key=lambda instance: instance.bbox.getArea())
+                    instance = sorted_group[-1]
+                
+                unique_groups.append(instance)
+            
+            return unique_groups
+
         # group stroke shapes: each group may be a potential table
         grouped_strokes = self._shapes.table_strokes \
             .group_by_connectivity(dx=connected_border_tolerance, dy=connected_border_tolerance)
+
+        # ignore overlapped groups: it'll be processed in sub-layout
+        grouped_strokes = remove_overlap(grouped_strokes) 
 
         # all filling shapes
         fills = self._shapes.table_fillings
@@ -69,17 +92,13 @@ class TablesConstructor:
 
             # parse table structure
             table = TableStructure(strokes, settings).parse(group_fills).to_table_block()
-            tables.append(table)
-
-        # check if any intersection with previously parsed tables
-        unique_tables = self._remove_floating_tables(tables)
-        for table in unique_tables:
-            # add table to page level
-            table.set_lattice_table_block()
+            if table:
+                table.set_lattice_table_block()
+                tables.append(table)            
 
         # assign blocks/shapes to each table
-        self._blocks.assign_to_tables(unique_tables)
-        self._shapes.assign_to_tables(unique_tables)
+        self._blocks.assign_to_tables(tables)
+        self._shapes.assign_to_tables(tables)
 
 
     def stream_tables(self, 
@@ -171,17 +190,12 @@ class TablesConstructor:
             # NOTE: ignore stream table with only one column since it's of no use;
             #       but when it has an explicit background, accept it.
             if table.num_cols>1 or any(row[0].bg_color for row in table): 
-                tables.append(table)
-
-        # check if any intersection with previously parsed tables
-        unique_tables = self._remove_floating_tables(tables)
-        for table in unique_tables: 
-            # set type: stream table
-            table.set_stream_table_block()
+                table.set_stream_table_block()
+                tables.append(table)            
 
         # assign blocks/shapes to each table
-        self._blocks.assign_to_tables(unique_tables)
-        self._shapes.assign_to_tables(unique_tables)
+        self._blocks.assign_to_tables(tables)
+        self._shapes.assign_to_tables(tables)
 
         # NOTE: set blocks in current level back to original layout if possible
         self._blocks.split_back(float_layout_tolerance, line_separate_threshold)        
@@ -220,27 +234,6 @@ class TablesConstructor:
             res.append(border.to_stroke())
 
         return res
-
-
-    @staticmethod
-    def _remove_floating_tables(tables:Blocks):
-        '''Delete table has intersection with previously parsed tables.'''
-        unique_tables = []
-        groups = tables.group_by_connectivity(dx=constants.TINY_DIST, dy=constants.TINY_DIST)
-        for group in groups:
-            # single table
-            if len(group)==1: table = group[0]
-            
-            # intersected tables: keep the table with the most cells only 
-            # since no floating elements are supported with python-docx
-            else:
-                sorted_group = sorted(group, 
-                    key=lambda table: table.num_rows*table.num_cols)
-                table = sorted_group[-1]
-            
-            unique_tables.append(table)
-        
-        return unique_tables
 
 
     @staticmethod
