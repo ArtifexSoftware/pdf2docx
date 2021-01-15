@@ -28,7 +28,10 @@ class Cell(Element):
     @property
     def text(self):
         '''Text contained in this cell.'''
-        return '\n'.join([block.text for block in self.layout.blocks]) if bool(self) else None
+        if not self: return None
+        # NOTE: sub-table may exists in 
+        return '\n'.join([block.text if block.is_text_block() else '<NEST TABLE>'
+                                 for block in self.layout.blocks])
 
 
     @property

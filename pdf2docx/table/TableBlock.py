@@ -76,7 +76,11 @@ class TableBlock(Block):
 
     @property
     def text(self):
-        '''Get text contained in each cell.'''
+        '''Get text contained in each cell.
+
+        Returns:
+            list: 2D-list with each element representing text in cell.
+        '''
         return [ [cell.text for cell in row] for row in self._rows ]
 
     
