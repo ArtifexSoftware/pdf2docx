@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.shape.Paths module &mdash; pdf2docx refs/heads/dev documentation</title>
+  <title>pdf2docx.shape.Paths module &mdash; pdf2docx 0.5.1 documentation</title>
   
 
   
@@ -180,41 +180,58 @@
             
   <div class="section" id="module-pdf2docx.shape.Paths">
 <span id="pdf2docx-shape-paths-module"></span><h1>pdf2docx.shape.Paths module<a class="headerlink" href="#module-pdf2docx.shape.Paths" title="Permalink to this headline">¶</a></h1>
-<p>Objects representing PDF path (both stroke and filling) extracted by <cite>page.getDrawings()</cite>.
-This method is new since PyMuPDF 1.18.0, with both pdf raw path and annotations  like Line,
+<p>Objects representing PDF path (stroke and filling) extracted by <code class="docutils literal notranslate"><span class="pre">page.getDrawings()</span></code>.</p>
+<p>This method is new since <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code> 1.18.0, with both pdf raw path and annotations like Line,
 Square and Highlight considered.</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/page.html#Page.getDrawings">https://pymupdf.readthedocs.io/en/latest/page.html#Page.getDrawings</a></p></li>
 <li><p><a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings">https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings</a></p></li>
 </ul>
-<p>&#64;created: 2020-09-22</p>
 <dl class="py class">
 <dt id="pdf2docx.shape.Paths.Paths">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.shape.Paths.</code><code class="sig-name descname">Paths</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">list</span> <span class="o">=</span> <span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Paths.Paths" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.shape.Paths.</code><code class="sig-name descname">Paths</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Paths.Paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.Collection" title="pdf2docx.common.Collection.Collection"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Collection.Collection</span></code></a></p>
 <p>A collection of paths.</p>
 <dl class="py method">
 <dt id="pdf2docx.shape.Paths.Paths.append">
 <code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Paths.Paths.append" title="Permalink to this definition">¶</a></dt>
-<dd><p>Append an instance and update parent’s bbox accordingly.</p>
+<dd><p>Append an instance, update parent’s bbox accordingly and set the parent of the added instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>e</strong> (<a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><em>Element</em></a>) – instance to append.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="pdf2docx.shape.Paths.Paths.bbox">
 <code class="sig-name descname">bbox</code><a class="headerlink" href="#pdf2docx.shape.Paths.Paths.bbox" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Calculate only once and cache property value.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Paths.Paths.contains_curve">
 <code class="sig-name descname">contains_curve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ratio</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Paths.Paths.contains_curve" title="Permalink to this definition">¶</a></dt>
-<dd><p>Whether any curve paths exist.
-The criterion: the area ratio of all non-iso-oriented paths &gt;= <cite>ratio</cite></p>
+<dd><p>Whether any curve paths exist with threshold considered.</p>
+<p><strong>Criterion</strong>: the area ratio of all non-iso-oriented paths &gt;= <code class="docutils literal notranslate"><span class="pre">ratio</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ratio</strong> (<em>float</em>) – Threshold for non-iso-oriented paths.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Whether any curve paths exist.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="pdf2docx.shape.Paths.Paths.curve_area">
 <code class="sig-name descname">curve_area</code><a class="headerlink" href="#pdf2docx.shape.Paths.Paths.curve_area" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Calculate only once and cache property value.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Paths.Paths.extend">
@@ -225,60 +242,106 @@ The criterion: the area ratio of all non-iso-oriented paths &gt;= <cite>ratio</c
 <dl class="py method">
 <dt id="pdf2docx.shape.Paths.Paths.group">
 <code class="sig-name descname">group</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Paths.Paths.group" title="Permalink to this definition">¶</a></dt>
-<dd><p>Group paths by connectivity on two level:
-- connected paths -&gt; basic unit for figure or sub-area of a figure
-- connected paths groups -&gt; figure(s) in a clipping area
-<a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a></p>
-<blockquote>
-<div><blockquote>
-<div><div class="line-block">
-<div class="line"><a href="#id5"><span class="problematic" id="id6">|</span></a></div>
+<dd><p>Group paths by connectivity on two level:</p>
+<ul class="simple">
+<li><p>connected paths -&gt; basic unit for figure or sub-area of a figure</p></li>
+<li><p>connected paths groups -&gt; figure(s) in a clipping area</p></li>
+</ul>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="o">+----------+</span>
+    <span class="o">|</span>    <span class="n">A</span>     <span class="o">|</span>  <span class="n">A</span><span class="o">+</span><span class="n">B</span><span class="p">,</span> <span class="n">C</span>  <span class="o">-&gt;</span> <span class="n">connected</span> <span class="n">paths</span>
+    <span class="o">+------+---+</span>
+           <span class="o">|</span>   <span class="o">|</span>
+<span class="o">+--------+</span> <span class="o">|</span> <span class="n">B</span> <span class="o">|</span>  <span class="p">(</span><span class="n">A</span><span class="o">+</span><span class="n">B</span><span class="p">)</span><span class="o">+</span><span class="n">C</span> <span class="o">-&gt;</span> <span class="n">connected</span> <span class="n">paths</span> <span class="n">group</span>
+<span class="o">|</span>   <span class="n">C</span>    <span class="o">|</span> <span class="o">|</span>   <span class="o">|</span>
+<span class="o">+--------+</span> <span class="o">+---+</span>
+</pre></div>
 </div>
-</div></blockquote>
-</div></blockquote>
-<p>+——–+ | B |  (A+B)+C -&gt; connected paths group
-|   C    | |   |
-+——–+ +—+
-<a href="#id7"><span class="problematic" id="id8">``</span></a><a href="#id9"><span class="problematic" id="id10">`</span></a></p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Paths.Paths.plot">
 <code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Paths.Paths.plot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Plot paths for debug purpose.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>page</strong> (<em>fitz.Page</em>) – <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code> page.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Paths.Paths.restore">
 <code class="sig-name descname">restore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raws</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Paths.Paths.restore" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize paths from raw data get by <cite>page.getDrawings()</cite>.</p>
+<dd><p>Initialize paths from raw data get by <code class="docutils literal notranslate"><span class="pre">page.getDrawings()</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Paths.Paths.to_image">
 <code class="sig-name descname">to_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span><span class="p">:</span> <span class="n">fitz.fitz.Page</span></em>, <em class="sig-param"><span class="n">zoom</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Paths.Paths.to_image" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert to image block dict.
-—
-Args:
-- page: current pdf page
-- zoom: zoom in factor to improve resolution in x- abd y- direction
-- ratio: don’t convert to image if the size of image exceeds this value,
-since we don’t prefer converting the whole page to an image.</p>
+<dd><p>Convert to image block dict by clipping page.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>page</strong> (<em>fitz.Page</em>) – Current pdf page.</p></li>
+<li><p><strong>zoom</strong> (<em>float</em>) – Zoom in factor to improve resolution in both x- and y- direction.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Raw dict of image.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Paths.Paths.to_images_and_shapes">
 <code class="sig-name descname">to_images_and_shapes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span><span class="p">:</span> <span class="n">fitz.fitz.Page</span></em>, <em class="sig-param"><span class="n">curve_path_ratio</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.2</span></em>, <em class="sig-param"><span class="n">clip_image_res_ratio</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">3.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Paths.Paths.to_images_and_shapes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert extracted paths to DICT attributes:
-- bitmap converted from vector graphics if necessary
-- iso-oriented paths</p>
-<p>NOTE: the target is to extract horizontal/vertical paths for table parsing, while others
+<dd><p>Convert paths to raw dicts.</p>
+<ul class="simple">
+<li><p>Only ISO-oriented paths are considered.</p></li>
+<li><p>Clip a page bitmap when some paths ‘look like’ a vector graphic, i.e. curved paths exceed the threshold.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>page</strong> (<em>fitz.Page</em>) – pdf page.</p></li>
+<li><p><strong>curve_path_ratio</strong> (<em>float</em><em>, </em><em>optional</em>) – Clip page bitmap if curve paths exceed this ratio. Defaults to 0.2.</p></li>
+<li><p><strong>clip_image_res_ratio</strong> (<em>float</em><em>, </em><em>optional</em>) – Resolution ratio of clipped bitmap. Defaults to 3.0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(a list of images raw dicts, a list of Shape raw dicts)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The target is to extract horizontal/vertical paths for table parsing, while others
 are converted to bitmaps.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Paths.Paths.to_iso_paths">
 <code class="sig-name descname">to_iso_paths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Paths.Paths.to_iso_paths" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert contained paths to iso strokes and rectangular fills.</p>
+<dd><p>Convert contained paths to ISO strokes and rectangular fills.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A list of <code class="docutils literal notranslate"><span class="pre">Shape</span></code> raw dicts.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Non-ISO path is ignored.</p>
+</div>
 </dd></dl>
 
 </dd></dl>

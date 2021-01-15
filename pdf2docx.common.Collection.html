@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.common.Collection module &mdash; pdf2docx refs/heads/dev documentation</title>
+  <title>pdf2docx.common.Collection module &mdash; pdf2docx 0.5.1 documentation</title>
   
 
   
@@ -180,11 +180,10 @@
             
   <div class="section" id="module-pdf2docx.common.Collection">
 <span id="pdf2docx-common-collection-module"></span><h1>pdf2docx.common.Collection module<a class="headerlink" href="#module-pdf2docx.common.Collection" title="Permalink to this headline">¶</a></h1>
-<p>A group of instances, e.g. instances, Spans, Shapes.</p>
-<p>&#64;created: 2020-07-24</p>
+<p>A group of instances, e.g. Blocks, Lines, Spans, Shapes.</p>
 <dl class="py class">
 <dt id="pdf2docx.common.Collection.BaseCollection">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.Collection.</code><code class="sig-name descname">BaseCollection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">list</span> <span class="o">=</span> <span class="default_value">[]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.BaseCollection" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.Collection.</code><code class="sig-name descname">BaseCollection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.BaseCollection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base collection of specific instances.</p>
 <dl class="py method">
@@ -196,55 +195,91 @@
 <dl class="py method">
 <dt id="pdf2docx.common.Collection.BaseCollection.group">
 <code class="sig-name descname">group</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.BaseCollection.group" title="Permalink to this definition">¶</a></dt>
-<dd><p>Group instances according to user defined criterion.
-—
-Args:
-- fun: function with 2 arguments representing 2 instances (Element), and return bool</p>
-<p>Examples:
-<a href="#id1"><span class="problematic" id="id2">``</span></a>`
-# group instances intersected with each other
-fun = lambda a,b: a.bbox &amp; b.bbox</p>
-<p># group instances aligned horizontally
-fun = lambda a,b: a.horizontally_aligned_with(b)
-<a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
-<p>NOTE: it’s equal to a GRAPH searching problem, build adjacent list, and then search graph
+<dd><p>Group instances according to user defined criterion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fun</strong> (<em>function</em>) – with 2 arguments representing 2 instances (Element) and return bool.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a list of grouped <code class="docutils literal notranslate"><span class="pre">BaseCollection</span></code> instances.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p>Examples 1:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># group instances intersected with each other</span>
+<span class="n">fun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">bbox</span> <span class="o">&amp;</span> <span class="n">b</span><span class="o">.</span><span class="n">bbox</span>
+</pre></div>
+</div>
+<p>Examples 2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># group instances aligned horizontally</span>
+<span class="n">fun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">horizontally_aligned_with</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It’s equal to a GRAPH searching problem, build adjacent list, and then search graph
 to find all connected components.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.common.Collection.BaseCollection.group_by_connectivity">
 <code class="sig-name descname">group_by_connectivity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dx</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">dy</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.BaseCollection.group_by_connectivity" title="Permalink to this definition">¶</a></dt>
-<dd><p>Collect connected instances into same group.
-—
-Args:
-- dx, dy: x- and y- tolerances to define connectivity</p>
-<p>NOTE:
-- It’s equal to a GRAPH traversing problem, which the critical point in building the adjacent
-list, especially a large number of vertex (paths).
-- Checking intersections between paths is actually a Rectangle-Intersection problem, studied
-already in many literatures.</p>
+<dd><p>Collect connected instances into same group.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dx</strong> (<em>float</em>) – x-tolerances to define connectivity</p></li>
+<li><p><strong>dy</strong> (<em>float</em>) – y-tolerances to define connectivity</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a list of grouped <code class="docutils literal notranslate"><span class="pre">BaseCollection</span></code> instances.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>It’s equal to a GRAPH traversing problem, which the critical point in
+building the adjacent list, especially a large number of vertex (paths).</p></li>
+<li><p>Checking intersections between paths is actually a Rectangle-Intersection
+problem, studied already in many literatures.</p></li>
+</ul>
+</div>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt id="pdf2docx.common.Collection.Collection">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.Collection.</code><code class="sig-name descname">Collection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">list</span> <span class="o">=</span> <span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.Collection.</code><code class="sig-name descname">Collection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pdf2docx.common.Collection.BaseCollection" title="pdf2docx.common.Collection.BaseCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Collection.BaseCollection</span></code></a>, <a class="reference internal" href="pdf2docx.common.share.html#pdf2docx.common.share.IText" title="pdf2docx.common.share.IText"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.share.IText</span></code></a></p>
 <p>Collection of specific instances.</p>
 <dl class="py method">
 <dt id="pdf2docx.common.Collection.Collection.append">
 <code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element">pdf2docx.common.Element.Element</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.append" title="Permalink to this definition">¶</a></dt>
-<dd><p>Append an instance and update parent’s bbox accordingly.</p>
+<dd><p>Append an instance, update parent’s bbox accordingly and set the parent of the added instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>e</strong> (<a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><em>Element</em></a>) – instance to append.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.common.Collection.Collection.contained_in_bbox">
 <code class="sig-name descname">contained_in_bbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bbox</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.contained_in_bbox" title="Permalink to this definition">¶</a></dt>
-<dd><p>Filter instances contained in target bbox.
-—
-Args:
-- bbox: fitz.Rect</p>
+<dd><p>Filter instances contained in target bbox.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bbox</strong> (<em>fitz.Rect</em>) – target boundary box.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -257,6 +292,14 @@ Args:
 <dt id="pdf2docx.common.Collection.Collection.insert">
 <code class="sig-name descname">insert</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nth</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">e</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element">pdf2docx.common.Element.Element</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.insert" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert a Element and update parent’s bbox accordingly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nth</strong> (<em>int</em>) – the position to insert.</p></li>
+<li><p><strong>e</strong> (<a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><em>Element</em></a>) – the instance to insert.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -267,13 +310,35 @@ Args:
 <dl class="py method">
 <dt id="pdf2docx.common.Collection.Collection.pop">
 <code class="sig-name descname">pop</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nth</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.pop" title="Permalink to this definition">¶</a></dt>
-<dd><p>Insert a Element and update parent’s bbox accordingly.</p>
+<dd><p>Delete the <code class="docutils literal notranslate"><span class="pre">nth</span></code> instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>nth</strong> (<em>int</em>) – the position to remove.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the removed instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pdf2docx.common.Collection.Collection" title="pdf2docx.common.Collection.Collection">Collection</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.common.Collection.Collection.reset">
-<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">elements</span><span class="p">:</span> <span class="n">list</span> <span class="o">=</span> <span class="default_value">[]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.reset" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">elements</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset instances list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>elements</strong> (<em>list</em><em>, </em><em>optional</em>) – reset to target instances. Defaults to None.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pdf2docx.common.Collection.Collection" title="pdf2docx.common.Collection.Collection">Collection</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -298,11 +363,22 @@ for normal reading direction: from top to bottom, from left to right.</p>
 
 <dl class="py method">
 <dt id="pdf2docx.common.Collection.Collection.split_with_intersection">
-<code class="sig-name descname">split_with_intersection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bbox</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.split_with_intersection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Split instances into two groups: one intersects with <cite>bbox</cite>, the other not.
-—
-Args:
-- bbox: fitz.Rect</p>
+<code class="sig-name descname">split_with_intersection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bbox</span><span class="p">:</span> <span class="n">fitz.fitz.Rect</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.split_with_intersection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split instances into two groups: one intersects with <code class="docutils literal notranslate"><span class="pre">bbox</span></code>, the other not.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bbox</strong> (<em>fitz.Rect</em>) – target rect box.</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – It’s intersected when the overlap rate exceeds this threshold. Defaults to 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>two group in original class type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

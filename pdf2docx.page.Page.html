@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.page.Page module &mdash; pdf2docx refs/heads/dev documentation</title>
+  <title>pdf2docx.page.Page module &mdash; pdf2docx 0.5.1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="pdf2docx.shape package" href="pdf2docx.shape.html" />
-    <link rel="prev" title="pdf2docx.page.Blocks module" href="pdf2docx.page.Blocks.html" /> 
+    <link rel="next" title="pdf2docx.page.RawPage module" href="pdf2docx.page.RawPage.html" />
+    <link rel="prev" title="pdf2docx.page.Layout module" href="pdf2docx.page.Layout.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -180,30 +180,32 @@
             
   <div class="section" id="module-pdf2docx.page.Page">
 <span id="pdf2docx-page-page-module"></span><h1>pdf2docx.page.Page module<a class="headerlink" href="#module-pdf2docx.page.Page" title="Permalink to this headline">¶</a></h1>
-<p>Page objects based on PDF raw dict extracted with PyMuPDF.
-&#64;created: 2020-07-22
-—</p>
-<p>The raw page content extracted with PyMuPDF, <cite>page.getText(‘rawdict’)</cite> is described per link:
-<a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/textpage.html">https://pymupdf.readthedocs.io/en/latest/textpage.html</a></p>
-<p>In addition to the raw layout dict, some new features are also included, e.g.
-- page margin
-- rectangle shapes, for text format, annotations and table border/shading
-- new block in table type</p>
-<dl>
-<dt>{</dt><dd><p>“width” : w,
-“height”: h,
-“blocks”: [{…}, {…}, …],</p>
-<p>“id”: 0, # page index
-“finalized”: True,
-“margin”: [left, right, top, bottom],
-“shapes” : [{…}, {…}, …]</p>
-</dd>
-</dl>
-<p>}</p>
+<p>Page object parsed with PDF raw dict.</p>
+<p>In addition to base structure described in <a class="reference internal" href="pdf2docx.page.RawPage.html#module-pdf2docx.page.RawPage" title="pdf2docx.page.RawPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">RawPage</span></code></a>,
+some new features are also included, e.g.</p>
+<ul class="simple">
+<li><p>page margin</p></li>
+<li><p>parsed table block and nested layout</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="c1"># raw dict</span>
+    <span class="o">----------------------------</span>
+    <span class="s2">&quot;width&quot;</span> <span class="p">:</span> <span class="n">w</span><span class="p">,</span>
+    <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="n">h</span><span class="p">,</span>
+    <span class="s2">&quot;blocks&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="o">...</span><span class="p">},</span> <span class="p">{</span><span class="o">...</span><span class="p">},</span> <span class="o">...</span><span class="p">],</span>
+
+    <span class="c1"># introduced dict</span>
+    <span class="o">----------------------------</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="c1"># page index</span>
+    <span class="s2">&quot;margin&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">bottom</span><span class="p">],</span>
+    <span class="s2">&quot;shapes&quot;</span> <span class="p">:</span> <span class="p">[{</span><span class="o">...</span><span class="p">},</span> <span class="p">{</span><span class="o">...</span><span class="p">},</span> <span class="o">...</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 <dl class="py class">
 <dt id="pdf2docx.page.Page.Page">
 <em class="property">class </em><code class="sig-prename descclassname">pdf2docx.page.Page.</code><code class="sig-name descname">Page</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fitz_page</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.page.RawPage.html#pdf2docx.page.RawPage.RawPage" title="pdf2docx.page.RawPage.RawPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.page.RawPage.RawPage</span></code></a></p>
 <p>Object representing the whole page, e.g. margins, blocks, shapes, spacing.</p>
 <dl class="py method">
 <dt id="pdf2docx.page.Page.Page.bbox">
@@ -211,82 +213,61 @@
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.page.Page.Page.clean_up_blocks">
-<code class="sig-name descname">clean_up_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.clean_up_blocks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.page.Page.Page.clean_up_shapes">
-<code class="sig-name descname">clean_up_shapes</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.clean_up_shapes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt id="pdf2docx.page.Page.Page.extract_tables">
 <code class="sig-name descname">extract_tables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.extract_tables" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extract content from tables.</p>
+<dd><p>Extract content from tables (top layout only).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Before running this method, the page layout must be either parsed from source
+page or restored from parsed data.</p>
+</div>
 </dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.page.Page.Page.finalized">
+<em class="property">property </em><code class="sig-name descname">finalized</code><a class="headerlink" href="#pdf2docx.page.Page.Page.finalized" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.page.Page.Page.init_settings">
 <em class="property">static </em><code class="sig-name descname">init_settings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.init_settings" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.page.Page.Page.load_source">
-<code class="sig-name descname">load_source</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.load_source" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Initialize and update parameters.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.page.Page.Page.make_docx">
 <code class="sig-name descname">make_docx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">doc</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.make_docx" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create page based on layout data.
-—
-Args:
-- doc: python-docx.Document object</p>
-<p>To avoid incorrect page break from original document, a new page section
-is created for each page.</p>
-<p>The vertical postion of paragraph/table is defined by space_before or
-space_after property of a paragraph.</p>
+<dd><p>Create page based on layout data.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Before running this method, the page layout must be either parsed from source
+page or restored from parsed data.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>doc</strong> (<em>Document</em>) – <code class="docutils literal notranslate"><span class="pre">python-docx</span></code> document object</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.page.Page.Page.margin">
 <em class="property">property </em><code class="sig-name descname">margin</code><a class="headerlink" href="#pdf2docx.page.Page.Page.margin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate page margin, (left, right, top, bottom).</p>
+<dd><p>Get page margin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">(left,</span> <span class="pre">right,</span> <span class="pre">top,</span> <span class="pre">bottom)</span></code>.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.page.Page.Page.parse">
 <code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse page layout.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.page.Page.Page.parse_lattice_tables">
-<code class="sig-name descname">parse_lattice_tables</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.parse_lattice_tables" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.page.Page.Page.parse_spacing">
-<code class="sig-name descname">parse_spacing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.parse_spacing" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate external and internal vertical space for paragraph blocks under page context
-or table context. It’ll used as paragraph spacing and line spacing when creating paragraph.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.page.Page.Page.parse_stream_tables">
-<code class="sig-name descname">parse_stream_tables</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.parse_stream_tables" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.page.Page.Page.parse_text_format">
-<code class="sig-name descname">parse_text_format</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.parse_text_format" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.page.Page.Page.reset">
-<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reset Page object.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -298,7 +279,7 @@ or table context. It’ll used as paragraph spacing and line spacing when creati
 <dl class="py method">
 <dt id="pdf2docx.page.Page.Page.store">
 <code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.store" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store parsed layout.</p>
+<dd><p>Store parsed layout in dict format.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -317,8 +298,8 @@ or table context. It’ll used as paragraph spacing and line spacing when creati
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="pdf2docx.shape.html" class="btn btn-neutral float-right" title="pdf2docx.shape package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="pdf2docx.page.Blocks.html" class="btn btn-neutral float-left" title="pdf2docx.page.Blocks module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pdf2docx.page.RawPage.html" class="btn btn-neutral float-right" title="pdf2docx.page.RawPage module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pdf2docx.page.Layout.html" class="btn btn-neutral float-left" title="pdf2docx.page.Layout module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

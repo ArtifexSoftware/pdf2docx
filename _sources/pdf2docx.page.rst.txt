@@ -8,7 +8,9 @@ Submodules
    :maxdepth: 4
 
    pdf2docx.page.Blocks
+   pdf2docx.page.Layout
    pdf2docx.page.Page
+   pdf2docx.page.RawPage
 
 Module contents
 ---------------

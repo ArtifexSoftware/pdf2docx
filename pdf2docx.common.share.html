@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.common.share module &mdash; pdf2docx refs/heads/dev documentation</title>
+  <title>pdf2docx.common.share module &mdash; pdf2docx 0.5.1 documentation</title>
   
 
   
@@ -231,17 +231,13 @@
 <dl class="py method">
 <dt id="pdf2docx.common.share.IText.is_vertical_text">
 <em class="property">property </em><code class="sig-name descname">is_vertical_text</code><a class="headerlink" href="#pdf2docx.common.share.IText.is_vertical_text" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Check whether text direction is from bottom to top.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.common.share.IText.text_direction">
 <em class="property">property </em><code class="sig-name descname">text_direction</code><a class="headerlink" href="#pdf2docx.common.share.IText.text_direction" title="Permalink to this definition">¶</a></dt>
-<dd><p>from left to right.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Default text direction</p>
-</dd>
-</dl>
+<dd><p>Text direction is from left to right by default.</p>
 </dd></dl>
 
 </dd></dl>
@@ -250,13 +246,7 @@
 <dt id="pdf2docx.common.share.RectType">
 <em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">RectType</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.RectType" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
-<p>Shape type in context:
-- not defined   : -1
-- highlight     : 0
-- underline     : 1
-- strike-through: 2
-- table border  : 10
-- cell shading  : 11</p>
+<p>Shape type in context.</p>
 <dl class="py attribute">
 <dt id="pdf2docx.common.share.RectType.BORDER">
 <code class="sig-name descname">BORDER</code><em class="property"> = 10</em><a class="headerlink" href="#pdf2docx.common.share.RectType.BORDER" title="Permalink to this definition">¶</a></dt>
@@ -265,6 +255,11 @@
 <dl class="py attribute">
 <dt id="pdf2docx.common.share.RectType.HIGHLIGHT">
 <code class="sig-name descname">HIGHLIGHT</code><em class="property"> = 0</em><a class="headerlink" href="#pdf2docx.common.share.RectType.HIGHLIGHT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pdf2docx.common.share.RectType.HYPERLINK">
+<code class="sig-name descname">HYPERLINK</code><em class="property"> = 7</em><a class="headerlink" href="#pdf2docx.common.share.RectType.HYPERLINK" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -298,7 +293,15 @@
 <dt id="pdf2docx.common.share.TextAlignment">
 <em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">TextAlignment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.TextAlignment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
-<p>Block types.</p>
+<p>Text alignment.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The difference between <code class="docutils literal notranslate"><span class="pre">NONE</span></code> and <code class="docutils literal notranslate"><span class="pre">UNKNOWN</span></code>:</p>
+<ul class="simple">
+<li><p>NONE: none of left/right/center align -&gt; need TAB stop</p></li>
+<li><p>UNKNOWN: can’t decide, e.g. single line only</p></li>
+</ul>
+</div>
 <dl class="py attribute">
 <dt id="pdf2docx.common.share.TextAlignment.CENTER">
 <code class="sig-name descname">CENTER</code><em class="property"> = 2</em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.CENTER" title="Permalink to this definition">¶</a></dt>
@@ -335,7 +338,11 @@
 <dt id="pdf2docx.common.share.TextDirection">
 <em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">TextDirection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.TextDirection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
-<p>Block types.</p>
+<p>Text direction.</p>
+<ul class="simple">
+<li><p>LEFT_RIGHT: from left to right within a line, and lines go from top to bottom</p></li>
+<li><p>BOTTOM_TOP: from bottom to top within a line, and lines go from left to right</p></li>
+</ul>
 <dl class="py attribute">
 <dt id="pdf2docx.common.share.TextDirection.BOTTOM_TOP">
 <code class="sig-name descname">BOTTOM_TOP</code><em class="property"> = 1</em><a class="headerlink" href="#pdf2docx.common.share.TextDirection.BOTTOM_TOP" title="Permalink to this definition">¶</a></dt>
@@ -361,11 +368,13 @@
 
 <dl class="py function">
 <dt id="pdf2docx.common.share.debug_plot">
-<code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">debug_plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">title</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.debug_plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot the returned objects of inner function.
-—
-Args:
-- title: page title</p>
+<code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">debug_plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">title</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">show</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.debug_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the returned objects of inner function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>title</strong> (<em>str</em>) – Page title.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -377,55 +386,57 @@ Args:
 <dl class="py function">
 <dt id="pdf2docx.common.share.graph_bfs">
 <code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">graph_bfs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.graph_bfs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Breadth First Search graph (may be disconnected graph), return a list of connected components.
-—
-Args:
-- graph: GRAPH represented by adjacent list, [set(1,2,3), set(…), …]</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="pdf2docx.common.share.graph_bfs_from_node">
-<code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">graph_bfs_from_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph</span></em>, <em class="sig-param"><span class="n">start</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.graph_bfs_from_node" title="Permalink to this definition">¶</a></dt>
-<dd><p>Breadth First Search connected graph with start node.
-—
-Args:
-- graph: GRAPH represented by adjacent list, [set(1,2,3), set(…), …]
-- start: index of any start vertex</p>
+<dd><p>Breadth First Search graph (may be disconnected graph).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>graph</strong> (<em>list</em>) – GRAPH represented by adjacent list, [set(1,2,3), set(…), …]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of connected components</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="pdf2docx.common.share.is_number">
 <code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">is_number</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">str_number</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.is_number" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Whether can be converted to a float.</p>
+</dd></dl>
 
 <dl class="py class">
 <dt id="pdf2docx.common.share.lazyproperty">
 <em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">lazyproperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.lazyproperty" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Calculate only once and cache property value.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="pdf2docx.common.share.new_page">
 <code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">new_page</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">doc</span></em>, <em class="sig-param"><span class="n">width</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">height</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">title</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.new_page" title="Permalink to this definition">¶</a></dt>
-<dd><p>Insert a new page with given title.
-—
-Args:
-- doc: fitz.Document
-- width, height: page size
-- title: page title shown in page</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="pdf2docx.common.share.report_pair">
-<code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">report_pair</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">j</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">index_groups</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.report_pair" title="Permalink to this definition">¶</a></dt>
-<dd><p>add pair (i,j) to adjacent list.</p>
+<dd><p>Insert a new page with given title.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>doc</strong> (<em>fitz.Document</em>) – pdf document object.</p></li>
+<li><p><strong>width</strong> (<em>float</em>) – Page width.</p></li>
+<li><p><strong>height</strong> (<em>float</em>) – Page height.</p></li>
+<li><p><strong>title</strong> (<em>str</em>) – Page title shown in page.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="pdf2docx.common.share.rgb_component">
 <code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">rgb_component</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">srgb</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.rgb_component" title="Permalink to this definition">¶</a></dt>
 <dd><p>srgb value to R,G,B components, e.g. 16711680 -&gt; (255, 0, 0).</p>
-<p>Equal to PyMuPDF built-in method: [int(255*x) for x in fitz.sRGB_to_pdf(x)]</p>
+<p>Equal to PyMuPDF built-in method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="mi">255</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">fitz</span><span class="o">.</span><span class="n">sRGB_to_pdf</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -437,7 +448,7 @@ Args:
 <dl class="py function">
 <dt id="pdf2docx.common.share.rgb_to_value">
 <code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">rgb_to_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rgb</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.rgb_to_value" title="Permalink to this definition">¶</a></dt>
-<dd><p>RGB components to decimal value, e.g. (1,0,0) -&gt; 16711680</p>
+<dd><p>RGB components to decimal value, e.g. (1,0,0) -&gt; 16711680.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -449,61 +460,31 @@ Args:
 <dl class="py function">
 <dt id="pdf2docx.common.share.solve_rects_intersection">
 <code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">solve_rects_intersection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">V</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">num</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">index_groups</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.solve_rects_intersection" title="Permalink to this definition">¶</a></dt>
-<dd><p>divide and conque in x-direction.
-—
-Args:
-- V: rectangle-related x-edges data, [(index, Rect, x), (…), …]
-- num: count of V instances, equal to len(V)
-- index_groups: target adjacent list for connectivity between rects</p>
-<p><a href="#id1"><span class="problematic" id="id2">``</span></a>`
-procedure detect(V, H, m):
-if m &lt; 2 then return else
-- let V1 be the first ⌊m/2⌋ and let V2 be the rest of the vertical edges in V in the sorted order;
-- let S11 and S22 be the set of rectangles represented only in V1 and V2 but not spanning V2 and V1,</p>
-<blockquote>
-<div><p>respectively;</p>
-</div></blockquote>
-<ul class="simple">
-<li><p>let S12 be the set of rectangles represented only in V1 and spanning V2;</p></li>
-<li><p>let S21 be the set of rectangles represented only in V2 and spanning V1</p></li>
-<li><p>let H1 and H2 be the list of y-intervals corresponding to the elements of V1 and V2 respectively</p></li>
-<li><p>stab(S12, S22); stab(S21, S11); stab(S12, S21)</p></li>
-<li><p>detect(V1, H1, ⌊m/2⌋); detect(V2, H2, m − ⌊m/2⌋)</p></li>
+<dd><p>Implementation of solving Rectangle-Intersection Problem.</p>
+<p>Performance:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">O</span><span class="p">(</span><span class="n">nlog</span> <span class="n">n</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span> <span class="n">time</span> <span class="ow">and</span> <span class="n">O</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="n">space</span><span class="p">,</span> <span class="n">where</span> <span class="n">k</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">count</span> <span class="n">of</span> <span class="n">intersection</span> <span class="n">pairs</span><span class="o">.</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>V</strong> (<em>list</em>) – Rectangle-related x-edges data, [(index, Rect, x), (…), …].</p></li>
+<li><p><strong>num</strong> (<em>int</em>) – Count of V instances, equal to len(V).</p></li>
+<li><p><strong>index_groups</strong> (<em>list</em>) – Target adjacent list for connectivity between rects.</p></li>
 </ul>
-<p><a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="pdf2docx.common.share.stab">
-<code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">stab</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">S1</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">S2</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">index_groups</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.stab" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check interval intersection in y-direction.</p>
-<p><a href="#id7"><span class="problematic" id="id8">``</span></a>`
-procedure stab(A, B)</p>
-<blockquote>
-<div><p>i := 1; j := 1
-while i ≤ <a href="#id13"><span class="problematic" id="id14">|A|</span></a> and j ≤ <a href="#id15"><span class="problematic" id="id16">|B|</span></a></p>
-<blockquote>
-<div><dl>
-<dt>if ai.y0 &lt; bj.y0 then</dt><dd><p>k := j
-while k ≤ <a href="#id17"><span class="problematic" id="id18">|B|</span></a> and bk.y0 &lt; ai.y1</p>
-<blockquote>
-<div><p>reportPair(air, bks)
-k := k + 1</p>
-</div></blockquote>
-<p>i := i + 1</p>
-</dd>
-<dt>else</dt><dd><p>k := i
-while k ≤ <a href="#id19"><span class="problematic" id="id20">|A|</span></a> and ak.y0 &lt; bj.y1</p>
-<blockquote>
-<div><p>reportPair(bjs, akr)
-k := k + 1</p>
-</div></blockquote>
-<p>j := j + 1</p>
 </dd>
 </dl>
-</div></blockquote>
-</div></blockquote>
-<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a></p>
+<p>Procedure <code class="docutils literal notranslate"><span class="pre">detect(V,</span> <span class="pre">H,</span> <span class="pre">m)</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if m &lt; 2 then return else
+- let V1 be the first ⌊m/2⌋ and let V2 be the rest of the vertical edges in V in the sorted order;
+- let S11 and S22 be the set of rectangles represented only in V1 and V2 but not spanning V2 and V1, respectively;
+- let S12 be the set of rectangles represented only in V1 and spanning V2;
+- let S21 be the set of rectangles represented only in V2 and spanning V1
+- let H1 and H2 be the list of y-intervals corresponding to the elements of V1 and V2 respectively
+- stab(S12, S22); stab(S21, S11); stab(S12, S21)
+- detect(V1, H1, ⌊m/2⌋); detect(V2, H2, m − ⌊m/2⌋)
+</pre></div>
+</div>
 </dd></dl>
 
 </div>

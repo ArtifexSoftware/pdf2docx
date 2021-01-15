@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.text.Char module &mdash; pdf2docx refs/heads/dev documentation</title>
+  <title>pdf2docx.text.Char module &mdash; pdf2docx 0.5.1 documentation</title>
   
 
   
@@ -180,20 +180,15 @@
             
   <div class="section" id="module-pdf2docx.text.Char">
 <span id="pdf2docx-text-char-module"></span><h1>pdf2docx.text.Char module<a class="headerlink" href="#module-pdf2docx.text.Char" title="Permalink to this headline">¶</a></h1>
-<p>Char object based on PDF raw dict extracted with PyMuPDF.</p>
-<p>&#64;created: 2020-07-22</p>
-<p>—</p>
-<p>refer to: <a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/textpage.html">https://pymupdf.readthedocs.io/en/latest/textpage.html</a></p>
-<dl>
-<dt>raw dict for Char</dt><dd><dl class="simple">
-<dt>{</dt><dd><p>‘bbox’  : (x0, y0, x1, y1),
-‘c’     : str,
-‘origin’: (x,y)</p>
-</dd>
-</dl>
-<p>}</p>
-</dd>
-</dl>
+<p>Char object based on PDF raw dict extracted with <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code>.</p>
+<p>Data structure refer to this <a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/textpage.html">link</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;bbox&#39;</span>  <span class="p">:</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span>
+    <span class="s1">&#39;c&#39;</span>     <span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="s1">&#39;origin&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 <dl class="py class">
 <dt id="pdf2docx.text.Char.Char">
 <em class="property">class </em><code class="sig-prename descclassname">pdf2docx.text.Char.</code><code class="sig-name descname">Char</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Char.Char" title="Permalink to this definition">¶</a></dt>
@@ -202,14 +197,32 @@
 <dl class="py method">
 <dt id="pdf2docx.text.Char.Char.contained_in_rect">
 <code class="sig-name descname">contained_in_rect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rect</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Shape" title="pdf2docx.shape.Shape.Shape">pdf2docx.shape.Shape.Shape</a></span></em>, <em class="sig-param"><span class="n">horizontal</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Char.Char.contained_in_rect" title="Permalink to this definition">¶</a></dt>
-<dd><p>Detect whether locates in a rect, or has an intersection
-larger than half of the char bbox.</p>
+<dd><p>Detect whether it locates in a rect.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rect</strong> (<a class="reference internal" href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Shape" title="pdf2docx.shape.Shape.Shape"><em>Shape</em></a>) – Target rect to check.</p></li>
+<li><p><strong>horizontal</strong> (<em>bool</em><em>, </em><em>optional</em>) – Text direction is horizontal if True. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Whether a Char locates in target rect.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It’s considered as contained in the target rect if the intersection is larger than
+half of the char bbox.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.text.Char.Char.store">
 <code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Char.Char.store" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store bbox in json format.</p>
+<dd><p>Store properties in raw dict.</p>
 </dd></dl>
 
 </dd></dl>

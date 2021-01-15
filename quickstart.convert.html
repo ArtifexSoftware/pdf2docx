@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Convert PDF &mdash; pdf2docx refs/heads/dev documentation</title>
+  <title>Convert PDF &mdash; pdf2docx 0.5.1 documentation</title>
   
 
   
@@ -165,9 +165,10 @@
             
   <div class="section" id="convert-pdf">
 <h1>Convert PDF<a class="headerlink" href="#convert-pdf" title="Permalink to this headline">¶</a></h1>
-<p>We can use either the <code class="docutils literal notranslate"><span class="pre">Converter</span></code> class or a wrapped method <code class="docutils literal notranslate"><span class="pre">parse()</span></code>.</p>
+<p>We can use either the <a class="reference internal" href="pdf2docx.converter.html#pdf2docx.converter.Converter" title="pdf2docx.converter.Converter"><code class="xref py py-class docutils literal notranslate"><span class="pre">Converter</span></code></a> class
+or a wrapped method <a class="reference internal" href="pdf2docx.main.html#pdf2docx.main.parse" title="pdf2docx.main.parse"><code class="xref py py-meth docutils literal notranslate"><span class="pre">parse()</span></code></a>.</p>
 <ul class="simple">
-<li><p>Converter class</p></li>
+<li><p>Option 1</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pdf2docx</span> <span class="kn">import</span> <span class="n">Converter</span>
 
@@ -181,7 +182,7 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>parse() method</p></li>
+<li><p>Option 2</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pdf2docx</span> <span class="kn">import</span> <span class="n">parse</span>
 
@@ -191,6 +192,10 @@
 <span class="c1"># convert pdf to docx</span>
 <span class="n">parse</span><span class="p">(</span><span class="n">pdf_file</span><span class="p">,</span> <span class="n">docx_file</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Refer to <a class="reference internal" href="pdf2docx.converter.html#pdf2docx.converter.Converter.convert" title="pdf2docx.converter.Converter.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert()</span></code></a> for detailed description on above arguments.</p>
 </div>
 </div>
 

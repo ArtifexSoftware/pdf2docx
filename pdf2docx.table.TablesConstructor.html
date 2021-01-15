@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.table.TablesConstructor module &mdash; pdf2docx refs/heads/dev documentation</title>
+  <title>pdf2docx.table.TablesConstructor module &mdash; pdf2docx 0.5.1 documentation</title>
   
 
   
@@ -180,47 +180,105 @@
             
   <div class="section" id="module-pdf2docx.table.TablesConstructor">
 <span id="pdf2docx-table-tablesconstructor-module"></span><h1>pdf2docx.table.TablesConstructor module<a class="headerlink" href="#module-pdf2docx.table.TablesConstructor" title="Permalink to this headline">¶</a></h1>
-<p>Parsing table blocks:
-- lattice table: explicit borders represented by strokes
-- stream table : borderless table recognized from layout of text blocks.</p>
-<p>Terms definition:
-- from appearance aspect, we say stroke and fill, the former looks like a line, while the later an area
-- from semantic aspect, we say border (cell border) and shading (cell shading)
-- an explicit border is determined by a certain stroke, while a stroke may also represent an underline of text
-- an explicit shading is determined by a fill, while a fill may also represent a highlight of text
-- Border object is introduced to determin borders of stream table. Border instance is a virtual border adaptive</p>
-<blockquote>
-<div><p>in a certain range, then converted to a stroke once finalized, and finally applied to detect table border.</p>
-</div></blockquote>
-<p>&#64;created: 2020-08-16</p>
+<p>Parsing table blocks.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">lattice</span> <span class="pre">table</span></code>: explicit borders represented by strokes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stream</span> <span class="pre">table</span></code> : borderless table recognized from layout of text blocks.</p></li>
+</ul>
+<p>Terms definition:</p>
+<ul class="simple">
+<li><p>From appearance aspect, we say <code class="docutils literal notranslate"><span class="pre">stroke</span></code> and <code class="docutils literal notranslate"><span class="pre">fill</span></code>, the former looks like a line,
+while the later an area.</p></li>
+<li><p>From semantic aspect, we say <code class="docutils literal notranslate"><span class="pre">border</span></code> (cell border) and <code class="docutils literal notranslate"><span class="pre">shading</span></code> (cell shading).</p></li>
+<li><p>An explicit border is determined by a certain stroke, while a stroke may also represent
+an underline of text.</p></li>
+<li><p>An explicit shading is determined by a fill, while a fill may also represent a highlight
+of text.</p></li>
+<li><p>Border object is introduced to determin borders of stream table. Border instance is a
+virtual border adaptive in a certain range, then converted to a stroke once finalized,
+and finally applied to detect table border.</p></li>
+</ul>
 <dl class="py class">
 <dt id="pdf2docx.table.TablesConstructor.TablesConstructor">
 <em class="property">class </em><code class="sig-prename descclassname">pdf2docx.table.TablesConstructor.</code><code class="sig-name descname">TablesConstructor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TablesConstructor.TablesConstructor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Object parsing <code class="docutils literal notranslate"><span class="pre">TableBlock</span></code> for specified <code class="docutils literal notranslate"><span class="pre">Layout</span></code>.</p>
 <dl class="py method">
 <dt id="pdf2docx.table.TablesConstructor.TablesConstructor.lattice_tables">
-<code class="sig-name descname">lattice_tables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">connected_border_tolerance</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">min_border_clearance</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">max_border_width</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">float_layout_tolerance</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_overlap_threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_merging_threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_separate_threshold</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TablesConstructor.TablesConstructor.lattice_tables" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">lattice_tables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">connected_border_tolerance</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">min_border_clearance</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">max_border_width</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TablesConstructor.TablesConstructor.lattice_tables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse table with explicit borders/shadings represented by rectangle shapes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>connected_border_tolerance</strong> (<em>float</em>) – Two borders are intersected if the gap lower than this value.</p></li>
+<li><p><strong>min_border_clearance</strong> (<em>float</em>) – The minimum allowable clearance of two borders.</p></li>
+<li><p><strong>max_border_width</strong> (<em>float</em>) – Max border width.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.table.TablesConstructor.TablesConstructor.page_layout_table">
+<code class="sig-name descname">page_layout_table</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TablesConstructor.TablesConstructor.page_layout_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set page layout if two-columns layout.</p>
+<dl>
+<dt>::</dt><dd><p>+————<a href="#id1"><span class="problematic" id="id2">|--------------+ span_elements
++------------|</span></a>————–+</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div></blockquote>
+<p>+———-+ | +————+ v0
+|  column  | | |  elements  |
++———-+ | +————+ v1
+u0           |             u1
++————<a href="#id3"><span class="problematic" id="id4">|--------------+
++------------|</span></a>————–+ span_elements</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div></blockquote>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Run this method in Page level only, right after cleaning blocks and shapes.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.table.TablesConstructor.TablesConstructor.stream_strokes">
 <em class="property">static </em><code class="sig-name descname">stream_strokes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lines</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.text.Lines.html#pdf2docx.text.Lines.Lines" title="pdf2docx.text.Lines.Lines">pdf2docx.text.Lines.Lines</a></span></em>, <em class="sig-param"><span class="n">outer_borders</span><span class="p">:</span> <span class="n">tuple</span></em>, <em class="sig-param"><span class="n">explicit_strokes</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes">pdf2docx.shape.Shapes.Shapes</a></span></em>, <em class="sig-param"><span class="n">explicit_shadings</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes">pdf2docx.shape.Shapes.Shapes</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TablesConstructor.TablesConstructor.stream_strokes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parsing borders mainly based on content lines contained in cells, and update borders
-(position and style) with explicit borders represented by rectangle shapes.
-—
-Args:
-- lines: Lines, contained in table cells
-- outer_borders: (top, bottom, left, right), boundary borders of table
-- explicit_strokes: showing borders in a stream table; can be empty.
-- explicit_shadings: showing shadings in a stream table; can be empty.</p>
+<dd><p>Parsing borders mainly based on content lines contained in cells,
+and update borders (position and style) with explicit borders represented
+by rectangle shapes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lines</strong> (<a class="reference internal" href="pdf2docx.text.Lines.html#pdf2docx.text.Lines.Lines" title="pdf2docx.text.Lines.Lines"><em>Lines</em></a>) – lines contained in table cells.</p></li>
+<li><p><strong>outer_borders</strong> (<em>tuple</em>) – Boundary borders of table, <code class="docutils literal notranslate"><span class="pre">(top,</span> <span class="pre">bottom,</span> <span class="pre">left,</span> <span class="pre">right)</span></code>.</p></li>
+<li><p><strong>explicit_strokes</strong> (<a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes"><em>Shapes</em></a>) – Showing borders in a stream table; can be empty.</p></li>
+<li><p><strong>explicit_shadings</strong> (<a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes"><em>Shapes</em></a>) – Showing shadings in a stream table; can be empty.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Parsed strokes representing table borders.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes">Shapes</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.table.TablesConstructor.TablesConstructor.stream_tables">
-<code class="sig-name descname">stream_tables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">min_border_clearance</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">max_border_width</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">float_layout_tolerance</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_overlap_threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_merging_threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_separate_threshold</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TablesConstructor.TablesConstructor.stream_tables" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">stream_tables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">min_border_clearance</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">max_border_width</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">float_layout_tolerance</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_separate_threshold</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TablesConstructor.TablesConstructor.stream_tables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse table with layout of text/image blocks, and update borders with explicit borders
 represented by rectangle shapes.</p>
+<p>Refer to <code class="docutils literal notranslate"><span class="pre">lattice_tables</span></code> for arguments description.</p>
 </dd></dl>
 
 </dd></dl>

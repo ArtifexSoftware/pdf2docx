@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.shape.Shapes module &mdash; pdf2docx refs/heads/dev documentation</title>
+  <title>pdf2docx.shape.Shapes module &mdash; pdf2docx 0.5.1 documentation</title>
   
 
   
@@ -180,72 +180,117 @@
             
   <div class="section" id="module-pdf2docx.shape.Shapes">
 <span id="pdf2docx-shape-shapes-module"></span><h1>pdf2docx.shape.Shapes module<a class="headerlink" href="#module-pdf2docx.shape.Shapes" title="Permalink to this headline">¶</a></h1>
-<p>A group of Shape (Stroke or Fill) instances.</p>
-<p>&#64;created: 2020-09-15</p>
+<p>A group of <code class="docutils literal notranslate"><span class="pre">Shape</span></code> instances.</p>
 <dl class="py class">
 <dt id="pdf2docx.shape.Shapes.Shapes">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.shape.Shapes.</code><code class="sig-name descname">Shapes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">list</span> <span class="o">=</span> <span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shapes.Shapes" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.shape.Shapes.</code><code class="sig-name descname">Shapes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shapes.Shapes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.Collection" title="pdf2docx.common.Collection.Collection"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Collection.Collection</span></code></a></p>
+<p>A collection of <code class="docutils literal notranslate"><span class="pre">Shape</span></code> instances: <code class="docutils literal notranslate"><span class="pre">Stroke</span></code> or <code class="docutils literal notranslate"><span class="pre">Fill</span></code>.</p>
+<dl class="py method">
+<dt id="pdf2docx.shape.Shapes.Shapes.assign_to_tables">
+<code class="sig-name descname">assign_to_tables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tables</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shapes.Shapes.assign_to_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Shape to associated cells of given tables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tables</strong> (<em>list</em>) – A list of TableBlock instances.</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="pdf2docx.shape.Shapes.Shapes.clean_up">
 <code class="sig-name descname">clean_up</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">max_border_width</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">shape_merging_threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">shape_min_dimension</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shapes.Shapes.clean_up" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clean rectangles:
-- delete rectangles fully contained in another one (beside, they have same bg-color)
-- join intersected and horizontally aligned rectangles with same height and bg-color
-- join intersected and vertically aligned rectangles with same width and bg-color</p>
+<dd><p>Clean rectangles.</p>
+<ul class="simple">
+<li><p>Delete rectangles fully contained in another one (beside, they have same bg-color).</p></li>
+<li><p>Join intersected and horizontally aligned rectangles with same height and bg-color.</p></li>
+<li><p>Join intersected and vertically aligned rectangles with same width and bg-color.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_border_width</strong> (<em>float</em>) – The max border width.</p></li>
+<li><p><strong>shape_merging_threshold</strong> (<em>float</em>) – Merge shape if the intersection exceeds this value.</p></li>
+<li><p><strong>shape_min_dimension</strong> (<em>float</em>) – Ignore shape if both width and height is lower than this value.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Shapes.Shapes.detect_initial_categories">
 <code class="sig-name descname">detect_initial_categories</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shapes.Shapes.detect_initial_categories" title="Permalink to this definition">¶</a></dt>
-<dd><p>Detect shape type based on the position to text blocks.
-It should run right after <cite>clean_up()</cite>.</p>
+<dd><p>Detect shape type based on the position to text blocks.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Stroke shapes are grouped on connectivity to each other, but in some cases,
+the gap between borders and underlines/strikes are very close, which leads
+to an incorrect table structure. So, it’s required to distinguish them in
+advance, though we needn’t to ensure 100% accuracy.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It should be run right after <code class="docutils literal notranslate"><span class="pre">clean_up()</span></code>.</p>
+</div>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="pdf2docx.shape.Shapes.Shapes.fillings">
 <code class="sig-name descname">fillings</code><a class="headerlink" href="#pdf2docx.shape.Shapes.Shapes.fillings" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Calculate only once and cache property value.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pdf2docx.shape.Shapes.Shapes.hyperlinks">
+<code class="sig-name descname">hyperlinks</code><a class="headerlink" href="#pdf2docx.shape.Shapes.Shapes.hyperlinks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate only once and cache property value.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Shapes.Shapes.plot">
 <code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shapes.Shapes.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot shapes in PDF page.</p>
+<dd><p>Plot shapes for debug purpose.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>page</strong> (<em>fitz.Page</em>) – pdf page.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Shapes.Shapes.restore">
 <code class="sig-name descname">restore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raws</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shapes.Shapes.restore" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize Stroke/Fill from dicts.</p>
+<dd><p>Clean current instances and restore them from source dicts.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="pdf2docx.shape.Shapes.Shapes.strokes">
 <code class="sig-name descname">strokes</code><a class="headerlink" href="#pdf2docx.shape.Shapes.Shapes.strokes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Calculate only once and cache property value.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Shapes.Shapes.table_fillings">
 <em class="property">property </em><code class="sig-name descname">table_fillings</code><a class="headerlink" href="#pdf2docx.shape.Shapes.Shapes.table_fillings" title="Permalink to this definition">¶</a></dt>
-<dd><p>potential table shadings.</p>
+<dd><p>Potential table shadings.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Shapes.Shapes.table_strokes">
 <em class="property">property </em><code class="sig-name descname">table_strokes</code><a class="headerlink" href="#pdf2docx.shape.Shapes.Shapes.table_strokes" title="Permalink to this definition">¶</a></dt>
-<dd><p>potential table borders.</p>
+<dd><p>Potential table borders.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Shapes.Shapes.text_highlights">
 <em class="property">property </em><code class="sig-name descname">text_highlights</code><a class="headerlink" href="#pdf2docx.shape.Shapes.Shapes.text_highlights" title="Permalink to this definition">¶</a></dt>
-<dd><p>potential text highlights.</p>
+<dd><p>Potential text highlights.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Shapes.Shapes.text_underlines_strikes">
 <em class="property">property </em><code class="sig-name descname">text_underlines_strikes</code><a class="headerlink" href="#pdf2docx.shape.Shapes.Shapes.text_underlines_strikes" title="Permalink to this definition">¶</a></dt>
-<dd><p>potential text underlines and strike-through lines.</p>
+<dd><p>Potential text underlines and strike-through lines.</p>
 </dd></dl>
 
 </dd></dl>

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.common.docx module &mdash; pdf2docx refs/heads/dev documentation</title>
+  <title>pdf2docx.common.docx module &mdash; pdf2docx 0.5.1 documentation</title>
   
 
   
@@ -180,108 +180,131 @@
             
   <div class="section" id="module-pdf2docx.common.docx">
 <span id="pdf2docx-common-docx-module"></span><h1>pdf2docx.common.docx module<a class="headerlink" href="#module-pdf2docx.common.docx" title="Permalink to this headline">¶</a></h1>
-<p>docx operation methods based on python-docx.</p>
-<dl class="py class">
-<dt id="pdf2docx.common.docx.CT_Anchor">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">CT_Anchor</code><a class="headerlink" href="#pdf2docx.common.docx.CT_Anchor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">docx.oxml.xmlchemy.BaseOxmlElement</span></code></p>
-<p><code class="docutils literal notranslate"><span class="pre">&lt;w:anchor&gt;</span></code> element, container for a floating image.</p>
-<dl class="py method">
-<dt id="pdf2docx.common.docx.CT_Anchor.docPr">
-<em class="property">property </em><code class="sig-name descname">docPr</code><a class="headerlink" href="#pdf2docx.common.docx.CT_Anchor.docPr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Required <code class="docutils literal notranslate"><span class="pre">&lt;wp:docPr&gt;</span></code> child element.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.common.docx.CT_Anchor.extent">
-<em class="property">property </em><code class="sig-name descname">extent</code><a class="headerlink" href="#pdf2docx.common.docx.CT_Anchor.extent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Required <code class="docutils literal notranslate"><span class="pre">&lt;wp:extent&gt;</span></code> child element.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.common.docx.CT_Anchor.graphic">
-<em class="property">property </em><code class="sig-name descname">graphic</code><a class="headerlink" href="#pdf2docx.common.docx.CT_Anchor.graphic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Required <code class="docutils literal notranslate"><span class="pre">&lt;a:graphic&gt;</span></code> child element.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.common.docx.CT_Anchor.new">
-<em class="property">classmethod </em><code class="sig-name descname">new</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cx</span></em>, <em class="sig-param"><span class="n">cy</span></em>, <em class="sig-param"><span class="n">shape_id</span></em>, <em class="sig-param"><span class="n">pic</span></em>, <em class="sig-param"><span class="n">pos_x</span></em>, <em class="sig-param"><span class="n">pos_y</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.CT_Anchor.new" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a new <code class="docutils literal notranslate"><span class="pre">&lt;wp:anchor&gt;</span></code> element populated with the values passed
-as parameters.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.common.docx.CT_Anchor.new_pic_anchor">
-<em class="property">classmethod </em><code class="sig-name descname">new_pic_anchor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">shape_id</span></em>, <em class="sig-param"><span class="n">rId</span></em>, <em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">cx</span></em>, <em class="sig-param"><span class="n">cy</span></em>, <em class="sig-param"><span class="n">pos_x</span></em>, <em class="sig-param"><span class="n">pos_y</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.CT_Anchor.new_pic_anchor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a new <cite>wp:anchor</cite> element containing the <cite>pic:pic</cite> element
-specified by the argument values.</p>
-</dd></dl>
-
-</dd></dl>
-
+<p>docx operation methods based on <code class="docutils literal notranslate"><span class="pre">python-docx</span></code>.</p>
 <dl class="py function">
 <dt id="pdf2docx.common.docx.add_float_image">
 <code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">add_float_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">image_path_or_stream</span></em>, <em class="sig-param"><span class="n">width</span></em>, <em class="sig-param"><span class="n">pos_x</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pos_y</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.add_float_image" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add float image behind text.
-—
-Args:
-- p: docx Paragraph object this picture belongs to
-- image_path_or_stream: image path or stream
-- width, height: displaying width, height of picture, in unit Pt
-- pos_x, pos_y: positions (English Metric Units) to the top-left point of page valid region</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="pdf2docx.common.docx.add_image">
-<code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">add_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">image_path_or_stream</span></em>, <em class="sig-param"><span class="n">width</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.add_image" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add image to paragraph.
-—
-:param - p: docx paragraph instance
-:param - image_path_or_stream: image path or stream
-:param - width: image width in Pt</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="pdf2docx.common.docx.add_stop">
-<code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">add_stop</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">pos</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">current_pos</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.add_stop" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set horizontal position in current position with tab stop.
-—
-:param - p: docx paragraph instance
-:param - pos: target position in Pt
-:param - current_pos: current position in Pt</p>
-<dl class="simple">
-<dt>Note: multiple tab stops may exist in paragraph,</dt><dd><p>so tabs are added based on current position and target position.</p>
+<dd><p>Add float image behind text.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>Paragraph</em>) – <code class="docutils literal notranslate"><span class="pre">python-docx</span></code> Paragraph object this picture belongs to.</p></li>
+<li><p><strong>image_path_or_stream</strong> (<em>str</em><em>, </em><em>bytes</em>) – Image path or stream.</p></li>
+<li><p><strong>width</strong> (<em>float</em>) – Displaying width of picture, in unit Pt.</p></li>
+<li><p><strong>pos_x</strong> (<em>float</em>) – X-position (English Metric Units) to the top-left point of page valid region</p></li>
+<li><p><strong>pos_y</strong> (<em>float</em>) – Y-position (English Metric Units) to the top-left point of page valid region</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
+<dt id="pdf2docx.common.docx.add_hyperlink">
+<code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">add_hyperlink</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">paragraph</span></em>, <em class="sig-param"><span class="n">url</span></em>, <em class="sig-param"><span class="n">text</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.add_hyperlink" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a hyperlink within a paragraph object.</p>
+<p>Reference:</p>
+<blockquote>
+<div><p><a class="reference external" href="https://github.com/python-openxml/python-docx/issues/74#issuecomment-215678765">https://github.com/python-openxml/python-docx/issues/74#issuecomment-215678765</a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>paragraph</strong> (<em>Paragraph</em>) – <code class="docutils literal notranslate"><span class="pre">python-docx</span></code> paragraph adding the hyperlink to.</p></li>
+<li><p><strong>url</strong> (<em>str</em>) – The required url.</p></li>
+<li><p><strong>text</strong> (<em>str</em>) – The text displayed for the url.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A Run object containing the hyperlink.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Run</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pdf2docx.common.docx.add_image">
+<code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">add_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">image_path_or_stream</span></em>, <em class="sig-param"><span class="n">width</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.add_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add image to paragraph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>Paragraph</em>) – <code class="docutils literal notranslate"><span class="pre">python-docx</span></code> paragraph instance.</p></li>
+<li><p><strong>image_path_or_stream</strong> (<em>str</em><em>, </em><em>bytes</em>) – Image path or stream.</p></li>
+<li><p><strong>width</strong> (<em>float</em>) – Image width in Pt.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pdf2docx.common.docx.add_stop">
+<code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">add_stop</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">pos</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">current_pos</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.add_stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set horizontal position in current position with tab stop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>Paragraph</em>) – <code class="docutils literal notranslate"><span class="pre">python-docx</span></code> paragraph instance.</p></li>
+<li><p><strong>pos</strong> (<em>float</em>) – Target position in Pt.</p></li>
+<li><p><strong>current_pos</strong> (<em>float</em>) – Current position in Pt.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Multiple tab stops may exist in paragraph, so tabs are added based on
+current position and target position.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt id="pdf2docx.common.docx.delete_paragraph">
 <code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">delete_paragraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">paragraph</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.delete_paragraph" title="Permalink to this definition">¶</a></dt>
-<dd><p>Refer to:
-<a class="reference external" href="https://github.com/python-openxml/python-docx/issues/33#issuecomment-77661907">https://github.com/python-openxml/python-docx/issues/33#issuecomment-77661907</a></p>
+<dd><p>Delete a paragraph.</p>
+<dl class="simple">
+<dt>Reference:</dt><dd><p><a class="reference external" href="https://github.com/python-openxml/python-docx/issues/33#issuecomment-77661907">https://github.com/python-openxml/python-docx/issues/33#issuecomment-77661907</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="pdf2docx.common.docx.indent_table">
 <code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">indent_table</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">table</span></em>, <em class="sig-param"><span class="n">indent</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.indent_table" title="Permalink to this definition">¶</a></dt>
-<dd><p>indent table.
-—
-:param - table: docx table object
-:param - indent: indent value, the basic unit is 1/20 pt</p>
+<dd><p>Indent a table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table</strong> (<em>Table</em>) – <code class="docutils literal notranslate"><span class="pre">python-docx</span></code> Table object.</p></li>
+<li><p><strong>indent</strong> (<em>float</em>) – Indent value, the basic unit is 1/20 pt.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="pdf2docx.common.docx.reset_paragraph_format">
 <code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">reset_paragraph_format</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">line_spacing</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.05</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.reset_paragraph_format" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reset paragraph format, especially line spacing.
-—
-Args:
-- p: docx paragraph instance</p>
-<p>Two kinds of line spacing, corresponding to the setting in MS Office Word:
-- line_spacing=1.05: single or multiple
-- line_spacing=Pt(1): exactly</p>
+<dd><p>Reset paragraph format, especially line spacing.</p>
+<p>Two kinds of line spacing, corresponding to the setting in MS Office Word:</p>
+<ul class="simple">
+<li><p>line_spacing=1.05: single or multiple</p></li>
+<li><p>line_spacing=Pt(1): exactly</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>Paragraph</em>) – <code class="docutils literal notranslate"><span class="pre">python-docx</span></code> paragraph instance.</p></li>
+<li><p><strong>line_spacing</strong> (<em>float</em><em>, </em><em>optional</em>) – Line spacing. Defaults to 1.05.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Paragraph format.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>paragraph_format</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -295,91 +318,129 @@ Args:
 </ul>
 </dd>
 </dl>
-<p>Usage:
-<a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a></p>
-<blockquote>
-<div><dl class="simple">
-<dt>_set_cell_border(</dt><dd><p>cell,
-top={“sz”: 12, “val”: “single”, “color”: “#FF0000”, “space”: “0”},
-bottom={“sz”: 12, “color”: “#00FF00”, “val”: “single”},
-start={“sz”: 24, “val”: “dashed”, “shadow”: “true”},
-end={“sz”: 12, “val”: “dashed”},</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cell</strong> (<em>_Cell</em>) – <code class="docutils literal notranslate"><span class="pre">python-docx</span></code> Cell instance you want to modify.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Dict with keys: top, bottom, start, end.</p></li>
+</ul>
 </dd>
 </dl>
-<p>)</p>
-</div></blockquote>
-<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">set_cell_border</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">,</span>
+    <span class="n">top</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;sz&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#FF0000&quot;</span><span class="p">,</span> <span class="s2">&quot;space&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">},</span>
+    <span class="n">bottom</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;sz&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#00FF00&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="s2">&quot;single&quot;</span><span class="p">},</span>
+    <span class="n">start</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;sz&quot;</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="s2">&quot;dashed&quot;</span><span class="p">,</span> <span class="s2">&quot;shadow&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">},</span>
+    <span class="n">end</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;sz&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="s2">&quot;dashed&quot;</span><span class="p">},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt id="pdf2docx.common.docx.set_cell_margins">
 <code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">set_cell_margins</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cell</span><span class="p">:</span> <span class="n">docx.table._Cell</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.set_cell_margins" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set cell margins. Provided values are in twentieths of a point (1/1440 of an inch).
-—
-:param - cell: actual cell instance you want to modify
-:param - kwargs: a dict with keys: top, bottom, start, end</p>
+<dd><p>Set cell margins. Provided values are in twentieths of a point (1/1440 of an inch).</p>
 <dl class="simple">
-<dt>Usage:</dt><dd><ul class="simple">
-<li><p>set_cell_margins(cell, top=50, start=50, bottom=50, end=50)</p></li>
-</ul>
-</dd>
-<dt>Read more:</dt><dd><ul class="simple">
+<dt>Reference:</dt><dd><ul class="simple">
 <li><p><a class="reference external" href="https://blog.csdn.net/weixin_44312186/article/details/104944773">https://blog.csdn.net/weixin_44312186/article/details/104944773</a></p></li>
 <li><p><a class="reference external" href="http://officeopenxml.com/WPtableCellMargins.php">http://officeopenxml.com/WPtableCellMargins.php</a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cell</strong> (<em>_Cell</em>) – <code class="docutils literal notranslate"><span class="pre">python-docx</span></code> Cell instance you want to modify.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Dict with keys: top, bottom, start, end.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">set_cell_margins</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pdf2docx.common.docx.set_cell_shading">
+<code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">set_cell_shading</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cell</span><span class="p">:</span> <span class="n">docx.table._Cell</span></em>, <em class="sig-param"><span class="n">srgb</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.set_cell_shading" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set cell background-color.</p>
+<dl class="simple">
+<dt>Reference:</dt><dd><p><a class="reference external" href="https://stackoverflow.com/questions/26752856/python-docx-set-table-cell-background-and-text-color">https://stackoverflow.com/questions/26752856/python-docx-set-table-cell-background-and-text-color</a></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cell</strong> (<em>_Cell</em>) – <code class="docutils literal notranslate"><span class="pre">python-docx</span></code> Cell instance you want to modify</p></li>
+<li><p><strong>srgb</strong> (<em>int</em>) – RGB color value.</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt id="pdf2docx.common.docx.set_cell_shading">
-<code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">set_cell_shading</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cell</span><span class="p">:</span> <span class="n">docx.table._Cell</span></em>, <em class="sig-param"><span class="n">srgb</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.set_cell_shading" title="Permalink to this definition">¶</a></dt>
-<dd><p>set cell background-color.
-—
-Args:
-- cell: actual cell instance you want to modify
-- srgb: RGB color value</p>
-<p><a class="reference external" href="https://stackoverflow.com/questions/26752856/python-docx-set-table-cell-background-and-text-color">https://stackoverflow.com/questions/26752856/python-docx-set-table-cell-background-and-text-color</a></p>
-</dd></dl>
-
-<dl class="py function">
 <dt id="pdf2docx.common.docx.set_char_scaling">
 <code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">set_char_scaling</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p_run</span></em>, <em class="sig-param"><span class="n">scale</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.set_char_scaling" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set character spacing: scaling. Font | Advanced | Character Spacing | Scaling.
-—
-:param - p_run: docx.text.run.Run, proxy object wrapping &lt;w:r&gt; element
-:param - scale: scaling factor</p>
+<dd><p>Set character spacing: scaling.</p>
+<p>Manual operation in MS Word: Font | Advanced | Character Spacing | Scaling.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p_run</strong> (<em>docx.text.run.Run</em>) – Proxy object wrapping &lt;w:r&gt; element.</p></li>
+<li><p><strong>scale</strong> (<em>float</em><em>, </em><em>optional</em>) – scaling factor. Defaults to 1.0.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="pdf2docx.common.docx.set_char_shading">
 <code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">set_char_shading</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p_run</span></em>, <em class="sig-param"><span class="n">srgb</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.set_char_shading" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set character shading color, in case the color is out of highlight color scope.
-—
-Args:
-- p_run: docx.text.run.Run, proxy object wrapping &lt;w:r&gt; element
-- srgb: int, color value</p>
-<p>Read more:
-- <a class="reference external" href="http://officeopenxml.com/WPtextShading.php">http://officeopenxml.com/WPtextShading.php</a></p>
+<dd><p>Set character shading color, in case the color is out of highlight color scope.</p>
+<dl class="simple">
+<dt>Reference:</dt><dd><p><a class="reference external" href="http://officeopenxml.com/WPtextShading.php">http://officeopenxml.com/WPtextShading.php</a></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p_run</strong> (<em>docx.text.run.Run</em>) – Proxy object wrapping &lt;w:r&gt; element.</p></li>
+<li><p><strong>srgb</strong> (<em>int</em>) – Color value.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="pdf2docx.common.docx.set_char_underline">
 <code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">set_char_underline</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p_run</span></em>, <em class="sig-param"><span class="n">srgb</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.set_char_underline" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set underline and color.
-—
-Args:
-- p_run: docx.text.run.Run, proxy object wrapping &lt;w:r&gt; element
-- srgb: int, color value</p>
+<dd><p>Set underline and color.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p_run</strong> (<em>docx.text.run.Run</em>) – Proxy object wrapping &lt;w:r&gt; element.</p></li>
+<li><p><strong>srgb</strong> (<em>int</em>) – Color value.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="pdf2docx.common.docx.set_vertical_cell_direction">
 <code class="sig-prename descclassname">pdf2docx.common.docx.</code><code class="sig-name descname">set_vertical_cell_direction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cell</span><span class="p">:</span> <span class="n">docx.table._Cell</span></em>, <em class="sig-param"><span class="n">direction</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'btLr'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.docx.set_vertical_cell_direction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set vertical text direction for cell.
-—
-:param - direction: tbRl – top to bottom, btLr – bottom to top</p>
-<p><a class="reference external" href="https://stackoverflow.com/questions/47738013/how-to-rotate-text-in-table-cells">https://stackoverflow.com/questions/47738013/how-to-rotate-text-in-table-cells</a></p>
+<dd><p>Set vertical text direction for cell.</p>
+<dl class="simple">
+<dt>Reference:</dt><dd><p><a class="reference external" href="https://stackoverflow.com/questions/47738013/how-to-rotate-text-in-table-cells">https://stackoverflow.com/questions/47738013/how-to-rotate-text-in-table-cells</a></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>direction</strong> (<em>str</em>) – Either “tbRl” (top to bottom) or “btLr” (bottom to top).</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>

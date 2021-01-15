@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.text.Line module &mdash; pdf2docx refs/heads/dev documentation</title>
+  <title>pdf2docx.text.Line module &mdash; pdf2docx 0.5.1 documentation</title>
   
 
   
@@ -180,19 +180,17 @@
             
   <div class="section" id="module-pdf2docx.text.Line">
 <span id="pdf2docx-text-line-module"></span><h1>pdf2docx.text.Line module<a class="headerlink" href="#module-pdf2docx.text.Line" title="Permalink to this headline">¶</a></h1>
-<p>Text Line objects based on PDF raw dict extracted with PyMuPDF.
-&#64;created: 2020-07-22</p>
-<p>—</p>
-<p>Data structure of line in text block:
-{</p>
-<blockquote>
-<div><p>‘bbox’: (x0,y0,x1,y1),
-‘wmode’: m,
-‘dir’: [x,y],
-‘spans’: [ spans ]</p>
-</div></blockquote>
-<p>}</p>
-<p><a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/textpage.html">https://pymupdf.readthedocs.io/en/latest/textpage.html</a></p>
+<p>Text Line objects based on PDF raw dict extracted with <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code>.</p>
+<p>Data structure of line in text block referring to this
+<a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/textpage.html">link</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;bbox&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span><span class="n">y0</span><span class="p">,</span><span class="n">x1</span><span class="p">,</span><span class="n">y1</span><span class="p">),</span>
+    <span class="s1">&#39;wmode&#39;</span><span class="p">:</span> <span class="n">m</span><span class="p">,</span>
+    <span class="s1">&#39;dir&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">],</span>
+    <span class="s1">&#39;spans&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="n">spans</span> <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 <dl class="py class">
 <dt id="pdf2docx.text.Line.Line">
 <em class="property">class </em><code class="sig-prename descclassname">pdf2docx.text.Line.</code><code class="sig-name descname">Line</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line" title="Permalink to this definition">¶</a></dt>
@@ -201,9 +199,12 @@
 <dl class="py method">
 <dt id="pdf2docx.text.Line.Line.add">
 <code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">span_or_list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line.add" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add span list to current Line.
-—
-:param - span_or_list: a TextSpan or TextSpan list</p>
+<dd><p>Add span list to current Line.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>span_or_list</strong> (<em>Span</em><em>, </em><em>Iterable</em>) – TextSpan or TextSpan list to add.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -221,38 +222,59 @@
 <dl class="py method">
 <dt id="pdf2docx.text.Line.Line.intersects">
 <code class="sig-name descname">intersects</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rect</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line.intersects" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create new Line object with spans contained in given bbox.
-—
-:param - rect: fitz.Rect, target bbox</p>
+<dd><p>Create new Line object with spans contained in given bbox.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rect</strong> (<em>fitz.Rect</em>) – Target bbox.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The created Line instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pdf2docx.text.Line.Line" title="pdf2docx.text.Line.Line">Line</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.text.Line.Line.make_docx">
 <code class="sig-name descname">make_docx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line.make_docx" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Create docx line, i.e. a run in <code class="docutils literal notranslate"><span class="pre">python-docx</span></code>.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.text.Line.Line.pid">
 <em class="property">property </em><code class="sig-name descname">pid</code><a class="headerlink" href="#pdf2docx.text.Line.Line.pid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get parent ID.</p>
+<dd><p>Get the original parent ID.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lines contained in text block may be re-grouped, so use an ID to track
+the original parent block extracted from PDF. Note the difference to the
+real parent block.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.text.Line.Line.same_parent_with">
-<code class="sig-name descname">same_parent_with</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">line</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line.same_parent_with" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if has same parent ID.</p>
+<dt id="pdf2docx.text.Line.Line.same_source_parent">
+<code class="sig-name descname">same_source_parent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">line</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line.same_source_parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if has same original parent ID.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Two lines in same original block may be regrouped to different
+block finally.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.text.Line.Line.store">
 <code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line.store" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store bbox in json format.</p>
+<dd><p>Store properties in raw dict.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.text.Line.Line.strip">
 <code class="sig-name descname">strip</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line.strip" title="Permalink to this definition">¶</a></dt>
-<dd><p>remove redundant blanks at the begin/end span.</p>
+<dd><p>Remove redundant blanks at the begin/end span.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -264,10 +286,13 @@
 <dl class="py method">
 <dt id="pdf2docx.text.Line.Line.text_direction">
 <em class="property">property </em><code class="sig-name descname">text_direction</code><a class="headerlink" href="#pdf2docx.text.Line.Line.text_direction" title="Permalink to this definition">¶</a></dt>
-<dd><p>from left to right.</p>
+<dd><p>Get text direction. Consider <code class="docutils literal notranslate"><span class="pre">LEFT_RIGHT</span></code> and <code class="docutils literal notranslate"><span class="pre">LEFT_RIGHT</span></code> only.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Default text direction</p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Text direction of this line.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="pdf2docx.common.share.html#pdf2docx.common.share.TextDirection" title="pdf2docx.common.share.TextDirection">TextDirection</a></p>
 </dd>
 </dl>
 </dd></dl>

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.image.ImageSpan module &mdash; pdf2docx refs/heads/dev documentation</title>
+  <title>pdf2docx.image.ImageSpan module &mdash; pdf2docx 0.5.1 documentation</title>
   
 
   
@@ -180,8 +180,7 @@
             
   <div class="section" id="module-pdf2docx.image.ImageSpan">
 <span id="pdf2docx-image-imagespan-module"></span><h1>pdf2docx.image.ImageSpan module<a class="headerlink" href="#module-pdf2docx.image.ImageSpan" title="Permalink to this headline">¶</a></h1>
-<p>Image Span based on same raw data structure with image block.</p>
-<p>&#64;created: 2020-07-22</p>
+<p>Image span based on same raw data structure with Image block.</p>
 <dl class="py class">
 <dt id="pdf2docx.image.ImageSpan.ImageSpan">
 <em class="property">class </em><code class="sig-prename descclassname">pdf2docx.image.ImageSpan.</code><code class="sig-name descname">ImageSpan</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageSpan.ImageSpan" title="Permalink to this definition">¶</a></dt>
@@ -190,16 +189,24 @@
 <dl class="py method">
 <dt id="pdf2docx.image.ImageSpan.ImageSpan.intersects">
 <code class="sig-name descname">intersects</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rect</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageSpan.ImageSpan.intersects" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create new ImageSpan object with image contained in given bbox.
-—
-Args:
-- rect: fitz.Rect, target bbox</p>
+<dd><p>Create new ImageSpan object with image contained in given bbox.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rect</strong> (<em>fitz.Rect</em>) – Target bbox.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A copy of itself if intersects with target; otherwise empty ImageSpan.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pdf2docx.image.ImageSpan.ImageSpan" title="pdf2docx.image.ImageSpan.ImageSpan">ImageSpan</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.image.ImageSpan.ImageSpan.store">
 <code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageSpan.ImageSpan.store" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store bbox in json format.</p>
+<dd><p>Store properties in raw dict.</p>
 </dd></dl>
 
 </dd></dl>

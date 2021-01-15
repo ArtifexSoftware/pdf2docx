@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Index &mdash; pdf2docx refs/heads/dev documentation</title>
+  <title>Index &mdash; pdf2docx 0.5.1 documentation</title>
   
 
   
@@ -186,8 +186,6 @@
       <li><a href="pdf2docx.table.Border.html#pdf2docx.table.Border.Borders.add">add() (pdf2docx.table.Border.Borders method)</a>
 
       <ul>
-        <li><a href="pdf2docx.table.Cell.html#pdf2docx.table.Cell.Cell.add">(pdf2docx.table.Cell.Cell method)</a>
-</li>
         <li><a href="pdf2docx.text.Line.html#pdf2docx.text.Line.Line.add">(pdf2docx.text.Line.Line method)</a>
 </li>
         <li><a href="pdf2docx.text.TextBlock.html#pdf2docx.text.TextBlock.TextBlock.add">(pdf2docx.text.TextBlock.TextBlock method)</a>
@@ -197,12 +195,12 @@
       </ul></li>
       <li><a href="pdf2docx.common.docx.html#pdf2docx.common.docx.add_float_image">add_float_image() (in module pdf2docx.common.docx)</a>
 </li>
+      <li><a href="pdf2docx.common.docx.html#pdf2docx.common.docx.add_hyperlink">add_hyperlink() (in module pdf2docx.common.docx)</a>
+</li>
       <li><a href="pdf2docx.common.docx.html#pdf2docx.common.docx.add_image">add_image() (in module pdf2docx.common.docx)</a>
 </li>
       <li><a href="pdf2docx.text.Line.html#pdf2docx.text.Line.Line.add_span">add_span() (pdf2docx.text.Line.Line method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pdf2docx.common.docx.html#pdf2docx.common.docx.add_stop">add_stop() (in module pdf2docx.common.docx)</a>
 </li>
       <li><a href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.Collection.append">append() (pdf2docx.common.Collection.Collection method)</a>
@@ -219,8 +217,26 @@
         <li><a href="pdf2docx.text.Lines.html#pdf2docx.text.Lines.Lines.append">(pdf2docx.text.Lines.Lines method)</a>
 </li>
       </ul></li>
-      <li><a href="pdf2docx.page.Blocks.html#pdf2docx.page.Blocks.Blocks.assign_table_contents">assign_table_contents() (pdf2docx.page.Blocks.Blocks method)</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pdf2docx.table.Cell.html#pdf2docx.table.Cell.Cell.assign_blocks">assign_blocks() (pdf2docx.table.Cell.Cell method)</a>
+
+      <ul>
+        <li><a href="pdf2docx.table.TableBlock.html#pdf2docx.table.TableBlock.TableBlock.assign_blocks">(pdf2docx.table.TableBlock.TableBlock method)</a>
 </li>
+      </ul></li>
+      <li><a href="pdf2docx.table.Cell.html#pdf2docx.table.Cell.Cell.assign_shapes">assign_shapes() (pdf2docx.table.Cell.Cell method)</a>
+
+      <ul>
+        <li><a href="pdf2docx.table.TableBlock.html#pdf2docx.table.TableBlock.TableBlock.assign_shapes">(pdf2docx.table.TableBlock.TableBlock method)</a>
+</li>
+      </ul></li>
+      <li><a href="pdf2docx.page.Blocks.html#pdf2docx.page.Blocks.Blocks.assign_to_tables">assign_to_tables() (pdf2docx.page.Blocks.Blocks method)</a>
+
+      <ul>
+        <li><a href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes.assign_to_tables">(pdf2docx.shape.Shapes.Shapes method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -234,15 +250,17 @@
       <li><a href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.BaseCollection.bbox">bbox() (pdf2docx.common.Collection.BaseCollection property)</a>
 
       <ul>
+        <li><a href="pdf2docx.page.Layout.html#pdf2docx.page.Layout.Layout.bbox">(pdf2docx.page.Layout.Layout property)</a>
+</li>
         <li><a href="pdf2docx.page.Page.html#pdf2docx.page.Page.Page.bbox">(pdf2docx.page.Page.Page property)</a>
 </li>
         <li><a href="pdf2docx.table.TableStructure.html#pdf2docx.table.TableStructure.TableStructure.bbox">(pdf2docx.table.TableStructure.TableStructure property)</a>
 </li>
       </ul></li>
-      <li><a href="pdf2docx.common.Block.html#pdf2docx.common.Block.Block">Block (class in pdf2docx.common.Block)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pdf2docx.common.Block.html#pdf2docx.common.Block.Block">Block (class in pdf2docx.common.Block)</a>
+</li>
       <li><a href="pdf2docx.page.Blocks.html#pdf2docx.page.Blocks.Blocks">Blocks (class in pdf2docx.page.Blocks)</a>
 </li>
       <li><a href="pdf2docx.common.share.html#pdf2docx.common.share.BlockType">BlockType (class in pdf2docx.common.share)</a>
@@ -284,13 +302,11 @@
       <li><a href="pdf2docx.page.Blocks.html#pdf2docx.page.Blocks.Blocks.clean_up">clean_up() (pdf2docx.page.Blocks.Blocks method)</a>
 
       <ul>
+        <li><a href="pdf2docx.page.Layout.html#pdf2docx.page.Layout.Layout.clean_up">(pdf2docx.page.Layout.Layout method)</a>
+</li>
         <li><a href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes.clean_up">(pdf2docx.shape.Shapes.Shapes method)</a>
 </li>
       </ul></li>
-      <li><a href="pdf2docx.page.Page.html#pdf2docx.page.Page.Page.clean_up_blocks">clean_up_blocks() (pdf2docx.page.Page.Page method)</a>
-</li>
-      <li><a href="pdf2docx.page.Page.html#pdf2docx.page.Page.Page.clean_up_shapes">clean_up_shapes() (pdf2docx.page.Page.Page method)</a>
-</li>
       <li><a href="pdf2docx.image.Image.html#pdf2docx.image.Image.ImagesExtractor.clip_page">clip_page() (pdf2docx.image.Image.ImagesExtractor class method)</a>
 </li>
       <li><a href="pdf2docx.converter.html#pdf2docx.converter.Converter.close">close() (pdf2docx.converter.Converter method)</a>
@@ -329,8 +345,6 @@
 </li>
       <li><a href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element.copy">copy() (pdf2docx.common.Element.Element method)</a>
 </li>
-      <li><a href="pdf2docx.common.docx.html#pdf2docx.common.docx.CT_Anchor">CT_Anchor (class in pdf2docx.common.docx)</a>
-</li>
       <li><a href="pdf2docx.shape.Paths.html#pdf2docx.shape.Paths.Paths.curve_area">curve_area (pdf2docx.shape.Paths.Paths attribute)</a>
 </li>
   </ul></td>
@@ -353,8 +367,6 @@
 </li>
       <li><a href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes.detect_initial_categories">detect_initial_categories() (pdf2docx.shape.Shapes.Shapes method)</a>
 </li>
-      <li><a href="pdf2docx.common.docx.html#pdf2docx.common.docx.CT_Anchor.docPr">docPr() (pdf2docx.common.docx.CT_Anchor property)</a>
-</li>
   </ul></td>
 </tr></table>
 
@@ -373,8 +385,6 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pdf2docx.common.docx.html#pdf2docx.common.docx.CT_Anchor.extent">extent() (pdf2docx.common.docx.CT_Anchor property)</a>
-</li>
       <li><a href="pdf2docx.image.Image.html#pdf2docx.image.Image.ImagesExtractor.extract_images">extract_images() (pdf2docx.image.Image.ImagesExtractor class method)</a>
 </li>
       <li><a href="pdf2docx.converter.html#pdf2docx.converter.Converter.extract_tables">extract_tables() (pdf2docx.converter.Converter method)</a>
@@ -399,6 +409,8 @@
 </li>
       <li><a href="pdf2docx.table.Border.html#pdf2docx.table.Border.Border.finalize_by_value">finalize_by_value() (pdf2docx.table.Border.Border method)</a>
 </li>
+      <li><a href="pdf2docx.page.Page.html#pdf2docx.page.Page.Page.finalized">finalized() (pdf2docx.page.Page.Page property)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pdf2docx.converter.html#pdf2docx.converter.Converter.fitz_doc">fitz_doc() (pdf2docx.converter.Converter property)</a>
@@ -419,8 +431,6 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pdf2docx.common.Block.html#pdf2docx.common.Block.Block.get_alignment">get_alignment() (pdf2docx.common.Block.Block method)</a>
-</li>
       <li><a href="pdf2docx.table.Border.html#pdf2docx.table.Border.Border.get_boundary_borders">get_boundary_borders() (pdf2docx.table.Border.Border method)</a>
 </li>
       <li><a href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element.get_expand_bbox">get_expand_bbox() (pdf2docx.common.Element.Element method)</a>
@@ -429,12 +439,8 @@
 </li>
       <li><a href="pdf2docx.common.share.html#pdf2docx.common.share.graph_bfs">graph_bfs() (in module pdf2docx.common.share)</a>
 </li>
-      <li><a href="pdf2docx.common.share.html#pdf2docx.common.share.graph_bfs_from_node">graph_bfs_from_node() (in module pdf2docx.common.share)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pdf2docx.common.docx.html#pdf2docx.common.docx.CT_Anchor.graphic">graphic() (pdf2docx.common.docx.CT_Anchor property)</a>
-</li>
       <li><a href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.BaseCollection.group">group() (pdf2docx.common.Collection.BaseCollection method)</a>
 
       <ul>
@@ -447,8 +453,6 @@
 </li>
       <li><a href="pdf2docx.text.Lines.html#pdf2docx.text.Lines.Lines.group_by_rows">group_by_rows() (pdf2docx.text.Lines.Lines method)</a>
 </li>
-      <li><a href="pdf2docx.shape.Path.html#pdf2docx.shape.Path.Path.group_segments">group_segments() (pdf2docx.shape.Path.Path static method)</a>
-</li>
   </ul></td>
 </tr></table>
 
@@ -459,11 +463,17 @@
 </li>
       <li><a href="pdf2docx.common.share.html#pdf2docx.common.share.RectType.HIGHLIGHT">HIGHLIGHT (pdf2docx.common.share.RectType attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Stroke.horizontal">horizontal() (pdf2docx.shape.Shape.Stroke property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element.horizontally_align_with">horizontally_align_with() (pdf2docx.common.Element.Element method)</a>
+</li>
+      <li><a href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Hyperlink">Hyperlink (class in pdf2docx.shape.Shape)</a>
+</li>
+      <li><a href="pdf2docx.common.share.html#pdf2docx.common.share.RectType.HYPERLINK">HYPERLINK (pdf2docx.common.share.RectType attribute)</a>
+</li>
+      <li><a href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes.hyperlinks">hyperlinks (pdf2docx.shape.Shapes.Shapes attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -520,7 +530,7 @@
       <li><a href="pdf2docx.common.Block.html#pdf2docx.common.Block.Block.is_flow_layout">is_flow_layout() (pdf2docx.common.Block.Block method)</a>
 
       <ul>
-        <li><a href="pdf2docx.page.Blocks.html#pdf2docx.page.Blocks.Blocks.is_flow_layout">(pdf2docx.page.Blocks.Blocks method)</a>
+        <li><a href="pdf2docx.text.Lines.html#pdf2docx.text.Lines.Lines.is_flow_layout">(pdf2docx.text.Lines.Lines method)</a>
 </li>
         <li><a href="pdf2docx.text.TextBlock.html#pdf2docx.text.TextBlock.TextBlock.is_flow_layout">(pdf2docx.text.TextBlock.TextBlock method)</a>
 </li>
@@ -597,10 +607,12 @@
 </li>
       <li><a href="pdf2docx.table.TablesConstructor.html#pdf2docx.table.TablesConstructor.TablesConstructor.lattice_tables">lattice_tables() (pdf2docx.table.TablesConstructor.TablesConstructor method)</a>
 </li>
-      <li><a href="pdf2docx.common.share.html#pdf2docx.common.share.lazyproperty">lazyproperty (class in pdf2docx.common.share)</a>
+      <li><a href="pdf2docx.page.Layout.html#pdf2docx.page.Layout.Layout">Layout (class in pdf2docx.page.Layout)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pdf2docx.common.share.html#pdf2docx.common.share.lazyproperty">lazyproperty (class in pdf2docx.common.share)</a>
+</li>
       <li><a href="pdf2docx.common.share.html#pdf2docx.common.share.TextAlignment.LEFT">LEFT (pdf2docx.common.share.TextAlignment attribute)</a>
 </li>
       <li><a href="pdf2docx.common.share.html#pdf2docx.common.share.TextDirection.LEFT_RIGHT">LEFT_RIGHT (pdf2docx.common.share.TextDirection attribute)</a>
@@ -608,8 +620,6 @@
       <li><a href="pdf2docx.text.Line.html#pdf2docx.text.Line.Line">Line (class in pdf2docx.text.Line)</a>
 </li>
       <li><a href="pdf2docx.text.Lines.html#pdf2docx.text.Lines.Lines">Lines (class in pdf2docx.text.Lines)</a>
-</li>
-      <li><a href="pdf2docx.page.Page.html#pdf2docx.page.Page.Page.load_source">load_source() (pdf2docx.page.Page.Page method)</a>
 </li>
       <li><a href="pdf2docx.text.TextSpan.html#pdf2docx.text.TextSpan.TextSpan.lstrip">lstrip() (pdf2docx.text.TextSpan.TextSpan method)</a>
 </li>
@@ -687,7 +697,11 @@
 </li>
         <li><a href="pdf2docx.page.Blocks.html#module-pdf2docx.page.Blocks">pdf2docx.page.Blocks</a>
 </li>
+        <li><a href="pdf2docx.page.Layout.html#module-pdf2docx.page.Layout">pdf2docx.page.Layout</a>
+</li>
         <li><a href="pdf2docx.page.Page.html#module-pdf2docx.page.Page">pdf2docx.page.Page</a>
+</li>
+        <li><a href="pdf2docx.page.RawPage.html#module-pdf2docx.page.RawPage">pdf2docx.page.RawPage</a>
 </li>
         <li><a href="pdf2docx.shape.html#module-pdf2docx.shape">pdf2docx.shape</a>
 </li>
@@ -738,22 +752,18 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pdf2docx.common.docx.html#pdf2docx.common.docx.CT_Anchor.new">new() (pdf2docx.common.docx.CT_Anchor class method)</a>
-</li>
       <li><a href="pdf2docx.common.share.html#pdf2docx.common.share.new_page">new_page() (in module pdf2docx.common.share)</a>
-</li>
-      <li><a href="pdf2docx.common.docx.html#pdf2docx.common.docx.CT_Anchor.new_pic_anchor">new_pic_anchor() (pdf2docx.common.docx.CT_Anchor class method)</a>
 </li>
       <li><a href="pdf2docx.common.share.html#pdf2docx.common.share.TextAlignment.NONE">NONE (pdf2docx.common.share.TextAlignment attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pdf2docx.table.TableBlock.html#pdf2docx.table.TableBlock.TableBlock.num_cols">num_cols() (pdf2docx.table.TableBlock.TableBlock property)</a>
 
       <ul>
         <li><a href="pdf2docx.table.TableStructure.html#pdf2docx.table.TableStructure.TableStructure.num_cols">(pdf2docx.table.TableStructure.TableStructure property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pdf2docx.table.TableBlock.html#pdf2docx.table.TableBlock.TableBlock.num_rows">num_rows() (pdf2docx.table.TableBlock.TableBlock property)</a>
 
       <ul>
@@ -768,6 +778,10 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pdf2docx.page.Page.html#pdf2docx.page.Page.Page">Page (class in pdf2docx.page.Page)</a>
 </li>
+      <li><a href="pdf2docx.table.TablesConstructor.html#pdf2docx.table.TablesConstructor.TablesConstructor.page_layout_table">page_layout_table() (pdf2docx.table.TablesConstructor.TablesConstructor method)</a>
+</li>
+      <li><a href="pdf2docx.common.Block.html#pdf2docx.common.Block.Block.parent">parent (pdf2docx.common.Block.Block attribute)</a>
+</li>
       <li><a href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.Collection.parent">parent() (pdf2docx.common.Collection.Collection property)</a>
 
       <ul>
@@ -779,7 +793,11 @@
       <ul>
         <li><a href="pdf2docx.converter.html#pdf2docx.converter.Converter.parse">(pdf2docx.converter.Converter method)</a>
 </li>
+        <li><a href="pdf2docx.page.Layout.html#pdf2docx.page.Layout.Layout.parse">(pdf2docx.page.Layout.Layout method)</a>
+</li>
         <li><a href="pdf2docx.page.Page.html#pdf2docx.page.Page.Page.parse">(pdf2docx.page.Page.Page method)</a>
+</li>
+        <li><a href="pdf2docx.table.TableBlock.html#pdf2docx.table.TableBlock.TableBlock.parse">(pdf2docx.table.TableBlock.TableBlock method)</a>
 </li>
         <li><a href="pdf2docx.table.TableStructure.html#pdf2docx.table.TableStructure.TableStructure.parse">(pdf2docx.table.TableStructure.TableStructure method)</a>
 </li>
@@ -792,8 +810,6 @@
         <li><a href="pdf2docx.text.TextBlock.html#pdf2docx.text.TextBlock.TextBlock.parse_horizontal_spacing">(pdf2docx.text.TextBlock.TextBlock method)</a>
 </li>
       </ul></li>
-      <li><a href="pdf2docx.page.Page.html#pdf2docx.page.Page.Page.parse_lattice_tables">parse_lattice_tables() (pdf2docx.page.Page.Page method)</a>
-</li>
       <li><a href="pdf2docx.text.Lines.html#pdf2docx.text.Lines.Lines.parse_line_break">parse_line_break() (pdf2docx.text.Lines.Lines method)</a>
 </li>
       <li><a href="pdf2docx.text.TextBlock.html#pdf2docx.text.TextBlock.TextBlock.parse_line_spacing">parse_line_spacing() (pdf2docx.text.TextBlock.TextBlock method)</a>
@@ -801,31 +817,15 @@
       <li><a href="pdf2docx.table.TableStructure.html#pdf2docx.table.TableStructure.CellStructure.parse_shading">parse_shading() (pdf2docx.table.TableStructure.CellStructure method)</a>
 </li>
       <li><a href="pdf2docx.page.Blocks.html#pdf2docx.page.Blocks.Blocks.parse_spacing">parse_spacing() (pdf2docx.page.Blocks.Blocks method)</a>
+</li>
+      <li><a href="pdf2docx.page.Blocks.html#pdf2docx.page.Blocks.Blocks.parse_text_format">parse_text_format() (pdf2docx.page.Blocks.Blocks method)</a>
 
       <ul>
-        <li><a href="pdf2docx.page.Page.html#pdf2docx.page.Page.Page.parse_spacing">(pdf2docx.page.Page.Page method)</a>
-</li>
-        <li><a href="pdf2docx.table.TableBlock.html#pdf2docx.table.TableBlock.TableBlock.parse_spacing">(pdf2docx.table.TableBlock.TableBlock method)</a>
-</li>
-      </ul></li>
-      <li><a href="pdf2docx.page.Page.html#pdf2docx.page.Page.Page.parse_stream_tables">parse_stream_tables() (pdf2docx.page.Page.Page method)</a>
-</li>
-      <li><a href="pdf2docx.common.Block.html#pdf2docx.common.Block.Block.parse_text_format">parse_text_format() (pdf2docx.common.Block.Block method)</a>
-
-      <ul>
-        <li><a href="pdf2docx.page.Blocks.html#pdf2docx.page.Blocks.Blocks.parse_text_format">(pdf2docx.page.Blocks.Blocks method)</a>
-</li>
-        <li><a href="pdf2docx.page.Page.html#pdf2docx.page.Page.Page.parse_text_format">(pdf2docx.page.Page.Page method)</a>
-</li>
-        <li><a href="pdf2docx.table.TableBlock.html#pdf2docx.table.TableBlock.TableBlock.parse_text_format">(pdf2docx.table.TableBlock.TableBlock method)</a>
-</li>
         <li><a href="pdf2docx.text.Lines.html#pdf2docx.text.Lines.Lines.parse_text_format">(pdf2docx.text.Lines.Lines method)</a>
 </li>
         <li><a href="pdf2docx.text.TextBlock.html#pdf2docx.text.TextBlock.TextBlock.parse_text_format">(pdf2docx.text.TextBlock.TextBlock method)</a>
 </li>
       </ul></li>
-      <li><a href="pdf2docx.text.TextSpan.html#pdf2docx.text.TextSpan.TextSpan.parse_text_style">parse_text_style() (pdf2docx.text.TextSpan.TextSpan method)</a>
-</li>
       <li><a href="pdf2docx.shape.Path.html#pdf2docx.shape.Path.Path">Path (class in pdf2docx.shape.Path)</a>
 </li>
       <li><a href="pdf2docx.shape.Paths.html#pdf2docx.shape.Paths.Paths">Paths (class in pdf2docx.shape.Paths)</a>
@@ -944,13 +944,27 @@
         <li><a href="pdf2docx.page.Blocks.html#module-pdf2docx.page.Blocks">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    pdf2docx.page.Layout
+
+      <ul>
+        <li><a href="pdf2docx.page.Layout.html#module-pdf2docx.page.Layout">module</a>
+</li>
+      </ul></li>
       <li>
     pdf2docx.page.Page
 
       <ul>
         <li><a href="pdf2docx.page.Page.html#module-pdf2docx.page.Page">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    pdf2docx.page.RawPage
+
+      <ul>
+        <li><a href="pdf2docx.page.RawPage.html#module-pdf2docx.page.RawPage">module</a>
 </li>
       </ul></li>
       <li>
@@ -1140,18 +1154,18 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pdf2docx.shape.Path.html#pdf2docx.shape.Path.R">R (class in pdf2docx.shape.Path)</a>
 </li>
+      <li><a href="pdf2docx.common.Block.html#pdf2docx.common.Block.Block.raw">raw (pdf2docx.common.Block.Block attribute)</a>
+</li>
+      <li><a href="pdf2docx.page.RawPage.html#pdf2docx.page.RawPage.RawPage.raw_dict">raw_dict() (pdf2docx.page.RawPage.RawPage property)</a>
+</li>
+      <li><a href="pdf2docx.page.RawPage.html#pdf2docx.page.RawPage.RawPage">RawPage (class in pdf2docx.page.RawPage)</a>
+</li>
       <li><a href="pdf2docx.image.Image.html#pdf2docx.image.Image.ImagesExtractor.recover_pixmap">recover_pixmap() (pdf2docx.image.Image.ImagesExtractor static method)</a>
 </li>
       <li><a href="pdf2docx.common.share.html#pdf2docx.common.share.RectType">RectType (class in pdf2docx.common.share)</a>
 </li>
-      <li><a href="pdf2docx.common.share.html#pdf2docx.common.share.report_pair">report_pair() (in module pdf2docx.common.share)</a>
-</li>
       <li><a href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.Collection.reset">reset() (pdf2docx.common.Collection.Collection method)</a>
-
-      <ul>
-        <li><a href="pdf2docx.page.Page.html#pdf2docx.page.Page.Page.reset">(pdf2docx.page.Page.Page method)</a>
 </li>
-      </ul></li>
       <li><a href="pdf2docx.common.docx.html#pdf2docx.common.docx.reset_paragraph_format">reset_paragraph_format() (in module pdf2docx.common.docx)</a>
 </li>
       <li><a href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.Collection.restore">restore() (pdf2docx.common.Collection.Collection method)</a>
@@ -1160,6 +1174,8 @@
         <li><a href="pdf2docx.converter.html#pdf2docx.converter.Converter.restore">(pdf2docx.converter.Converter method)</a>
 </li>
         <li><a href="pdf2docx.page.Blocks.html#pdf2docx.page.Blocks.Blocks.restore">(pdf2docx.page.Blocks.Blocks method)</a>
+</li>
+        <li><a href="pdf2docx.page.Layout.html#pdf2docx.page.Layout.Layout.restore">(pdf2docx.page.Layout.Layout method)</a>
 </li>
         <li><a href="pdf2docx.page.Page.html#pdf2docx.page.Page.Page.restore">(pdf2docx.page.Page.Page method)</a>
 </li>
@@ -1202,14 +1218,18 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pdf2docx.text.Line.html#pdf2docx.text.Line.Line.same_parent_with">same_parent_with() (pdf2docx.text.Line.Line method)</a>
+      <li><a href="pdf2docx.text.Line.html#pdf2docx.text.Line.Line.same_source_parent">same_source_parent() (pdf2docx.text.Line.Line method)</a>
 </li>
       <li><a href="pdf2docx.shape.Path.html#pdf2docx.shape.Path.Segment">Segment (class in pdf2docx.shape.Path)</a>
 </li>
       <li><a href="pdf2docx.shape.Path.html#pdf2docx.shape.Path.Segments">Segments (class in pdf2docx.shape.Path)</a>
 </li>
-      <li><a href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Shape.semantic_type">semantic_type() (pdf2docx.shape.Shape.Shape method)</a>
+      <li><a href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Hyperlink.semantic_type">semantic_type() (pdf2docx.shape.Shape.Hyperlink method)</a>
+
+      <ul>
+        <li><a href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Shape.semantic_type">(pdf2docx.shape.Shape.Shape method)</a>
 </li>
+      </ul></li>
       <li><a href="pdf2docx.converter.html#pdf2docx.converter.Converter.serialize">serialize() (pdf2docx.converter.Converter method)</a>
 </li>
       <li><a href="pdf2docx.table.Border.html#pdf2docx.table.Border.Border.set_border_range">set_border_range() (pdf2docx.table.Border.Border method)</a>
@@ -1240,10 +1260,6 @@
 </li>
       <li><a href="pdf2docx.common.Block.html#pdf2docx.common.Block.Block.set_stream_table_block">set_stream_table_block() (pdf2docx.common.Block.Block method)</a>
 </li>
-      <li><a href="pdf2docx.table.Cell.html#pdf2docx.table.Cell.Cell.set_stream_table_layout">set_stream_table_layout() (pdf2docx.table.Cell.Cell method)</a>
-</li>
-      <li><a href="pdf2docx.table.TableBlock.html#pdf2docx.table.TableBlock.TableBlock.set_table_contents">set_table_contents() (pdf2docx.table.TableBlock.TableBlock method)</a>
-</li>
       <li><a href="pdf2docx.common.Block.html#pdf2docx.common.Block.Block.set_text_block">set_text_block() (pdf2docx.common.Block.Block method)</a>
 </li>
       <li><a href="pdf2docx.common.docx.html#pdf2docx.common.docx.set_vertical_cell_direction">set_vertical_cell_direction() (in module pdf2docx.common.docx)</a>
@@ -1264,21 +1280,17 @@
 </li>
       <li><a href="pdf2docx.text.Spans.html#pdf2docx.text.Spans.Spans">Spans (class in pdf2docx.text.Spans)</a>
 </li>
-      <li><a href="pdf2docx.text.Lines.html#pdf2docx.text.Lines.Lines.split">split() (pdf2docx.text.Lines.Lines method)</a>
+      <li><a href="pdf2docx.text.TextSpan.html#pdf2docx.text.TextSpan.TextSpan.split">split() (pdf2docx.text.TextSpan.TextSpan method)</a>
+</li>
+      <li><a href="pdf2docx.page.Blocks.html#pdf2docx.page.Blocks.Blocks.split_back">split_back() (pdf2docx.page.Blocks.Blocks method)</a>
 
       <ul>
-        <li><a href="pdf2docx.text.TextBlock.html#pdf2docx.text.TextBlock.TextBlock.split">(pdf2docx.text.TextBlock.TextBlock method)</a>
-</li>
-        <li><a href="pdf2docx.text.TextSpan.html#pdf2docx.text.TextSpan.TextSpan.split">(pdf2docx.text.TextSpan.TextSpan method)</a>
+        <li><a href="pdf2docx.text.Lines.html#pdf2docx.text.Lines.Lines.split_back">(pdf2docx.text.Lines.Lines method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pdf2docx.page.Blocks.html#pdf2docx.page.Blocks.Blocks.split_vertically">split_vertically() (pdf2docx.page.Blocks.Blocks method)</a>
-</li>
       <li><a href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.Collection.split_with_intersection">split_with_intersection() (pdf2docx.common.Collection.Collection method)</a>
-</li>
-      <li><a href="pdf2docx.common.share.html#pdf2docx.common.share.stab">stab() (in module pdf2docx.common.share)</a>
 </li>
       <li><a href="pdf2docx.common.Block.html#pdf2docx.common.Block.Block.store">store() (pdf2docx.common.Block.Block method)</a>
 
@@ -1295,7 +1307,11 @@
 </li>
         <li><a href="pdf2docx.page.Blocks.html#pdf2docx.page.Blocks.Blocks.store">(pdf2docx.page.Blocks.Blocks method)</a>
 </li>
+        <li><a href="pdf2docx.page.Layout.html#pdf2docx.page.Layout.Layout.store">(pdf2docx.page.Layout.Layout method)</a>
+</li>
         <li><a href="pdf2docx.page.Page.html#pdf2docx.page.Page.Page.store">(pdf2docx.page.Page.Page method)</a>
+</li>
+        <li><a href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Hyperlink.store">(pdf2docx.shape.Shape.Hyperlink method)</a>
 </li>
         <li><a href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Shape.store">(pdf2docx.shape.Shape.Shape method)</a>
 </li>

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.shape.Shape module &mdash; pdf2docx refs/heads/dev documentation</title>
+  <title>pdf2docx.shape.Shape module &mdash; pdf2docx 0.5.1 documentation</title>
   
 
   
@@ -180,31 +180,45 @@
             
   <div class="section" id="module-pdf2docx.shape.Shape">
 <span id="pdf2docx-shape-shape-module"></span><h1>pdf2docx.shape.Shape module<a class="headerlink" href="#module-pdf2docx.shape.Shape" title="Permalink to this headline">¶</a></h1>
-<p>Objects representing PDF stroke and filling extracted from Path:</p>
+<p>Objects representing PDF stroke and filling extracted from Path.</p>
 <ul class="simple">
 <li><p>Stroke: consider only the horizontal or vertical path segments</p></li>
 <li><p>Fill  : bbox of closed path filling area</p></li>
 </ul>
-<p>&#64;created: 2020-09-15</p>
-<p>—</p>
-<dl>
-<dt>The semantic meaning of shape instance may be:</dt><dd><ul class="simple">
+<p>Hyperlink in <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code> is represented as uri and its rectangular area (hot-area), while the
+applied text isn’t extracted explicitly. To reuse the process that identifying applied text of
+text style shape (e.g. underline and highlight), hyperlink is also abstracted to be a <code class="docutils literal notranslate"><span class="pre">Shape</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The evident difference of hyperlink shape to text style shape is:
+the <a class="reference internal" href="pdf2docx.common.share.html#pdf2docx.common.share.RectType" title="pdf2docx.common.share.RectType"><code class="xref py py-class docutils literal notranslate"><span class="pre">RectType</span></code></a> of hyperlink shape is determined in advance,
+while text style shape needs to be identified by the position to associated text blocks.</p>
+</div>
+<p>Above all, the semantic meaning of shape instance may be:</p>
+<ul class="simple">
 <li><p>strike through line of text</p></li>
 <li><p>under line of text</p></li>
 <li><p>highlight area of text</p></li>
 <li><p>table border</p></li>
 <li><p>cell shading</p></li>
+<li><p>hyperlink</p></li>
 </ul>
-</dd>
-<dt>Data structure:</dt><dd><dl class="simple">
-<dt>{</dt><dd><p>‘type’: int,
-‘bbox’: (x0, y0, x1, y1),
-‘color’: srgb_value</p>
-</dd>
-</dl>
-<p>}</p>
-</dd>
-</dl>
+<p>Data structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="s1">&#39;bbox&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span>
+    <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="n">srgb_value</span><span class="p">,</span>
+
+    <span class="c1"># for Stroke</span>
+    <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">),</span>
+    <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span>
+    <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+
+    <span class="c1"># for Hyperlink</span>
+    <span class="s1">&#39;uri&#39;</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 <dl class="py class">
 <dt id="pdf2docx.shape.Shape.Fill">
 <em class="property">class </em><code class="sig-prename descclassname">pdf2docx.shape.Shape.</code><code class="sig-name descname">Fill</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shape.Fill" title="Permalink to this definition">¶</a></dt>
@@ -215,8 +229,44 @@ The semantic meaning may be table shading, or text style like highlight.</p>
 <dt id="pdf2docx.shape.Shape.Fill.to_stroke">
 <code class="sig-name descname">to_stroke</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">max_border_width</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shape.Fill.to_stroke" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert to Stroke instance based on width criterion.</p>
-<p>NOTE: a Fill from shape point of view may be a Stroke from content point of view.
-The criterion here is whether the width is smaller than defined <a href="#id1"><span class="problematic" id="id2">`</span></a>max_border_width.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>max_border_width</strong> (<em>float</em>) – Stroke width must less than this value.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Stroke instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pdf2docx.shape.Shape.Stroke" title="pdf2docx.shape.Shape.Stroke">Stroke</a></p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A Fill from shape point of view may be a Stroke from content point of view.
+The criterion here is whether the width is smaller than defined <code class="docutils literal notranslate"><span class="pre">max_border_width</span></code>.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pdf2docx.shape.Shape.Hyperlink">
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.shape.Shape.</code><code class="sig-name descname">Hyperlink</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">dict</span> <span class="o">=</span> <span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shape.Hyperlink" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pdf2docx.shape.Shape.Shape" title="pdf2docx.shape.Shape.Shape"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.shape.Shape.Shape</span></code></a></p>
+<p>Rectangular area, i.e. <code class="docutils literal notranslate"><span class="pre">hot</span> <span class="pre">area</span></code> for a hyperlink.</p>
+<p>Hyperlink in <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code> is represented as uri and its hot area, while the applied text isn’t extracted
+explicitly. To reuse the process that identifying applied text of text style shape (e.g. underline and
+highlight), hyperlink is also abstracted to be a <code class="docutils literal notranslate"><span class="pre">Shape</span></code>.</p>
+<dl class="py method">
+<dt id="pdf2docx.shape.Shape.Hyperlink.semantic_type">
+<code class="sig-name descname">semantic_type</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">blocks</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shape.Hyperlink.semantic_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Semantic type of Hyperlink shape is determined, i.e. <code class="docutils literal notranslate"><span class="pre">RectType.HYPERLINK</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pdf2docx.shape.Shape.Hyperlink.store">
+<code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shape.Hyperlink.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store properties in raw dict.</p>
 </dd></dl>
 
 </dd></dl>
@@ -234,26 +284,37 @@ The criterion here is whether the width is smaller than defined <a href="#id1"><
 <dl class="py method">
 <dt id="pdf2docx.shape.Shape.Shape.plot">
 <code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span></em>, <em class="sig-param"><span class="n">color</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shape.Shape.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot rectangle shapes with PyMuPDF.</p>
+<dd><p>Plot rectangle shapes with <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Shape.Shape.semantic_type">
 <code class="sig-name descname">semantic_type</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">blocks</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shape.Shape.semantic_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determin semantic type based on the position to text blocks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>blocks</strong> (<em>list</em>) – A list of <code class="docutils literal notranslate"><span class="pre">TextBlock</span></code> instance.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Shape type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pdf2docx.common.share.html#pdf2docx.common.share.RectType" title="pdf2docx.common.share.RectType">RectType</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Shape.Shape.store">
 <code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shape.Shape.store" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store bbox in json format.</p>
+<dd><p>Store properties in raw dict.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt id="pdf2docx.shape.Shape.Stroke">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.shape.Shape.</code><code class="sig-name descname">Stroke</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">dict</span> <span class="o">=</span> <span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shape.Stroke" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.shape.Shape.</code><code class="sig-name descname">Stroke</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shape.Stroke" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pdf2docx.shape.Shape.Shape" title="pdf2docx.shape.Shape.Shape"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.shape.Shape.Shape</span></code></a></p>
 <p>Horizontal or vertical stroke of a path.
 The semantic meaning may be table border, or text style line like underline and strike-through.</p>
@@ -265,15 +326,28 @@ The semantic meaning may be table border, or text style line like underline and 
 <dl class="py method">
 <dt id="pdf2docx.shape.Shape.Stroke.store">
 <code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shape.Stroke.store" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store bbox in json format.</p>
+<dd><p>Store properties in raw dict.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.shape.Shape.Stroke.update_bbox">
 <code class="sig-name descname">update_bbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rect</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Shape.Stroke.update_bbox" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update stroke bbox (related to real page CS):
-- rect.area==0: start/end points
-- rect.area!=0: update bbox directly</p>
+<dd><p>Update stroke bbox (related to real page CS).</p>
+<ul class="simple">
+<li><p>Update start/end points if <code class="docutils literal notranslate"><span class="pre">rect.area==0</span></code>.</p></li>
+<li><p>Ppdate bbox directly if <code class="docutils literal notranslate"><span class="pre">rect.area!=0</span></code>.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rect</strong> (<em>fitz.Rect</em><em>, </em><em>tuple</em>) – <code class="docutils literal notranslate"><span class="pre">(x0,</span> <span class="pre">y0,</span> <span class="pre">x1,</span> <span class="pre">y1)</span></code> like data.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pdf2docx.shape.Shape.Stroke" title="pdf2docx.shape.Shape.Stroke">Stroke</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

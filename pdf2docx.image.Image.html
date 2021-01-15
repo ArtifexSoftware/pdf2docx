@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.image.Image module &mdash; pdf2docx refs/heads/dev documentation</title>
+  <title>pdf2docx.image.Image module &mdash; pdf2docx 0.5.1 documentation</title>
   
 
   
@@ -181,25 +181,23 @@
   <div class="section" id="module-pdf2docx.image.Image">
 <span id="pdf2docx-image-image-module"></span><h1>pdf2docx.image.Image module<a class="headerlink" href="#module-pdf2docx.image.Image" title="Permalink to this headline">¶</a></h1>
 <p>Extract images from PDF and define the Image object.</p>
-<p>Image properties could be extracted with PyMuPDF method <cite>page.getText(‘rawdict’)</cite>:</p>
-<p><a href="#id1"><span class="problematic" id="id2">``</span></a>`
-# data structure defined in link:
-# <a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/textpage.html">https://pymupdf.readthedocs.io/en/latest/textpage.html</a></p>
-<dl>
-<dt>{</dt><dd><p>‘type’: 1,
-‘bbox’: (x0,y0,x1,y1),
-‘ext’: ‘png’,
-‘width’: w,
-‘height’: h,
-‘image’: b’’,</p>
-<p># — discard properties —
-‘colorspace’: n,
-‘xref’: xref, ‘yref’: yref, ‘bpc’: bpc</p>
-</dd>
-</dl>
-<div class="section" id="id3">
-<h2>}<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
-<p>But, the extracted image bytes may be different from the source images in PDF, especially
+<p>Image properties could be extracted with <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code> method <code class="docutils literal notranslate"><span class="pre">page.getText('rawdict')</span></code>.
+Data structure defined in link <a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/textpage.html">https://pymupdf.readthedocs.io/en/latest/textpage.html</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s1">&#39;bbox&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span><span class="n">y0</span><span class="p">,</span><span class="n">x1</span><span class="p">,</span><span class="n">y1</span><span class="p">),</span>
+    <span class="s1">&#39;ext&#39;</span><span class="p">:</span> <span class="s1">&#39;png&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="n">w</span><span class="p">,</span>
+    <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="n">h</span><span class="p">,</span>
+    <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+
+    <span class="c1"># --- discard properties ---</span>
+    <span class="s1">&#39;colorspace&#39;</span><span class="p">:</span> <span class="n">n</span><span class="p">,</span>
+    <span class="s1">&#39;xref&#39;</span><span class="p">:</span> <span class="n">xref</span><span class="p">,</span> <span class="s1">&#39;yref&#39;</span><span class="p">:</span> <span class="n">yref</span><span class="p">,</span> <span class="s1">&#39;bpc&#39;</span><span class="p">:</span> <span class="n">bpc</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>However, the extracted image bytes may be different from the source images in PDF, especially
 png images with alpha channel. So, images are extracted separately, and stored in a similar
 structure.</p>
 <dl class="py class">
@@ -210,9 +208,12 @@ structure.</p>
 <dl class="py method">
 <dt id="pdf2docx.image.Image.Image.from_image">
 <code class="sig-name descname">from_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.Image.Image.from_image" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update with image block.
-—
-:param - image: Image, target image block</p>
+<dd><p>Update with image block/span.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>image</strong> (<a class="reference internal" href="#pdf2docx.image.Image.Image" title="pdf2docx.image.Image.Image"><em>Image</em></a>) – Target image block/span.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -224,26 +225,28 @@ structure.</p>
 <dl class="py method">
 <dt id="pdf2docx.image.Image.Image.plot">
 <code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span></em>, <em class="sig-param"><span class="n">color</span><span class="p">:</span> <span class="n">tuple</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.Image.Image.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot image bbox with diagonal lines.
-—
-Args:
-- page: fitz.Page object</p>
+<dd><p>Plot image bbox with diagonal lines (for debug purpose).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>page</strong> (<em>fitz.Page</em>) – Plotting page.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.image.Image.Image.store_image">
 <code class="sig-name descname">store_image</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.Image.Image.store_image" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Store image with base64 encode.</p>
+<ul class="simple">
+<li><p>Encode image bytes with base64 -&gt; base64 bytes</p></li>
+<li><p>Decode base64 bytes -&gt; str -&gt; so can be serialized in json formart</p></li>
+</ul>
+</dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.image.Image.Image.text">
 <em class="property">property </em><code class="sig-name descname">text</code><a class="headerlink" href="#pdf2docx.image.Image.Image.text" title="Permalink to this definition">¶</a></dt>
-<dd><p>“&lt;image&gt;”.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Return an image placeholder</p>
-</dd>
-</dl>
+<dd><p>Get an image placeholder <code class="docutils literal notranslate"><span class="pre">&lt;image&gt;</span></code>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -256,39 +259,96 @@ Args:
 <dl class="py method">
 <dt id="pdf2docx.image.Image.ImagesExtractor.clip_page">
 <em class="property">classmethod </em><code class="sig-name descname">clip_page</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span><span class="p">:</span> <span class="n">fitz.fitz.Page</span></em>, <em class="sig-param"><span class="n">bbox</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>fitz.fitz.Rect<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">zoom</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">3.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.Image.ImagesExtractor.clip_page" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clip page pixmap (without text) according to <cite>bbox</cite> (entire page by default).</p>
+<dd><p>Clip page pixmap (without text) according to <code class="docutils literal notranslate"><span class="pre">bbox</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>page</strong> (<em>fitz.Page</em>) – pdf page to extract.</p></li>
+<li><p><strong>bbox</strong> (<em>fitz.Rect</em><em>, </em><em>optional</em>) – Target area to clip. Defaults to None, i.e. entire page.</p></li>
+<li><p><strong>zoom</strong> (<em>float</em><em>, </em><em>optional</em>) – Improve resolution by this rate. Defaults to 3.0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Raw dict of the extracted pixmap.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.image.Image.ImagesExtractor.extract_images">
 <em class="property">classmethod </em><code class="sig-name descname">extract_images</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span><span class="p">:</span> <span class="n">fitz.fitz.Page</span></em>, <em class="sig-param"><span class="n">clip_image_res_ratio</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">3.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.Image.ImagesExtractor.extract_images" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get images dict based on image contents from <cite>Page.getImageList()</cite>.</p>
-<p>NOTE: Page.getImageList() contains each image only once, which may less than the real
-count if images in a page.</p>
+<dd><p>Get images dict based on image contents from <code class="docutils literal notranslate"><span class="pre">Page.getImageList()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>page</strong> (<em>fitz.Page</em>) – pdf page to extract images.</p></li>
+<li><p><strong>clip_image_res_ratio</strong> (<em>float</em><em>, </em><em>optional</em>) – Resolution ratio of clipped bitmap. Defaults to 3.0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of extracted and recovered image raw dict.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">Page.getImageList()</span></code> contains each image only once, which may less than the real count of images in a page.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.image.Image.ImagesExtractor.recover_pixmap">
 <em class="property">static </em><code class="sig-name descname">recover_pixmap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">doc</span><span class="p">:</span> <span class="n">fitz.fitz.Document</span></em>, <em class="sig-param"><span class="n">item</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.Image.ImagesExtractor.recover_pixmap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Restore pixmap with soft mask considered.
-—
-- doc: fitz document
-- item: an image item got from page.getImageList()</p>
-<p>Read more:
-- <a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/document.html#Document.getPageImageList">https://pymupdf.readthedocs.io/en/latest/document.html#Document.getPageImageList</a>
-- <a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-handle-stencil-masks">https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-handle-stencil-masks</a>
-- <a class="reference external" href="https://github.com/pymupdf/PyMuPDF/issues/670">https://github.com/pymupdf/PyMuPDF/issues/670</a></p>
+<dd><p>Restore pixmap with soft mask considered.</p>
+<p class="rubric">References</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/document.html#Document.getPageImageList">https://pymupdf.readthedocs.io/en/latest/document.html#Document.getPageImageList</a></p></li>
+<li><p><a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-handle-stencil-masks">https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-handle-stencil-masks</a></p></li>
+<li><p><a class="reference external" href="https://github.com/pymupdf/PyMuPDF/issues/670">https://github.com/pymupdf/PyMuPDF/issues/670</a></p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>doc</strong> (<em>fitz.Document</em>) – pdf document.</p></li>
+<li><p><strong>item</strong> (<em>list</em>) – image instance of <code class="docutils literal notranslate"><span class="pre">page.getImageList()</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Recovered pixmap with soft mask considered.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>fitz.Pixmap</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.image.Image.ImagesExtractor.to_raw_dict">
 <em class="property">classmethod </em><code class="sig-name descname">to_raw_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span><span class="p">:</span> <span class="n">fitz.fitz.Pixmap</span></em>, <em class="sig-param"><span class="n">bbox</span><span class="p">:</span> <span class="n">fitz.fitz.Rect</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.Image.ImagesExtractor.to_raw_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store Pixmap to raw dict.</p>
+<dd><p>Store Pixmap <code class="docutils literal notranslate"><span class="pre">image</span></code> to raw dict.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>fitz.Pixmap</em>) – Pixmap to store.</p></li>
+<li><p><strong>bbox</strong> (<em>fitz.Rect</em>) – Boundary box the pixmap.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Raw dict of the pixmap.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-</div>
 </div>
 
 

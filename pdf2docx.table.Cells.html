@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.table.Cells module &mdash; pdf2docx refs/heads/dev documentation</title>
+  <title>pdf2docx.table.Cells module &mdash; pdf2docx 0.5.1 documentation</title>
   
 
   
@@ -181,10 +181,9 @@
   <div class="section" id="module-pdf2docx.table.Cells">
 <span id="pdf2docx-table-cells-module"></span><h1>pdf2docx.table.Cells module<a class="headerlink" href="#module-pdf2docx.table.Cells" title="Permalink to this headline">¶</a></h1>
 <p>Collection of Cell instances.</p>
-<p>&#64;created: 2020-08-15</p>
 <dl class="py class">
 <dt id="pdf2docx.table.Cells.Cells">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.table.Cells.</code><code class="sig-name descname">Cells</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">list</span> <span class="o">=</span> <span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Cells.Cells" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.table.Cells.</code><code class="sig-name descname">Cells</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Cells.Cells" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.Collection" title="pdf2docx.common.Collection.Collection"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Collection.Collection</span></code></a></p>
 <p>A group of Cells.</p>
 <dl class="py method">
@@ -196,7 +195,12 @@
 <dl class="py method">
 <dt id="pdf2docx.table.Cells.Cells.restore">
 <code class="sig-name descname">restore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raws</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Cells.Cells.restore" title="Permalink to this definition">¶</a></dt>
-<dd><p>restore Cells from source dict.</p>
+<dd><p>Restore Cells from source dict.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>raws</strong> (<em>list</em>) – A list of source dict.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

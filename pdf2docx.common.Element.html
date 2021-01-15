@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.common.Element module &mdash; pdf2docx refs/heads/dev documentation</title>
+  <title>pdf2docx.common.Element module &mdash; pdf2docx 0.5.1 documentation</title>
   
 
   
@@ -181,12 +181,14 @@
   <div class="section" id="module-pdf2docx.common.Element">
 <span id="pdf2docx-common-element-module"></span><h1>pdf2docx.common.Element module<a class="headerlink" href="#module-pdf2docx.common.Element" title="Permalink to this headline">¶</a></h1>
 <p>Object with a bounding box, e.g. Block, Line, Span.</p>
-<p>Based on <cite>PyMuPDF</cite>, the coordinates are provided relative to the un-rotated page; while this
-<cite>pdf2docx</cite> library works under real page coordinate system, i.e. with rotation considered.
+<p>Based on <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code>, the coordinates are provided relative to the un-rotated page; while this
+<code class="docutils literal notranslate"><span class="pre">pdf2docx</span></code> library works under real page coordinate system, i.e. with rotation considered.
 So, any instances created by this Class are always applied a rotation matrix automatically.</p>
-<p>In other words, the bbox parameter used to create Element instance MUST be relative to un-rotated
-CS. If final coordinates are provided, should update it after creating an empty object, e.g.
-<cite>Element().update_bbox(final_bbox)</cite>.</p>
+<p>In other words, the bbox parameter used to create <code class="docutils literal notranslate"><span class="pre">Element</span></code> instance MUST be relative to un-rotated
+CS. If final coordinates are provided, should update it after creating an empty object:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Element</span><span class="p">()</span><span class="o">.</span><span class="n">update_bbox</span><span class="p">(</span><span class="n">final_bbox</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py class">
 <dt id="pdf2docx.common.Element.Element">
 <em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.Element.</code><code class="sig-name descname">Element</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Element.Element" title="Permalink to this definition">¶</a></dt>
@@ -200,13 +202,41 @@ CS. If final coordinates are provided, should update it after creating an empty 
 <dl class="py method">
 <dt id="pdf2docx.common.Element.Element.compare">
 <code class="sig-name descname">compare</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="o">=</span><span class="default_value">0.9</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Element.Element.compare" title="Permalink to this definition">¶</a></dt>
-<dd><p>Whether has same type and bbox.</p>
+<dd><p>Whether has same type and bbox with <code class="docutils literal notranslate"><span class="pre">e</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>e</strong> (<a class="reference internal" href="#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><em>Element</em></a>) – Target object.</p></li>
+<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – Intersection rate representing how much two boxes are same. Defaults to 0.9.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(True/False, message)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.common.Element.Element.contains">
 <code class="sig-name descname">contains</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Element.Element.contains" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether given element is contained in this instance, with margin considered.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>e</strong> (<a class="reference internal" href="#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><em>Element</em></a>) – Target element</p></li>
+<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – Intersection rate. Defaults to 1.0. The larger, the stricter.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>[description]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -218,51 +248,97 @@ CS. If final coordinates are provided, should update it after creating an empty 
 <dl class="py method">
 <dt id="pdf2docx.common.Element.Element.get_expand_bbox">
 <code class="sig-name descname">get_expand_bbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dt</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Element.Element.get_expand_bbox" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get expanded bbox with margin dt in both x- and y- direction. Note this method doesn’t change its bbox.</p>
+<dd><p>Get expanded bbox with margin in both x- and y- direction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dt</strong> (<em>float</em>) – Expanding margin.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Expanded bbox.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>fitz.Rect</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method creates a new bbox, rather than changing the bbox of itself.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.common.Element.Element.get_main_bbox">
 <code class="sig-name descname">get_main_bbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.95</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Element.Element.get_main_bbox" title="Permalink to this definition">¶</a></dt>
-<dd><p>If the intersection with <cite>e</cite> exceeds the threshold, return the union of
-these two elements; else return None.</p>
+<dd><p>If the intersection with <code class="docutils literal notranslate"><span class="pre">e</span></code> exceeds the threshold, return the union of these two elements; else return None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>e</strong> (<a class="reference internal" href="#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><em>Element</em></a>) – Target element.</p></li>
+<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – Intersection rate. Defaults to 0.95.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Union bbox or None.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>fitz.Rect</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.common.Element.Element.horizontally_align_with">
 <code class="sig-name descname">horizontally_align_with</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span></em>, <em class="sig-param"><span class="n">factor</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">text_direction</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Element.Element.horizontally_align_with" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check whether two Element instances have enough intersection in horizontal direction,
-i.e. along the reading direction.
-—
-:param - e: Element to check with
-:param - factor: threshold of overlap ratio, the larger it is, the higher probability the two bbox-es are aligned.
-:param - text_direction: consider text direction or not. True by default, from left to right if False.</p>
-<p><a href="#id1"><span class="problematic" id="id2">``</span></a>`
-+————–+
-|              | L1  +——————–+
-+————–+     |                    | L2</p>
-<blockquote>
-<div><table class="docutils align-default">
-<tbody>
-</tbody>
-</table>
-</div></blockquote>
-<p><a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
-<p>An enough intersection is defined based on the minimum width of two boxes:
-<code class="docutils literal notranslate"><span class="pre">`</span>
-<span class="pre">L1+L2-L&gt;factor*min(L1,L2)</span>
-<span class="pre">`</span></code></p>
+<dd><p>Check whether two Element instances have enough intersection in horizontal direction, i.e. along the reading direction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>e</strong> (<a class="reference internal" href="#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><em>Element</em></a>) – Element to check with</p></li>
+<li><p><strong>factor</strong> (<em>float</em><em>, </em><em>optional</em>) – threshold of overlap ratio, the larger it is, the higher probability the two bbox-es are aligned.</p></li>
+<li><p><strong>text_direction</strong> (<em>bool</em><em>, </em><em>optional</em>) – consider text direction or not. True by default, from left to right if False.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------------+</span>
+<span class="o">|</span>              <span class="o">|</span> <span class="n">L1</span>  <span class="o">+--------------------+</span>
+<span class="o">+--------------+</span>     <span class="o">|</span>                    <span class="o">|</span> <span class="n">L2</span>
+                     <span class="o">+--------------------+</span>
+</pre></div>
+</div>
+<p>An enough intersection is defined based on the minimum width of two boxes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">L1</span><span class="o">+</span><span class="n">L2</span><span class="o">-</span><span class="n">L</span><span class="o">&gt;</span><span class="n">factor</span><span class="o">*</span><span class="nb">min</span><span class="p">(</span><span class="n">L1</span><span class="p">,</span><span class="n">L2</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.common.Element.Element.in_same_row">
 <code class="sig-name descname">in_same_row</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Element.Element.in_same_row" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check whether in same row/line with specified Element instance. Note text direction.</p>
-<p>Taking horizontal text as an example:
-- yes: the bottom edge of each box is lower than the centerline of the other one;
-- otherwise, not in same row.</p>
-<p>Note the difference with method <cite>horizontally_align_with</cite>. They may not in same line, though
+<dd><p>Check whether in same row/line with specified Element instance. With text direction considered.</p>
+<blockquote>
+<div><p>Taking horizontal text as an example:</p>
+<ul class="simple">
+<li><p>yes: the bottom edge of each box is lower than the centerline of the other one;</p></li>
+<li><p>otherwise, not in same row.</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>e</strong> (<a class="reference internal" href="#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><em>Element</em></a>) – Target object.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>[description]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The difference to method <code class="docutils literal notranslate"><span class="pre">horizontally_align_with</span></code>: they may not in same line, though
 aligned horizontally.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -273,7 +349,7 @@ aligned horizontally.</p>
 <dl class="py method">
 <dt id="pdf2docx.common.Element.Element.plot">
 <code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span></em>, <em class="sig-param"><span class="n">stroke</span><span class="p">:</span> <span class="n">tuple</span> <span class="o">=</span> <span class="default_value">(0, 0, 0)</span></em>, <em class="sig-param"><span class="n">width</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.5</span></em>, <em class="sig-param"><span class="n">fill</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tuple<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dashes</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Element.Element.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot bbox in PDF page.</p>
+<dd><p>Plot bbox in PDF page for debug purpose.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -285,59 +361,82 @@ aligned horizontally.</p>
 <dl class="py method">
 <dt id="pdf2docx.common.Element.Element.set_rotation_matrix">
 <em class="property">classmethod </em><code class="sig-name descname">set_rotation_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rotation_matrix</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Element.Element.set_rotation_matrix" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Set global rotation matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>Rotation_matrix</strong> (<em>fitz.Matrix</em>) – target matrix</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.common.Element.Element.store">
 <code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Element.Element.store" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store bbox in json format.</p>
+<dd><p>Store properties in raw dict.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.common.Element.Element.union_bbox">
 <code class="sig-name descname">union_bbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Element.Element.union_bbox" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update current bbox to the union with specified Element.
-—
-Args:
-- e: Element, the target to get union</p>
+<dd><p>Update current bbox to the union with specified Element.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>e</strong> (<a class="reference internal" href="#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><em>Element</em></a>) – The target to get union</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element">Element</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.common.Element.Element.update_bbox">
 <code class="sig-name descname">update_bbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rect</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Element.Element.update_bbox" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update current bbox to specified <cite>rect</cite>.
-—
-Args:
-- rect: fitz.rect or raw bbox like (x0, y0, x1, y1) in real page CS (with rotation considered).</p>
+<dd><p>Update current bbox to specified <code class="docutils literal notranslate"><span class="pre">rect</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rect</strong> (<em>fitz.Rect</em><em> or </em><em>list</em>) – bbox-like <code class="docutils literal notranslate"><span class="pre">(x0,</span> <span class="pre">y0,</span> <span class="pre">x1,</span> <span class="pre">y1)</span></code> in real page CS (with rotation considered).</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pdf2docx.common.Element.Element.vertically_align_with">
 <code class="sig-name descname">vertically_align_with</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span></em>, <em class="sig-param"><span class="n">factor</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">text_direction</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Element.Element.vertically_align_with" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check whether two Element instances have enough intersection in vertical direction,
-i.e. perpendicular to reading direction.
-—
-:param - e: Element object to check with
-:param - factor: threshold of overlap ratio, the larger it is, the higher probability the two bbox-es are aligned.
-:param - text_direction: consider text direction or not. True by default, from left to right if False.</p>
-<p><a href="#id7"><span class="problematic" id="id8">``</span></a>`
-+————–+
-|              |
-+————–+</p>
-<blockquote>
-<div><p>L1
-+——————-+
-|                   |
-+——————-+</p>
-<blockquote>
-<div><p>L2</p>
-</div></blockquote>
-</div></blockquote>
-<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a></p>
-<p>An enough intersection is defined based on the minimum width of two boxes:
-<code class="docutils literal notranslate"><span class="pre">`</span>
-<span class="pre">L1+L2-L&gt;factor*min(L1,L2)</span>
-<span class="pre">`</span></code></p>
+<dd><p>Check whether two Element instances have enough intersection in vertical direction, i.e. perpendicular to reading direction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>e</strong> (<a class="reference internal" href="#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><em>Element</em></a>) – Object to check with</p></li>
+<li><p><strong>factor</strong> (<em>float</em><em>, </em><em>optional</em>) – Threshold of overlap ratio, the larger it is, the higher probability the two bbox-es are aligned.</p></li>
+<li><p><strong>text_direction</strong> (<em>bool</em><em>, </em><em>optional</em>) – Consider text direction or not. True by default, from left to right if False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>[description]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------------+</span>
+<span class="o">|</span>              <span class="o">|</span>
+<span class="o">+--------------+</span>
+        <span class="n">L1</span>
+        <span class="o">+-------------------+</span>
+        <span class="o">|</span>                   <span class="o">|</span>
+        <span class="o">+-------------------+</span>
+                <span class="n">L2</span>
+</pre></div>
+</div>
+<p>An enough intersection is defined based on the minimum width of two boxes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">L1</span><span class="o">+</span><span class="n">L2</span><span class="o">-</span><span class="n">L</span><span class="o">&gt;</span><span class="n">factor</span><span class="o">*</span><span class="nb">min</span><span class="p">(</span><span class="n">L1</span><span class="p">,</span><span class="n">L2</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
