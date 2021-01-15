@@ -43,6 +43,7 @@ class TablesConstructor:
         '''Set page layout if two-columns layout.
 
         ::
+
             +------------|--------------+ span_elements
             +------------|--------------+
                          |
@@ -239,7 +240,7 @@ class TablesConstructor:
             explicit_shadings, _ = table_fillings.split_with_intersection(rect.bbox) 
 
             # parse stream borders based on lines in cell and explicit borders/shadings
-            strokes = self.stream_strokes(table_lines, outer_borders, explicit_strokes, explicit_shadings)
+            strokes = self._stream_strokes(table_lines, outer_borders, explicit_strokes, explicit_shadings)
             if not strokes: continue
 
             # parse table structure
@@ -261,7 +262,7 @@ class TablesConstructor:
 
 
     @staticmethod
-    def stream_strokes(lines:Lines, outer_borders:tuple, explicit_strokes:Shapes, explicit_shadings:Shapes):
+    def _stream_strokes(lines:Lines, outer_borders:tuple, explicit_strokes:Shapes, explicit_shadings:Shapes):
         '''Parsing borders mainly based on content lines contained in cells, 
         and update borders (position and style) with explicit borders represented 
         by rectangle shapes.
