@@ -64,8 +64,8 @@ class Utility:
 
     def verify_layout(self, threshold=0.95):
         ''' Check layout between benchmark and parsed one.'''
-        sample_text_image_blocks = self.sample.blocks.text_blocks
-        test_text_image_blocks = self.test.blocks.text_blocks
+        sample_text_image_blocks = self.sample.layout.blocks.text_blocks
+        test_text_image_blocks = self.test.layout.blocks.text_blocks
         
         # text blocks
         f = lambda block: block.is_text_block()
@@ -74,8 +74,8 @@ class Utility:
         self._check_text_layout(sample_text_blocks, test_text_blocks, threshold)
 
         # inline images
-        sample_inline_images = self.sample.blocks.inline_image_blocks
-        test_inline_images = self.test.blocks.inline_image_blocks
+        sample_inline_images = self.sample.layout.blocks.inline_image_blocks
+        test_inline_images = self.test.layout.blocks.inline_image_blocks
         self._check_inline_image_layout(sample_inline_images, test_inline_images, threshold)
 
         # floating images
@@ -85,8 +85,8 @@ class Utility:
         self._check_float_image_layout(sample_float_images, test_float_images, threshold)        
 
         # table blocks
-        sample_tables = self.sample.blocks.table_blocks
-        test_tables = self.test.blocks.table_blocks        
+        sample_tables = self.sample.layout.blocks.table_blocks
+        test_tables = self.test.layout.blocks.table_blocks        
         self._check_table_layout(sample_tables, test_tables, threshold)
 
 

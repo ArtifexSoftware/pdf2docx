@@ -4,14 +4,13 @@
     "pages": [
         {
             "id": 0,
-            "finalized": 1,
             "width": 612.0,
             "height": 792.0,
             "margin": [
                 36.0,
-                26.20001220703125,
+                26.2,
                 24.0,
-                43.95001220703125
+                44.0
             ],
             "blocks": [
                 {
@@ -18548,14 +18547,14 @@
                 },
                 {
                     "bbox": [
-                        54.8,
+                        72.8,
                         367.1,
-                        554.8,
+                        541.7,
                         640.1
                     ],
                     "type": 3,
                     "alignment": 1,
-                    "left_space": 18.799999999999997,
+                    "left_space": 36.8,
                     "right_space": 0.0,
                     "first_line_space": 0.0,
                     "before_space": 0.0,
@@ -18567,16 +18566,16 @@
                     "rows": [
                         {
                             "bbox": [
-                                54.8,
+                                72.8,
                                 367.1,
-                                554.8,
+                                541.7,
                                 640.1
                             ],
                             "height": 273.0,
                             "cells": [
                                 {
                                     "bbox": [
-                                        54.8,
+                                        72.8,
                                         367.1,
                                         323.7,
                                         640.1
@@ -18608,14 +18607,14 @@
                                             ],
                                             "type": 0,
                                             "alignment": 1,
-                                            "left_space": 54.8,
+                                            "left_space": 36.8,
                                             "right_space": 1.5,
                                             "first_line_space": 0.0,
                                             "before_space": 7.2999999999999545,
                                             "after_space": 0.0,
                                             "line_space": 10.5,
                                             "tab_stops": [],
-                                            "left_space_total": 54.8,
+                                            "left_space_total": 36.8,
                                             "right_space_total": 1.5,
                                             "lines": [
                                                 {
@@ -29697,7 +29696,7 @@
                                     "bbox": [
                                         323.7,
                                         367.1,
-                                        554.8,
+                                        541.7,
                                         640.1
                                     ],
                                     "bg_color": null,
@@ -29735,7 +29734,7 @@
                                             "line_space": 10.5,
                                             "tab_stops": [],
                                             "left_space_total": 1.5,
-                                            "right_space_total": 57.2,
+                                            "right_space_total": 44.1,
                                             "lines": [
                                                 {
                                                     "bbox": [

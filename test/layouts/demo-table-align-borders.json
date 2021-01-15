@@ -4,21 +4,20 @@
     "pages": [
         {
             "id": 0,
-            "finalized": 1,
             "width": 502.0,
             "height": 733.0,
             "margin": [
                 49.0,
-                14.20001220703125,
-                4.5,
+                29.5,
+                9.0,
                 19.5
             ],
             "blocks": [
                 {
                     "bbox": [
                         50.2,
-                        9.0,
-                        486.8,
+                        13.5,
+                        472.0,
                         181.3
                     ],
                     "type": 3,
@@ -36,16 +35,16 @@
                         {
                             "bbox": [
                                 50.2,
-                                9.0,
-                                486.8,
+                                13.5,
+                                472.0,
                                 40.8
                             ],
-                            "height": 31.799999999999997,
+                            "height": 27.299999999999997,
                             "cells": [
                                 {
                                     "bbox": [
                                         50.2,
-                                        9.0,
+                                        13.5,
                                         306.9,
                                         40.8
                                     ],
@@ -79,7 +78,7 @@
                                             "left_space": 0.0,
                                             "right_space": 0.0,
                                             "first_line_space": 0.0,
-                                            "before_space": 16.7,
+                                            "before_space": 12.2,
                                             "after_space": 0.0,
                                             "line_space": 12.000000000000004,
                                             "tab_stops": [],
@@ -340,8 +339,8 @@
                                 {
                                     "bbox": [
                                         306.9,
-                                        9.0,
-                                        486.8,
+                                        13.5,
+                                        472.0,
                                         40.8
                                     ],
                                     "bg_color": null,
@@ -371,15 +370,15 @@
                                             ],
                                             "type": 0,
                                             "alignment": 3,
-                                            "left_space": 15.3,
-                                            "right_space": 15.3,
+                                            "left_space": 0.5,
+                                            "right_space": 0.5,
                                             "first_line_space": 0.0,
-                                            "before_space": 9.0,
+                                            "before_space": 4.5,
                                             "after_space": 0.0,
                                             "line_space": 20.200000000000003,
                                             "tab_stops": [],
                                             "left_space_total": 64.6,
-                                            "right_space_total": 15.3,
+                                            "right_space_total": 0.5,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -419,7 +418,7 @@
                             "bbox": [
                                 50.2,
                                 40.8,
-                                486.8,
+                                472.0,
                                 53.3
                             ],
                             "height": 12.5,
@@ -560,7 +559,7 @@
                                     "bbox": [
                                         116.3,
                                         40.8,
-                                        486.8,
+                                        472.0,
                                         53.3
                                     ],
                                     "bg_color": null,
@@ -598,7 +597,7 @@
                                             "line_space": 8.0,
                                             "tab_stops": [],
                                             "left_space_total": 14.2,
-                                            "right_space_total": 44.3,
+                                            "right_space_total": 29.5,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -1691,7 +1690,7 @@
                             "bbox": [
                                 50.2,
                                 53.3,
-                                486.8,
+                                472.0,
                                 65.3
                             ],
                             "height": 12.0,
@@ -1700,7 +1699,7 @@
                                     "bbox": [
                                         50.2,
                                         53.3,
-                                        486.8,
+                                        472.0,
                                         65.3
                                     ],
                                     "bg_color": null,
@@ -1738,7 +1737,7 @@
                                             "line_space": 8.0,
                                             "tab_stops": [],
                                             "left_space_total": 80.3,
-                                            "right_space_total": 212.3,
+                                            "right_space_total": 197.5,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -2320,7 +2319,7 @@
                             "bbox": [
                                 50.2,
                                 65.3,
-                                486.8,
+                                472.0,
                                 77.3
                             ],
                             "height": 12.0,
@@ -2487,7 +2486,7 @@
                                     "bbox": [
                                         116.3,
                                         65.3,
-                                        486.8,
+                                        472.0,
                                         77.3
                                     ],
                                     "bg_color": null,
@@ -2525,7 +2524,7 @@
                                             "line_space": 8.0,
                                             "tab_stops": [],
                                             "left_space_total": 14.2,
-                                            "right_space_total": 36.3,
+                                            "right_space_total": 21.5,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -3467,17 +3466,17 @@
                             "bbox": [
                                 50.2,
                                 77.3,
-                                486.8,
-                                89.3
+                                472.0,
+                                101.3
                             ],
-                            "height": 12.0,
+                            "height": 24.0,
                             "cells": [
                                 {
                                     "bbox": [
                                         50.2,
                                         77.3,
-                                        486.8,
-                                        89.3
+                                        472.0,
+                                        101.3
                                     ],
                                     "bg_color": null,
                                     "border_color": [
@@ -3502,19 +3501,19 @@
                                                 130.5,
                                                 79.3,
                                                 450.5,
-                                                87.3
+                                                99.3
                                             ],
                                             "type": 0,
-                                            "alignment": 3,
-                                            "left_space": 36.3,
-                                            "right_space": 36.3,
+                                            "alignment": 1,
+                                            "left_space": 80.3,
+                                            "right_space": 21.5,
                                             "first_line_space": 0.0,
-                                            "before_space": 2.0,
+                                            "before_space": 0.0,
                                             "after_space": 0.0,
-                                            "line_space": 8.0,
+                                            "line_space": 11.0,
                                             "tab_stops": [],
                                             "left_space_total": 80.3,
-                                            "right_space_total": 36.3,
+                                            "right_space_total": 21.5,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -4275,68 +4274,7 @@
                                                             ]
                                                         }
                                                     ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                null,
-                                null
-                            ]
-                        },
-                        {
-                            "bbox": [
-                                50.2,
-                                89.3,
-                                486.8,
-                                101.3
-                            ],
-                            "height": 12.0,
-                            "cells": [
-                                {
-                                    "bbox": [
-                                        50.2,
-                                        89.3,
-                                        486.8,
-                                        101.3
-                                    ],
-                                    "bg_color": null,
-                                    "border_color": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "border_width": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ],
-                                    "merged_cells": [
-                                        1,
-                                        3
-                                    ],
-                                    "blocks": [
-                                        {
-                                            "bbox": [
-                                                130.5,
-                                                91.3,
-                                                214.5,
-                                                99.3
-                                            ],
-                                            "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 80.3,
-                                            "right_space": 80.3,
-                                            "first_line_space": 0.0,
-                                            "before_space": 2.0,
-                                            "after_space": 0.0,
-                                            "line_space": 8.0,
-                                            "tab_stops": [],
-                                            "left_space_total": 80.3,
-                                            "right_space_total": 272.3,
-                                            "lines": [
+                                                },
                                                 {
                                                     "bbox": [
                                                         130.5,
@@ -4586,7 +4524,7 @@
                             "bbox": [
                                 50.2,
                                 101.3,
-                                486.8,
+                                472.0,
                                 117.3
                             ],
                             "height": 16.0,
@@ -4714,7 +4652,7 @@
                                     "bbox": [
                                         116.3,
                                         101.3,
-                                        486.8,
+                                        472.0,
                                         117.3
                                     ],
                                     "bg_color": null,
@@ -4747,18 +4685,18 @@
                                             "left_space": 14.2,
                                             "right_space": 14.2,
                                             "first_line_space": 0.0,
-                                            "before_space": 2.9000000000000057,
+                                            "before_space": 0.0,
                                             "after_space": 0.0,
-                                            "line_space": 11.099999999999994,
+                                            "line_space": 10.900000000000006,
                                             "tab_stops": [],
                                             "left_space_total": 14.2,
-                                            "right_space_total": 257.6,
+                                            "right_space_total": 242.8,
                                             "lines": [
                                                 {
                                                     "bbox": [
                                                         130.5,
-                                                        104.2,
-                                                        229.2,
+                                                        107.3,
+                                                        178.5,
                                                         115.3
                                                     ],
                                                     "wmode": 0,
@@ -4862,16 +4800,28 @@
                                                             "text": "\u673a\u68b0\u5de5\u7a0b\u5b66\u62a5",
                                                             "style": [
                                                                 {
-                                                                    "type": 1,
-                                                                    "color": 214145
-                                                                },
-                                                                {
                                                                     "type": 7,
                                                                     "color": 0,
                                                                     "uri": "http://c.wanfangdata.com.cn/periodical-jxgcxb.aspx"
                                                                 }
                                                             ]
-                                                        },
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "bbox": [
+                                                        178.5,
+                                                        104.2,
+                                                        229.2,
+                                                        114.2
+                                                    ],
+                                                    "wmode": 0,
+                                                    "dir": [
+                                                        1.0,
+                                                        0.0
+                                                    ],
+                                                    "line_break": 0,
+                                                    "spans": [
                                                         {
                                                             "bbox": [
                                                                 178.5,
@@ -4921,7 +4871,7 @@
                             "bbox": [
                                 50.2,
                                 117.3,
-                                486.8,
+                                472.0,
                                 129.3
                             ],
                             "height": 12.000000000000014,
@@ -5088,7 +5038,7 @@
                                     "bbox": [
                                         116.3,
                                         117.3,
-                                        486.8,
+                                        472.0,
                                         129.3
                                     ],
                                     "bg_color": null,
@@ -5126,7 +5076,7 @@
                                             "line_space": 8.0,
                                             "tab_stops": [],
                                             "left_space_total": 14.2,
-                                            "right_space_total": 192.3,
+                                            "right_space_total": 177.5,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -5714,7 +5664,7 @@
                             "bbox": [
                                 50.2,
                                 129.3,
-                                486.8,
+                                472.0,
                                 141.3
                             ],
                             "height": 12.0,
@@ -5907,7 +5857,7 @@
                                     "bbox": [
                                         116.3,
                                         129.3,
-                                        486.8,
+                                        472.0,
                                         141.3
                                     ],
                                     "bg_color": null,
@@ -5945,7 +5895,7 @@
                                             "line_space": 8.0,
                                             "tab_stops": [],
                                             "left_space_total": 14.2,
-                                            "right_space_total": 308.3,
+                                            "right_space_total": 293.5,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -6133,7 +6083,7 @@
                             "bbox": [
                                 50.2,
                                 141.3,
-                                486.8,
+                                472.0,
                                 168.2
                             ],
                             "height": 26.899999999999977,
@@ -6313,7 +6263,7 @@
                                     "bbox": [
                                         116.3,
                                         141.3,
-                                        486.8,
+                                        472.0,
                                         168.2
                                     ],
                                     "bg_color": null,
@@ -6351,7 +6301,7 @@
                                             "line_space": 8.0,
                                             "tab_stops": [],
                                             "left_space_total": 14.2,
-                                            "right_space_total": 344.3,
+                                            "right_space_total": 329.5,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -6422,7 +6372,7 @@
                             "bbox": [
                                 50.2,
                                 168.2,
-                                486.8,
+                                472.0,
                                 181.3
                             ],
                             "height": 13.100000000000023,
@@ -6431,7 +6381,7 @@
                                     "bbox": [
                                         50.2,
                                         168.2,
-                                        486.8,
+                                        472.0,
                                         181.3
                                     ],
                                     "bg_color": null,
@@ -6455,168 +6405,227 @@
                                         {
                                             "bbox": [
                                                 50.2,
-                                                173.3,
-                                                106.2,
+                                                168.2,
+                                                451.8,
                                                 181.3
                                             ],
-                                            "type": 0,
+                                            "type": 3,
                                             "alignment": 1,
                                             "left_space": 0.0,
                                             "right_space": 0.0,
                                             "first_line_space": 0.0,
-                                            "before_space": 5.100000000000023,
+                                            "before_space": 0.0,
                                             "after_space": 0.0,
-                                            "line_space": 8.0,
+                                            "line_space": 0.0,
                                             "tab_stops": [],
                                             "left_space_total": 0.0,
-                                            "right_space_total": 380.6,
-                                            "lines": [
+                                            "right_space_total": 0.0,
+                                            "rows": [
                                                 {
                                                     "bbox": [
                                                         50.2,
-                                                        173.3,
-                                                        106.2,
+                                                        168.2,
+                                                        451.8,
                                                         181.3
                                                     ],
-                                                    "wmode": 0,
-                                                    "dir": [
-                                                        1.0,
-                                                        0.0
-                                                    ],
-                                                    "line_break": 0,
-                                                    "spans": [
+                                                    "height": 12.100000000000023,
+                                                    "cells": [
                                                         {
                                                             "bbox": [
                                                                 50.2,
-                                                                173.3,
-                                                                106.2,
+                                                                168.2,
+                                                                451.8,
                                                                 181.3
                                                             ],
-                                                            "color": 16777215,
-                                                            "font": "\u65b0\u5b8b\u4f53",
-                                                            "size": 8.0,
-                                                            "flags": 4,
-                                                            "chars": [
+                                                            "bg_color": 1267859,
+                                                            "border_color": [
+                                                                0,
+                                                                0,
+                                                                0,
+                                                                0
+                                                            ],
+                                                            "border_width": [
+                                                                0.0,
+                                                                0.0,
+                                                                0.0,
+                                                                0.0
+                                                            ],
+                                                            "merged_cells": [
+                                                                1,
+                                                                1
+                                                            ],
+                                                            "blocks": [
                                                                 {
                                                                     "bbox": [
                                                                         50.2,
                                                                         173.3,
-                                                                        58.2,
-                                                                        181.3
-                                                                    ],
-                                                                    "c": "\u53c2",
-                                                                    "origin": [
-                                                                        50.20000076293945,
-                                                                        180.17999267578125
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        58.2,
-                                                                        173.3,
-                                                                        66.2,
-                                                                        181.3
-                                                                    ],
-                                                                    "c": "\u8003",
-                                                                    "origin": [
-                                                                        58.20000076293945,
-                                                                        180.17999267578125
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        66.2,
-                                                                        173.3,
-                                                                        74.2,
-                                                                        181.3
-                                                                    ],
-                                                                    "c": "\u6587",
-                                                                    "origin": [
-                                                                        66.19999694824219,
-                                                                        180.17999267578125
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        74.2,
-                                                                        173.3,
-                                                                        82.2,
-                                                                        181.3
-                                                                    ],
-                                                                    "c": "\u732e",
-                                                                    "origin": [
-                                                                        74.19999694824219,
-                                                                        180.17999267578125
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        82.2,
-                                                                        173.3,
-                                                                        86.2,
-                                                                        181.3
-                                                                    ],
-                                                                    "c": "(",
-                                                                    "origin": [
-                                                                        82.19999694824219,
-                                                                        180.17999267578125
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        86.2,
-                                                                        173.3,
-                                                                        90.2,
-                                                                        181.3
-                                                                    ],
-                                                                    "c": "1",
-                                                                    "origin": [
-                                                                        86.19999694824219,
-                                                                        180.17999267578125
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        90.2,
-                                                                        173.3,
-                                                                        94.2,
-                                                                        181.3
-                                                                    ],
-                                                                    "c": "2",
-                                                                    "origin": [
-                                                                        90.19999694824219,
-                                                                        180.17999267578125
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        94.2,
-                                                                        173.3,
-                                                                        102.2,
-                                                                        181.3
-                                                                    ],
-                                                                    "c": "\u6761",
-                                                                    "origin": [
-                                                                        94.19999694824219,
-                                                                        180.17999267578125
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        102.2,
-                                                                        173.3,
                                                                         106.2,
                                                                         181.3
                                                                     ],
-                                                                    "c": ")",
-                                                                    "origin": [
-                                                                        102.19999694824219,
-                                                                        180.17999267578125
+                                                                    "type": 0,
+                                                                    "alignment": 1,
+                                                                    "left_space": 0.0,
+                                                                    "right_space": 0.0,
+                                                                    "first_line_space": 0.0,
+                                                                    "before_space": 5.100000000000023,
+                                                                    "after_space": 0.0,
+                                                                    "line_space": 8.0,
+                                                                    "tab_stops": [],
+                                                                    "left_space_total": 0.0,
+                                                                    "right_space_total": 345.6,
+                                                                    "lines": [
+                                                                        {
+                                                                            "bbox": [
+                                                                                50.2,
+                                                                                173.3,
+                                                                                106.2,
+                                                                                181.3
+                                                                            ],
+                                                                            "wmode": 0,
+                                                                            "dir": [
+                                                                                1.0,
+                                                                                0.0
+                                                                            ],
+                                                                            "line_break": 0,
+                                                                            "spans": [
+                                                                                {
+                                                                                    "bbox": [
+                                                                                        50.2,
+                                                                                        173.3,
+                                                                                        106.2,
+                                                                                        181.3
+                                                                                    ],
+                                                                                    "color": 16777215,
+                                                                                    "font": "\u65b0\u5b8b\u4f53",
+                                                                                    "size": 8.0,
+                                                                                    "flags": 4,
+                                                                                    "chars": [
+                                                                                        {
+                                                                                            "bbox": [
+                                                                                                50.2,
+                                                                                                173.3,
+                                                                                                58.2,
+                                                                                                181.3
+                                                                                            ],
+                                                                                            "c": "\u53c2",
+                                                                                            "origin": [
+                                                                                                50.20000076293945,
+                                                                                                180.17999267578125
+                                                                                            ]
+                                                                                        },
+                                                                                        {
+                                                                                            "bbox": [
+                                                                                                58.2,
+                                                                                                173.3,
+                                                                                                66.2,
+                                                                                                181.3
+                                                                                            ],
+                                                                                            "c": "\u8003",
+                                                                                            "origin": [
+                                                                                                58.20000076293945,
+                                                                                                180.17999267578125
+                                                                                            ]
+                                                                                        },
+                                                                                        {
+                                                                                            "bbox": [
+                                                                                                66.2,
+                                                                                                173.3,
+                                                                                                74.2,
+                                                                                                181.3
+                                                                                            ],
+                                                                                            "c": "\u6587",
+                                                                                            "origin": [
+                                                                                                66.19999694824219,
+                                                                                                180.17999267578125
+                                                                                            ]
+                                                                                        },
+                                                                                        {
+                                                                                            "bbox": [
+                                                                                                74.2,
+                                                                                                173.3,
+                                                                                                82.2,
+                                                                                                181.3
+                                                                                            ],
+                                                                                            "c": "\u732e",
+                                                                                            "origin": [
+                                                                                                74.19999694824219,
+                                                                                                180.17999267578125
+                                                                                            ]
+                                                                                        },
+                                                                                        {
+                                                                                            "bbox": [
+                                                                                                82.2,
+                                                                                                173.3,
+                                                                                                86.2,
+                                                                                                181.3
+                                                                                            ],
+                                                                                            "c": "(",
+                                                                                            "origin": [
+                                                                                                82.19999694824219,
+                                                                                                180.17999267578125
+                                                                                            ]
+                                                                                        },
+                                                                                        {
+                                                                                            "bbox": [
+                                                                                                86.2,
+                                                                                                173.3,
+                                                                                                90.2,
+                                                                                                181.3
+                                                                                            ],
+                                                                                            "c": "1",
+                                                                                            "origin": [
+                                                                                                86.19999694824219,
+                                                                                                180.17999267578125
+                                                                                            ]
+                                                                                        },
+                                                                                        {
+                                                                                            "bbox": [
+                                                                                                90.2,
+                                                                                                173.3,
+                                                                                                94.2,
+                                                                                                181.3
+                                                                                            ],
+                                                                                            "c": "2",
+                                                                                            "origin": [
+                                                                                                90.19999694824219,
+                                                                                                180.17999267578125
+                                                                                            ]
+                                                                                        },
+                                                                                        {
+                                                                                            "bbox": [
+                                                                                                94.2,
+                                                                                                173.3,
+                                                                                                102.2,
+                                                                                                181.3
+                                                                                            ],
+                                                                                            "c": "\u6761",
+                                                                                            "origin": [
+                                                                                                94.19999694824219,
+                                                                                                180.17999267578125
+                                                                                            ]
+                                                                                        },
+                                                                                        {
+                                                                                            "bbox": [
+                                                                                                102.2,
+                                                                                                173.3,
+                                                                                                106.2,
+                                                                                                181.3
+                                                                                            ],
+                                                                                            "c": ")",
+                                                                                            "origin": [
+                                                                                                102.19999694824219,
+                                                                                                180.17999267578125
+                                                                                            ]
+                                                                                        }
+                                                                                    ],
+                                                                                    "text": "\u53c2\u8003\u6587\u732e(12\u6761)",
+                                                                                    "style": []
+                                                                                }
+                                                                            ]
+                                                                        }
                                                                     ]
                                                                 }
-                                                            ],
-                                                            "text": "\u53c2\u8003\u6587\u732e(12\u6761)",
-                                                            "style": []
+                                                            ]
                                                         }
                                                     ]
                                                 }
@@ -6647,7 +6656,7 @@
                     "line_space": 16.5,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 62.3,
+                    "right_space_total": 47.0,
                     "lines": [
                         {
                             "bbox": [
@@ -8074,7 +8083,7 @@
                     "line_space": 8.0,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 105.6,
+                    "right_space_total": 90.3,
                     "lines": [
                         {
                             "bbox": [
@@ -9232,7 +9241,7 @@
                     "line_space": 16.5,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 46.3,
+                    "right_space_total": 31.0,
                     "lines": [
                         {
                             "bbox": [
@@ -10669,7 +10678,7 @@
                     "line_space": 8.0,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 193.6,
+                    "right_space_total": 178.3,
                     "lines": [
                         {
                             "bbox": [
@@ -11541,7 +11550,7 @@
                     "line_space": 16.5,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 54.3,
+                    "right_space_total": 39.0,
                     "lines": [
                         {
                             "bbox": [
@@ -12994,7 +13003,7 @@
                     "line_space": 8.0,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 405.6,
+                    "right_space_total": 390.3,
                     "lines": [
                         {
                             "bbox": [
@@ -13151,7 +13160,7 @@
                     "line_space": 16.5,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 50.3,
+                    "right_space_total": 35.0,
                     "lines": [
                         {
                             "bbox": [
@@ -14591,7 +14600,7 @@
                     "line_space": 16.5,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 34.3,
+                    "right_space_total": 19.0,
                     "lines": [
                         {
                             "bbox": [
@@ -16125,7 +16134,7 @@
                     "line_space": 16.5,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 46.3,
+                    "right_space_total": 31.0,
                     "lines": [
                         {
                             "bbox": [
@@ -17578,7 +17587,7 @@
                     "line_space": 16.5,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 298.3,
+                    "right_space_total": 283.0,
                     "lines": [
                         {
                             "bbox": [
@@ -18043,7 +18052,7 @@
                     "line_space": 16.5,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 226.3,
+                    "right_space_total": 211.0,
                     "lines": [
                         {
                             "bbox": [
@@ -18869,7 +18878,7 @@
                     "line_space": 16.5,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 50.3,
+                    "right_space_total": 35.0,
                     "lines": [
                         {
                             "bbox": [
@@ -20335,7 +20344,7 @@
                     "line_space": 8.0,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 393.6,
+                    "right_space_total": 378.3,
                     "lines": [
                         {
                             "bbox": [
@@ -20557,7 +20566,7 @@
                     "line_space": 16.5,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 102.3,
+                    "right_space_total": 87.0,
                     "lines": [
                         {
                             "bbox": [
@@ -21870,7 +21879,7 @@
                     "line_space": 16.5,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 258.3,
+                    "right_space_total": 243.0,
                     "lines": [
                         {
                             "bbox": [
@@ -22358,7 +22367,7 @@
                     "line_space": 16.5,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 74.3,
+                    "right_space_total": 59.0,
                     "lines": [
                         {
                             "bbox": [
@@ -23596,7 +23605,7 @@
                         9.0
                     ],
                     "left_space_total": 1.2,
-                    "right_space_total": 35.6,
+                    "right_space_total": 20.3,
                     "lines": [
                         {
                             "bbox": [
@@ -23610,7 +23619,7 @@
                                 1.0,
                                 0.0
                             ],
-                            "line_break": 1,
+                            "line_break": 0,
                             "spans": [
                                 {
                                     "bbox": [
@@ -26538,7 +26547,7 @@
                                 1.0,
                                 0.0
                             ],
-                            "line_break": 1,
+                            "line_break": 0,
                             "spans": [
                                 {
                                     "bbox": [
@@ -28390,7 +28399,7 @@
                     "line_space": 16.5,
                     "tab_stops": [],
                     "left_space_total": 1.2,
-                    "right_space_total": 39.6,
+                    "right_space_total": 24.3,
                     "lines": [
                         {
                             "bbox": [
@@ -29571,7 +29580,7 @@
                         9.0
                     ],
                     "left_space_total": 1.2,
-                    "right_space_total": 38.6,
+                    "right_space_total": 23.3,
                     "lines": [
                         {
                             "bbox": [
@@ -31562,7 +31571,7 @@
                         305.6
                     ],
                     "left_space_total": 0.0,
-                    "right_space_total": 37.2,
+                    "right_space_total": 21.9,
                     "lines": [
                         {
                             "bbox": [
@@ -33616,548 +33625,6 @@
                 }
             ],
             "shapes": [
-                {
-                    "bbox": [
-                        371.5,
-                        18.0,
-                        471.5,
-                        38.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://www.wanfangdata.com.cn/"
-                },
-                {
-                    "bbox": [
-                        50.2,
-                        24.0,
-                        242.2,
-                        36.0
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://d.wanfangdata.com.cn/Periodical_jxgcxb200801033.aspx"
-                },
-                {
-                    "bbox": [
-                        130.5,
-                        42.2,
-                        154.5,
-                        50.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e6%9d%8e%e5%a4%a7%e6%b0%b8%22+DBID%3aWF_QK"
-                },
-                {
-                    "bbox": [
-                        166.5,
-                        42.2,
-                        190.5,
-                        50.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bc%a0%e5%b0%91%e7%9d%bf%22+DBID%3aWF_QK"
-                },
-                {
-                    "bbox": [
-                        202.5,
-                        42.2,
-                        226.5,
-                        50.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bd%ad%e9%a2%96%e7%ba%a2%22+DBID%3aWF_QK"
-                },
-                {
-                    "bbox": [
-                        238.5,
-                        42.2,
-                        262.5,
-                        50.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%88%98%e5%ae%88%e8%8d%a3%22+DBID%3aWF_QK"
-                },
-                {
-                    "bbox": [
-                        274.5,
-                        42.2,
-                        298.5,
-                        50.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e4%bb%87%e7%b4%a0%e8%90%8d%22+DBID%3aWF_QK"
-                },
-                {
-                    "bbox": [
-                        310.5,
-                        42.2,
-                        346.5,
-                        50.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22LI+Dayong%22+DBID%3aWF_QK"
-                },
-                {
-                    "bbox": [
-                        358.5,
-                        42.2,
-                        410.5,
-                        50.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22ZHANG+Shaorui%22+DBID%3aWF_QK"
-                },
-                {
-                    "bbox": [
-                        422.5,
-                        42.2,
-                        438.5,
-                        50.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22PENG+Yinghong%22+DBID%3aWF_QK"
-                },
-                {
-                    "bbox": [
-                        130.4,
-                        51.0,
-                        154.6,
-                        51.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        130.4,
-                        51.2
-                    ],
-                    "end": [
-                        154.6,
-                        51.2
-                    ],
-                    "width": 0.3999999999999986
-                },
-                {
-                    "bbox": [
-                        166.4,
-                        51.0,
-                        190.6,
-                        51.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        166.4,
-                        51.2
-                    ],
-                    "end": [
-                        190.6,
-                        51.2
-                    ],
-                    "width": 0.3999999999999986
-                },
-                {
-                    "bbox": [
-                        202.4,
-                        51.0,
-                        226.6,
-                        51.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        202.4,
-                        51.2
-                    ],
-                    "end": [
-                        226.6,
-                        51.2
-                    ],
-                    "width": 0.3999999999999986
-                },
-                {
-                    "bbox": [
-                        238.4,
-                        51.0,
-                        262.6,
-                        51.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        238.4,
-                        51.2
-                    ],
-                    "end": [
-                        262.6,
-                        51.2
-                    ],
-                    "width": 0.3999999999999986
-                },
-                {
-                    "bbox": [
-                        274.4,
-                        51.0,
-                        298.6,
-                        51.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        274.4,
-                        51.2
-                    ],
-                    "end": [
-                        298.6,
-                        51.2
-                    ],
-                    "width": 0.3999999999999986
-                },
-                {
-                    "bbox": [
-                        310.4,
-                        51.0,
-                        346.6,
-                        51.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        310.4,
-                        51.2
-                    ],
-                    "end": [
-                        346.6,
-                        51.2
-                    ],
-                    "width": 0.3999999999999986
-                },
-                {
-                    "bbox": [
-                        358.4,
-                        51.0,
-                        410.6,
-                        51.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        358.4,
-                        51.2
-                    ],
-                    "end": [
-                        410.6,
-                        51.2
-                    ],
-                    "width": 0.3999999999999986
-                },
-                {
-                    "bbox": [
-                        422.4,
-                        51.0,
-                        438.6,
-                        51.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        422.4,
-                        51.2
-                    ],
-                    "end": [
-                        438.6,
-                        51.2
-                    ],
-                    "width": 0.3999999999999986
-                },
-                {
-                    "bbox": [
-                        130.5,
-                        54.2,
-                        162.5,
-                        62.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22PENG+Yinghong%22+DBID%3aWF_QK"
-                },
-                {
-                    "bbox": [
-                        174.5,
-                        54.2,
-                        222.5,
-                        62.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22LIU+Shourong%22+DBID%3aWF_QK"
-                },
-                {
-                    "bbox": [
-                        234.5,
-                        54.2,
-                        274.5,
-                        62.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22QIU+Suping%22+DBID%3aWF_QK"
-                },
-                {
-                    "bbox": [
-                        130.4,
-                        63.0,
-                        162.6,
-                        63.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        130.4,
-                        63.2
-                    ],
-                    "end": [
-                        162.6,
-                        63.2
-                    ],
-                    "width": 0.3999999999999986
-                },
-                {
-                    "bbox": [
-                        174.4,
-                        63.0,
-                        222.6,
-                        63.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        174.4,
-                        63.2
-                    ],
-                    "end": [
-                        222.6,
-                        63.2
-                    ],
-                    "width": 0.3999999999999986
-                },
-                {
-                    "bbox": [
-                        234.4,
-                        63.0,
-                        274.6,
-                        63.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        234.4,
-                        63.2
-                    ],
-                    "end": [
-                        274.6,
-                        63.2
-                    ],
-                    "width": 0.3999999999999986
-                },
-                {
-                    "bbox": [
-                        130.5,
-                        66.2,
-                        446.5,
-                        74.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%8a%e6%b5%b7%e4%ba%a4%e9%80%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e4%b8%8e%e5%8a%a8%e5%8a%9b%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e4%b8%8a%e6%b5%b7%2c200030%22+DBID%3aWF_QK"
-                },
-                {
-                    "bbox": [
-                        130.4,
-                        75.0,
-                        446.6,
-                        75.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        130.4,
-                        75.2
-                    ],
-                    "end": [
-                        446.6,
-                        75.2
-                    ],
-                    "width": 0.4000000000000057
-                },
-                {
-                    "bbox": [
-                        130.5,
-                        78.2,
-                        294.5,
-                        86.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%8a%e6%b5%b7%e4%ba%a4%e9%80%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e4%b8%8e%e5%8a%a8%e5%8a%9b%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e4%b8%8a%e6%b5%b7%2c200030%22+DBID%3aWF_QK"
-                },
-                {
-                    "bbox": [
-                        306.5,
-                        78.2,
-                        450.5,
-                        86.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%ad%e5%9b%bd%e5%86%9c%e4%b8%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e5%8c%97%e4%ba%ac%2c100083%22+DBID%3aWF_QK"
-                },
-                {
-                    "bbox": [
-                        130.4,
-                        87.0,
-                        294.6,
-                        87.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        130.4,
-                        87.2
-                    ],
-                    "end": [
-                        294.6,
-                        87.2
-                    ],
-                    "width": 0.4000000000000057
-                },
-                {
-                    "bbox": [
-                        306.4,
-                        87.0,
-                        450.6,
-                        87.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        306.4,
-                        87.2
-                    ],
-                    "end": [
-                        450.6,
-                        87.2
-                    ],
-                    "width": 0.4000000000000057
-                },
-                {
-                    "bbox": [
-                        130.5,
-                        90.2,
-                        214.5,
-                        98.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%ad%e5%9b%bd%e5%86%9c%e4%b8%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e5%8c%97%e4%ba%ac%2c100083%22+DBID%3aWF_QK"
-                },
-                {
-                    "bbox": [
-                        130.4,
-                        99.0,
-                        214.6,
-                        99.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        130.4,
-                        99.2
-                    ],
-                    "end": [
-                        214.6,
-                        99.2
-                    ],
-                    "width": 0.4000000000000057
-                },
-                {
-                    "bbox": [
-                        130.5,
-                        106.2,
-                        178.5,
-                        114.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://c.wanfangdata.com.cn/periodical-jxgcxb.aspx"
-                },
-                {
-                    "bbox": [
-                        130.4,
-                        115.0,
-                        178.6,
-                        115.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        130.4,
-                        115.2
-                    ],
-                    "end": [
-                        178.6,
-                        115.2
-                    ],
-                    "width": 0.4000000000000057
-                },
-                {
-                    "bbox": [
-                        130.5,
-                        118.2,
-                        294.5,
-                        126.2
-                    ],
-                    "type": 7,
-                    "color": 0,
-                    "uri": "http://c.wanfangdata.com.cn/periodical-jxgcxb.aspx"
-                },
-                {
-                    "bbox": [
-                        130.4,
-                        127.0,
-                        294.6,
-                        127.4
-                    ],
-                    "type": 1,
-                    "color": 214145,
-                    "start": [
-                        130.4,
-                        127.2
-                    ],
-                    "end": [
-                        294.6,
-                        127.2
-                    ],
-                    "width": 0.4000000000000057
-                },
-                {
-                    "bbox": [
-                        50.2,
-                        168.2,
-                        451.8,
-                        181.3
-                    ],
-                    "type": -1,
-                    "color": 1267859
-                },
                 {
                     "bbox": [
                         58.2,
