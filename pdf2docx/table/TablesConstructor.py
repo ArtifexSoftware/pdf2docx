@@ -19,14 +19,16 @@ Terms definition:
   and finally applied to detect table border.
 '''
 
+from ..common import constants
 from ..common.Element import Element
 from ..common.Collection import Collection
-from ..common import constants
 from ..page.Blocks import Blocks
+from ..shape.Shape import Stroke
 from ..shape.Shapes import Shapes
 from ..text.Lines import Lines
 from .TableStructure import TableStructure
 from .Border import HBorder, VBorder, Borders
+
 
 class TablesConstructor:
     '''Object parsing ``TableBlock`` for specified ``Layout``.'''
@@ -35,6 +37,63 @@ class TablesConstructor:
         self._parent = parent # Layout
         self._blocks = parent.blocks # type: Blocks
         self._shapes = parent.shapes # type: Shapes
+
+
+    def page_layout_table(self):
+        '''Set page layout if two-columns layout.
+
+        ::
+            +------------|--------------+ span_elements
+            +------------|--------------+
+                         |
+            +----------+ | +------------+ v0
+            |  column  | | |  elements  | 
+            +----------+ | +------------+ v1
+            u0           |             u1
+            +------------|--------------+ 
+            +------------|--------------+ span_elements
+                         |
+
+        .. note::
+            Run this method in Page level only, right after cleaning blocks and shapes.
+        '''
+        # collect all lines and shapes
+        elements = Collection()
+        for block in self._blocks: elements.extend(block.lines)
+        for shape in self._shapes: elements.append(shape)
+        
+        # filter with page center line
+        x0, y0, x1, y1 = self._parent.bbox
+        X = (x0+x1) / 2.0
+        column_elements = list(filter(
+                lambda line: line.bbox[2]<X or line.bbox[0]>X, elements))
+        span_elements = filter(
+                lambda line: line.bbox[2]>=X>=line.bbox[0], elements)
+        
+        # check: intersected elements must on the top or bottom side
+        u0, v0, u1, v1 = Collection(column_elements).bbox
+        if not all(e.bbox[3]<v0 or e.bbox[1]>v1 for e in span_elements): return
+
+        # create dummy strokes for table parsing        
+        m0, m1 = (x0+u0)/2.0, (x1+u1)/2.0
+        n0, n1 = v0-constants.MAJOR_DIST, v1+constants.MAJOR_DIST        
+        strokes = [
+            Stroke({'start': (m0, n0), 'end': (m1, n0)}), # top
+            Stroke({'start': (m0, n1), 'end': (m1, n1)}), # bottom
+            Stroke({'start': (m0, n0), 'end': (m0, n1)}), # left
+            Stroke({'start': (m1, n0), 'end': (m1, n1)}), # right
+            Stroke({'start': (X, n0), 'end': (X, n1)})]   # center
+        
+        # parse table structure
+        table = TableStructure(strokes).parse([]).to_table_block()
+        tables = []
+        if table:
+            table.set_stream_table_block()
+            tables.append(table)
+
+        # assign blocks/shapes to each table
+        self._blocks.assign_to_tables(tables)
+        self._shapes.assign_to_tables(tables)
 
 
     def lattice_tables(self, 
@@ -208,7 +267,7 @@ class TablesConstructor:
         by rectangle shapes.
         
         Args:
-            lines (Lines): lines Contained in table cells.
+            lines (Lines): lines contained in table cells.
             outer_borders (tuple): Boundary borders of table, ``(top, bottom, left, right)``. 
             explicit_strokes (Shapes): Showing borders in a stream table; can be empty.
             explicit_shadings (Shapes): Showing shadings in a stream table; can be empty.
@@ -302,9 +361,10 @@ class TablesConstructor:
         cols_lines = lines.group_by_columns()
         group_lines = [col_lines.group_by_rows() for col_lines in cols_lines]
 
-        # horizontal borders are for reference when n_column=2 -> consider two-columns text layout
+        # horizontal borders are for reference only when n_column<=2 -> 
+        # consider 1-column or 2-columns text layout
         col_num = len(cols_lines)
-        is_reference = col_num==2
+        is_reference = col_num<=2
 
         # outer borders construct the table, so they're not just for reference        
         if col_num>=2: # outer borders contribute to table structure

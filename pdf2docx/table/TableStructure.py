@@ -4,7 +4,6 @@
 '''
 
 import fitz
-
 from ..common.Element import Element
 from ..common.share import RectType
 from ..common import constants
@@ -171,7 +170,7 @@ class TableStructure:
         ]
     '''
 
-    def __init__(self, strokes:Shapes, settings:dict):
+    def __init__(self, strokes:Shapes, settings:dict=None):
         '''Parse table structure from strokes and fills shapes.
         
         Args:
@@ -185,10 +184,11 @@ class TableStructure:
         # cells
         self.cells = [] # type: list[list[CellStructure]]
 
-        # group horizontal/vertical strokes -> table structure dict        
+        # group horizontal/vertical strokes -> table structure dict
+        settings = settings or {}
         self.h_strokes, self.v_strokes = TableStructure._group_h_v_strokes(strokes, 
-                        settings['min_border_clearance'], 
-                        settings['max_border_width'])
+                        settings.get('min_border_clearance', 2.0), 
+                        settings.get('max_border_width', 6.0))
         if not self.h_strokes or not self.v_strokes: return
 
         # initialize cells

@@ -233,7 +233,7 @@ class Page(RawPage):
     def _parse_layout(self):
         '''A wrapper of parsing layout for debug plot purpose.'''
         # clean up
-        self._clean_up_layout() # promote for debug ploting
+        self._clean_up_layout()
 
         # parse layout
         self.layout.parse(self.settings)

@@ -11,9 +11,9 @@ The layout parsing idea:
 
 1. Clean source blocks and shapes (run only once in Page level). The main step is to merge blocks 
    horizontally considering flow layout (only one block in horizontal direction).
-#. Parse layout from top to down. There's a lack of information from top level, so this step is just
-   to detect whether a two-columns layout.
-#. Parse layout from bottom to up.
+#. Parse layout top-down (run only once in Page level). There's a lack of information from top level, 
+   so this step is just to detect whether a two-columns page layout.
+#. Parse layout bottom-up.
     (a) Detect explicit tables first based on shapes. 
     (#) Then, detect stream tables based on original text blocks and parsed explicit tables.
     (#) Move table contained blocks (text block or explicit table) to associated cell-layout.
@@ -25,7 +25,6 @@ from . import Page
 from .Blocks import Blocks
 from ..shape.Shapes import Shapes
 from ..table.TablesConstructor import TablesConstructor
-from ..table.Cell import Cell
 
 
 class Layout:
@@ -42,17 +41,8 @@ class Layout:
         self._parent = parent
         self.blocks = blocks or Blocks(parent=self)
         self.shapes = shapes or Shapes(parent=self)        
-        self._tables_constructor = TablesConstructor(parent=self) # table parser
+        self._table_parser = TablesConstructor(parent=self) # table parser
     
-
-    @property
-    def parent(self): return self._parent
-
-    @property
-    def is_page_level(self): return isinstance(self._parent, Page.Page)
-
-    @property
-    def is_table_level(self): return isinstance(self._parent, Cell)
 
     @property
     def bbox(self): return self._parent.working_bbox    
@@ -121,24 +111,26 @@ class Layout:
 
 
     def _parse_layout_top_down(self, settings:dict):
-        pass
+        '''Parse layout top-down (Page level only).'''
+        if not isinstance(self._parent, Page.Page): return
+        self._table_parser.page_layout_table()
 
 
     def _parse_layout_bottom_up(self, settings:dict):
-        '''Parse layout from bottom to up: 
+        '''Parse layout bottom-up: 
         
         * detect explicit tables first based on shapes, 
         * then stream tables based on original text blocks and parsed explicit tables;
         * move table contained blocks (text block or explicit table) to associated cell layout.
         '''
         # parse table structure/format recognized from explicit shapes
-        self._tables_constructor.lattice_tables(
+        self._table_parser.lattice_tables(
                         settings['connected_border_tolerance'],
                         settings['min_border_clearance'],
                         settings['max_border_width'])
         
         # parse table structure based on implicit layout of text blocks
-        self._tables_constructor.stream_tables(
+        self._table_parser.stream_tables(
                         settings['min_border_clearance'],
                         settings['max_border_width'],
                         settings['float_layout_tolerance'],
