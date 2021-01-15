@@ -136,12 +136,14 @@ class Element(IText):
 
         Returns:
             bool: [description]
-        """        
+        """
+        # NOTE the case bool(e)=True but e.bbox.getArea()=0
+        S = e.bbox.getArea()
+        if not S: return False 
+        
         # it's not practical to set a general threshold to consider the margin, so two steps:
         # - set a coarse but acceptable area threshold,
         # - check the length in main direction strictly
-
-        if not e: return False
 
         # A contains B => A & B = B
         intersection = self.bbox & e.bbox
