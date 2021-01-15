@@ -198,7 +198,7 @@ def new_page(doc, width:float, height:float, title:str):
     return page
 
 
-def debug_plot(title:str):
+def debug_plot(title:str, show=True):
     '''Plot the returned objects of inner function.
     
     Args:
@@ -215,11 +215,11 @@ def debug_plot(title:str):
             doc = page.settings.get('debug_doc', None)
             filename = page.settings.get('debug_filename', None)
 
-            if objects and debug and doc is not None:                
+            if show and objects and debug and doc is not None:                
                 # create a new page
-                page = new_page(doc, page.width, page.height, title)
+                debug_page = new_page(doc, page.width, page.height, title)
                 # plot objects, e.g. text blocks, shapes, tables...
-                objects.plot(page)
+                objects.plot(debug_page)
                 doc.save(filename)
 
             return objects

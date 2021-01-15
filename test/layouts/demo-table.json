@@ -4,14 +4,13 @@
     "pages": [
         {
             "id": 0,
-            "finalized": 1,
             "width": 612.0,
             "height": 792.0,
             "margin": [
-                42.400001525878906,
-                47.70001220703125,
-                37.650001525878906,
-                18.04998779296875
+                72.0,
+                72.0,
+                37.7,
+                18.0
             ],
             "blocks": [
                 {
@@ -23,15 +22,15 @@
                     ],
                     "type": 0,
                     "alignment": 1,
-                    "left_space": 47.6,
-                    "right_space": 47.6,
+                    "left_space": 18.0,
+                    "right_space": 18.0,
                     "first_line_space": 0.0,
-                    "before_space": 37.64999847412109,
+                    "before_space": 37.599999999999994,
                     "after_space": 8.100000000000009,
                     "line_space": 16.0,
                     "tab_stops": [],
-                    "left_space_total": 47.6,
-                    "right_space_total": 280.0,
+                    "left_space_total": 18.0,
+                    "right_space_total": 255.7,
                     "lines": [
                         {
                             "bbox": [
@@ -496,14 +495,14 @@
                 },
                 {
                     "bbox": [
-                        42.4,
+                        78.3,
                         99.4,
-                        563.3,
+                        527.3,
                         308.9
                     ],
                     "type": 3,
                     "alignment": 1,
-                    "left_space": -1.5258789076710855e-06,
+                    "left_space": 6.299999999999997,
                     "right_space": 0.0,
                     "first_line_space": 0.0,
                     "before_space": 0.0,
@@ -515,16 +514,16 @@
                     "rows": [
                         {
                             "bbox": [
-                                42.4,
+                                78.3,
                                 99.4,
-                                563.3,
+                                527.3,
                                 308.9
                             ],
                             "height": 30.900000000000006,
                             "cells": [
                                 {
                                     "bbox": [
-                                        42.4,
+                                        78.3,
                                         99.4,
                                         111.2,
                                         130.3
@@ -555,15 +554,15 @@
                                                 122.1
                                             ],
                                             "type": 0,
-                                            "alignment": 3,
-                                            "left_space": 23.3,
-                                            "right_space": 23.3,
+                                            "alignment": 1,
+                                            "left_space": 6.4,
+                                            "right_space": 6.4,
                                             "first_line_space": 0.0,
                                             "before_space": 8.699999999999989,
                                             "after_space": 0.0,
                                             "line_space": 14.0,
                                             "tab_stops": [],
-                                            "left_space_total": 42.3,
+                                            "left_space_total": 6.4,
                                             "right_space_total": 23.3,
                                             "lines": [
                                                 {
@@ -963,7 +962,7 @@
                                         0.0
                                     ],
                                     "merged_cells": [
-                                        7,
+                                        8,
                                         1
                                     ],
                                     "blocks": [
@@ -1003,7 +1002,7 @@
                                                         {
                                                             "bbox": [
                                                                 290.2,
-                                                                175.5,
+                                                                258.6,
                                                                 302.2,
                                                                 277.8
                                                             ],
@@ -1050,7 +1049,23 @@
                                                                         299.2099914550781,
                                                                         266.593994140625
                                                                     ]
-                                                                },
+                                                                }
+                                                            ],
+                                                            "text": "Sam",
+                                                            "style": []
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                290.2,
+                                                                189.5,
+                                                                302.2,
+                                                                258.6
+                                                            ],
+                                                            "color": 39321,
+                                                            "font": "Calibri",
+                                                            "size": 12.0,
+                                                            "flags": 0,
+                                                            "chars": [
                                                                 {
                                                                     "bbox": [
                                                                         290.2,
@@ -1245,7 +1260,23 @@
                                                                         299.2099914550781,
                                                                         193.29205322265625
                                                                     ]
-                                                                },
+                                                                }
+                                                            ],
+                                                            "text": "ple Vertical Te",
+                                                            "style": []
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                290.2,
+                                                                175.5,
+                                                                302.2,
+                                                                189.5
+                                                            ],
+                                                            "color": 39321,
+                                                            "font": "Calibri",
+                                                            "size": 12.0,
+                                                            "flags": 0,
+                                                            "chars": [
                                                                 {
                                                                     "bbox": [
                                                                         290.2,
@@ -1286,13 +1317,13 @@
                                                                     ]
                                                                 }
                                                             ],
-                                                            "text": "Sample Vertical Text ",
+                                                            "text": "xt ",
                                                             "style": []
                                                         },
                                                         {
                                                             "bbox": [
                                                                 290.2,
-                                                                110.4,
+                                                                162.6,
                                                                 302.2,
                                                                 175.5
                                                             ],
@@ -1326,7 +1357,28 @@
                                                                         299.2099914550781,
                                                                         169.83203125
                                                                     ]
-                                                                },
+                                                                }
+                                                            ],
+                                                            "text": "Fr",
+                                                            "style": [
+                                                                {
+                                                                    "type": 0,
+                                                                    "color": 16776960
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                290.2,
+                                                                135.6,
+                                                                302.2,
+                                                                162.6
+                                                            ],
+                                                            "color": 39321,
+                                                            "font": "Calibri",
+                                                            "size": 12.0,
+                                                            "flags": 0,
+                                                            "chars": [
                                                                 {
                                                                     "bbox": [
                                                                         290.2,
@@ -1391,7 +1443,28 @@
                                                                         299.2099914550781,
                                                                         140.55206298828125
                                                                     ]
-                                                                },
+                                                                }
+                                                            ],
+                                                            "text": "om Bo",
+                                                            "style": [
+                                                                {
+                                                                    "type": 0,
+                                                                    "color": 16776960
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                290.2,
+                                                                110.4,
+                                                                302.2,
+                                                                135.6
+                                                            ],
+                                                            "color": 39321,
+                                                            "font": "Calibri",
+                                                            "size": 12.0,
+                                                            "flags": 0,
+                                                            "chars": [
                                                                 {
                                                                     "bbox": [
                                                                         290.2,
@@ -1445,7 +1518,7 @@
                                                                     ]
                                                                 }
                                                             ],
-                                                            "text": "From Bottom",
+                                                            "text": "ttom",
                                                             "style": [
                                                                 {
                                                                     "type": 0,
@@ -1509,7 +1582,7 @@
                                         0.0
                                     ],
                                     "merged_cells": [
-                                        7,
+                                        8,
                                         1
                                     ],
                                     "blocks": [
@@ -1549,7 +1622,7 @@
                                                         {
                                                             "bbox": [
                                                                 307.5,
-                                                                246.4,
+                                                                258.6,
                                                                 319.5,
                                                                 277.8
                                                             ],
@@ -1609,7 +1682,28 @@
                                                                         316.489990234375,
                                                                         264.78204345703125
                                                                     ]
-                                                                },
+                                                                }
+                                                            ],
+                                                            "text": "to T",
+                                                            "style": [
+                                                                {
+                                                                    "type": 0,
+                                                                    "color": 16776960
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                307.5,
+                                                                246.4,
+                                                                319.5,
+                                                                258.6
+                                                            ],
+                                                            "color": 39321,
+                                                            "font": "Calibri",
+                                                            "size": 12.0,
+                                                            "flags": 0,
+                                                            "chars": [
                                                                 {
                                                                     "bbox": [
                                                                         307.5,
@@ -1637,7 +1731,7 @@
                                                                     ]
                                                                 }
                                                             ],
-                                                            "text": "to Top",
+                                                            "text": "op",
                                                             "style": [
                                                                 {
                                                                     "type": 0,
@@ -1648,7 +1742,7 @@
                                                         {
                                                             "bbox": [
                                                                 307.5,
-                                                                131.8,
+                                                                189.5,
                                                                 319.5,
                                                                 246.4
                                                             ],
@@ -1799,7 +1893,23 @@
                                                                         316.489990234375,
                                                                         194.10809326171875
                                                                     ]
-                                                                },
+                                                                }
+                                                            ],
+                                                            "text": " and From L",
+                                                            "style": []
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                307.5,
+                                                                162.6,
+                                                                319.5,
+                                                                189.5
+                                                            ],
+                                                            "color": 39321,
+                                                            "font": "Calibri",
+                                                            "size": 12.0,
+                                                            "flags": 0,
+                                                            "chars": [
                                                                 {
                                                                     "bbox": [
                                                                         307.5,
@@ -1877,7 +1987,23 @@
                                                                         316.489990234375,
                                                                         168.739990234375
                                                                     ]
-                                                                },
+                                                                }
+                                                            ],
+                                                            "text": "eft to",
+                                                            "style": []
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                307.5,
+                                                                135.6,
+                                                                319.5,
+                                                                162.6
+                                                            ],
+                                                            "color": 39321,
+                                                            "font": "Calibri",
+                                                            "size": 12.0,
+                                                            "flags": 0,
+                                                            "chars": [
                                                                 {
                                                                     "bbox": [
                                                                         307.5,
@@ -1955,7 +2081,23 @@
                                                                         316.489990234375,
                                                                         138.5120849609375
                                                                     ]
-                                                                },
+                                                                }
+                                                            ],
+                                                            "text": " Right",
+                                                            "style": []
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                307.5,
+                                                                131.8,
+                                                                319.5,
+                                                                135.6
+                                                            ],
+                                                            "color": 39321,
+                                                            "font": "Calibri",
+                                                            "size": 12.0,
+                                                            "flags": 0,
+                                                            "chars": [
                                                                 {
                                                                     "bbox": [
                                                                         307.5,
@@ -1970,7 +2112,7 @@
                                                                     ]
                                                                 }
                                                             ],
-                                                            "text": " and From Left to Right ",
+                                                            "text": " ",
                                                             "style": []
                                                         }
                                                     ]
@@ -1983,7 +2125,7 @@
                                     "bbox": [
                                         334.9,
                                         99.4,
-                                        563.3,
+                                        527.3,
                                         130.3
                                     ],
                                     "bg_color": null,
@@ -2021,7 +2163,7 @@
                                             "line_space": 14.0,
                                             "tab_stops": [],
                                             "left_space_total": 15.5,
-                                            "right_space_total": 143.2,
+                                            "right_space_total": 107.2,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -2219,16 +2361,16 @@
                         },
                         {
                             "bbox": [
-                                42.4,
+                                78.3,
                                 130.3,
-                                563.3,
+                                527.3,
                                 157.5
                             ],
                             "height": 27.19999999999999,
                             "cells": [
                                 {
                                     "bbox": [
-                                        42.4,
+                                        78.3,
                                         130.3,
                                         111.2,
                                         157.5
@@ -2259,15 +2401,15 @@
                                                 149.5
                                             ],
                                             "type": 0,
-                                            "alignment": 3,
-                                            "left_space": 18.4,
-                                            "right_space": 18.4,
+                                            "alignment": 1,
+                                            "left_space": 6.4,
+                                            "right_space": 6.4,
                                             "first_line_space": 0.0,
                                             "before_space": 8.199999999999989,
                                             "after_space": 0.0,
                                             "line_space": 11.0,
                                             "tab_stops": [],
-                                            "left_space_total": 42.3,
+                                            "left_space_total": 6.4,
                                             "right_space_total": 18.4,
                                             "lines": [
                                                 {
@@ -2665,7 +2807,7 @@
                                     "bbox": [
                                         334.9,
                                         130.3,
-                                        563.3,
+                                        527.3,
                                         157.5
                                     ],
                                     "bg_color": null,
@@ -2703,7 +2845,7 @@
                                             "line_space": 11.0,
                                             "tab_stops": [],
                                             "left_space_total": 15.5,
-                                            "right_space_total": 96.3,
+                                            "right_space_total": 60.3,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -3083,16 +3225,16 @@
                         },
                         {
                             "bbox": [
-                                42.4,
+                                78.3,
                                 157.5,
-                                563.3,
+                                527.3,
                                 184.4
                             ],
                             "height": 26.900000000000006,
                             "cells": [
                                 {
                                     "bbox": [
-                                        42.4,
+                                        78.3,
                                         157.5,
                                         111.2,
                                         184.4
@@ -3123,15 +3265,15 @@
                                                 176.5
                                             ],
                                             "type": 0,
-                                            "alignment": 3,
-                                            "left_space": 18.4,
-                                            "right_space": 18.4,
+                                            "alignment": 1,
+                                            "left_space": 6.4,
+                                            "right_space": 6.4,
                                             "first_line_space": 0.0,
                                             "before_space": 8.0,
                                             "after_space": 0.0,
                                             "line_space": 11.0,
                                             "tab_stops": [],
-                                            "left_space_total": 42.3,
+                                            "left_space_total": 6.4,
                                             "right_space_total": 18.4,
                                             "lines": [
                                                 {
@@ -3516,7 +3658,7 @@
                                     "bbox": [
                                         334.9,
                                         157.5,
-                                        563.3,
+                                        527.3,
                                         184.4
                                     ],
                                     "bg_color": null,
@@ -3554,7 +3696,7 @@
                                             "line_space": 11.0,
                                             "tab_stops": [],
                                             "left_space_total": 15.5,
-                                            "right_space_total": 124.1,
+                                            "right_space_total": 88.1,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -3856,16 +3998,16 @@
                         },
                         {
                             "bbox": [
-                                42.4,
+                                78.3,
                                 184.4,
-                                563.3,
+                                527.3,
                                 213.8
                             ],
                             "height": 29.400000000000006,
                             "cells": [
                                 {
                                     "bbox": [
-                                        42.4,
+                                        78.3,
                                         184.4,
                                         111.2,
                                         213.8
@@ -3896,15 +4038,15 @@
                                                 203.4
                                             ],
                                             "type": 0,
-                                            "alignment": 3,
-                                            "left_space": 18.4,
-                                            "right_space": 18.4,
+                                            "alignment": 1,
+                                            "left_space": 6.4,
+                                            "right_space": 6.4,
                                             "first_line_space": 0.0,
                                             "before_space": 8.0,
                                             "after_space": 0.0,
                                             "line_space": 11.0,
                                             "tab_stops": [],
-                                            "left_space_total": 42.3,
+                                            "left_space_total": 6.4,
                                             "right_space_total": 18.4,
                                             "lines": [
                                                 {
@@ -4310,7 +4452,7 @@
                                     "bbox": [
                                         334.9,
                                         184.4,
-                                        563.3,
+                                        527.3,
                                         213.8
                                     ],
                                     "bg_color": null,
@@ -4348,7 +4490,7 @@
                                             "line_space": 11.0,
                                             "tab_stops": [],
                                             "left_space_total": 15.5,
-                                            "right_space_total": 77.9,
+                                            "right_space_total": 41.9,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -4819,16 +4961,16 @@
                         },
                         {
                             "bbox": [
-                                42.4,
+                                78.3,
                                 213.8,
-                                563.3,
+                                527.3,
                                 308.9
                             ],
                             "height": 35.599999999999994,
                             "cells": [
                                 {
                                     "bbox": [
-                                        42.4,
+                                        78.3,
                                         213.8,
                                         111.2,
                                         308.9
@@ -4847,7 +4989,7 @@
                                         0.0
                                     ],
                                     "merged_cells": [
-                                        3,
+                                        4,
                                         1
                                     ],
                                     "blocks": [
@@ -4859,15 +5001,15 @@
                                                 272.6
                                             ],
                                             "type": 0,
-                                            "alignment": 3,
-                                            "left_space": 18.4,
-                                            "right_space": 18.4,
+                                            "alignment": 1,
+                                            "left_space": 6.4,
+                                            "right_space": 6.4,
                                             "first_line_space": 0.0,
                                             "before_space": 47.69999999999999,
                                             "after_space": 0.0,
                                             "line_space": 11.100000000000023,
                                             "tab_stops": [],
-                                            "left_space_total": 42.3,
+                                            "left_space_total": 6.4,
                                             "right_space_total": 18.4,
                                             "lines": [
                                                 {
@@ -5014,7 +5156,7 @@
                                     "bbox": [
                                         334.9,
                                         213.8,
-                                        563.3,
+                                        527.3,
                                         249.4
                                     ],
                                     "bg_color": null,
@@ -5052,7 +5194,7 @@
                                             "line_space": 11.100000000000023,
                                             "tab_stops": [],
                                             "left_space_total": 15.5,
-                                            "right_space_total": 77.9,
+                                            "right_space_total": 41.9,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -5525,8 +5667,8 @@
                             "bbox": [
                                 334.9,
                                 249.4,
-                                563.3,
-                                308.9
+                                527.3,
+                                274.8
                             ],
                             "height": 15.999999999999972,
                             "cells": [
@@ -5538,8 +5680,8 @@
                                     "bbox": [
                                         334.9,
                                         249.4,
-                                        563.3,
-                                        308.9
+                                        527.3,
+                                        274.8
                                     ],
                                     "bg_color": null,
                                     "border_color": [
@@ -5564,19 +5706,19 @@
                                                 350.4,
                                                 261.5,
                                                 514.6,
-                                                288.1
+                                                272.6
                                             ],
                                             "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 15.5,
-                                            "right_space": 15.5,
+                                            "alignment": 2,
+                                            "left_space": 0,
+                                            "right_space": 0,
                                             "first_line_space": 0.0,
-                                            "before_space": 7.700000000000017,
+                                            "before_space": 12.099999999999994,
                                             "after_space": 0.0,
-                                            "line_space": 15.5,
+                                            "line_space": 11.100000000000023,
                                             "tab_stops": [],
                                             "left_space_total": 15.5,
-                                            "right_space_total": 48.7,
+                                            "right_space_total": 12.7,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -5590,7 +5732,7 @@
                                                         1.0,
                                                         0.0
                                                     ],
-                                                    "line_break": 1,
+                                                    "line_break": 0,
                                                     "spans": [
                                                         {
                                                             "bbox": [
@@ -6114,7 +6256,446 @@
                                                             "style": []
                                                         }
                                                     ]
-                                                },
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "bbox": [
+                                111.2,
+                                265.4,
+                                272.4,
+                                308.9
+                            ],
+                            "height": 9.400000000000034,
+                            "cells": [
+                                null,
+                                {
+                                    "bbox": [
+                                        111.2,
+                                        265.4,
+                                        272.4,
+                                        308.9
+                                    ],
+                                    "bg_color": null,
+                                    "border_color": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "border_width": [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                                    "merged_cells": [
+                                        2,
+                                        1
+                                    ],
+                                    "blocks": [
+                                        {
+                                            "bbox": [
+                                                129.6,
+                                                269.2,
+                                                229.3,
+                                                280.2
+                                            ],
+                                            "type": 0,
+                                            "alignment": 1,
+                                            "left_space": 18.4,
+                                            "right_space": 18.4,
+                                            "first_line_space": 0.0,
+                                            "before_space": 3.8000000000000114,
+                                            "after_space": 0.0,
+                                            "line_space": 11.0,
+                                            "tab_stops": [],
+                                            "left_space_total": 18.4,
+                                            "right_space_total": 43.1,
+                                            "lines": [
+                                                {
+                                                    "bbox": [
+                                                        129.6,
+                                                        269.2,
+                                                        229.3,
+                                                        280.2
+                                                    ],
+                                                    "wmode": 0,
+                                                    "dir": [
+                                                        1.0,
+                                                        0.0
+                                                    ],
+                                                    "line_break": 0,
+                                                    "spans": [
+                                                        {
+                                                            "bbox": [
+                                                                129.6,
+                                                                269.2,
+                                                                176.4,
+                                                                280.2
+                                                            ],
+                                                            "color": 0,
+                                                            "font": "Calibri",
+                                                            "size": 11.039999961853027,
+                                                            "flags": 0,
+                                                            "chars": [
+                                                                {
+                                                                    "bbox": [
+                                                                        129.6,
+                                                                        269.2,
+                                                                        136.4,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "D",
+                                                                    "origin": [
+                                                                        129.6199951171875,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        136.5,
+                                                                        269.2,
+                                                                        142.3,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "o",
+                                                                    "origin": [
+                                                                        136.45375061035156,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        142.3,
+                                                                        269.2,
+                                                                        147.0,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "c",
+                                                                    "origin": [
+                                                                        142.32704162597656,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        147.0,
+                                                                        269.2,
+                                                                        152.8,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "u",
+                                                                    "origin": [
+                                                                        146.99696350097656,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        152.6,
+                                                                        269.2,
+                                                                        161.5,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "m",
+                                                                    "origin": [
+                                                                        152.64944458007812,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        161.5,
+                                                                        269.2,
+                                                                        167.0,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "e",
+                                                                    "origin": [
+                                                                        161.51455688476562,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        167.0,
+                                                                        269.2,
+                                                                        172.8,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "n",
+                                                                    "origin": [
+                                                                        167.01248168945312,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        172.7,
+                                                                        269.2,
+                                                                        176.4,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "t",
+                                                                    "origin": [
+                                                                        172.67601013183594,
+                                                                        277.489990234375
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            "text": "Document",
+                                                            "style": [
+                                                                {
+                                                                    "type": 2,
+                                                                    "color": 0
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                176.4,
+                                                                269.2,
+                                                                229.3,
+                                                                280.2
+                                                            ],
+                                                            "color": 0,
+                                                            "font": "Calibri",
+                                                            "size": 11.039999961853027,
+                                                            "flags": 0,
+                                                            "chars": [
+                                                                {
+                                                                    "bbox": [
+                                                                        176.4,
+                                                                        269.2,
+                                                                        179.2,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": ".",
+                                                                    "origin": [
+                                                                        176.4199981689453,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        179.2,
+                                                                        269.2,
+                                                                        181.7,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "l",
+                                                                    "origin": [
+                                                                        179.2020721435547,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        181.7,
+                                                                        269.2,
+                                                                        187.5,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "o",
+                                                                    "origin": [
+                                                                        181.69711303710938,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        187.6,
+                                                                        269.2,
+                                                                        192.9,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "a",
+                                                                    "origin": [
+                                                                        187.57040405273438,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        192.9,
+                                                                        269.2,
+                                                                        198.7,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "d",
+                                                                    "origin": [
+                                                                        192.8585662841797,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        198.5,
+                                                                        269.2,
+                                                                        204.2,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "P",
+                                                                    "origin": [
+                                                                        198.4889678955078,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        204.2,
+                                                                        269.2,
+                                                                        209.5,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "a",
+                                                                    "origin": [
+                                                                        204.24081420898438,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        209.5,
+                                                                        269.2,
+                                                                        214.7,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "g",
+                                                                    "origin": [
+                                                                        209.5289764404297,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        214.7,
+                                                                        269.2,
+                                                                        220.2,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "e",
+                                                                    "origin": [
+                                                                        214.68466186523438,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        220.2,
+                                                                        269.2,
+                                                                        223.5,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": "(",
+                                                                    "origin": [
+                                                                        220.18258666992188,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        223.5,
+                                                                        269.2,
+                                                                        226.9,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": ")",
+                                                                    "origin": [
+                                                                        223.54978942871094,
+                                                                        277.489990234375
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "bbox": [
+                                                                        226.9,
+                                                                        269.2,
+                                                                        229.3,
+                                                                        280.2
+                                                                    ],
+                                                                    "c": " ",
+                                                                    "origin": [
+                                                                        226.85000610351562,
+                                                                        277.489990234375
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            "text": ".loadPage() ",
+                                                            "style": []
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                null,
+                                null,
+                                null
+                            ]
+                        },
+                        {
+                            "bbox": [
+                                334.9,
+                                274.8,
+                                527.3,
+                                308.9
+                            ],
+                            "height": 34.099999999999966,
+                            "cells": [
+                                null,
+                                null,
+                                null,
+                                null,
+                                {
+                                    "bbox": [
+                                        334.9,
+                                        274.8,
+                                        527.3,
+                                        308.9
+                                    ],
+                                    "bg_color": null,
+                                    "border_color": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "border_width": [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                                    "merged_cells": [
+                                        1,
+                                        1
+                                    ],
+                                    "blocks": [
+                                        {
+                                            "bbox": [
+                                                350.4,
+                                                277.0,
+                                                483.9,
+                                                288.1
+                                            ],
+                                            "type": 0,
+                                            "alignment": 1,
+                                            "left_space": 15.5,
+                                            "right_space": 15.5,
+                                            "first_line_space": 0.0,
+                                            "before_space": 2.1999999999999886,
+                                            "after_space": 0.0,
+                                            "line_space": 11.100000000000023,
+                                            "tab_stops": [],
+                                            "left_space_total": 15.5,
+                                            "right_space_total": 43.4,
+                                            "lines": [
                                                 {
                                                     "bbox": [
                                                         350.4,
@@ -6529,382 +7110,6 @@
                                     ]
                                 }
                             ]
-                        },
-                        {
-                            "bbox": [
-                                111.2,
-                                265.4,
-                                272.4,
-                                308.9
-                            ],
-                            "height": 43.5,
-                            "cells": [
-                                null,
-                                {
-                                    "bbox": [
-                                        111.2,
-                                        265.4,
-                                        272.4,
-                                        308.9
-                                    ],
-                                    "bg_color": null,
-                                    "border_color": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "border_width": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ],
-                                    "merged_cells": [
-                                        1,
-                                        1
-                                    ],
-                                    "blocks": [
-                                        {
-                                            "bbox": [
-                                                129.6,
-                                                269.2,
-                                                229.3,
-                                                280.2
-                                            ],
-                                            "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 18.4,
-                                            "right_space": 18.4,
-                                            "first_line_space": 0.0,
-                                            "before_space": 3.8000000000000114,
-                                            "after_space": 0.0,
-                                            "line_space": 11.0,
-                                            "tab_stops": [],
-                                            "left_space_total": 18.4,
-                                            "right_space_total": 43.1,
-                                            "lines": [
-                                                {
-                                                    "bbox": [
-                                                        129.6,
-                                                        269.2,
-                                                        229.3,
-                                                        280.2
-                                                    ],
-                                                    "wmode": 0,
-                                                    "dir": [
-                                                        1.0,
-                                                        0.0
-                                                    ],
-                                                    "line_break": 0,
-                                                    "spans": [
-                                                        {
-                                                            "bbox": [
-                                                                129.6,
-                                                                269.2,
-                                                                176.4,
-                                                                280.2
-                                                            ],
-                                                            "color": 0,
-                                                            "font": "Calibri",
-                                                            "size": 11.039999961853027,
-                                                            "flags": 0,
-                                                            "chars": [
-                                                                {
-                                                                    "bbox": [
-                                                                        129.6,
-                                                                        269.2,
-                                                                        136.4,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "D",
-                                                                    "origin": [
-                                                                        129.6199951171875,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        136.5,
-                                                                        269.2,
-                                                                        142.3,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "o",
-                                                                    "origin": [
-                                                                        136.45375061035156,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        142.3,
-                                                                        269.2,
-                                                                        147.0,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "c",
-                                                                    "origin": [
-                                                                        142.32704162597656,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        147.0,
-                                                                        269.2,
-                                                                        152.8,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "u",
-                                                                    "origin": [
-                                                                        146.99696350097656,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        152.6,
-                                                                        269.2,
-                                                                        161.5,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "m",
-                                                                    "origin": [
-                                                                        152.64944458007812,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        161.5,
-                                                                        269.2,
-                                                                        167.0,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "e",
-                                                                    "origin": [
-                                                                        161.51455688476562,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        167.0,
-                                                                        269.2,
-                                                                        172.8,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "n",
-                                                                    "origin": [
-                                                                        167.01248168945312,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        172.7,
-                                                                        269.2,
-                                                                        176.4,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "t",
-                                                                    "origin": [
-                                                                        172.67601013183594,
-                                                                        277.489990234375
-                                                                    ]
-                                                                }
-                                                            ],
-                                                            "text": "Document",
-                                                            "style": [
-                                                                {
-                                                                    "type": 2,
-                                                                    "color": 0
-                                                                }
-                                                            ]
-                                                        },
-                                                        {
-                                                            "bbox": [
-                                                                176.4,
-                                                                269.2,
-                                                                229.3,
-                                                                280.2
-                                                            ],
-                                                            "color": 0,
-                                                            "font": "Calibri",
-                                                            "size": 11.039999961853027,
-                                                            "flags": 0,
-                                                            "chars": [
-                                                                {
-                                                                    "bbox": [
-                                                                        176.4,
-                                                                        269.2,
-                                                                        179.2,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": ".",
-                                                                    "origin": [
-                                                                        176.4199981689453,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        179.2,
-                                                                        269.2,
-                                                                        181.7,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "l",
-                                                                    "origin": [
-                                                                        179.2020721435547,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        181.7,
-                                                                        269.2,
-                                                                        187.5,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "o",
-                                                                    "origin": [
-                                                                        181.69711303710938,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        187.6,
-                                                                        269.2,
-                                                                        192.9,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "a",
-                                                                    "origin": [
-                                                                        187.57040405273438,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        192.9,
-                                                                        269.2,
-                                                                        198.7,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "d",
-                                                                    "origin": [
-                                                                        192.8585662841797,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        198.5,
-                                                                        269.2,
-                                                                        204.2,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "P",
-                                                                    "origin": [
-                                                                        198.4889678955078,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        204.2,
-                                                                        269.2,
-                                                                        209.5,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "a",
-                                                                    "origin": [
-                                                                        204.24081420898438,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        209.5,
-                                                                        269.2,
-                                                                        214.7,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "g",
-                                                                    "origin": [
-                                                                        209.5289764404297,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        214.7,
-                                                                        269.2,
-                                                                        220.2,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "e",
-                                                                    "origin": [
-                                                                        214.68466186523438,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        220.2,
-                                                                        269.2,
-                                                                        223.5,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": "(",
-                                                                    "origin": [
-                                                                        220.18258666992188,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        223.5,
-                                                                        269.2,
-                                                                        226.9,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": ")",
-                                                                    "origin": [
-                                                                        223.54978942871094,
-                                                                        277.489990234375
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "bbox": [
-                                                                        226.9,
-                                                                        269.2,
-                                                                        229.3,
-                                                                        280.2
-                                                                    ],
-                                                                    "c": " ",
-                                                                    "origin": [
-                                                                        226.85000610351562,
-                                                                        277.489990234375
-                                                                    ]
-                                                                }
-                                                            ],
-                                                            "text": ".loadPage() ",
-                                                            "style": []
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                null,
-                                null,
-                                null
-                            ]
                         }
                     ]
                 },
@@ -6917,15 +7122,15 @@
                     ],
                     "type": 0,
                     "alignment": 1,
-                    "left_space": 47.6,
-                    "right_space": 47.6,
+                    "left_space": 18.0,
+                    "right_space": 18.0,
                     "first_line_space": 0.0,
                     "before_space": 20.80000000000001,
                     "after_space": 13.5,
                     "line_space": 16.0,
                     "tab_stops": [],
-                    "left_space_total": 47.6,
-                    "right_space_total": 271.0,
+                    "left_space_total": 18.0,
+                    "right_space_total": 246.7,
                     "lines": [
                         {
                             "bbox": [
@@ -7419,7 +7624,7 @@
                     ],
                     "type": 2,
                     "alignment": 1,
-                    "left_space": 41.599998474121094,
+                    "left_space": 12.0,
                     "right_space": 0.0,
                     "first_line_space": 0.0,
                     "before_space": 0.0,
@@ -12628,7 +12833,7 @@
                     ],
                     "type": 2,
                     "alignment": 1,
-                    "left_space": 48.099998474121094,
+                    "left_space": 18.5,
                     "right_space": 0.0,
                     "first_line_space": 0.0,
                     "before_space": 25.399999999999977,
@@ -18405,15 +18610,15 @@
                     ],
                     "type": 0,
                     "alignment": 1,
-                    "left_space": 47.6,
-                    "right_space": 47.6,
+                    "left_space": 18.0,
+                    "right_space": 18.0,
                     "first_line_space": 0.0,
                     "before_space": 48.69999999999993,
                     "after_space": 0.0,
                     "line_space": 11.100000000000023,
                     "tab_stops": [],
-                    "left_space_total": 47.6,
-                    "right_space_total": 415.7,
+                    "left_space_total": 18.0,
+                    "right_space_total": 391.4,
                     "lines": [
                         {
                             "bbox": [
@@ -18657,175 +18862,6 @@
                         89.6
                     ],
                     "width": 1.0
-                },
-                {
-                    "bbox": [
-                        287.6,
-                        110.4,
-                        302.6,
-                        175.5
-                    ],
-                    "type": 0,
-                    "color": 16776960
-                },
-                {
-                    "bbox": [
-                        84.0,
-                        135.6,
-                        125.9,
-                        162.6
-                    ],
-                    "type": -1,
-                    "color": 16777215
-                },
-                {
-                    "bbox": [
-                        125.9,
-                        135.6,
-                        346.6,
-                        162.6
-                    ],
-                    "type": -1,
-                    "color": 16777215
-                },
-                {
-                    "bbox": [
-                        346.6,
-                        135.6,
-                        521.8,
-                        162.6
-                    ],
-                    "type": -1,
-                    "color": 16777215
-                },
-                {
-                    "bbox": [
-                        84.0,
-                        162.6,
-                        125.9,
-                        189.5
-                    ],
-                    "type": -1,
-                    "color": 16777215
-                },
-                {
-                    "bbox": [
-                        125.9,
-                        162.6,
-                        346.6,
-                        189.5
-                    ],
-                    "type": -1,
-                    "color": 16777215
-                },
-                {
-                    "bbox": [
-                        84.0,
-                        189.5,
-                        125.9,
-                        258.6
-                    ],
-                    "type": -1,
-                    "color": 16777215
-                },
-                {
-                    "bbox": [
-                        125.9,
-                        189.5,
-                        346.6,
-                        258.6
-                    ],
-                    "type": -1,
-                    "color": 16777215
-                },
-                {
-                    "bbox": [
-                        346.6,
-                        189.5,
-                        521.8,
-                        258.6
-                    ],
-                    "type": -1,
-                    "color": 16777215
-                },
-                {
-                    "bbox": [
-                        129.6,
-                        190.2,
-                        176.4,
-                        203.7
-                    ],
-                    "type": 0,
-                    "color": 16776960
-                },
-                {
-                    "bbox": [
-                        304.9,
-                        246.4,
-                        319.9,
-                        278.0
-                    ],
-                    "type": 0,
-                    "color": 16776960
-                },
-                {
-                    "bbox": [
-                        84.0,
-                        258.6,
-                        125.9,
-                        301.0
-                    ],
-                    "type": -1,
-                    "color": 16777215
-                },
-                {
-                    "bbox": [
-                        125.9,
-                        258.6,
-                        346.6,
-                        301.0
-                    ],
-                    "type": -1,
-                    "color": 16777215
-                },
-                {
-                    "bbox": [
-                        346.6,
-                        258.6,
-                        521.8,
-                        301.0
-                    ],
-                    "type": -1,
-                    "color": 16777215
-                },
-                {
-                    "bbox": [
-                        405.1,
-                        259.3,
-                        504.3,
-                        272.8
-                    ],
-                    "type": 0,
-                    "color": 65280
-                },
-                {
-                    "bbox": [
-                        129.6,
-                        274.7,
-                        176.4,
-                        275.5
-                    ],
-                    "type": 2,
-                    "color": 0,
-                    "start": [
-                        129.6,
-                        275.1
-                    ],
-                    "end": [
-                        176.4,
-                        275.1
-                    ],
-                    "width": 0.8000000000000114
                 },
                 {
                     "bbox": [
@@ -19242,25 +19278,6 @@
                 },
                 {
                     "bbox": [
-                        312.8,
-                        441.5,
-                        399.2,
-                        442.3
-                    ],
-                    "type": 2,
-                    "color": 0,
-                    "start": [
-                        312.8,
-                        441.9
-                    ],
-                    "end": [
-                        399.2,
-                        441.9
-                    ],
-                    "width": 0.8000000000000114
-                },
-                {
-                    "bbox": [
                         84.0,
                         464.1,
                         125.9,
@@ -19392,35 +19409,6 @@
                         509.8
                     ],
                     "width": 1.0
-                },
-                {
-                    "bbox": [
-                        257.7,
-                        502.4,
-                        258.4,
-                        549.2
-                    ],
-                    "type": 2,
-                    "color": 0,
-                    "start": [
-                        258.04999999999995,
-                        502.4
-                    ],
-                    "end": [
-                        258.04999999999995,
-                        549.2
-                    ],
-                    "width": 0.6999999999999886
-                },
-                {
-                    "bbox": [
-                        208.1,
-                        502.5,
-                        221.9,
-                        549.3
-                    ],
-                    "type": 0,
-                    "color": 16776960
                 },
                 {
                     "bbox": [

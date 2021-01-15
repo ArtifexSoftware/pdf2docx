@@ -4,13 +4,12 @@
     "pages": [
         {
             "id": 0,
-            "finalized": 1,
             "width": 595.3200073242188,
             "height": 841.9199829101562,
             "margin": [
                 51.0,
-                23.52001953125,
-                14.399999618530273,
+                23.5,
+                14.4,
                 72.0
             ],
             "blocks": [
@@ -26,7 +25,7 @@
                     "left_space": 0.20000000000000284,
                     "right_space": 0.0,
                     "first_line_space": 0.0,
-                    "before_space": 14.500000381469725,
+                    "before_space": 14.499999999999998,
                     "after_space": 0.0,
                     "line_space": 0.0,
                     "tab_stops": [],

@@ -11,7 +11,7 @@ from ..common import share
 
 class Shapes(Collection):
     ''' A collection of ``Shape`` instances: ``Stroke`` or ``Fill``.'''
-    def __init__(self, instances:list=[], parent=None):
+    def __init__(self, instances:list=None, parent=None):
         
         super().__init__(instances, parent)
 
@@ -26,7 +26,8 @@ class Shapes(Collection):
 
 
     def restore(self, raws:list):
-        '''Initialize ``Stroke``, ``Fill`` and ``Hyperlink`` from dicts.'''
+        '''Clean current instances and restore them from source dicts.'''
+        self.reset()
         # Distinguish specified type by key like `start`, `end` and `uri`.
         for raw in raws:
             if 'start' in raw:
@@ -157,6 +158,12 @@ class Shapes(Collection):
         ''' Detect shape type based on the position to text blocks. 
 
         .. note::
+            Stroke shapes are grouped on connectivity to each other, but in some cases, 
+            the gap between borders and underlines/strikes are very close, which leads
+            to an incorrect table structure. So, it's required to distinguish them in
+            advance, though we needn't to ensure 100% accuracy.
+
+        .. note::
             It should be run right after ``clean_up()``.
         '''
         # reset all
@@ -202,6 +209,46 @@ class Shapes(Collection):
                 else:
                     self._text_highlights.append(shape)
     
+
+    def assign_to_tables(self, tables:list):
+        """Add Shape to associated cells of given tables.
+
+        Args:
+            tables (list): A list of TableBlock instances.
+        """
+        if not tables: return
+
+        # assign shapes to table region        
+        shapes_in_tables = [[] for _ in tables] # type: list[list[Shape]]
+        shapes = []   # type: list[Shape]
+        for shape in self._instances:
+            # exclude explicit table borders which belongs to current layout
+            if shape.type in (RectType.BORDER, RectType.SHADING):
+                shapes.append(shape)
+                continue
+
+            for table, shapes_in_table in zip(tables, shapes_in_tables):
+                # fully contained in one table
+                if table.bbox.contains(shape.bbox):
+                    shapes_in_table.append(shape)
+                    break
+
+                # not possible in current table, then check next table
+                elif not table.bbox.intersects(shape.bbox):
+                    continue
+            
+            # Now, this shape belongs to previous layout
+            else:
+                shapes.append(shape)
+
+        # assign shapes to associated cells
+        for table, shapes_in_table in zip(tables, shapes_in_tables):
+            # no contents for this table
+            if not shapes_in_table: continue
+            table.assign_shapes(shapes_in_table)
+
+        self.reset(shapes).sort_in_reading_order()
+
 
     def plot(self, page):
         '''Plot shapes for debug purpose.

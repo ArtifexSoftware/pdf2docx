@@ -19,48 +19,122 @@ Terms definition:
   and finally applied to detect table border.
 '''
 
-from ..common.Element import Element
 from ..common import constants
+from ..common.Element import Element
+from ..common.Collection import Collection
 from ..page.Blocks import Blocks
+from ..shape.Shape import Stroke
 from ..shape.Shapes import Shapes
 from ..text.Lines import Lines
 from .TableStructure import TableStructure
 from .Border import HBorder, VBorder, Borders
 
+
 class TablesConstructor:
-    '''Object parsing TableBlock.'''
+    '''Object parsing ``TableBlock`` for specified ``Layout``.'''
 
     def __init__(self, parent):
-        self._parent = parent # Page
-        self._blocks = parent.blocks if parent else None # type: Blocks
-        self._shapes = parent.shapes if parent else None # type: Shapes
+        self._parent = parent # Layout
+        self._blocks = parent.blocks # type: Blocks
+        self._shapes = parent.shapes # type: Shapes
+
+
+    def page_layout_table(self):
+        '''Set page layout if two-columns layout.
+
+        ::
+            +------------|--------------+ span_elements
+            +------------|--------------+
+                         |
+            +----------+ | +------------+ v0
+            |  column  | | |  elements  | 
+            +----------+ | +------------+ v1
+            u0           |             u1
+            +------------|--------------+ 
+            +------------|--------------+ span_elements
+                         |
+
+        .. note::
+            Run this method in Page level only, right after cleaning blocks and shapes.
+        '''
+        # collect all lines and shapes
+        elements = Collection()
+        for block in self._blocks: elements.extend(block.lines)
+        for shape in self._shapes: elements.append(shape)
+        
+        # filter with page center line
+        x0, y0, x1, y1 = self._parent.bbox
+        X = (x0+x1) / 2.0
+        column_elements = list(filter(
+                lambda line: line.bbox[2]<X or line.bbox[0]>X, elements))
+        span_elements = filter(
+                lambda line: line.bbox[2]>=X>=line.bbox[0], elements)
+        
+        # check: intersected elements must on the top or bottom side
+        u0, v0, u1, v1 = Collection(column_elements).bbox
+        if not all(e.bbox[3]<v0 or e.bbox[1]>v1 for e in span_elements): return
+
+        # create dummy strokes for table parsing        
+        m0, m1 = (x0+u0)/2.0, (x1+u1)/2.0
+        n0, n1 = v0-constants.MAJOR_DIST, v1+constants.MAJOR_DIST        
+        strokes = [
+            Stroke({'start': (m0, n0), 'end': (m1, n0)}), # top
+            Stroke({'start': (m0, n1), 'end': (m1, n1)}), # bottom
+            Stroke({'start': (m0, n0), 'end': (m0, n1)}), # left
+            Stroke({'start': (m1, n0), 'end': (m1, n1)}), # right
+            Stroke({'start': (X, n0), 'end': (X, n1)})]   # center
+        
+        # parse table structure
+        table = TableStructure(strokes).parse([]).to_table_block()
+        tables = []
+        if table:
+            table.set_stream_table_block()
+            tables.append(table)
+
+        # assign blocks/shapes to each table
+        self._blocks.assign_to_tables(tables)
+        self._shapes.assign_to_tables(tables)
 
 
     def lattice_tables(self, 
                 connected_border_tolerance:float,
                 min_border_clearance:float,
-                max_border_width:float,
-                float_layout_tolerance:float,
-                line_overlap_threshold:float,
-                line_merging_threshold:float,
-                line_separate_threshold:float):
+                max_border_width:float):
         """Parse table with explicit borders/shadings represented by rectangle shapes.
 
         Args:
             connected_border_tolerance (float): Two borders are intersected if the gap lower than this value.
             min_border_clearance (float): The minimum allowable clearance of two borders.
             max_border_width (float): Max border width.
-            float_layout_tolerance (float): The larger of this value, the more tolerable of flow layout.
-            line_overlap_threshold (float): Delete line if the intersection to other lines exceeds this value.
-            line_merging_threshold (float): Combine two lines if the x-distance is lower than this value.
-            line_separate_threshold (float): Two separate lines if the x-distance exceeds this value.
+        """
+        if not self._shapes: return
 
-        Returns:
-            Blocks: A collection of parsed lattice tables.
-        """        
+        def remove_overlap(instances:list):
+            '''Delete group when it's contained in a certain group.'''
+            # group instances if contained in other instance
+            fun = lambda a, b: a.bbox.contains(b.bbox) or b.bbox.contains(a.bbox)
+            groups = Collection(instances).group(fun)
+            unique_groups = []
+            for group_instances in groups:
+                if len(group_instances)==1: 
+                    instance = group_instances[0]
+                
+                # contained groups: keep the largest one
+                else:
+                    sorted_group = sorted(group_instances, 
+                        key=lambda instance: instance.bbox.getArea())
+                    instance = sorted_group[-1]
+                
+                unique_groups.append(instance)
+            
+            return unique_groups
+
         # group stroke shapes: each group may be a potential table
         grouped_strokes = self._shapes.table_strokes \
             .group_by_connectivity(dx=connected_border_tolerance, dy=connected_border_tolerance)
+
+        # ignore overlapped groups: it'll be processed in sub-layout
+        grouped_strokes = remove_overlap(grouped_strokes) 
 
         # all filling shapes
         fills = self._shapes.table_fillings
@@ -69,11 +143,7 @@ class TablesConstructor:
         tables = Blocks()
         settings = {
             'min_border_clearance': min_border_clearance,
-            'max_border_width': max_border_width,
-            'float_layout_tolerance': float_layout_tolerance,
-            'line_overlap_threshold': line_overlap_threshold,
-            'line_merging_threshold': line_merging_threshold,
-            'line_separate_threshold': line_separate_threshold
+            'max_border_width': max_border_width
         }
         for strokes in grouped_strokes:
             # potential shadings in this table region
@@ -81,26 +151,19 @@ class TablesConstructor:
 
             # parse table structure
             table = TableStructure(strokes, settings).parse(group_fills).to_table_block()
-            tables.append(table)
+            if table:
+                table.set_lattice_table_block()
+                tables.append(table)            
 
-        # check if any intersection with previously parsed tables
-        unique_tables = self._remove_floating_tables(tables)
-        for table in unique_tables:
-            # add table to page level
-            table.set_lattice_table_block()
-
-        # assign text contents to each table
-        self._blocks.assign_table_contents(unique_tables, settings)
-
-        return Blocks(unique_tables) # this return is just for debug plot
+        # assign blocks/shapes to each table
+        self._blocks.assign_to_tables(tables)
+        self._shapes.assign_to_tables(tables)
 
 
     def stream_tables(self, 
                 min_border_clearance:float, 
                 max_border_width:float,
                 float_layout_tolerance:float,
-                line_overlap_threshold:float,
-                line_merging_threshold:float,
                 line_separate_threshold:float
             ):
         '''Parse table with layout of text/image blocks, and update borders with explicit borders 
@@ -153,13 +216,10 @@ class TablesConstructor:
         tables = Blocks()
         settings = {
             'min_border_clearance': min_border_clearance,
-            'max_border_width': max_border_width,
-            'float_layout_tolerance': float_layout_tolerance,
-            'line_overlap_threshold': line_overlap_threshold,
-            'line_merging_threshold': line_merging_threshold,
-            'line_separate_threshold': line_separate_threshold
+            'max_border_width': max_border_width
         }
         for table_lines in tables_lines:
+            if not table_lines: continue
             # bounding box
             x0 = min([rect.bbox.x0 for rect in table_lines])
             y0 = min([rect.bbox.y0 for rect in table_lines])
@@ -185,18 +245,19 @@ class TablesConstructor:
             # parse table structure
             strokes.sort_in_reading_order() # required
             table = TableStructure(strokes, settings).parse(explicit_shadings).to_table_block()
-            tables.append(table)
 
-        # check if any intersection with previously parsed tables
-        unique_tables = self._remove_floating_tables(tables)
-        for table in unique_tables: 
-            # set type: stream table
-            table.set_stream_table_block()
+            # NOTE: ignore stream table with only one column since it's of no use;
+            #       but when it has an explicit background, accept it.
+            if table.num_cols>1 or any(row[0].bg_color for row in table): 
+                table.set_stream_table_block()
+                tables.append(table)            
 
-        # assign text contents to each table
-        self._blocks.assign_table_contents(unique_tables, settings)
+        # assign blocks/shapes to each table
+        self._blocks.assign_to_tables(tables)
+        self._shapes.assign_to_tables(tables)
 
-        return Blocks(unique_tables) # this return is just for debug plot
+        # NOTE: set blocks in current level back to original layout if possible
+        self._blocks.split_back(float_layout_tolerance, line_separate_threshold)        
 
 
     @staticmethod
@@ -206,7 +267,7 @@ class TablesConstructor:
         by rectangle shapes.
         
         Args:
-            lines (Lines): lines Contained in table cells.
+            lines (Lines): lines contained in table cells.
             outer_borders (tuple): Boundary borders of table, ``(top, bottom, left, right)``. 
             explicit_strokes (Shapes): Showing borders in a stream table; can be empty.
             explicit_shadings (Shapes): Showing shadings in a stream table; can be empty.
@@ -232,27 +293,6 @@ class TablesConstructor:
             res.append(border.to_stroke())
 
         return res
-
-
-    @staticmethod
-    def _remove_floating_tables(tables:Blocks):
-        '''Delete table has intersection with previously parsed tables.'''
-        unique_tables = []
-        groups = tables.group_by_connectivity(dx=constants.TINY_DIST, dy=constants.TINY_DIST)
-        for group in groups:
-            # single table
-            if len(group)==1: table = group[0]
-            
-            # intersected tables: keep the table with the most cells only 
-            # since no floating elements are supported with python-docx
-            else:
-                sorted_group = sorted(group, 
-                    key=lambda table: table.num_rows*table.num_cols)
-                table = sorted_group[-1]
-            
-            unique_tables.append(table)
-        
-        return unique_tables
 
 
     @staticmethod
@@ -321,9 +361,10 @@ class TablesConstructor:
         cols_lines = lines.group_by_columns()
         group_lines = [col_lines.group_by_rows() for col_lines in cols_lines]
 
-        # horizontal borders are for reference when n_column=2 -> consider two-columns text layout
+        # horizontal borders are for reference only when n_column<=2 -> 
+        # consider 1-column or 2-columns text layout
         col_num = len(cols_lines)
-        is_reference = col_num==2
+        is_reference = col_num<=2
 
         # outer borders construct the table, so they're not just for reference        
         if col_num>=2: # outer borders contribute to table structure

@@ -4,7 +4,6 @@
     "pages": [
         {
             "id": 0,
-            "finalized": 1,
             "width": 841.8897705078125,
             "height": 595.2755737304688,
             "margin": [
@@ -13,7 +12,67 @@
                 72.0,
                 72.0
             ],
-            "blocks": [],
+            "blocks": [
+                {
+                    "bbox": [
+                        36.0,
+                        -5.0,
+                        384.9,
+                        5.0
+                    ],
+                    "type": 3,
+                    "alignment": 1,
+                    "left_space": -36.0,
+                    "right_space": 0.0,
+                    "first_line_space": 0.0,
+                    "before_space": 0.0,
+                    "after_space": 0.0,
+                    "line_space": 0.0,
+                    "tab_stops": [],
+                    "left_space_total": 0.0,
+                    "right_space_total": 0.0,
+                    "rows": [
+                        {
+                            "bbox": [
+                                36.0,
+                                -5.0,
+                                384.9,
+                                5.0
+                            ],
+                            "height": 9.0,
+                            "cells": [
+                                {
+                                    "bbox": [
+                                        36.0,
+                                        -5.0,
+                                        384.9,
+                                        5.0
+                                    ],
+                                    "bg_color": null,
+                                    "border_color": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "border_width": [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                                    "merged_cells": [
+                                        1,
+                                        1
+                                    ],
+                                    "blocks": []
+                                },
+                                null
+                            ]
+                        }
+                    ]
+                }
+            ],
             "shapes": []
         }
     ]

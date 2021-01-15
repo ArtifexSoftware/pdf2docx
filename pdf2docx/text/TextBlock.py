@@ -74,28 +74,9 @@ class TextBlock(Block):
             return TextDirection.LEFT_RIGHT
 
 
-    def is_flow_layout(self, float_layout_tolerance:float, line_separate_threshold:float):
-        '''Check if flow layout, i.e. same bottom-left point for lines in same row.'''
-        # lines in same row
-        fun = lambda a, b: a.horizontally_align_with(b, factor=float_layout_tolerance) and \
-                            not a.vertically_align_with(b, factor=constants.FACTOR_ALMOST) 
-        groups = self.lines.group(fun)        
-        
-        idx = 0 if self.is_horizontal_text else 3
-        for lines in groups:
-            num = len(lines)
-            if num==1: continue
-
-            # check bottom-left point of lines
-            points = set([line.bbox[(idx+3)%4] for line in lines])
-            if max(points)-min(points)>constants.MINOR_DIST: return False
-
-            # check distance between lines
-            for i in range(1, num):
-                dis = abs(lines[i].bbox[idx]-lines[i-1].bbox[(idx+2)%4])
-                if dis >= line_separate_threshold: return False
-
-        return True
+    def is_flow_layout(self, *args):
+        '''Check if flow layout'''
+        return self.lines.is_flow_layout(*args)
 
 
     def store(self):
@@ -113,21 +94,6 @@ class TextBlock(Block):
                 self.lines.append(line)
         else:
             self.lines.append(line_or_lines)
-
-
-    def split(self):
-        '''Split contained lines vertically and create associated text blocks.
-
-        Returns:
-            list: Split text blocks.
-        '''
-        blocks = [] # type: list[TextBlock]
-        for lines in self.lines.split(threshold=constants.FACTOR_A_FEW):
-            text_block = TextBlock()
-            text_block.lines.reset(list(lines))
-            blocks.append(text_block)
-        
-        return blocks
 
 
     def strip(self):

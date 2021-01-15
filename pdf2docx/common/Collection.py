@@ -10,9 +10,9 @@ from .share import IText, TextDirection, solve_rects_intersection, graph_bfs
 
 class BaseCollection:
     '''Base collection of specific instances.'''
-    def __init__(self, instances:list=[]):
+    def __init__(self, instances:list=None):
         '''Init collection from a list of Element instances.'''
-        self._instances = instances if instances else [] # type: list[Element]
+        self._instances = instances or [] # type: list[Element]
 
     def __getitem__(self, idx):
         try:
@@ -119,7 +119,7 @@ class BaseCollection:
 
 class Collection(BaseCollection, IText):
     '''Collection of specific instances.'''
-    def __init__(self, instances:list=[], parent=None):
+    def __init__(self, instances:list=None, parent=None):
         '''Init collection from a list of Element instances.'''
         self._parent = parent # type: Element
         super().__init__(instances)
@@ -250,19 +250,24 @@ class Collection(BaseCollection, IText):
         return self.__class__(instances)
 
 
-    def split_with_intersection(self, bbox):
+    def split_with_intersection(self, bbox:fitz.Rect, threshold:float=0.0):
         """Split instances into two groups: one intersects with ``bbox``, the other not.
 
         Args:
             bbox (fitz.Rect): target rect box.
+            threshold (float): It's intersected when the overlap rate exceeds this threshold. Defaults to 0.
 
         Returns:
             tuple: two group in original class type.
         """
-        intersection, no_intersection = [], []
+        intersections, no_intersections = [], []
         for instance in self._instances:
-            if bbox.intersects(instance.bbox):
-                intersection.append(instance)
+            # A contains B => A & B = B
+            intersection = instance.bbox & bbox
+            factor = round(intersection.getArea()/instance.bbox.getArea(), 2)
+
+            if factor >= threshold:
+                intersections.append(instance)
             else:
-                no_intersection.append(instance)
-        return self.__class__(intersection), self.__class__(no_intersection)
+                no_intersections.append(instance)
+        return self.__class__(intersections), self.__class__(no_intersections)

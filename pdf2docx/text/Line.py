@@ -106,7 +106,7 @@ class Line(Element):
         return self.spans.strip()
 
 
-    def same_parent_with(self, line):
+    def same_source_parent(self, line):
         '''Check if has same original parent ID.
 
         .. note::
