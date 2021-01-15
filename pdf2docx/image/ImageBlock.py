@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 
-'''
-Definition of Image block objects. 
+'''Definition of Image block objects. 
 
-Note the raw image block will be merged into text block: Text > Line > Span.
-
-@created: 2020-07-22
-
+**The raw image block will be merged into TextBlock > Line > Span.**
 '''
 
 from io import BytesIO
@@ -28,7 +24,11 @@ class ImageBlock(Image, Block): # to get Image.plot() in first priority
 
 
     def to_text_block(self):
-        '''convert image block to text block: a span'''
+        """Convert image block to a span under text block.
+
+        Returns:
+            TextBlock: New TextBlock instance containing this image.
+        """
         # image span
         span = ImageSpan().from_image(self)
 
@@ -47,7 +47,14 @@ class ImageBlock(Image, Block): # to get Image.plot() in first priority
  
 
     def from_text_block(self, block:TextBlock):
-        '''Initialize image block from image in TextBlock instance.'''
+        """Initialize image block from image in TextBlock instance.
+
+        Args:
+            block (TextBlock): Target text block.
+
+        Returns:
+            ImageBlock: New ImageBlock extracted from TextBlock.
+        """        
         if not block.lines or not block.lines[0].spans: return self
 
         image_span = block.lines[0].spans[0]
@@ -57,6 +64,7 @@ class ImageBlock(Image, Block): # to get Image.plot() in first priority
 
 
     def store(self):
+        '''Store ImageBlock instance in raw dict.'''
         res = super().store()
         res.update(
             super().store_image()
@@ -65,19 +73,22 @@ class ImageBlock(Image, Block): # to get Image.plot() in first priority
 
     
     def plot(self, page):
-        '''Plot image bbox with diagonal lines.
-            ---
-            Args: 
-            - page: fitz.Page object
+        '''Plot image bbox with diagonal lines (for debug purpose).
+        
+        Args: 
+            page (fitz.Page): pdf page to plot.
         '''
         super().plot(page, color=(1,0,0))
 
 
     def make_docx(self, p):
-        ''' Create floating image behind text.
-            ---
-            Args:
-              - p: docx paragraph instance
+        '''Create floating image behind text. 
+        
+        Args:
+            p (Paragraph): ``python-docx`` paragraph instance.
+        
+        .. note::
+            Inline image is created within TextBlock.
         '''
         if self.is_float_image_block():
             x0, y0, x1, y1 = self.bbox

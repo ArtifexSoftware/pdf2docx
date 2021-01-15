@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-'''
-A group of instances, e.g. instances, Spans, Shapes.
-
-@created: 2020-07-24
-
+'''A group of instances, e.g. Blocks, Lines, Spans, Shapes.
 '''
 
 import fitz
@@ -14,9 +10,9 @@ from .share import IText, TextDirection, solve_rects_intersection, graph_bfs
 
 class BaseCollection:
     '''Base collection of specific instances.'''
-    def __init__(self, instances:list=[]):
+    def __init__(self, instances:list=None):
         '''Init collection from a list of Element instances.'''
-        self._instances = instances if instances else [] # type: list[Element]
+        self._instances = instances or [] # type: list[Element]
 
     def __getitem__(self, idx):
         try:
@@ -42,23 +38,28 @@ class BaseCollection:
 
 
     def group(self, fun):
-        ''' Group instances according to user defined criterion.
-            ---
-            Args:
-            - fun: function with 2 arguments representing 2 instances (Element), and return bool
-            
-            Examples:
-            ```
+        """Group instances according to user defined criterion.
+
+        Args:
+            fun (function): with 2 arguments representing 2 instances (Element) and return bool.
+
+        Returns:
+            list: a list of grouped ``BaseCollection`` instances.
+        
+        Examples 1::
+
             # group instances intersected with each other
             fun = lambda a,b: a.bbox & b.bbox
+        
+        Examples 2::
 
             # group instances aligned horizontally
             fun = lambda a,b: a.horizontally_aligned_with(b)
-            ```
-
-            NOTE: it's equal to a GRAPH searching problem, build adjacent list, and then search graph 
+        
+        .. note::
+            It's equal to a GRAPH searching problem, build adjacent list, and then search graph
             to find all connected components.
-        '''
+        """
         # build adjacent list:
         # the i-th item is a set of indexes, which connected to the i-th instance.
         # NOTE: O(n^2) method, but it's acceptable (~0.2s) when n<1000 which is satisfied by page blocks
@@ -78,17 +79,22 @@ class BaseCollection:
 
     
     def group_by_connectivity(self, dx:float, dy:float):
-        ''' Collect connected instances into same group.
-            ---
-            Args:
-            - dx, dy: x- and y- tolerances to define connectivity
+        """Collect connected instances into same group.
 
-            NOTE:
-            - It's equal to a GRAPH traversing problem, which the critical point in building the adjacent
-            list, especially a large number of vertex (paths).
-            - Checking intersections between paths is actually a Rectangle-Intersection problem, studied
-            already in many literatures.
-        '''
+        Args:
+            dx (float): x-tolerances to define connectivity
+            dy (float): y-tolerances to define connectivity
+
+        Returns:
+            list: a list of grouped ``BaseCollection`` instances.
+        
+        .. note::
+            * It's equal to a GRAPH traversing problem, which the critical point in 
+              building the adjacent list, especially a large number of vertex (paths).
+
+            * Checking intersections between paths is actually a Rectangle-Intersection 
+              problem, studied already in many literatures.
+        """
         # build the graph -> adjacent list:
         # the i-th item is a set of indexes, which connected to the i-th instance
         num = len(self._instances)
@@ -113,7 +119,7 @@ class BaseCollection:
 
 class Collection(BaseCollection, IText):
     '''Collection of specific instances.'''
-    def __init__(self, instances:list=[], parent=None):
+    def __init__(self, instances:list=None, parent=None):
         '''Init collection from a list of Element instances.'''
         self._parent = parent # type: Element
         super().__init__(instances)
@@ -152,7 +158,11 @@ class Collection(BaseCollection, IText):
 
 
     def append(self, e:Element):
-        '''Append an instance and update parent's bbox accordingly.'''
+        """Append an instance, update parent's bbox accordingly and set the parent of the added instance.
+
+        Args:
+            e (Element): instance to append.
+        """
         if not e: return
         self._instances.append(e)
         self._update_bbox(e)
@@ -168,15 +178,27 @@ class Collection(BaseCollection, IText):
             self.append(e)
 
 
-    def reset(self, elements:list=[]):
-        '''Reset instances list.'''
+    def reset(self, elements:list=None):
+        """Reset instances list.
+
+        Args:
+            elements (list, optional): reset to target instances. Defaults to None.
+
+        Returns:
+            Collection: self
+        """
         self._instances = []
-        self.extend(elements)
+        self.extend(elements or [])
         return self
 
 
     def insert(self, nth:int, e:Element):
-        '''Insert a Element and update parent's bbox accordingly.'''
+        """Insert a Element and update parent's bbox accordingly.
+
+        Args:
+            nth (int): the position to insert.
+            e (Element): the instance to insert.
+        """        
         if not e: return
         self._instances.insert(nth, e)
         self._update_bbox(e)
@@ -184,7 +206,14 @@ class Collection(BaseCollection, IText):
 
     
     def pop(self, nth:int):
-        '''Insert a Element and update parent's bbox accordingly.'''
+        """Delete the ``nth`` instance.
+
+        Args:
+            nth (int): the position to remove.
+
+        Returns:
+            Collection: the removed instance.
+        """        
         return self._instances.pop(nth)
 
 
@@ -211,26 +240,34 @@ class Collection(BaseCollection, IText):
 
    
     def contained_in_bbox(self, bbox):
-        ''' Filter instances contained in target bbox.
-            ---
-            Args:
-            - bbox: fitz.Rect
+        '''Filter instances contained in target bbox.
+
+        Args:
+            bbox  (fitz.Rect): target boundary box.
         '''
         instances = list(filter(
             lambda e: bbox.contains(e.bbox), self._instances))
         return self.__class__(instances)
 
 
-    def split_with_intersection(self, bbox):
-        ''' Split instances into two groups: one intersects with `bbox`, the other not.
-            ---
-            Args:
-            - bbox: fitz.Rect
-        '''
-        intersection, no_intersection = [], []
+    def split_with_intersection(self, bbox:fitz.Rect, threshold:float=0.0):
+        """Split instances into two groups: one intersects with ``bbox``, the other not.
+
+        Args:
+            bbox (fitz.Rect): target rect box.
+            threshold (float): It's intersected when the overlap rate exceeds this threshold. Defaults to 0.
+
+        Returns:
+            tuple: two group in original class type.
+        """
+        intersections, no_intersections = [], []
         for instance in self._instances:
-            if bbox.intersects(instance.bbox):
-                intersection.append(instance)
+            # A contains B => A & B = B
+            intersection = instance.bbox & bbox
+            factor = round(intersection.getArea()/instance.bbox.getArea(), 2)
+
+            if factor >= threshold:
+                intersections.append(instance)
             else:
-                no_intersection.append(instance)
-        return self.__class__(intersection), self.__class__(no_intersection)
+                no_intersections.append(instance)
+        return self.__class__(intersections), self.__class__(no_intersections)

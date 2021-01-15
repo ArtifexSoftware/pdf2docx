@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-'''
-A group of TextSpan and ImageSpan objects.
-
-@created: 2020-07-23
-
+'''A group of TextSpan and ImageSpan objects.
 '''
 
 from ..common.Collection import Collection
@@ -12,9 +8,10 @@ from .TextSpan import TextSpan
 from ..image.ImageSpan import ImageSpan
 
 class Spans(Collection):
-    '''Text span list.'''
+    '''Collection of TextSpan and ImageSpan instances.'''
 
     def restore(self, raws:list):
+        '''Recreate TextSpan or ImageSpan from source dict list.'''
         for raw_span in raws:
             span = ImageSpan(raw_span) if 'image' in raw_span else TextSpan(raw_span)
             self.append(span)
@@ -22,6 +19,7 @@ class Spans(Collection):
 
     @property
     def text_spans(self):
+        '''Get TextSpan instances.'''
         spans = list(filter(
             lambda span: isinstance(span, TextSpan), self._instances
         ))
@@ -29,6 +27,7 @@ class Spans(Collection):
 
     @property
     def image_spans(self):
+        '''Get ImageSpan instances.'''
         spans = list(filter(
             lambda span: isinstance(span, ImageSpan), self._instances
         ))
@@ -36,7 +35,7 @@ class Spans(Collection):
 
 
     def strip(self):
-        '''remove redundant blanks at the begin/end span.'''
+        '''Remove redundant blanks at the begin/end span.'''
         stripped = False
         if not self._instances: return stripped
         

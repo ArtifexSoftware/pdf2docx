@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-'''
-docx operation methods based on python-docx.
+'''docx operation methods based on ``python-docx``.
 '''
 
 from docx.shared import Pt
@@ -12,6 +11,7 @@ from docx.oxml.xmlchemy import BaseOxmlElement, OneAndOnlyOne
 from docx.enum.text import WD_COLOR_INDEX
 from docx.image.exceptions import UnrecognizedImageError
 from docx.table import _Cell
+from docx.opc.constants import RELATIONSHIP_TYPE
 
 from .share import rgb_value
 from . import constants
@@ -21,7 +21,9 @@ from . import constants
 # paragraph
 # ---------------------------------------------------------
 def delete_paragraph(paragraph):
-    ''' Refer to:
+    '''Delete a paragraph.
+
+    Reference:    
         https://github.com/python-openxml/python-docx/issues/33#issuecomment-77661907
     '''
     p = paragraph._element
@@ -30,14 +32,19 @@ def delete_paragraph(paragraph):
 
 
 def reset_paragraph_format(p, line_spacing:float=1.05):
-    ''' Reset paragraph format, especially line spacing.
-        ---
-        Args:
-        - p: docx paragraph instance
-        
-        Two kinds of line spacing, corresponding to the setting in MS Office Word:
-        - line_spacing=1.05: single or multiple
-        - line_spacing=Pt(1): exactly
+    '''Reset paragraph format, especially line spacing.
+
+    Two kinds of line spacing, corresponding to the setting in MS Office Word:
+
+    * line_spacing=1.05: single or multiple
+    * line_spacing=Pt(1): exactly
+    
+    Args:
+        p (Paragraph): ``python-docx`` paragraph instance.
+        line_spacing (float, optional): Line spacing. Defaults to 1.05.
+    
+    Returns:
+        paragraph_format: Paragraph format.
     '''
     pf = p.paragraph_format
     pf.line_spacing = line_spacing # single by default
@@ -61,15 +68,16 @@ def reset_paragraph_format(p, line_spacing:float=1.05):
 # text properties
 # ---------------------------------------------------------
 def add_stop(p, pos:float, current_pos:float):
-    ''' Set horizontal position in current position with tab stop.
-        ---
-        Args: 
-          - p: docx paragraph instance
-          - pos: target position in Pt
-          - current_pos: current position in Pt
+    '''Set horizontal position in current position with tab stop.
+    
+    Args: 
+        p (Paragraph): ``python-docx`` paragraph instance.
+        pos (float): Target position in Pt.
+        current_pos (float): Current position in Pt.
 
-        Note: multiple tab stops may exist in paragraph, 
-              so tabs are added based on current position and target position.         
+    .. note::
+        Multiple tab stops may exist in paragraph, so tabs are added based on 
+        current position and target position.         
     '''
     # ignore small pos
     if pos < Pt(constants.MINOR_DIST): return
@@ -85,24 +93,26 @@ def add_stop(p, pos:float, current_pos:float):
 
 
 def set_char_scaling(p_run, scale:float=1.0):
-    ''' Set character spacing: scaling. Font | Advanced | Character Spacing | Scaling.
-        ---
-        Args:
-          - p_run: docx.text.run.Run, proxy object wrapping <w:r> element
-          - scale: scaling factor
+    '''Set character spacing: scaling. 
+    
+    Manual operation in MS Word: Font | Advanced | Character Spacing | Scaling.
+    
+    Args:
+        p_run (docx.text.run.Run): Proxy object wrapping <w:r> element.
+        scale (float, optional): scaling factor. Defaults to 1.0.
     '''
     p_run._r.get_or_add_rPr().insert(0, parse_xml(r'<w:w {} w:val="{}"/>'.format(nsdecls('w'), 100*scale)))
 
 
 def set_char_shading(p_run, srgb:int):
     '''Set character shading color, in case the color is out of highlight color scope.
-        ---
-        Args:
-        - p_run: docx.text.run.Run, proxy object wrapping <w:r> element
-        - srgb: int, color value
-
-        Read more:
-        - http://officeopenxml.com/WPtextShading.php
+    
+    Reference: 
+        http://officeopenxml.com/WPtextShading.php
+    
+    Args:
+        p_run (docx.text.run.Run): Proxy object wrapping <w:r> element.
+        srgb (int): Color value.
     '''
     # try to set highlight first using python-docx built-in method
     # Here give 6/16 of the valid highlight colors
@@ -126,14 +136,63 @@ def set_char_shading(p_run, srgb:int):
 
 def set_char_underline(p_run, srgb:int):
     '''Set underline and color.
-        ---
-        Args:
-        - p_run: docx.text.run.Run, proxy object wrapping <w:r> element
-        - srgb: int, color value
+    
+    Args:
+        p_run (docx.text.run.Run): Proxy object wrapping <w:r> element.
+        srgb (int): Color value.
     '''
     c = hex(srgb)[2:].zfill(6)
     xml = r'<w:u {} w:val="single" w:color="{}"/>'.format(nsdecls('w'), c)
     p_run._r.get_or_add_rPr().insert(0, parse_xml(xml))
+
+
+def add_hyperlink(paragraph, url, text):
+    """Create a hyperlink within a paragraph object.
+
+    Reference:
+
+        https://github.com/python-openxml/python-docx/issues/74#issuecomment-215678765
+
+    Args:
+        paragraph (Paragraph): ``python-docx`` paragraph adding the hyperlink to.
+        url (str): The required url.
+        text (str): The text displayed for the url.
+
+    Returns: 
+        Run: A Run object containing the hyperlink.
+    """
+
+    # This gets access to the document.xml.rels file and gets a new relation id value
+    part = paragraph.part
+    r_id = part.relate_to(url, RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
+
+    # Create the w:hyperlink tag and add needed values
+    hyperlink = OxmlElement('w:hyperlink')
+    hyperlink.set(qn('r:id'), r_id, )
+    hyperlink.set(qn('w:history'), '1')
+
+    # Create a w:r element
+    new_run = OxmlElement('w:r')
+
+    # Create a new w:rPr element
+    rPr = OxmlElement('w:rPr')
+
+    # Create a w:rStyle element, note this currently does not add the hyperlink style as its not in
+    # the default template, I have left it here in case someone uses one that has the style in it
+    rStyle = OxmlElement('w:rStyle')
+    rStyle.set(qn('w:val'), 'Hyperlink')
+
+    # Join all the xml elements together add add the required text to the w:r element
+    rPr.append(rStyle)
+    new_run.append(rPr)
+    new_run.text = text
+    hyperlink.append(new_run)
+
+    # Create a new Run object and add the hyperlink into it
+    r = paragraph.add_run()
+    r._r.append(hyperlink)
+
+    return r
 
 
 # ---------------------------------------------------------
@@ -141,11 +200,11 @@ def set_char_underline(p_run, srgb:int):
 # ---------------------------------------------------------
 def add_image(p, image_path_or_stream, width):
     ''' Add image to paragraph.
-        ---
-        Args:
-          - p: docx paragraph instance
-          - image_path_or_stream: image path or stream
-          - width: image width in Pt
+    
+    Args:
+        p (Paragraph): ``python-docx`` paragraph instance.
+        image_path_or_stream (str, bytes): Image path or stream.
+        width (float): Image width in Pt.
     '''
     docx_span = p.add_run()
     try:
@@ -158,7 +217,7 @@ def add_image(p, image_path_or_stream, width):
     p.paragraph_format.line_spacing = 1.00
 
 
-class CT_Anchor(BaseOxmlElement):
+class _CT_Anchor(BaseOxmlElement):
     """
     ``<w:anchor>`` element, container for a floating image.
     """
@@ -220,24 +279,25 @@ class CT_Anchor(BaseOxmlElement):
             '</wp:anchor>' % ( nsdecls('wp', 'a', 'pic', 'r'), int(pos_x), int(pos_y) )
         )
 
-register_element_cls('wp:anchor', CT_Anchor)
+register_element_cls('wp:anchor', _CT_Anchor)
 
 
 def add_float_image(p, image_path_or_stream, width, pos_x=None, pos_y=None):
-    ''' Add float image behind text.
-        ---
-        Args:
-        - p: docx Paragraph object this picture belongs to
-        - image_path_or_stream: image path or stream
-        - width, height: displaying width, height of picture, in unit Pt
-        - pos_x, pos_y: positions (English Metric Units) to the top-left point of page valid region
+    '''Add float image behind text.
+    
+    Args:
+        p (Paragraph): ``python-docx`` Paragraph object this picture belongs to.
+        image_path_or_stream (str, bytes): Image path or stream.
+        width (float): Displaying width of picture, in unit Pt.
+        pos_x (float): X-position (English Metric Units) to the top-left point of page valid region
+        pos_y (float): Y-position (English Metric Units) to the top-left point of page valid region
     '''
     run = p.add_run()
     # parameters for picture, e.g. id, name
     rId, image = run.part.get_or_add_image(image_path_or_stream)
     cx, cy = image.scaled_dimensions(Pt(width), None)
     shape_id, filename = run.part.next_id, image.filename
-    anchor = CT_Anchor.new_pic_anchor(shape_id, rId, filename, cx, cy, Pt(pos_x), Pt(pos_y))
+    anchor = _CT_Anchor.new_pic_anchor(shape_id, rId, filename, cx, cy, Pt(pos_x), Pt(pos_y))
     run._r.add_drawing(anchor)
 
 
@@ -245,11 +305,11 @@ def add_float_image(p, image_path_or_stream, width, pos_x=None, pos_y=None):
 # table properties
 # ---------------------------------------------------------
 def indent_table(table, indent:float):
-    ''' indent table.
-        ---
-        Args:
-          - table: docx table object
-          - indent: indent value, the basic unit is 1/20 pt
+    '''Indent a table.
+    
+    Args:
+        table (Table): ``python-docx`` Table object.
+        indent (float): Indent value, the basic unit is 1/20 pt.
     '''
     tbl_pr = table._element.xpath('w:tblPr')
     if tbl_pr:
@@ -260,18 +320,19 @@ def indent_table(table, indent:float):
 
 
 def set_cell_margins(cell:_Cell, **kwargs):
-    ''' Set cell margins. Provided values are in twentieths of a point (1/1440 of an inch).
-        ---
-        Args:
-          - cell:  actual cell instance you want to modify
-          - kwargs: a dict with keys: top, bottom, start, end
+    '''Set cell margins. Provided values are in twentieths of a point (1/1440 of an inch).
+    
+    Reference: 
+        * https://blog.csdn.net/weixin_44312186/article/details/104944773
+        * http://officeopenxml.com/WPtableCellMargins.php
+    
+    Args:
+        cell (_Cell): ``python-docx`` Cell instance you want to modify.
+        kwargs (dict): Dict with keys: top, bottom, start, end.
         
-        Usage:
-          - set_cell_margins(cell, top=50, start=50, bottom=50, end=50)
-        
-        Read more: 
-          - https://blog.csdn.net/weixin_44312186/article/details/104944773
-          - http://officeopenxml.com/WPtableCellMargins.php
+    Usage::
+    
+        set_cell_margins(cell, top=50, start=50, bottom=50, end=50)    
     '''
     tc = cell._tc
     tcPr = tc.get_or_add_tcPr()
@@ -288,36 +349,39 @@ def set_cell_margins(cell:_Cell, **kwargs):
 
 
 def set_cell_shading(cell:_Cell, srgb:int):
-    ''' set cell background-color.
-        ---
-        Args:
-        - cell: actual cell instance you want to modify
-        - srgb: RGB color value
+    '''Set cell background-color.
 
+    Reference:
         https://stackoverflow.com/questions/26752856/python-docx-set-table-cell-background-and-text-color
+    
+    Args:
+        cell (_Cell): ``python-docx`` Cell instance you want to modify
+        srgb (int): RGB color value.
     '''
     c = hex(srgb)[2:].zfill(6)
     cell._tc.get_or_add_tcPr().append(parse_xml(r'<w:shd {} w:fill="{}"/>'.format(nsdecls('w'), c)))
 
 
 def set_cell_border(cell:_Cell, **kwargs):
-    '''
-    Set cell`s border.
+    '''Set cell`s border.
     
     Reference:
-     - https://stackoverflow.com/questions/33069697/how-to-setup-cell-borders-with-python-docx
-     - https://blog.csdn.net/weixin_44312186/article/details/104944110
+        * https://stackoverflow.com/questions/33069697/how-to-setup-cell-borders-with-python-docx
+        * https://blog.csdn.net/weixin_44312186/article/details/104944110
 
-    Usage:
-    ```
-        _set_cell_border(
+    Args:
+        cell (_Cell): ``python-docx`` Cell instance you want to modify.
+        kwargs (dict): Dict with keys: top, bottom, start, end.
+
+    Usage::
+    
+        set_cell_border(
             cell,
             top={"sz": 12, "val": "single", "color": "#FF0000", "space": "0"},
             bottom={"sz": 12, "color": "#00FF00", "val": "single"},
             start={"sz": 24, "val": "dashed", "shadow": "true"},
             end={"sz": 12, "val": "dashed"},
         )
-    ```
     '''
     tc = cell._tc
     tcPr = tc.get_or_add_tcPr()
@@ -348,11 +412,12 @@ def set_cell_border(cell:_Cell, **kwargs):
 
 def set_vertical_cell_direction(cell:_Cell, direction:str='btLr'):
     '''Set vertical text direction for cell.
-        ---
-        Args:
-          - direction: tbRl -- top to bottom, btLr -- bottom to top
-        
+
+    Reference:
         https://stackoverflow.com/questions/47738013/how-to-rotate-text-in-table-cells
+    
+    Args:
+        direction (str): Either "tbRl" (top to bottom) or "btLr" (bottom to top).
     '''
     tc = cell._tc
     tcPr = tc.get_or_add_tcPr()

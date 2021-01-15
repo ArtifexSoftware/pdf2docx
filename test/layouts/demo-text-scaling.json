@@ -4,14 +4,13 @@
     "pages": [
         {
             "id": 0,
-            "finalized": 1,
             "width": 791.9995727539062,
             "height": 611.999755859375,
             "margin": [
-                35.79999923706055,
+                35.8,
                 72.0,
-                17.850000381469727,
-                33.19989013671875
+                17.9,
+                33.2
             ],
             "blocks": [
                 {
@@ -23,10 +22,10 @@
                     ],
                     "type": 2,
                     "alignment": 1,
-                    "left_space": 0.7000007629394531,
+                    "left_space": 0.7000000000000028,
                     "right_space": 0.0,
                     "first_line_space": 0.0,
-                    "before_space": 17.899999618530273,
+                    "before_space": 17.85,
                     "after_space": 0.0,
                     "line_space": 0.0,
                     "tab_stops": [],
@@ -21287,17 +21286,17 @@
                                     "blocks": [
                                         {
                                             "bbox": [
-                                                37.2,
-                                                521.2,
-                                                625.2,
+                                                37.8,
+                                                526.2,
+                                                626.0,
                                                 544.2
                                             ],
                                             "type": 3,
                                             "alignment": 1,
-                                            "left_space": 0.0,
+                                            "left_space": 0.5999999999999943,
                                             "right_space": 0.0,
                                             "first_line_space": 0.0,
-                                            "before_space": 0.0,
+                                            "before_space": 5.0,
                                             "after_space": 0.0,
                                             "line_space": 0.0,
                                             "tab_stops": [],
@@ -21306,17 +21305,17 @@
                                             "rows": [
                                                 {
                                                     "bbox": [
-                                                        37.2,
-                                                        521.2,
-                                                        625.2,
+                                                        37.8,
+                                                        526.2,
+                                                        626.0,
                                                         544.2
                                                     ],
-                                                    "height": 22.0,
+                                                    "height": 17.0,
                                                     "cells": [
                                                         {
                                                             "bbox": [
-                                                                37.2,
-                                                                521.2,
+                                                                37.8,
+                                                                526.2,
                                                                 369.6,
                                                                 544.2
                                                             ],
@@ -21347,14 +21346,14 @@
                                                                     ],
                                                                     "type": 0,
                                                                     "alignment": 1,
-                                                                    "left_space": 1.1,
-                                                                    "right_space": 1.1,
+                                                                    "left_space": 0.5,
+                                                                    "right_space": 0.5,
                                                                     "first_line_space": 0.0,
-                                                                    "before_space": 10.099999999999909,
+                                                                    "before_space": 5.099999999999909,
                                                                     "after_space": 0.0,
                                                                     "line_space": 12.900000000000091,
                                                                     "tab_stops": [],
-                                                                    "left_space_total": 1.1,
+                                                                    "left_space_total": 0.5,
                                                                     "right_space_total": 218.4,
                                                                     "lines": [
                                                                         {
@@ -21721,8 +21720,8 @@
                                                         {
                                                             "bbox": [
                                                                 369.6,
-                                                                521.2,
-                                                                625.2,
+                                                                526.2,
+                                                                626.0,
                                                                 544.2
                                                             ],
                                                             "bg_color": null,
@@ -21747,26 +21746,26 @@
                                                                     "bbox": [
                                                                         588.0,
                                                                         531.3,
-                                                                        624.3,
+                                                                        626.8,
                                                                         544.2
                                                                     ],
                                                                     "type": 0,
                                                                     "alignment": 3,
-                                                                    "left_space": 0.9,
-                                                                    "right_space": 0.9,
+                                                                    "left_space": 0.0,
+                                                                    "right_space": 0.0,
                                                                     "first_line_space": 0.0,
-                                                                    "before_space": 10.099999999999909,
+                                                                    "before_space": 5.099999999999909,
                                                                     "after_space": 0.0,
                                                                     "line_space": 12.900000000000091,
                                                                     "tab_stops": [],
                                                                     "left_space_total": 218.4,
-                                                                    "right_space_total": 0.9,
+                                                                    "right_space_total": 0.0,
                                                                     "lines": [
                                                                         {
                                                                             "bbox": [
                                                                                 588.0,
                                                                                 531.3,
-                                                                                624.3,
+                                                                                626.8,
                                                                                 544.2
                                                                             ],
                                                                             "wmode": 0,
@@ -21780,7 +21779,7 @@
                                                                                     "bbox": [
                                                                                         588.0,
                                                                                         531.3,
-                                                                                        624.3,
+                                                                                        626.8,
                                                                                         544.2
                                                                                     ],
                                                                                     "color": 0,
@@ -21891,9 +21890,22 @@
                                                                                                 619.0595092773438,
                                                                                                 541.4019775390625
                                                                                             ]
+                                                                                        },
+                                                                                        {
+                                                                                            "bbox": [
+                                                                                                624.2,
+                                                                                                531.3,
+                                                                                                626.8,
+                                                                                                544.2
+                                                                                            ],
+                                                                                            "c": " ",
+                                                                                            "origin": [
+                                                                                                624.2168579101562,
+                                                                                                541.4019775390625
+                                                                                            ]
                                                                                         }
                                                                                     ],
-                                                                                    "text": "12/14/15",
+                                                                                    "text": "12/14/15 ",
                                                                                     "style": []
                                                                                 }
                                                                             ]

@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-'''
-Row in a table.
-
-@created: 2020-08-15
-
+'''Row in a table.
 '''
 
 from docx.enum.table import WD_ROW_HEIGHT
@@ -59,12 +55,12 @@ class Row(Element):
         return res
 
 
-    def make_docx(self, table, idx_row):
-        '''Create docx table.
-            ---
-            Args:
-              - table: docx table instance
-              - idx_row: current row index
+    def make_docx(self, table, idx_row:int):
+        '''Create row of docx table.
+        
+        Args:
+            table (Table): ``python-docx`` table instance.
+            idx_row (int): Current row index.
         '''  
         # set row height
         docx_row = table.rows[idx_row]

@@ -1,22 +1,18 @@
 # -*- coding: utf-8 -*-
 
-'''
-A group of Shape (Stroke or Fill) instances.
-
-@created: 2020-09-15
-
+'''A group of ``Shape`` instances.
 '''
 
-from .Shape import Shape, Stroke, Fill
+from .Shape import Shape, Stroke, Fill, Hyperlink
 from ..common.share import RectType, lazyproperty
 from ..common.Collection import Collection
 from ..common import share
 
 
 class Shapes(Collection):
-
-    def __init__(self, instances:list=[], parent=None):
-        ''' A collection of Shape instances: Stroke or Fill.'''
+    ''' A collection of ``Shape`` instances: ``Stroke`` or ``Fill``.'''
+    def __init__(self, instances:list=None, parent=None):
+        
         super().__init__(instances, parent)
 
         # properties for context type of shape, e.g. 
@@ -30,10 +26,16 @@ class Shapes(Collection):
 
 
     def restore(self, raws:list):
-        '''Initialize Stroke/Fill from dicts.'''
-        # distinguish Stroke and Fill: whether keys 'start' and 'end' exist in dict
+        '''Clean current instances and restore them from source dicts.'''
+        self.reset()
+        # Distinguish specified type by key like `start`, `end` and `uri`.
         for raw in raws:
-            shape = Stroke(raw) if 'start' in raw else Fill(raw)
+            if 'start' in raw:
+                shape = Stroke(raw)
+            elif 'uri' in raw:
+                shape = Hyperlink(raw)
+            else:
+                shape = Fill(raw)
             # add to list
             self.append(shape)
         
@@ -66,36 +68,50 @@ class Shapes(Collection):
         return Shapes(instances)
 
 
+    @lazyproperty
+    def hyperlinks(self):
+        ''' Hyperlink Shapes.'''
+        instances = list(filter(
+            lambda shape: isinstance(shape, Hyperlink), self._instances))
+        return Shapes(instances)
+
+
     @property
     def table_strokes(self):
-        '''potential table borders.'''
+        '''Potential table borders.'''
         return self._table_strokes
 
     
     @property
     def table_fillings(self):
-        '''potential table shadings.'''
+        '''Potential table shadings.'''
         return self._table_fillings
 
 
     @property
     def text_highlights(self):
-        '''potential text highlights.'''
+        '''Potential text highlights.'''
         return self._text_highlights
 
 
     @property
     def text_underlines_strikes(self):
-        '''potential text underlines and strike-through lines.'''
+        '''Potential text underlines and strike-through lines.'''
         return self._text_underlines_strikes
 
 
     def clean_up(self, max_border_width:float, shape_merging_threshold:float, shape_min_dimension:float):
-        '''Clean rectangles:
-            - delete rectangles fully contained in another one (beside, they have same bg-color)
-            - join intersected and horizontally aligned rectangles with same height and bg-color
-            - join intersected and vertically aligned rectangles with same width and bg-color
-        '''
+        """Clean rectangles.
+
+        * Delete rectangles fully contained in another one (beside, they have same bg-color).
+        * Join intersected and horizontally aligned rectangles with same height and bg-color.
+        * Join intersected and vertically aligned rectangles with same width and bg-color.
+
+        Args:
+            max_border_width (float): The max border width.
+            shape_merging_threshold (float): Merge shape if the intersection exceeds this value.
+            shape_min_dimension (float): Ignore shape if both width and height is lower than this value.
+        """
         if not self._instances: return
         
         # sort in reading order
@@ -109,23 +125,17 @@ class Shapes(Collection):
                         (shape.bbox.width>=shape_min_dimension or shape.bbox.height>=shape_min_dimension)
         shapes = filter(f, self._instances)
 
-        # merge shapes if:
-        # - same filling color, and
-        # - intersected in same raw/col, or overlapped significantly
+        # merge shapes if same filling color and significant overlap
         shapes_unique = [] # type: list [Shape]
         for shape in shapes:
             for ref_shape in shapes_unique:
                 # Do nothing if these two shapes in different bg-color
-                if ref_shape.color!=shape.color: continue     
+                if ref_shape.color!=shape.color: continue
 
-                # # combine two shapes in a same row if any intersection exists
-                # if shape.in_same_row(ref_shape): 
-                #     main_bbox = shape.get_main_bbox(ref_shape, 0.0)
+                # add hyperlink as it is
+                if shape.type==RectType.HYPERLINK or ref_shape.type==RectType.HYPERLINK: continue
 
-                # # combine two shapes if they have a large intersection
-                # else:
                 main_bbox = shape.get_main_bbox(ref_shape, threshold=shape_merging_threshold)
-
                 if main_bbox:
                     ref_shape.update_bbox(main_bbox)
                     break            
@@ -135,18 +145,26 @@ class Shapes(Collection):
         # convert Fill instance to Stroke if looks like stroke
         shapes = []
         for shape in shapes_unique:
-            if isinstance(shape, Stroke):
-                shapes.append(shape)
-            else:
+            if isinstance(shape, Fill):
                 stroke = shape.to_stroke(max_border_width)
                 shapes.append(stroke if stroke else shape)
+            else:
+                shapes.append(shape)
 
         self.reset(shapes)
 
 
     def detect_initial_categories(self):
         ''' Detect shape type based on the position to text blocks. 
-            It should run right after `clean_up()`.
+
+        .. note::
+            Stroke shapes are grouped on connectivity to each other, but in some cases, 
+            the gap between borders and underlines/strikes are very close, which leads
+            to an incorrect table structure. So, it's required to distinguish them in
+            advance, though we needn't to ensure 100% accuracy.
+
+        .. note::
+            It should be run right after ``clean_up()``.
         '''
         # reset all
         self._table_strokes.reset()
@@ -166,7 +184,10 @@ class Shapes(Collection):
             rect_type = shape.semantic_type(blocks)     # type: RectType
 
             # set the type if succeeded
-            if rect_type==RectType.UNDERLINE_OR_STRIKE:
+            if rect_type==RectType.HYPERLINK:
+                continue
+
+            elif rect_type==RectType.UNDERLINE_OR_STRIKE:
                 self._text_underlines_strikes.append(shape)
             
             elif rect_type==RectType.SHADING:
@@ -189,8 +210,52 @@ class Shapes(Collection):
                     self._text_highlights.append(shape)
     
 
+    def assign_to_tables(self, tables:list):
+        """Add Shape to associated cells of given tables.
+
+        Args:
+            tables (list): A list of TableBlock instances.
+        """
+        if not tables: return
+
+        # assign shapes to table region        
+        shapes_in_tables = [[] for _ in tables] # type: list[list[Shape]]
+        shapes = []   # type: list[Shape]
+        for shape in self._instances:
+            # exclude explicit table borders which belongs to current layout
+            if shape.type in (RectType.BORDER, RectType.SHADING):
+                shapes.append(shape)
+                continue
+
+            for table, shapes_in_table in zip(tables, shapes_in_tables):
+                # fully contained in one table
+                if table.bbox.contains(shape.bbox):
+                    shapes_in_table.append(shape)
+                    break
+
+                # not possible in current table, then check next table
+                elif not table.bbox.intersects(shape.bbox):
+                    continue
+            
+            # Now, this shape belongs to previous layout
+            else:
+                shapes.append(shape)
+
+        # assign shapes to associated cells
+        for table, shapes_in_table in zip(tables, shapes_in_tables):
+            # no contents for this table
+            if not shapes_in_table: continue
+            table.assign_shapes(shapes_in_table)
+
+        self.reset(shapes).sort_in_reading_order()
+
+
     def plot(self, page):
-        '''Plot shapes in PDF page.'''
+        '''Plot shapes for debug purpose.
+        
+        Args:
+            page (fitz.Page): pdf page.
+        '''
         # different colors are used to show the shapes in detected semantic types
         # Due to overlaps between Stroke and Fill related groups, some shapes are plot twice.
 

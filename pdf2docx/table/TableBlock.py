@@ -1,36 +1,33 @@
 # -*- coding: utf-8 -*-
 
-'''
-Table block object parsed from raw image and text blocks.
+'''Table block object parsed from raw image and text blocks.
 
-@created: 2020-07-22
+Data Structure::
 
----
-
-{
-    'type': int
-    'bbox': (x0, y0, x1, y1),
-    'rows': [
-        {
-            "bbox": (x0, y0, x1, y1),
-            "height": float,
-            "cells": [
-                {
-                    'bbox': (x0, y0, x1, y1),
-                    'border_color': (sRGB,,,), # top, right, bottom, left
-                    'bg_color': sRGB,
-                    'border_width': (,,,),
-                    'merged_cells': (x,y), # this is the bottom-right cell of merged region: x rows, y cols
-                    'blocks': [ {text blocks} ]
-                }, # end of cell
-                {},
-                None, # merged cell
-                ...
-            ]
-        }, # end of row
-        {...} # more rows
-    ] # end of row
-}
+    {
+        'type': int
+        'bbox': (x0, y0, x1, y1),
+        'rows': [
+            {
+                "bbox": (x0, y0, x1, y1),
+                "height": float,
+                "cells": [
+                    {
+                        'bbox': (x0, y0, x1, y1),
+                        'border_color': (sRGB,,,), # top, right, bottom, left
+                        'bg_color': sRGB,
+                        'border_width': (,,,),
+                        'merged_cells': (x,y), # this is the bottom-right cell of merged region: x rows, y cols
+                        'blocks': [ {text blocks} ]
+                    }, # end of cell
+                    {},
+                    None, # merged cell
+                    ...
+                ]
+            }, # end of row
+            {...} # more rows
+        ] # end of row
+    }
 '''
 
 
@@ -69,20 +66,30 @@ class TableBlock(Block):
 
     @property
     def num_rows(self):
+        '''Count of rows.'''
         return len(self._rows)
 
     @property
     def num_cols(self):
+        '''Count of columns.'''
         return len(self._rows[0]) if self.num_rows else 0
 
     @property
     def text(self):
-        '''Get text contained in each cell.'''
+        '''Get text contained in each cell.
+
+        Returns:
+            list: 2D-list with each element representing text in cell.
+        '''
         return [ [cell.text for cell in row] for row in self._rows ]
 
     
     def append(self, row:Row):
-        '''Append row to table and update bbox accordingly.'''
+        '''Append row to table and update bbox accordingly.
+
+        Args:
+            row (Row): Target row to add.
+        '''
         self._rows.append(row)
 
 
@@ -94,67 +101,62 @@ class TableBlock(Block):
         return res
 
 
-    def plot(self, page, content:bool, style:bool, color:tuple):
-        '''Plot table block, i.e. cell/line/span.
-            ---
-            Args:
-            - page   : fitz.Page object
-            - content: plot text blocks contained in cells if True
-            - style  : plot cell style if True, e.g. border width, shading
-            - color  : border stroke color if style=False
+    def assign_blocks(self, blocks:list):
+        '''Assign ``blocks`` to associated cell.
+
+        Args:
+            blocks (list): A list of text/table blocks.
+        '''
+        for row in self._rows:
+            for cell in row:
+                if not cell: continue
+                cell.assign_blocks(blocks)
+
+
+    def assign_shapes(self, shapes:list):
+        '''Assign ``shapes`` to associated cell.
+
+        Args:
+            shapes (list): A list of Shape.
+        '''
+        for row in self._rows:
+            for cell in row:
+                if not cell: continue
+                cell.assign_shapes(shapes)
+
+
+    def parse(self, settings:dict):
+        '''Parse layout under cell level.
+
+        Args:
+            settings (dict): Layout parsing parameters.
+        '''
+        for row in self._rows:
+            for cell in row:
+                if not cell: continue
+                cell.layout.parse(settings)
+
+
+    def plot(self, page):
+        '''Plot table block, i.e. cell/line/span, for debug purpose.
+        
+        Args:
+            page (fitz.Page): pdf page.
+            content (bool): Plot text blocks contained in cells if True.
+            style (bool): Plot cell style if True, e.g. border width, shading.
+            color (bool): Plot border stroke color if ``style=False``.
         '''
         for row in self._rows:
             for cell in row:                
                 if not cell: continue  # ignore merged cells   
-                cell.plot(page, content=content, style=style, color=color)
-
-
-    def set_table_contents(self, blocks:list, settings:dict):
-        '''Assign `blocks` to associated cell.'''
-        for row in self._rows:
-            for cell in row:
-                if not cell: continue
-                # check candidate blocks
-                for block in blocks: cell.add(block)
-
-                # rearrange blocks lines
-                cell.blocks.join_horizontally(text_direction=True, 
-                			line_overlap_threshold=settings['line_overlap_threshold'],
-                			line_merging_threshold=settings['line_merging_threshold']).split_vertically()
-
-                # for lattice table, check cell blocks layout further
-                if self.is_lattice_table_block() and \
-                    cell.blocks.collect_stream_lines([], settings['float_layout_tolerance'], settings['line_separate_threshold']):
-                    cell.set_stream_table_layout(settings)                
-
-
-    def parse_text_format(self, rects):
-        '''Parse text format for blocks contained in each cell.
-            ---
-            Args:
-              - rects: Shapes, format styles are represented by these rectangles.
-        '''
-        for row in self._rows:
-            for cell in row:
-                if not cell: continue
-                cell.blocks.parse_text_format(rects)
-        
-        return True # always return True if table is parsed
-
-
-    def parse_spacing(self, *args):
-        ''' Calculate vertical space for blocks contained in table cells.'''
-        for row in self._rows:
-            for cell in row:
-                if not cell: continue
-                cell.blocks.parse_spacing(*args)
+                cell.plot(page)
 
 
     def make_docx(self, table):
         '''Create docx table.
-            ---
-            Args:
-              - table: docx table instance
+        
+        Args:
+            table (Table): ``python-docx`` table instance.
         '''
         # set left indent
         docx.indent_table(table, self.left_space)

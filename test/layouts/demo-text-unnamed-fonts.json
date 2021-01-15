@@ -4,11 +4,10 @@
     "pages": [
         {
             "id": 0,
-            "finalized": 1,
             "width": 595.0,
             "height": 842.0,
             "margin": [
-                42.5,
+                72.0,
                 72.0,
                 50.0,
                 72.0
@@ -23,14 +22,14 @@
                     ],
                     "type": 0,
                     "alignment": 1,
-                    "left_space": 42.6,
-                    "right_space": 42.6,
+                    "left_space": 13.1,
+                    "right_space": 13.1,
                     "first_line_space": 0.0,
                     "before_space": 48.900000000000006,
                     "after_space": 2.0,
                     "line_space": 12.0,
                     "tab_stops": [],
-                    "left_space_total": 42.6,
+                    "left_space_total": 13.1,
                     "right_space_total": 342.8,
                     "lines": [
                         {
@@ -392,14 +391,14 @@
                 },
                 {
                     "bbox": [
-                        42.5,
+                        78.5,
                         136.9,
-                        466.9,
+                        430.9,
                         352.1
                     ],
                     "type": 3,
                     "alignment": 1,
-                    "left_space": 0.0,
+                    "left_space": 6.5,
                     "right_space": 0.0,
                     "first_line_space": 0.0,
                     "before_space": 0.0,
@@ -411,16 +410,16 @@
                     "rows": [
                         {
                             "bbox": [
-                                42.5,
+                                78.5,
                                 136.9,
-                                466.9,
+                                430.9,
                                 168.9
                             ],
                             "height": 32.0,
                             "cells": [
                                 {
                                     "bbox": [
-                                        42.5,
+                                        78.5,
                                         136.9,
                                         165.2,
                                         168.9
@@ -452,14 +451,14 @@
                                             ],
                                             "type": 0,
                                             "alignment": 1,
-                                            "left_space": 42.6,
-                                            "right_space": 42.6,
+                                            "left_space": 6.6,
+                                            "right_space": 6.6,
                                             "first_line_space": 0.0,
                                             "before_space": 21.0,
                                             "after_space": 0.0,
                                             "line_space": 9.900000000000006,
                                             "tab_stops": [],
-                                            "left_space_total": 42.6,
+                                            "left_space_total": 6.6,
                                             "right_space_total": 77.4,
                                             "lines": [
                                                 {
@@ -515,7 +514,7 @@
                                     "bbox": [
                                         165.2,
                                         136.9,
-                                        466.9,
+                                        430.9,
                                         168.9
                                     ],
                                     "bg_color": null,
@@ -553,7 +552,7 @@
                                             "line_space": 21.5,
                                             "tab_stops": [],
                                             "left_space_total": 77.4,
-                                            "right_space_total": 147.2,
+                                            "right_space_total": 111.2,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -686,19 +685,19 @@
                         },
                         {
                             "bbox": [
-                                42.5,
+                                78.5,
                                 168.9,
-                                466.9,
-                                180.9
+                                430.9,
+                                352.1
                             ],
-                            "height": 12.0,
+                            "height": 183.20000000000002,
                             "cells": [
                                 {
                                     "bbox": [
-                                        42.5,
+                                        78.5,
                                         168.9,
-                                        466.9,
-                                        180.9
+                                        430.9,
+                                        352.1
                                     ],
                                     "bg_color": null,
                                     "border_color": [
@@ -722,20 +721,23 @@
                                             "bbox": [
                                                 85.1,
                                                 169.9,
-                                                87.8,
-                                                179.8
+                                                338.8,
+                                                348.3
                                             ],
                                             "type": 0,
                                             "alignment": 1,
-                                            "left_space": 42.6,
-                                            "right_space": 42.6,
+                                            "left_space": 6.6,
+                                            "right_space": 6.6,
                                             "first_line_space": 0.0,
-                                            "before_space": 1.0,
+                                            "before_space": 0.0,
                                             "after_space": 0.0,
-                                            "line_space": 9.900000000000006,
-                                            "tab_stops": [],
-                                            "left_space_total": 42.6,
-                                            "right_space_total": 379.1,
+                                            "line_space": 11.96,
+                                            "tab_stops": [
+                                                10.1,
+                                                15.0
+                                            ],
+                                            "left_space_total": 6.6,
+                                            "right_space_total": 92.1,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -749,7 +751,7 @@
                                                         1.0,
                                                         0.0
                                                     ],
-                                                    "line_break": 0,
+                                                    "line_break": 1,
                                                     "spans": [
                                                         {
                                                             "bbox": [
@@ -781,67 +783,7 @@
                                                             "style": []
                                                         }
                                                     ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                null
-                            ]
-                        },
-                        {
-                            "bbox": [
-                                42.5,
-                                180.9,
-                                466.9,
-                                192.4
-                            ],
-                            "height": 11.5,
-                            "cells": [
-                                {
-                                    "bbox": [
-                                        42.5,
-                                        180.9,
-                                        466.9,
-                                        192.4
-                                    ],
-                                    "bg_color": null,
-                                    "border_color": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "border_width": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ],
-                                    "merged_cells": [
-                                        1,
-                                        2
-                                    ],
-                                    "blocks": [
-                                        {
-                                            "bbox": [
-                                                85.1,
-                                                181.9,
-                                                87.8,
-                                                191.8
-                                            ],
-                                            "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 42.6,
-                                            "right_space": 42.6,
-                                            "first_line_space": 0.0,
-                                            "before_space": 1.0,
-                                            "after_space": 0.0,
-                                            "line_space": 9.900000000000006,
-                                            "tab_stops": [],
-                                            "left_space_total": 42.6,
-                                            "right_space_total": 379.1,
-                                            "lines": [
+                                                },
                                                 {
                                                     "bbox": [
                                                         85.1,
@@ -854,7 +796,7 @@
                                                         1.0,
                                                         0.0
                                                     ],
-                                                    "line_break": 0,
+                                                    "line_break": 1,
                                                     "spans": [
                                                         {
                                                             "bbox": [
@@ -886,67 +828,7 @@
                                                             "style": []
                                                         }
                                                     ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                null
-                            ]
-                        },
-                        {
-                            "bbox": [
-                                42.5,
-                                192.4,
-                                466.9,
-                                204.9
-                            ],
-                            "height": 12.5,
-                            "cells": [
-                                {
-                                    "bbox": [
-                                        42.5,
-                                        192.4,
-                                        466.9,
-                                        204.9
-                                    ],
-                                    "bg_color": null,
-                                    "border_color": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "border_width": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ],
-                                    "merged_cells": [
-                                        1,
-                                        2
-                                    ],
-                                    "blocks": [
-                                        {
-                                            "bbox": [
-                                                85.1,
-                                                192.9,
-                                                176.8,
-                                                203.8
-                                            ],
-                                            "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 42.6,
-                                            "right_space": 42.6,
-                                            "first_line_space": 0.0,
-                                            "before_space": 0.5,
-                                            "after_space": 0.0,
-                                            "line_space": 10.900000000000006,
-                                            "tab_stops": [],
-                                            "left_space_total": 42.6,
-                                            "right_space_total": 290.1,
-                                            "lines": [
+                                                },
                                                 {
                                                     "bbox": [
                                                         85.1,
@@ -959,7 +841,7 @@
                                                         1.0,
                                                         0.0
                                                     ],
-                                                    "line_break": 0,
+                                                    "line_break": 1,
                                                     "spans": [
                                                         {
                                                             "bbox": [
@@ -1198,67 +1080,7 @@
                                                             "style": []
                                                         }
                                                     ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                null
-                            ]
-                        },
-                        {
-                            "bbox": [
-                                42.5,
-                                204.9,
-                                466.9,
-                                216.4
-                            ],
-                            "height": 11.5,
-                            "cells": [
-                                {
-                                    "bbox": [
-                                        42.5,
-                                        204.9,
-                                        466.9,
-                                        216.4
-                                    ],
-                                    "bg_color": null,
-                                    "border_color": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "border_width": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ],
-                                    "merged_cells": [
-                                        1,
-                                        2
-                                    ],
-                                    "blocks": [
-                                        {
-                                            "bbox": [
-                                                85.1,
-                                                205.9,
-                                                87.8,
-                                                215.8
-                                            ],
-                                            "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 42.6,
-                                            "right_space": 42.6,
-                                            "first_line_space": 0.0,
-                                            "before_space": 1.0,
-                                            "after_space": 0.0,
-                                            "line_space": 9.900000000000006,
-                                            "tab_stops": [],
-                                            "left_space_total": 42.6,
-                                            "right_space_total": 379.1,
-                                            "lines": [
+                                                },
                                                 {
                                                     "bbox": [
                                                         85.1,
@@ -1271,7 +1093,7 @@
                                                         1.0,
                                                         0.0
                                                     ],
-                                                    "line_break": 0,
+                                                    "line_break": 1,
                                                     "spans": [
                                                         {
                                                             "bbox": [
@@ -1303,67 +1125,7 @@
                                                             "style": []
                                                         }
                                                     ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                null
-                            ]
-                        },
-                        {
-                            "bbox": [
-                                42.5,
-                                216.4,
-                                466.9,
-                                228.9
-                            ],
-                            "height": 12.5,
-                            "cells": [
-                                {
-                                    "bbox": [
-                                        42.5,
-                                        216.4,
-                                        466.9,
-                                        228.9
-                                    ],
-                                    "bg_color": null,
-                                    "border_color": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "border_width": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ],
-                                    "merged_cells": [
-                                        1,
-                                        2
-                                    ],
-                                    "blocks": [
-                                        {
-                                            "bbox": [
-                                                95.2,
-                                                216.9,
-                                                318.7,
-                                                227.8
-                                            ],
-                                            "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 52.7,
-                                            "right_space": 52.7,
-                                            "first_line_space": 0.0,
-                                            "before_space": 0.5,
-                                            "after_space": 0.0,
-                                            "line_space": 10.900000000000006,
-                                            "tab_stops": [],
-                                            "left_space_total": 52.7,
-                                            "right_space_total": 148.2,
-                                            "lines": [
+                                                },
                                                 {
                                                     "bbox": [
                                                         95.2,
@@ -1376,7 +1138,7 @@
                                                         1.0,
                                                         0.0
                                                     ],
-                                                    "line_break": 0,
+                                                    "line_break": 1,
                                                     "spans": [
                                                         {
                                                             "bbox": [
@@ -1977,67 +1739,7 @@
                                                             "style": []
                                                         }
                                                     ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                null
-                            ]
-                        },
-                        {
-                            "bbox": [
-                                42.5,
-                                228.9,
-                                466.9,
-                                240.4
-                            ],
-                            "height": 11.5,
-                            "cells": [
-                                {
-                                    "bbox": [
-                                        42.5,
-                                        228.9,
-                                        466.9,
-                                        240.4
-                                    ],
-                                    "bg_color": null,
-                                    "border_color": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "border_width": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ],
-                                    "merged_cells": [
-                                        1,
-                                        2
-                                    ],
-                                    "blocks": [
-                                        {
-                                            "bbox": [
-                                                85.1,
-                                                229.9,
-                                                87.8,
-                                                239.8
-                                            ],
-                                            "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 42.6,
-                                            "right_space": 42.6,
-                                            "first_line_space": 0.0,
-                                            "before_space": 1.0,
-                                            "after_space": 0.0,
-                                            "line_space": 9.900000000000006,
-                                            "tab_stops": [],
-                                            "left_space_total": 42.6,
-                                            "right_space_total": 379.1,
-                                            "lines": [
+                                                },
                                                 {
                                                     "bbox": [
                                                         85.1,
@@ -2050,7 +1752,7 @@
                                                         1.0,
                                                         0.0
                                                     ],
-                                                    "line_break": 0,
+                                                    "line_break": 1,
                                                     "spans": [
                                                         {
                                                             "bbox": [
@@ -2082,67 +1784,7 @@
                                                             "style": []
                                                         }
                                                     ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                null
-                            ]
-                        },
-                        {
-                            "bbox": [
-                                42.5,
-                                240.4,
-                                466.9,
-                                252.9
-                            ],
-                            "height": 12.5,
-                            "cells": [
-                                {
-                                    "bbox": [
-                                        42.5,
-                                        240.4,
-                                        466.9,
-                                        252.9
-                                    ],
-                                    "bg_color": null,
-                                    "border_color": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "border_width": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ],
-                                    "merged_cells": [
-                                        1,
-                                        2
-                                    ],
-                                    "blocks": [
-                                        {
-                                            "bbox": [
-                                                95.2,
-                                                240.9,
-                                                338.8,
-                                                251.8
-                                            ],
-                                            "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 52.7,
-                                            "right_space": 52.7,
-                                            "first_line_space": 0.0,
-                                            "before_space": 0.5,
-                                            "after_space": 0.0,
-                                            "line_space": 10.900000000000006,
-                                            "tab_stops": [],
-                                            "left_space_total": 52.7,
-                                            "right_space_total": 128.1,
-                                            "lines": [
+                                                },
                                                 {
                                                     "bbox": [
                                                         95.2,
@@ -2155,7 +1797,7 @@
                                                         1.0,
                                                         0.0
                                                     ],
-                                                    "line_break": 0,
+                                                    "line_break": 1,
                                                     "spans": [
                                                         {
                                                             "bbox": [
@@ -2782,67 +2424,7 @@
                                                             "style": []
                                                         }
                                                     ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                null
-                            ]
-                        },
-                        {
-                            "bbox": [
-                                42.5,
-                                252.9,
-                                466.9,
-                                264.4
-                            ],
-                            "height": 11.499999999999972,
-                            "cells": [
-                                {
-                                    "bbox": [
-                                        42.5,
-                                        252.9,
-                                        466.9,
-                                        264.4
-                                    ],
-                                    "bg_color": null,
-                                    "border_color": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "border_width": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ],
-                                    "merged_cells": [
-                                        1,
-                                        2
-                                    ],
-                                    "blocks": [
-                                        {
-                                            "bbox": [
-                                                85.1,
-                                                253.9,
-                                                87.8,
-                                                263.8
-                                            ],
-                                            "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 42.6,
-                                            "right_space": 42.6,
-                                            "first_line_space": 0.0,
-                                            "before_space": 1.0,
-                                            "after_space": 0.0,
-                                            "line_space": 9.900000000000006,
-                                            "tab_stops": [],
-                                            "left_space_total": 42.6,
-                                            "right_space_total": 379.1,
-                                            "lines": [
+                                                },
                                                 {
                                                     "bbox": [
                                                         85.1,
@@ -2855,7 +2437,7 @@
                                                         1.0,
                                                         0.0
                                                     ],
-                                                    "line_break": 0,
+                                                    "line_break": 1,
                                                     "spans": [
                                                         {
                                                             "bbox": [
@@ -2887,67 +2469,7 @@
                                                             "style": []
                                                         }
                                                     ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                null
-                            ]
-                        },
-                        {
-                            "bbox": [
-                                42.5,
-                                264.4,
-                                466.9,
-                                276.9
-                            ],
-                            "height": 12.5,
-                            "cells": [
-                                {
-                                    "bbox": [
-                                        42.5,
-                                        264.4,
-                                        466.9,
-                                        276.9
-                                    ],
-                                    "bg_color": null,
-                                    "border_color": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "border_width": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ],
-                                    "merged_cells": [
-                                        1,
-                                        2
-                                    ],
-                                    "blocks": [
-                                        {
-                                            "bbox": [
-                                                100.1,
-                                                264.9,
-                                                281.2,
-                                                275.8
-                                            ],
-                                            "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 57.6,
-                                            "right_space": 57.6,
-                                            "first_line_space": 0.0,
-                                            "before_space": 0.5,
-                                            "after_space": 0.0,
-                                            "line_space": 10.900000000000034,
-                                            "tab_stops": [],
-                                            "left_space_total": 57.6,
-                                            "right_space_total": 185.7,
-                                            "lines": [
+                                                },
                                                 {
                                                     "bbox": [
                                                         100.1,
@@ -2960,7 +2482,7 @@
                                                         1.0,
                                                         0.0
                                                     ],
-                                                    "line_break": 0,
+                                                    "line_break": 1,
                                                     "spans": [
                                                         {
                                                             "bbox": [
@@ -3435,67 +2957,7 @@
                                                             "style": []
                                                         }
                                                     ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                null
-                            ]
-                        },
-                        {
-                            "bbox": [
-                                42.5,
-                                276.9,
-                                466.9,
-                                288.9
-                            ],
-                            "height": 12.0,
-                            "cells": [
-                                {
-                                    "bbox": [
-                                        42.5,
-                                        276.9,
-                                        466.9,
-                                        288.9
-                                    ],
-                                    "bg_color": null,
-                                    "border_color": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "border_width": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ],
-                                    "merged_cells": [
-                                        1,
-                                        2
-                                    ],
-                                    "blocks": [
-                                        {
-                                            "bbox": [
-                                                85.1,
-                                                277.9,
-                                                87.8,
-                                                287.8
-                                            ],
-                                            "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 42.6,
-                                            "right_space": 42.6,
-                                            "first_line_space": 0.0,
-                                            "before_space": 1.0,
-                                            "after_space": 0.0,
-                                            "line_space": 9.900000000000034,
-                                            "tab_stops": [],
-                                            "left_space_total": 42.6,
-                                            "right_space_total": 379.1,
-                                            "lines": [
+                                                },
                                                 {
                                                     "bbox": [
                                                         85.1,
@@ -3508,7 +2970,7 @@
                                                         1.0,
                                                         0.0
                                                     ],
-                                                    "line_break": 0,
+                                                    "line_break": 1,
                                                     "spans": [
                                                         {
                                                             "bbox": [
@@ -3540,67 +3002,7 @@
                                                             "style": []
                                                         }
                                                     ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                null
-                            ]
-                        },
-                        {
-                            "bbox": [
-                                42.5,
-                                288.9,
-                                466.9,
-                                300.9
-                            ],
-                            "height": 12.0,
-                            "cells": [
-                                {
-                                    "bbox": [
-                                        42.5,
-                                        288.9,
-                                        466.9,
-                                        300.9
-                                    ],
-                                    "bg_color": null,
-                                    "border_color": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "border_width": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ],
-                                    "merged_cells": [
-                                        1,
-                                        2
-                                    ],
-                                    "blocks": [
-                                        {
-                                            "bbox": [
-                                                85.1,
-                                                289.9,
-                                                87.8,
-                                                299.8
-                                            ],
-                                            "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 42.6,
-                                            "right_space": 42.6,
-                                            "first_line_space": 0.0,
-                                            "before_space": 1.0,
-                                            "after_space": 0.0,
-                                            "line_space": 9.900000000000034,
-                                            "tab_stops": [],
-                                            "left_space_total": 42.6,
-                                            "right_space_total": 379.1,
-                                            "lines": [
+                                                },
                                                 {
                                                     "bbox": [
                                                         85.1,
@@ -3613,7 +3015,7 @@
                                                         1.0,
                                                         0.0
                                                     ],
-                                                    "line_break": 0,
+                                                    "line_break": 1,
                                                     "spans": [
                                                         {
                                                             "bbox": [
@@ -3645,67 +3047,7 @@
                                                             "style": []
                                                         }
                                                     ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                null
-                            ]
-                        },
-                        {
-                            "bbox": [
-                                42.5,
-                                300.9,
-                                466.9,
-                                312.9
-                            ],
-                            "height": 12.0,
-                            "cells": [
-                                {
-                                    "bbox": [
-                                        42.5,
-                                        300.9,
-                                        466.9,
-                                        312.9
-                                    ],
-                                    "bg_color": null,
-                                    "border_color": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "border_width": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ],
-                                    "merged_cells": [
-                                        1,
-                                        2
-                                    ],
-                                    "blocks": [
-                                        {
-                                            "bbox": [
-                                                85.1,
-                                                301.9,
-                                                87.8,
-                                                311.8
-                                            ],
-                                            "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 42.6,
-                                            "right_space": 42.6,
-                                            "first_line_space": 0.0,
-                                            "before_space": 1.0,
-                                            "after_space": 0.0,
-                                            "line_space": 9.900000000000034,
-                                            "tab_stops": [],
-                                            "left_space_total": 42.6,
-                                            "right_space_total": 379.1,
-                                            "lines": [
+                                                },
                                                 {
                                                     "bbox": [
                                                         85.1,
@@ -3718,7 +3060,7 @@
                                                         1.0,
                                                         0.0
                                                     ],
-                                                    "line_break": 0,
+                                                    "line_break": 1,
                                                     "spans": [
                                                         {
                                                             "bbox": [
@@ -3750,67 +3092,7 @@
                                                             "style": []
                                                         }
                                                     ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                null
-                            ]
-                        },
-                        {
-                            "bbox": [
-                                42.5,
-                                312.9,
-                                466.9,
-                                324.4
-                            ],
-                            "height": 11.5,
-                            "cells": [
-                                {
-                                    "bbox": [
-                                        42.5,
-                                        312.9,
-                                        466.9,
-                                        324.4
-                                    ],
-                                    "bg_color": null,
-                                    "border_color": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "border_width": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ],
-                                    "merged_cells": [
-                                        1,
-                                        2
-                                    ],
-                                    "blocks": [
-                                        {
-                                            "bbox": [
-                                                85.1,
-                                                313.9,
-                                                87.8,
-                                                323.8
-                                            ],
-                                            "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 42.6,
-                                            "right_space": 42.6,
-                                            "first_line_space": 0.0,
-                                            "before_space": 1.0,
-                                            "after_space": 0.0,
-                                            "line_space": 9.900000000000034,
-                                            "tab_stops": [],
-                                            "left_space_total": 42.6,
-                                            "right_space_total": 379.1,
-                                            "lines": [
+                                                },
                                                 {
                                                     "bbox": [
                                                         85.1,
@@ -3823,7 +3105,7 @@
                                                         1.0,
                                                         0.0
                                                     ],
-                                                    "line_break": 0,
+                                                    "line_break": 1,
                                                     "spans": [
                                                         {
                                                             "bbox": [
@@ -3855,67 +3137,7 @@
                                                             "style": []
                                                         }
                                                     ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                null
-                            ]
-                        },
-                        {
-                            "bbox": [
-                                42.5,
-                                324.4,
-                                466.9,
-                                337.1
-                            ],
-                            "height": 12.700000000000045,
-                            "cells": [
-                                {
-                                    "bbox": [
-                                        42.5,
-                                        324.4,
-                                        466.9,
-                                        337.1
-                                    ],
-                                    "bg_color": null,
-                                    "border_color": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "border_width": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ],
-                                    "merged_cells": [
-                                        1,
-                                        2
-                                    ],
-                                    "blocks": [
-                                        {
-                                            "bbox": [
-                                                85.1,
-                                                324.9,
-                                                216.8,
-                                                335.8
-                                            ],
-                                            "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 42.6,
-                                            "right_space": 42.6,
-                                            "first_line_space": 0.0,
-                                            "before_space": 0.5,
-                                            "after_space": 0.0,
-                                            "line_space": 10.900000000000034,
-                                            "tab_stops": [],
-                                            "left_space_total": 42.6,
-                                            "right_space_total": 250.1,
-                                            "lines": [
+                                                },
                                                 {
                                                     "bbox": [
                                                         85.1,
@@ -3928,7 +3150,7 @@
                                                         1.0,
                                                         0.0
                                                     ],
-                                                    "line_break": 0,
+                                                    "line_break": 1,
                                                     "spans": [
                                                         {
                                                             "bbox": [
@@ -4296,67 +3518,7 @@
                                                             "style": []
                                                         }
                                                     ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                null
-                            ]
-                        },
-                        {
-                            "bbox": [
-                                42.5,
-                                337.1,
-                                466.9,
-                                352.1
-                            ],
-                            "height": 15.0,
-                            "cells": [
-                                {
-                                    "bbox": [
-                                        42.5,
-                                        337.1,
-                                        466.9,
-                                        352.1
-                                    ],
-                                    "bg_color": null,
-                                    "border_color": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "border_width": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ],
-                                    "merged_cells": [
-                                        1,
-                                        2
-                                    ],
-                                    "blocks": [
-                                        {
-                                            "bbox": [
-                                                85.1,
-                                                338.4,
-                                                87.8,
-                                                348.3
-                                            ],
-                                            "type": 0,
-                                            "alignment": 1,
-                                            "left_space": 42.6,
-                                            "right_space": 42.6,
-                                            "first_line_space": 0.0,
-                                            "before_space": 1.2999999999999545,
-                                            "after_space": 0.0,
-                                            "line_space": 9.900000000000034,
-                                            "tab_stops": [],
-                                            "left_space_total": 42.6,
-                                            "right_space_total": 379.1,
-                                            "lines": [
+                                                },
                                                 {
                                                     "bbox": [
                                                         85.1,
@@ -4420,7 +3582,7 @@
                     ],
                     "type": 2,
                     "alignment": 1,
-                    "left_space": 41.8,
+                    "left_space": 12.299999999999997,
                     "right_space": 0.0,
                     "first_line_space": 0.0,
                     "before_space": 3.5,

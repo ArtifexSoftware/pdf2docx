@@ -4,14 +4,13 @@
     "pages": [
         {
             "id": 0,
-            "finalized": 1,
             "width": 612.0,
             "height": 792.0,
             "margin": [
                 36.0,
-                26.20001220703125,
+                26.2,
                 24.0,
-                43.95001220703125
+                44.0
             ],
             "blocks": [
                 {
@@ -100,7 +99,7 @@
                                     "bbox": [
                                         36.0,
                                         141.4,
-                                        564.0,
+                                        52.0,
                                         152.6
                                     ],
                                     "color": 0,
@@ -146,7 +145,23 @@
                                                 46.43998336791992,
                                                 150.000244140625
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "The",
+                                    "style": []
+                                },
+                                {
+                                    "bbox": [
+                                        52.0,
+                                        141.4,
+                                        83.0,
+                                        152.6
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 51.5,
@@ -250,7 +265,29 @@
                                                 81.59996795654297,
                                                 150.000244140625
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": " pdf995 ",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        83.0,
+                                        141.4,
+                                        159.0,
+                                        152.6
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 84.1,
@@ -510,7 +547,23 @@
                                                 155.63992309570312,
                                                 150.000244140625
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "suite of products - ",
+                                    "style": []
+                                },
+                                {
+                                    "bbox": [
+                                        159.0,
+                                        141.4,
+                                        191.0,
+                                        152.6
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 158.0,
@@ -614,7 +667,29 @@
                                                 189.11990356445312,
                                                 150.000244140625
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "Pdf995, ",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        193.0,
+                                        141.4,
+                                        241.0,
+                                        152.6
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 191.6,
@@ -770,7 +845,29 @@
                                                 238.19985961914062,
                                                 150.000244140625
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "PdfEdit995, ",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdfedit995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        241.0,
+                                        141.4,
+                                        259.0,
+                                        152.6
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 240.7,
@@ -822,7 +919,23 @@
                                                 255.7198486328125,
                                                 150.000244140625
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "and ",
+                                    "style": []
+                                },
+                                {
+                                    "bbox": [
+                                        259.0,
+                                        141.4,
+                                        316.0,
+                                        152.6
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 258.2,
@@ -1004,7 +1117,29 @@
                                                 314.2799072265625,
                                                 150.000244140625
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "Signature995 -",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.signature995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        316.0,
+                                        141.4,
+                                        564.0,
+                                        152.6
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 317.3,
@@ -1825,7 +1960,7 @@
                                             ]
                                         }
                                     ],
-                                    "text": "The pdf995 suite of products - Pdf995, PdfEdit995, and Signature995 - is a complete solution for your document publishing needs. It ",
+                                    "text": " is a complete solution for your document publishing needs. It ",
                                     "style": []
                                 }
                             ]
@@ -3341,13 +3476,19 @@
                                         }
                                     ],
                                     "text": "Pdf995",
-                                    "style": []
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
+                                        }
+                                    ]
                                 },
                                 {
                                     "bbox": [
                                         65.6,
                                         173.7,
-                                        570.3,
+                                        71.0,
                                         184.8
                                     ],
                                     "color": 0,
@@ -3367,7 +3508,29 @@
                                                 65.63996887207031,
                                                 182.2802734375
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": " ",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        71.0,
+                                        173.7,
+                                        570.3,
+                                        184.8
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 68.0,
@@ -5033,7 +5196,7 @@
                                             ]
                                         }
                                     ],
-                                    "text": " makes it easy and affordable to create professional-quality documents in the popular PDF file format. Its easy-to-use interface ",
+                                    "text": "makes it easy and affordable to create professional-quality documents in the popular PDF file format. Its easy-to-use interface ",
                                     "style": []
                                 }
                             ]
@@ -5056,7 +5219,7 @@
                                     "bbox": [
                                         36.0,
                                         185.2,
-                                        567.2,
+                                        177.0,
                                         196.4
                                     ],
                                     "color": 0,
@@ -5531,7 +5694,23 @@
                                                 172.07992553710938,
                                                 193.80029296875
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "helps you to create PDF files by sim",
+                                    "style": []
+                                },
+                                {
+                                    "bbox": [
+                                        177.0,
+                                        185.2,
+                                        208.0,
+                                        196.4
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 179.6,
@@ -5635,7 +5814,29 @@
                                                 205.07989501953125,
                                                 193.80029296875
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "ply sele",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        208.0,
+                                        185.2,
+                                        567.2,
+                                        196.4
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 210.1,
@@ -6768,7 +6969,7 @@
                                             ]
                                         }
                                     ],
-                                    "text": "helps you to create PDF files by simply selecting the \"print\" command from any application, creating documents which can be viewed ",
+                                    "text": "cting the \"print\" command from any application, creating documents which can be viewed ",
                                     "style": []
                                 }
                             ]
@@ -6791,7 +6992,7 @@
                                     "bbox": [
                                         36.0,
                                         196.4,
-                                        559.8,
+                                        177.0,
                                         207.5
                                     ],
                                     "color": 0,
@@ -7227,7 +7428,23 @@
                                                 174.95985412597656,
                                                 204.96026611328125
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "on any computer with a PDF viewer",
+                                    "style": []
+                                },
+                                {
+                                    "bbox": [
+                                        177.0,
+                                        196.4,
+                                        183.0,
+                                        207.5
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 178.0,
@@ -7253,7 +7470,29 @@
                                                 180.4798583984375,
                                                 204.96026611328125
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": ". ",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        183.0,
+                                        196.4,
+                                        208.0,
+                                        207.5
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 183.0,
@@ -7318,7 +7557,34 @@
                                                 201.59983825683594,
                                                 204.96026611328125
                                             ]
+                                        }
+                                    ],
+                                    "text": "Pdf99",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
                                         },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        208.0,
+                                        196.4,
+                                        214.0,
+                                        207.5
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 206.6,
@@ -7344,7 +7610,29 @@
                                                 211.67982482910156,
                                                 204.96026611328125
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "5 ",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        214.0,
+                                        196.4,
+                                        495.0,
+                                        207.5
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 214.1,
@@ -8280,7 +8568,23 @@
                                                 492.2397766113281,
                                                 204.96026611328125
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "supports network file saving, fast user switching on XP, Citrix/Terminal",
+                                    "style": []
+                                },
+                                {
+                                    "bbox": [
+                                        495.0,
+                                        196.4,
+                                        525.0,
+                                        207.5
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 494.3,
@@ -8384,7 +8688,29 @@
                                                 523.19970703125,
                                                 204.96026611328125
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": " Server,",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        525.0,
+                                        196.4,
+                                        559.8,
+                                        207.5
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 525.7,
@@ -8490,7 +8816,7 @@
                                             ]
                                         }
                                     ],
-                                    "text": "on any computer with a PDF viewer. Pdf995 supports network file saving, fast user switching on XP, Citrix/Terminal Server, custom ",
+                                    "text": " custom ",
                                     "style": []
                                 }
                             ]
@@ -8513,7 +8839,7 @@
                                     "bbox": [
                                         36.0,
                                         207.7,
-                                        554.9,
+                                        183.0,
                                         218.8
                                     ],
                                     "color": 0,
@@ -9014,7 +9340,23 @@
                                                 181.6794891357422,
                                                 216.24029541015625
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "page sizes and large format printing. ",
+                                    "style": []
+                                },
+                                {
+                                    "bbox": [
+                                        183.0,
+                                        207.7,
+                                        214.0,
+                                        218.8
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 184.2,
@@ -9092,7 +9434,29 @@
                                                 207.71946716308594,
                                                 216.24029541015625
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "Pdf995",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        214.0,
+                                        207.7,
+                                        495.0,
+                                        218.8
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 212.8,
@@ -10041,7 +10405,23 @@
                                                 489.2393493652344,
                                                 216.24029541015625
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": " is a printer driver that works with any Postscript to PDF converter. The",
+                                    "style": []
+                                },
+                                {
+                                    "bbox": [
+                                        495.0,
+                                        207.7,
+                                        525.0,
+                                        218.8
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 494.3,
@@ -10132,7 +10512,29 @@
                                                 519.2392578125,
                                                 216.24029541015625
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": " pdf995",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        525.0,
+                                        207.7,
+                                        554.9,
+                                        218.8
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 524.3,
@@ -10251,7 +10653,7 @@
                                             ]
                                         }
                                     ],
-                                    "text": "page sizes and large format printing. Pdf995 is a printer driver that works with any Postscript to PDF converter. The pdf995 printer ",
+                                    "text": " printer ",
                                     "style": []
                                 }
                             ]
@@ -11260,13 +11662,19 @@
                                         }
                                     ],
                                     "text": "PdfEdit995",
-                                    "style": []
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdfedit995.com"
+                                        }
+                                    ]
                                 },
                                 {
                                     "bbox": [
                                         82.6,
                                         239.9,
-                                        545.9,
+                                        88.0,
                                         251.1
                                     ],
                                     "color": 0,
@@ -11299,7 +11707,29 @@
                                                 85.0799560546875,
                                                 248.520263671875
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": " o",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdfedit995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        88.0,
+                                        239.9,
+                                        545.9,
+                                        251.1
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 90.1,
@@ -12835,7 +13265,7 @@
                                             ]
                                         }
                                     ],
-                                    "text": " offers a wealth of additional functionality, such as: combining documents into a single PDF; automatic link insertion; ",
+                                    "text": "ffers a wealth of additional functionality, such as: combining documents into a single PDF; automatic link insertion; ",
                                     "style": []
                                 }
                             ]
@@ -15787,13 +16217,19 @@
                                         }
                                     ],
                                     "text": "Signature995",
-                                    "style": []
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.signature995.com"
+                                        }
+                                    ]
                                 },
                                 {
                                     "bbox": [
                                         92.6,
                                         283.7,
-                                        490.9,
+                                        101.0,
                                         294.9
                                     ],
                                     "color": 0,
@@ -15826,7 +16262,29 @@
                                                 95.15995788574219,
                                                 292.3202209472656
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": " o",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.signature995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        101.0,
+                                        283.7,
+                                        490.9,
+                                        294.9
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 100.1,
@@ -17141,7 +17599,7 @@
                                             ]
                                         }
                                     ],
-                                    "text": " offers state-of-the-art security and encryption to protect your documents and add digital signatures. ",
+                                    "text": "ffers state-of-the-art security and encryption to protect your documents and add digital signatures. ",
                                     "style": []
                                 }
                             ]
@@ -17185,7 +17643,7 @@
                                     "bbox": [
                                         109.6,
                                         348.7,
-                                        368.2,
+                                        125.0,
                                         360.0
                                     ],
                                     "color": 10092544,
@@ -17231,7 +17689,23 @@
                                                 120.59993743896484,
                                                 357.24017333984375
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "The",
+                                    "style": []
+                                },
+                                {
+                                    "bbox": [
+                                        125.0,
+                                        348.7,
+                                        156.0,
+                                        360.0
+                                    ],
+                                    "color": 10092544,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 20,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 125.6,
@@ -17322,7 +17796,29 @@
                                                 152.63992309570312,
                                                 357.24017333984375
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": " Pdf995",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        156.0,
+                                        348.7,
+                                        368.2,
+                                        360.0
+                                    ],
+                                    "color": 10092544,
+                                    "font": "Helvetica",
+                                    "size": 8.991293907165527,
+                                    "flags": 20,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 157.7,
@@ -18013,7 +18509,7 @@
                                             ]
                                         }
                                     ],
-                                    "text": "The Pdf995 Suite offers the following features, all at no cost:",
+                                    "text": " Suite offers the following features, all at no cost:",
                                     "style": []
                                 },
                                 {
@@ -18051,14 +18547,14 @@
                 },
                 {
                     "bbox": [
-                        54.8,
+                        72.8,
                         367.1,
-                        554.8,
+                        541.7,
                         640.1
                     ],
                     "type": 3,
                     "alignment": 1,
-                    "left_space": 18.799999999999997,
+                    "left_space": 36.8,
                     "right_space": 0.0,
                     "first_line_space": 0.0,
                     "before_space": 0.0,
@@ -18070,16 +18566,16 @@
                     "rows": [
                         {
                             "bbox": [
-                                54.8,
+                                72.8,
                                 367.1,
-                                554.8,
+                                541.7,
                                 640.1
                             ],
                             "height": 273.0,
                             "cells": [
                                 {
                                     "bbox": [
-                                        54.8,
+                                        72.8,
                                         367.1,
                                         323.7,
                                         640.1
@@ -18111,14 +18607,14 @@
                                             ],
                                             "type": 0,
                                             "alignment": 1,
-                                            "left_space": 54.8,
+                                            "left_space": 36.8,
                                             "right_space": 1.5,
                                             "first_line_space": 0.0,
                                             "before_space": 7.2999999999999545,
                                             "after_space": 0.0,
                                             "line_space": 10.5,
                                             "tab_stops": [],
-                                            "left_space_total": 54.8,
+                                            "left_space_total": 36.8,
                                             "right_space_total": 1.5,
                                             "lines": [
                                                 {
@@ -29200,7 +29696,7 @@
                                     "bbox": [
                                         323.7,
                                         367.1,
-                                        554.8,
+                                        541.7,
                                         640.1
                                     ],
                                     "bg_color": null,
@@ -29238,7 +29734,7 @@
                                             "line_space": 10.5,
                                             "tab_stops": [],
                                             "left_space_total": 1.5,
-                                            "right_space_total": 57.2,
+                                            "right_space_total": 44.1,
                                             "lines": [
                                                 {
                                                     "bbox": [
@@ -39518,7 +40014,7 @@
                             "spans": [
                                 {
                                     "bbox": [
-                                        146.5,
+                                        256.6,
                                         657.3,
                                         256.6,
                                         676.5
@@ -39783,7 +40279,7 @@
                                     "bbox": [
                                         256.7,
                                         657.3,
-                                        372.2,
+                                        289.0,
                                         676.5
                                     ],
                                     "color": 16751104,
@@ -39829,7 +40325,33 @@
                                                 279.83984375,
                                                 672.0000610351562
                                             ]
+                                        }
+                                    ],
+                                    "text": "www",
+                                    "style": [
+                                        {
+                                            "type": 1,
+                                            "color": 16751104
                                         },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        289.0,
+                                        657.3,
+                                        372.2,
+                                        676.5
+                                    ],
+                                    "color": 16751104,
+                                    "font": "Times",
+                                    "size": 15.944744110107422,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 291.4,
@@ -39974,11 +40496,21 @@
                                             ]
                                         }
                                     ],
-                                    "text": "www.pdf995.com",
+                                    "text": ".pdf995.com",
                                     "style": [
                                         {
                                             "type": 1,
                                             "color": 16751104
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
+                                        },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
                                         }
                                     ]
                                 },
@@ -39986,7 +40518,7 @@
                                     "bbox": [
                                         372.2,
                                         657.3,
-                                        469.5,
+                                        377.0,
                                         676.5
                                     ],
                                     "color": 0,
@@ -40006,7 +40538,34 @@
                                                 372.2398376464844,
                                                 672.0000610351562
                                             ]
+                                        }
+                                    ],
+                                    "text": " ",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
                                         },
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        377.0,
+                                        657.3,
+                                        469.5,
+                                        676.5
+                                    ],
+                                    "color": 0,
+                                    "font": "Times",
+                                    "size": 15.944744110107422,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 376.2,
@@ -40203,7 +40762,7 @@
                                             ]
                                         }
                                     ],
-                                    "text": " to learn more. ",
+                                    "text": "to learn more. ",
                                     "style": []
                                 }
                             ]
@@ -40271,7 +40830,7 @@
                                     "bbox": [
                                         108.8,
                                         689.2,
-                                        506.5,
+                                        371.0,
                                         704.1
                                     ],
                                     "color": 0,
@@ -40928,7 +41487,23 @@
                                                 363.72015380859375,
                                                 700.6800537109375
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "This document illustrates several features of the ",
+                                    "style": []
+                                },
+                                {
+                                    "bbox": [
+                                        371.0,
+                                        689.2,
+                                        411.0,
+                                        704.1
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 11.988530158996582,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 367.1,
@@ -41019,7 +41594,29 @@
                                                 405.1201477050781,
                                                 700.6800537109375
                                             ]
-                                        },
+                                        }
+                                    ],
+                                    "text": "Pdf995 ",
+                                    "style": [
+                                        {
+                                            "type": 7,
+                                            "color": 0,
+                                            "uri": "http://www.pdf995.com"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        411.0,
+                                        689.2,
+                                        506.5,
+                                        704.1
+                                    ],
+                                    "color": 0,
+                                    "font": "Helvetica",
+                                    "size": 11.988530158996582,
+                                    "flags": 4,
+                                    "chars": [
                                         {
                                             "bbox": [
                                                 408.4,
@@ -41268,7 +41865,7 @@
                                             ]
                                         }
                                     ],
-                                    "text": "This document illustrates several features of the Pdf995 Suite of Products. ",
+                                    "text": "Suite of Products. ",
                                     "style": []
                                 }
                             ]
@@ -41277,6 +41874,149 @@
                 }
             ],
             "shapes": [
+                {
+                    "bbox": [
+                        52.0,
+                        140.0,
+                        83.0,
+                        150.0
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://www.pdf995.com"
+                },
+                {
+                    "bbox": [
+                        159.0,
+                        140.0,
+                        191.0,
+                        150.0
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://www.pdf995.com"
+                },
+                {
+                    "bbox": [
+                        193.0,
+                        140.0,
+                        241.0,
+                        150.0
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://www.pdfedit995.com"
+                },
+                {
+                    "bbox": [
+                        259.0,
+                        140.0,
+                        316.0,
+                        150.0
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://www.signature995.com"
+                },
+                {
+                    "bbox": [
+                        36.0,
+                        173.0,
+                        71.0,
+                        183.0
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://www.pdf995.com"
+                },
+                {
+                    "bbox": [
+                        177.0,
+                        195.0,
+                        208.0,
+                        205.0
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://www.pdf995.com"
+                },
+                {
+                    "bbox": [
+                        183.0,
+                        207.0,
+                        214.0,
+                        217.0
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://www.pdf995.com"
+                },
+                {
+                    "bbox": [
+                        495.0,
+                        207.0,
+                        525.0,
+                        217.0
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://www.pdf995.com"
+                },
+                {
+                    "bbox": [
+                        36.0,
+                        239.0,
+                        88.0,
+                        249.0
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://www.pdfedit995.com"
+                },
+                {
+                    "bbox": [
+                        36.0,
+                        279.0,
+                        101.0,
+                        293.0
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://www.signature995.com"
+                },
+                {
+                    "bbox": [
+                        125.0,
+                        348.0,
+                        156.0,
+                        358.0
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://www.pdf995.com"
+                },
+                {
+                    "bbox": [
+                        256.0,
+                        658.0,
+                        377.0,
+                        672.0
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://www.pdf995.com"
+                },
+                {
+                    "bbox": [
+                        289.0,
+                        658.0,
+                        377.0,
+                        672.0
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://www.pdf995.com"
+                },
                 {
                     "bbox": [
                         256.7,
@@ -41295,6 +42035,17 @@
                         674.05
                     ],
                     "width": 0.6999999999999318
+                },
+                {
+                    "bbox": [
+                        371.0,
+                        687.0,
+                        411.0,
+                        701.0
+                    ],
+                    "type": 7,
+                    "color": 0,
+                    "uri": "http://www.pdf995.com"
                 }
             ]
         }

@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-'''
-A group of Line objects.
-
-@created: 2020-07-24
-
+'''A group of Line objects.
 '''
 
 from docx.shared import Pt
@@ -17,7 +13,7 @@ from ..common import constants
 
 
 class Lines(Collection):
-    '''Text line list.'''
+    '''Collection of text lines.'''
 
     @property
     def unique_parent(self):
@@ -25,11 +21,15 @@ class Lines(Collection):
         if not bool(self): return False
 
         first_line = self._instances[0]
-        return all(line.same_parent_with(first_line) for line in self._instances)
+        return all(line.same_source_parent(first_line) for line in self._instances)
 
 
     def append(self, line:Line):
-        '''Override. Append a line and update line pid and parent bbox.'''
+        """Override. Append a line and update line pid and parent bbox.
+
+        Args:
+            line (Line): Target line to add.
+        """
         super().append(line)
 
         # update original parent id
@@ -55,7 +55,7 @@ class Lines(Collection):
 
     
     def join(self, line_overlap_threshold:float, line_merging_threshold:float):
-        ''' Merge lines aligned horizontally, e.g. make inline image as a span in text line.'''
+        '''Merge lines aligned horizontally, e.g. make inline image as a span in text line.'''
         # skip if empty
         if not self._instances: return self
 
@@ -126,28 +126,14 @@ class Lines(Collection):
         self.reset(lines)
 
 
-    def split(self, threshold:float):
-        ''' Split vertical lines and try to make lines in same original text block grouped together.
+    def split_back(self):
+        '''Split lines into groups, in which all lines are from same original text block.
 
-            To the first priority considering docx recreation, horizontally aligned lines must be assigned to same group.
-            After that, if only one line in each group, lines in same original text block can be group together again 
-            even though they are in different physical lines.
+        Returns:
+            list: A list of Lines contained in same original text block.
         '''
-        # split vertically
-        # set a non-zero but small factor to avoid just overlaping in same edge
-        fun = lambda a,b: a.horizontally_align_with(b, factor=threshold)
-        groups = self.group(fun) 
-
-        # check count of lines in each group
-        for group in groups:
-            if len(group) > 1: # first priority
-                break
-        
-        # now one line per group -> docx recreation is fullfilled, 
-        # then consider lines in same original text block
-        else:
-            fun = lambda a,b: a.same_parent_with(b)
-            groups = self.group(fun)
+        fun = lambda a,b: a.same_source_parent(b)
+        groups = self.group(fun)
 
         # NOTE: group() may destroy the order of lines, so sort in line level
         for group in groups: group.sort()
@@ -156,7 +142,7 @@ class Lines(Collection):
 
 
     def strip(self):
-        '''remove redundant blanks of each line.'''
+        '''Remove redundant blanks of each line.'''
         # strip each line
         status = [line.strip() for line in self._instances]
 
@@ -168,21 +154,25 @@ class Lines(Collection):
 
 
     def sort(self):
-        ''' Sort lines considering text direction.
-            Taking natural reading direction for example:
-            reading order for rows, from left to right for lines in row.
+        '''Sort lines considering text direction.
 
-            In the following example, A should come before B.
-            ```
-                             +-----------+
-                +---------+  |           |
-                |   A     |  |     B     |
-                +---------+  +-----------+
-            ```
-            Steps:
-              - sort lines in reading order, i.e. from top to bottom, from left to right.
-              - group lines in row
-              - sort lines in row: from left to right
+        Taking natural reading direction for example: reading order for rows, from left to 
+        right for lines in row.
+
+        In the following example, A should come before B.
+
+        ::
+
+                         +-----------+
+            +---------+  |           |
+            |   A     |  |     B     |
+            +---------+  +-----------+
+        
+        Steps:
+
+            * Sort lines in reading order, i.e. from top to bottom, from left to right.
+            * Group lines in row.
+            * Sort lines in row: from left to right.
         '''
         # sort in reading order
         self.sort_in_reading_order()
@@ -208,8 +198,44 @@ class Lines(Collection):
             self._instances.extend(row)
 
 
+    def is_flow_layout(self, float_layout_tolerance:float, line_separate_threshold:float):
+        '''Check if flow layout. 
+        
+        A flow layout satisfy condition that lines in each physical row have:
+        
+        * same original text block
+        * enough overlap in vertical direction.
+        * no significant gap between adjacent two lines.
+        '''
+        # group lines in same row
+        fun = lambda a, b: a.horizontally_align_with(b, factor=float_layout_tolerance) and \
+                            not a.vertically_align_with(b, factor=constants.FACTOR_ALMOST) 
+        groups = self.group(fun)        
+        
+        # check each row
+        idx = 0 if self.is_horizontal_text else 3
+        for lines in groups:
+            num = len(lines)
+            if num==1: continue
+
+            # same original parent
+            if not all(line.same_source_parent(lines[0]) for line in lines):
+                return False
+
+            # check vertical overlap
+            if not all(line.in_same_row(lines[0]) for line in lines):
+                return False
+
+            # check distance between lines
+            for i in range(1, num):
+                dis = abs(lines[i].bbox[idx]-lines[i-1].bbox[(idx+2)%4])
+                if dis >= line_separate_threshold: return False
+
+        return True
+
+
     def group_by_columns(self):
-        ''' Group lines into columns.'''
+        '''Group lines into columns.'''
         # split in columns
         fun = lambda a,b: a.vertically_align_with(b, text_direction=False)
         groups = self.group(fun)
@@ -220,9 +246,10 @@ class Lines(Collection):
 
 
     def group_by_rows(self):
-        ''' Group lines into rows.'''
+        '''Group lines into rows.'''
         # split in rows, with original text block considered
-        groups = self.split(threshold=constants.FACTOR_A_FEW)
+        fun = lambda a,b: a.horizontally_align_with(b, factor=constants.FACTOR_A_FEW)
+        groups = self.group(fun)
 
         # NOTE: increasing in y-direction is required!
         groups.sort(key=lambda group: group.bbox.y0)
@@ -231,10 +258,13 @@ class Lines(Collection):
 
 
     def parse_text_format(self, rect):
-        '''parse text format with style represented by rectangle shape.
-            ---
-            Args:
-            - rect: potential style shape applied on blocks
+        '''Parse text format with style represented by rectangle shape.
+        
+        Args:
+            rect (Shape): Potential style shape applied on blocks.
+        
+        Returns:
+            bool: Whether a valid text style.
         '''
         flag = False
 
@@ -265,13 +295,13 @@ class Lines(Collection):
 
 
     def parse_line_break(self, line_free_space_ratio_threshold):
-        ''' Whether hard break each line.
+        '''Whether hard break each line.
 
-            Hard line break helps ensure paragraph structure, but pdf-based layout calculation may
-            change in docx due to different rendering mechanism like font, spacing. For instance, when
-            one paragraph row can't accommodate a Line, the hard break leads to an unnecessary empty row.
-            Since we can't 100% ensure a same structure, it's better to focus on the content - add line
-            break only when it's necessary to, e.g. explicit free space exists.            
+        Hard line break helps ensure paragraph structure, but pdf-based layout calculation may
+        change in docx due to different rendering mechanism like font, spacing. For instance, when
+        one paragraph row can't accommodate a Line, the hard break leads to an unnecessary empty row.
+        Since we can't 100% ensure a same structure, it's better to focus on the content - add line
+        break only when it's necessary to, e.g. explicit free space exists.
         '''
         block = self.parent        
         idx0 = 0 if block.is_horizontal_text else 3
