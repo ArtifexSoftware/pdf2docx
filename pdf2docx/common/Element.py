@@ -2,14 +2,18 @@
 
 '''Object with a bounding box, e.g. Block, Line, Span.
 
-Based on ``PyMuPDF``, the coordinates are provided relative to the un-rotated page; while this
-``pdf2docx`` library works under real page coordinate system, i.e. with rotation considered. 
-So, any instances created by this Class are always applied a rotation matrix automatically.
+Based on ``PyMuPDF``, the coordinates (e.g. bbox of ``page.getText('rawdict')``) are generally 
+provided relative to the un-rotated page; while this ``pdf2docx`` library works under real page 
+coordinate system, i.e. with rotation considered. So, any instances created by this Class are 
+always applied a rotation matrix automatically.
 
-In other words, the bbox parameter used to create ``Element`` instance MUST be relative to un-rotated
+Therefore, the bbox parameter used to create ``Element`` instance MUST be relative to un-rotated
 CS. If final coordinates are provided, should update it after creating an empty object::
 
     Element().update_bbox(final_bbox)
+
+.. note::
+    An exception is ``page.getDrawings()``, the coordinates are converted to real page CS already.
 '''
 
 import copy
@@ -50,8 +54,7 @@ class Element(IText):
         self._parent = parent # type: Element
 
         # NOTE: Any coordinates provided in raw is in original page CS (without considering page rotation).
-        if raw is None: raw = {}
-        if 'bbox' in raw:
+        if 'bbox' in (raw or {}):
             rect = fitz.Rect(raw['bbox']) * Element.ROTATION_MATRIX
             self.update_bbox(rect)
 

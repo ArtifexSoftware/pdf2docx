@@ -79,11 +79,11 @@ class TablesConstructor:
         m0, m1 = (x0+u0)/2.0, (x1+u1)/2.0
         n0, n1 = v0-constants.MAJOR_DIST, v1+constants.MAJOR_DIST        
         strokes = [
-            Stroke({'start': (m0, n0), 'end': (m1, n0)}), # top
-            Stroke({'start': (m0, n1), 'end': (m1, n1)}), # bottom
-            Stroke({'start': (m0, n0), 'end': (m0, n1)}), # left
-            Stroke({'start': (m1, n0), 'end': (m1, n1)}), # right
-            Stroke({'start': (X, n0), 'end': (X, n1)})]   # center
+            Stroke().update_bbox((m0, n0, m1, n0)), # top
+            Stroke().update_bbox((m0, n1, m1, n1)), # bottom
+            Stroke().update_bbox((m0, n0, m0, n1)), # left
+            Stroke().update_bbox((m1, n0, m1, n1)), # right
+            Stroke().update_bbox((X , n0, X,  n1))]   # center
         
         # parse table structure
         table = TableStructure(strokes).parse([]).to_table_block()

@@ -18,6 +18,10 @@ Data structure based on results of ``page.getDrawings()``::
         ],
         ...
     }
+
+.. note::
+    The coordinates extracted by ``page.getDrawings()`` is based on **real** page CS, i.e. with rotation 
+    considered. This is different from ``page.getText('rawdict')``.
 '''
 
 import fitz

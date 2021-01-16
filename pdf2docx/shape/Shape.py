@@ -38,6 +38,11 @@ Data structure::
         # for Hyperlink
         'uri': str
     }
+
+.. note::
+    These coordinates are relative to real page CS since they're extracted from ``page.getDrawings()``,
+    which is based on real page CS. So, needn't to multiply Element.ROTATION_MATRIX when initializing
+    from source dict.
 '''
 
 import fitz
@@ -51,7 +56,10 @@ class Shape(Element):
     def __init__(self, raw:dict=None):        
         raw = raw or {}
         self.color = raw.get('color', 0)
-        super().__init__(raw) # bbox
+        
+        # NOTE: coordinates are based on real page CS already
+        super().update_bbox(raw.get('bbox', (0,)*4))
+        self._parent = None
 
         # set rect type
         raw_type = raw.get('type', RectType.UNDEFINED.value) # UNDEFINED by default
@@ -119,9 +127,9 @@ class Stroke(Shape):
     '''
     def __init__(self, raw:dict=None):
         raw = raw or {}
-        # convert start/end point to real page CS
-        self._start = fitz.Point(raw.get('start', (0.0, 0.0))) * Stroke.ROTATION_MATRIX
-        self._end = fitz.Point(raw.get('end', (0.0, 0.0))) * Stroke.ROTATION_MATRIX
+        # NOTE: real page CS
+        self._start = fitz.Point(raw.get('start', (0.0, 0.0)))
+        self._end = fitz.Point(raw.get('end', (0.0, 0.0)))
 
         if self._start.x > self._end.x or self._start.y > self._end.y:
             self._start, self._end = self._end, self._start
@@ -298,9 +306,8 @@ class Hyperlink(Shape):
     highlight), hyperlink is also abstracted to be a ``Shape``.
     '''
 
-    def __init__(self, raw:dict={}):
+    def __init__(self, raw:dict=None):
         '''Initialize from raw dict. Note the type must be determined in advance.'''
-        if raw is None: raw = {}
         super().__init__(raw)
 
         # set uri
