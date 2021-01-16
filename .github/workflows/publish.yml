@@ -1,6 +1,6 @@
 # Create release and publish to Pypi when pushing tags
 
-name: pdf2docx-publish
+name: publish
 
 # Trigger the workflow on push tags, matching vM.n.p, i.e. v3.2.10
 on:  

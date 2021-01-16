@@ -1,9 +1,9 @@
 # pdf2docx 
 
-![pdf2docx-test](https://github.com/dothinking/pdf2docx/workflows/pdf2docx-test/badge.svg)
+![python-version](https://img.shields.io/badge/python->=3.6-green.svg)
 [![codecov](https://codecov.io/gh/dothinking/pdf2docx/branch/master/graph/badge.svg)](https://codecov.io/gh/dothinking/pdf2docx)
-![pdf2docx-publish](https://github.com/dothinking/pdf2docx/workflows/pdf2docx-publish/badge.svg)
-![GitHub](https://img.shields.io/github/license/dothinking/pdf2docx)
+[![pypi-version](https://img.shields.io/pypi/v/pdf2docx.svg)](https://pypi.python.org/pypi/pdf2docx/)
+![license](https://img.shields.io/pypi/l/pdf2docx.svg)
 
 - Parse layout (text, image and table) from PDF file with `PyMuPDF`
 - Generate docx with `python-docx`
