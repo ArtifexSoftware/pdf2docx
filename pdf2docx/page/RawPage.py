@@ -21,7 +21,7 @@ In addition to the raw layout dict, rectangle shapes are also included.
 '''
 
 from collections import defaultdict
-from ..image.Image import ImagesExtractor
+from ..image.ImagesExtractor import ImagesExtractor
 from ..shape.Paths import Paths
 from ..common.Element import Element
 from ..common.share import RectType, debug_plot
@@ -129,15 +129,18 @@ class RawPage:
         # extract paths ed by `page.getDrawings()`
         raw_paths = self.fitz_page.getDrawings()
 
-        # paths to shapes or images
+        # iso-oriented paths to shapes
         paths = Paths(parent=self).restore(raw_paths)
-        images, shapes = paths.to_images_and_shapes(
-            self.fitz_page,
-            self.settings['curve_path_ratio'], 
-            self.settings['clip_image_res_ratio']
-            )
-        raw['blocks'].extend(images)
+        shapes, iso_areas, exist_svg = paths.to_shapes(self.settings['curve_path_ratio'])
         raw['shapes'] = shapes
+
+        # vector graphics (curved paths in general) to images
+        if exist_svg:
+            excluding_areas = iso_areas
+            excluding_areas.extend([block['bbox'] for block in raw['blocks'] if block['type']==1]) # normal images
+            images = ImagesExtractor.extract_vector_graphics(
+                self.fitz_page, excluding_areas, self.settings['clip_image_res_ratio'])
+            raw['blocks'].extend(images)
 
         # Hyperlink is considered as a Shape
         hyperlinks = self._preprocess_hyperlinks(self.fitz_page)
