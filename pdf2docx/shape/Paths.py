@@ -37,17 +37,10 @@ class Paths(Collection):
         return bbox
 
 
-    @lazyproperty
-    def curve_area(self):
-        '''Sum of curve path area.'''
-        curved_areas = [path.bbox.getArea() for path in self._instances if not path.is_iso_oriented]
-        return sum(curved_areas) if curved_areas else 0.0
-
-
     def contains_curve(self, ratio:float):
         """Whether any curve paths exist with threshold considered. 
 
-        **Criterion**: the area ratio of all non-iso-oriented paths >= ``ratio``
+        **Criterion**: the ratio of non-iso-oriented paths to total count >= ``ratio``.
 
         Args:
             ratio (float): Threshold for non-iso-oriented paths.
@@ -55,8 +48,9 @@ class Paths(Collection):
         Returns:
             bool: Whether any curve paths exist.
         """
-        area = self.bbox.getArea()
-        return self.curve_area/area >= ratio if area else False
+        if not self._instances: return False
+        curve_paths = list(filter(lambda path: not path.is_iso_oriented, self._instances))
+        return len(curve_paths)/len(self._instances) > ratio
 
 
     def append(self, path): self._instances.append(path)
@@ -106,10 +100,10 @@ class Paths(Collection):
             tuple: (Shape raw dicts, shape bbox list, whether exists vector graphics).
         """
         # group connected paths -> each group is a potential vector graphic        
-        paths_group = self.group_by_connectivity(dx=0.0, dy=0.0)
+        paths_group = self.group_by_connectivity(dx=0.1, dy=0.1)
 
         iso_paths, iso_areas, exist_svg = [], [], False
-        for paths in paths_group:                    
+        for paths in paths_group:
             # keep potential table border paths
             if paths.contains_curve(curve_path_ratio):
                 exist_svg = True

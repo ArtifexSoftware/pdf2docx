@@ -116,7 +116,7 @@ class ImagesExtractor:
         for bbox in exclude_areas:
             x0, y0, x1, y1 = map(int, bbox)
             gray[y0-2:y1+2, x0-2:x1+2] = 255
-            cv.rectangle(src, (x0,y0), (x1,y1), (0,255,0), 1) 
+            # cv.rectangle(src, (x0,y0), (x1,y1), (0,255,0), 1) # plot excluded areas
 
         # Gauss blur and binary        
         gauss = cv.GaussianBlur(gray, (9,9), 0)
@@ -133,10 +133,11 @@ class ImagesExtractor:
             x, y, w, h = cv.boundingRect(contour)
             e = Element().update_bbox((x,y,x+w,y+h))
             collection.append(e)
-            cv.rectangle(src, (x,y), (x+w,y+h), (255,0,0), 1) 
+            # cv.rectangle(src, (x,y), (x+w,y+h), (255,0,0), 1)  # detected svg bbox
         
-        cv.imshow("img", src)
-        cv.waitKey(0)
+        # # plot detected images for debug
+        # cv.imshow("img", src)
+        # cv.waitKey(0)
 
         return collection
 
