@@ -18,32 +18,26 @@ Data structure based on results of ``page.getDrawings()``::
         ],
         ...
     }
+
+.. note::
+    The coordinates extracted by ``page.getDrawings()`` is based on **real** page CS, i.e. with rotation 
+    considered. This is different from ``page.getText('rawdict')``.
 '''
 
 import fitz
 from ..common.share import rgb_value
-
+from ..common import constants
 
 class Segment:
     '''A segment of path, e.g. a line or a rectangle or a curve.'''
     def __init__(self, item):
         self.points = item[1:]
 
-    @property
-    def is_iso_oriented(self): return False
-
-    def to_strokes(self, width:float, color:list): return []   
+    def to_strokes(self, width:float, color:list): return []
 
 
 class L(Segment):
     '''Line path with source ``("l", p1, p2)``.'''
-    @property
-    def is_iso_oriented(self):
-        '''Whether horizontal or vertical line.'''
-        x0, y0 = self.points[0]
-        x1, y1 = self.points[1]
-        return abs(x1-x0)<=1e-3 or abs(y1-y0)<=1e-3
-
     def to_strokes(self, width:float, color:list):
         """Convert to stroke dict.
 
@@ -73,9 +67,6 @@ class R(Segment):
     '''Rect path with source ``("re", rect)``.'''
     def __init__(self, item):
         self.rect = item[1]
-
-    @property
-    def is_iso_oriented(self): return True
 
     def to_strokes(self, width:float, color:list):
         """Convert each edge to stroke dict.
@@ -128,34 +119,56 @@ class Segments:
             self._instances.append(L(item))
 
         # calculate bbox
-        self.bbox = self.cal_bbox()
+        self.bbox, self.area = self._cal_bbox_and_area()
 
     
     def __iter__(self): return (instance for instance in self._instances)
 
 
     @property
-    def is_iso_oriented_line(self): return bool(self.bbox) and not bool(self.bbox.getArea())
+    def is_iso_oriented(self):
+        '''ISO-oriented criterion: the ratio of real area to bbox exceeds 0.9.'''
+        bbox_area = self.bbox.getArea()
+        return bbox_area==0 or self.area/bbox_area>=constants.FACTOR_MOST
 
 
-    def cal_bbox(self):
-        '''Bbox of Segments. 
+    def _cal_bbox_and_area(self):
+        '''Calculate bbox and area of Segments. 
         
         .. note::
-            For iso-oriented segments, ``bbox.getArea()==0``.
+            * For iso-oriented segments, ``bbox.getArea()==0``.
+            * The real area is calculated with Green formulas. Nut the boundary of Bezier curve 
+              is simplified with its control points.
         '''
         # rectangle area
         if len(self._instances)==1 and isinstance(self._instances[0], R):
-            return self._instances[0].rect
+            return self._instances[0].rect, self._instances[0].rect.getArea()
         
-        # calculate bbox of lines and curves area
+        # Now segments composed of connected points
         points = []
-        for segment in self._instances: points.extend(segment.points)
+        for segment in self._instances:
+            points.extend(segment.points)
+        
+        # bbox: `round()` is required to avoid float error
         x0 = min(points, key=lambda point: point[0])[0]
         y0 = min(points, key=lambda point: point[1])[1]
         x1 = max(points, key=lambda point: point[0])[0]
         y1 = max(points, key=lambda point: point[1])[1]
-        return fitz.Rect(x0, y0, x1, y1)
+        rect = fitz.Rect(
+            round(x0, 2), round(y0, 2), round(x1, 2), round(y1, 2))
+
+        # real area
+        # https://en.wikipedia.org/wiki/Shoelace_formula
+        area = 0.0
+        start, end = points[0], points[-1]
+        if abs(start[0]-end[0])+abs(start[1]-end[1])<1e-3: # closed curve        
+            for i in range(len(points)-1):
+                x0, y0 = points[i]
+                x1, y1 = points[i+1]
+                area += x0*y1 - x1*y0
+            area = abs(area/2.0)
+
+        return rect, area
 
 
     def to_strokes(self, width:float, color:list):
@@ -191,9 +204,8 @@ class Segments:
 
 class Path:
     '''Path extracted from PDF, consist of one or more ``Segments``.'''
-
     def __init__(self, raw:dict):
-        '''Init path in un-rotated page CS.'''
+        '''Init path in real page CS.'''
         # all path properties
         self.raw = raw
 
@@ -205,9 +217,9 @@ class Path:
             S = Segments(segments, close_path)
             self.items.append(S)
 
-            # update bbox: note iso-oriented line segments, e.g. S.bbox.getArea()==0
+            # update bbox: note iso-oriented line segments -> S.bbox.getArea()==0
             rect = S.bbox
-            if S.is_iso_oriented_line: rect += (-w, -w, w, w)
+            if rect.getArea()==0: rect += (-w, -w, w, w)
             self.bbox |= rect
 
 
@@ -264,19 +276,10 @@ class Path:
 
     @property
     def is_iso_oriented(self):
-        '''It is iso-oriented on condition that:
-
-        * All Lines are iso-oriented, and
-        * the count of iso-oriented Lines is larger than Curves
-        '''
-        line_cnt, curve_cnt = 0, 0
+        '''It is iso-oriented when all contained segments are iso-oriented.'''
         for segments in self.items:
-            for segment in segments:
-                if isinstance(segment, C): curve_cnt += 1
-                elif isinstance(segment, R): line_cnt += 1
-                elif segment.is_iso_oriented: line_cnt += 1
-                else: return False
-        return line_cnt >= curve_cnt
+            if not segments.is_iso_oriented: return False
+        return True
 
 
     def to_shapes(self):
@@ -293,16 +296,16 @@ class Path:
 
         # convert to strokes
         if not stroke_color is None:
-            iso_shapes.extend(self.to_strokes(width, stroke_color))
+            iso_shapes.extend(self._to_strokes(width, stroke_color))
 
         # convert to rectangular fill
         if not fill_color is None:
-            iso_shapes.extend(self.to_fills(fill_color))
+            iso_shapes.extend(self._to_fills(fill_color))
 
         return iso_shapes
 
 
-    def to_strokes(self, width:float, color:list):
+    def _to_strokes(self, width:float, color:list):
         '''Convert path to ``Stroke`` raw dicts.
 
         Returns:
@@ -314,7 +317,7 @@ class Path:
         return strokes
 
 
-    def to_fills(self, color:list):
+    def _to_fills(self, color:list):
         '''Convert path to ``Fill`` raw dicts.
 
         Returns:

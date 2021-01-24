@@ -1,3 +1,5 @@
 PyMuPDF>=1.18.5
 python-docx>=0.8.10
+numpy>=1.17.2
+opencv-python>=4.5
 fire>=0.3.0

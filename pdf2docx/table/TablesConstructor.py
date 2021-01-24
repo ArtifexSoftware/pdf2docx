@@ -43,6 +43,7 @@ class TablesConstructor:
         '''Set page layout if two-columns layout.
 
         ::
+
             +------------|--------------+ span_elements
             +------------|--------------+
                          |
@@ -78,11 +79,11 @@ class TablesConstructor:
         m0, m1 = (x0+u0)/2.0, (x1+u1)/2.0
         n0, n1 = v0-constants.MAJOR_DIST, v1+constants.MAJOR_DIST        
         strokes = [
-            Stroke({'start': (m0, n0), 'end': (m1, n0)}), # top
-            Stroke({'start': (m0, n1), 'end': (m1, n1)}), # bottom
-            Stroke({'start': (m0, n0), 'end': (m0, n1)}), # left
-            Stroke({'start': (m1, n0), 'end': (m1, n1)}), # right
-            Stroke({'start': (X, n0), 'end': (X, n1)})]   # center
+            Stroke().update_bbox((m0, n0, m1, n0)), # top
+            Stroke().update_bbox((m0, n1, m1, n1)), # bottom
+            Stroke().update_bbox((m0, n0, m0, n1)), # left
+            Stroke().update_bbox((m1, n0, m1, n1)), # right
+            Stroke().update_bbox((X , n0, X,  n1))]   # center
         
         # parse table structure
         table = TableStructure(strokes).parse([]).to_table_block()
@@ -239,7 +240,7 @@ class TablesConstructor:
             explicit_shadings, _ = table_fillings.split_with_intersection(rect.bbox) 
 
             # parse stream borders based on lines in cell and explicit borders/shadings
-            strokes = self.stream_strokes(table_lines, outer_borders, explicit_strokes, explicit_shadings)
+            strokes = self._stream_strokes(table_lines, outer_borders, explicit_strokes, explicit_shadings)
             if not strokes: continue
 
             # parse table structure
@@ -261,7 +262,7 @@ class TablesConstructor:
 
 
     @staticmethod
-    def stream_strokes(lines:Lines, outer_borders:tuple, explicit_strokes:Shapes, explicit_shadings:Shapes):
+    def _stream_strokes(lines:Lines, outer_borders:tuple, explicit_strokes:Shapes, explicit_shadings:Shapes):
         '''Parsing borders mainly based on content lines contained in cells, 
         and update borders (position and style) with explicit borders represented 
         by rectangle shapes.

@@ -162,9 +162,6 @@ class Shapes(Collection):
             the gap between borders and underlines/strikes are very close, which leads
             to an incorrect table structure. So, it's required to distinguish them in
             advance, though we needn't to ensure 100% accuracy.
-
-        .. note::
-            It should be run right after ``clean_up()``.
         '''
         # reset all
         self._table_strokes.reset()
@@ -172,16 +169,16 @@ class Shapes(Collection):
         self._text_underlines_strikes.reset()
         self._text_highlights.reset()
 
-        # all blocks in page (the original blocks without any further processing)
+        # blocks in page (the original blocks without any further processing)
         blocks = self._parent.blocks
         blocks.sort_in_reading_order()
 
-        # check positions between shapes and blocks
+        # check positions between shapes and text blocks
         for shape in self._instances:
             # try to determin shape semantic type:
             # - check if text underline/strike for a stroke
             # - check if table shading for a fill
-            rect_type = shape.semantic_type(blocks)     # type: RectType
+            rect_type = shape.semantic_type(blocks.text_blocks)     # type: RectType
 
             # set the type if succeeded
             if rect_type==RectType.HYPERLINK:

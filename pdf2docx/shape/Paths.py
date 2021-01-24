@@ -10,12 +10,9 @@ Square and Highlight considered.
 * https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
 '''
 
-
 import fitz
 from ..common.share import lazyproperty
-from ..common.Collection import BaseCollection, Collection
-from ..common.share import flatten
-from ..image.Image import ImagesExtractor
+from ..common.Collection import  Collection
 from .Path import Path
 
 
@@ -40,17 +37,10 @@ class Paths(Collection):
         return bbox
 
 
-    @lazyproperty
-    def curve_area(self):
-        '''Sum of curve path area.'''
-        curved_areas = [path.bbox.getArea() for path in self._instances if not path.is_iso_oriented]
-        return sum(curved_areas) if curved_areas else 0.0
-
-
     def contains_curve(self, ratio:float):
         """Whether any curve paths exist with threshold considered. 
 
-        **Criterion**: the area ratio of all non-iso-oriented paths >= ``ratio``
+        **Criterion**: the ratio of non-iso-oriented paths to total count >= ``ratio``.
 
         Args:
             ratio (float): Threshold for non-iso-oriented paths.
@@ -58,8 +48,9 @@ class Paths(Collection):
         Returns:
             bool: Whether any curve paths exist.
         """
-        area = self.bbox.getArea()
-        return self.curve_area/area >= ratio if area else False
+        if not self._instances: return False
+        curve_paths = list(filter(lambda path: not path.is_iso_oriented, self._instances))
+        return len(curve_paths)/len(self._instances) > ratio
 
 
     def append(self, path): self._instances.append(path)
@@ -67,37 +58,6 @@ class Paths(Collection):
 
     def extend(self, paths):
         for path in paths: self.append(path)
-
-
-    def group(self):
-        '''Group paths by connectivity on two level:
-
-        * connected paths -> basic unit for figure or sub-area of a figure
-        * connected paths groups -> figure(s) in a clipping area
-
-        Examples::
-
-                +----------+
-                |    A     |  A+B, C  -> connected paths
-                +------+---+
-                       |   |
-            +--------+ | B |  (A+B)+C -> connected paths group
-            |   C    | |   |
-            +--------+ +---+
-        '''
-        num = 0 # count of final connected groups
-        paths_groups = self.group_by_connectivity(dx=0.0, dy=0.0)
-
-        # check connectivity until no intersections exist in any two groups
-        while num!=len(paths_groups)>0:
-            num = len(paths_groups)
-            res = BaseCollection(paths_groups).group_by_connectivity(dx=0.0, dy=0.0)
-            paths_groups = []
-            for paths_group in res:
-                collection = BaseCollection(list(flatten(paths_group, Paths))) # ensure basic unit: Paths
-                paths_groups.append(collection)
-
-        return paths_groups
 
 
     def plot(self, page):
@@ -111,24 +71,9 @@ class Paths(Collection):
         canvas = page.newShape()
         for path in self._instances: path.plot(canvas)
         canvas.commit() # commit the drawing shapes to page
-
-
-    def to_image(self, page:fitz.Page, zoom:float):
-        """Convert to image block dict by clipping page.
-
-        Args:
-            page (fitz.Page): Current pdf page.
-            zoom (float): Zoom in factor to improve resolution in both x- and y- direction.
-
-        Returns:
-            dict: Raw dict of image.
-        """ 
-        # ignore images outside page
-        if not self.bbox.intersects(page.rect): return None
-        return ImagesExtractor.clip_page(page, self.bbox, zoom)
     
 
-    def to_iso_paths(self):
+    def _to_iso_paths(self):
         """Convert contained paths to ISO strokes and rectangular fills.
 
         Returns:
@@ -145,51 +90,26 @@ class Paths(Collection):
         return paths
 
 
-    def to_images_and_shapes(self, page:fitz.Page, 
-            curve_path_ratio:float=0.2,    # 
-            clip_image_res_ratio:float=3.0 # 
-            ):
-        """Convert paths to raw dicts.
-
-        * Only ISO-oriented paths are considered.
-        * Clip a page bitmap when some paths 'look like' a vector graphic, i.e. curved paths exceed the threshold.
+    def to_shapes(self, curve_path_ratio:float=0.2):
+        """Extract ISO-oriented (horizontal/vertical) paths for table parsing.
 
         Args:
-            page (fitz.Page): pdf page.
-            curve_path_ratio (float, optional): Clip page bitmap if curve paths exceed this ratio. Defaults to 0.2.
-            clip_image_res_ratio (float, optional): Resolution ratio of clipped bitmap. Defaults to 3.0.
+            curve_path_ratio (float, optional): Not iso-oriented paths if exceed this ratio. Defaults to 0.2.
 
         Returns:
-            tuple: (a list of images raw dicts, a list of Shape raw dicts)
-        
-        .. note::
-            The target is to extract horizontal/vertical paths for table parsing, while others
-            are converted to bitmaps.
+            tuple: (Shape raw dicts, shape bbox list, whether exists vector graphics).
         """
         # group connected paths -> each group is a potential vector graphic        
-        paths_groups = self.group()
+        paths_group = self.group_by_connectivity(dx=0.1, dy=0.1)
 
-        # convert vector graphics to bitmap
-        iso_paths, pixmaps = [], []
-        for collection in paths_groups:
-            # a collection of paths groups:
-            # clip page bitmap if it seems a vector graphic
-            combined_paths = Paths()
-            for paths in collection: combined_paths.extend(list(paths))            
-            if combined_paths.contains_curve(curve_path_ratio):
-                image = combined_paths.to_image(page, clip_image_res_ratio)
-                if image: pixmaps.append(image)
-                continue
-            
-            # otherwise, check each paths in group
-            for paths in collection:                    
-                # can't be a table if curve path exists
-                if paths.contains_curve(curve_path_ratio):
-                    image = paths.to_image(page, clip_image_res_ratio)
-                    if image: pixmaps.append(image)
-                # keep potential table border paths
-                else:
-                    iso_paths.extend(paths.to_iso_paths())
+        iso_paths, iso_areas, exist_svg = [], [], False
+        for paths in paths_group:
+            # keep potential table border paths
+            if paths.contains_curve(curve_path_ratio):
+                exist_svg = True
+            else:
+                iso_paths.extend(paths._to_iso_paths())
+                iso_areas.extend([path.bbox for path in paths])
 
-        return pixmaps, iso_paths
+        return iso_paths, iso_areas, exist_svg
 

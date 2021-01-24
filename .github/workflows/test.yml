@@ -1,7 +1,7 @@
 # Run test when triggering the workflow on push and pull request, 
 # but only for the master branch
 
-name: pdf2docx-test
+name: test
 
 on:
   push:
