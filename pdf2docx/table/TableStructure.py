@@ -398,6 +398,10 @@ class TableStructure:
         TableStructure._check_outer_strokes(table_bbox, v_strokes, 'left', max_border_width)
         TableStructure._check_outer_strokes(table_bbox, v_strokes, 'right', max_border_width)
 
+        # ATTENTION: sort in advance to avoid mistake when checking cell merging status
+        for y, borders in h_strokes.items(): borders.sort_in_line_order()        
+        for x, borders in v_strokes.items(): borders.sort_in_reading_order()
+
         return h_strokes, v_strokes
     
 
@@ -427,7 +431,7 @@ class TableStructure:
         merged_cells_rows = []  # type: list[list[int]]
         ordered_strokes = [self.v_strokes[k] for k in x_cols]
         for row in self.cells:
-            ref_y = (row[0].bbox.y0+row[0].bbox.y1)/2.0            
+            ref_y = (row[0].bbox.y0+row[0].bbox.y1)/2.0
             row_structure = TableStructure._check_merged_cells(ref_y, ordered_strokes, 'row')
             merged_cells_rows.append(row_structure)
 
@@ -517,12 +521,6 @@ class TableStructure:
                 start = right
             
             borders[current].extend(segments)
-
-            # sort due to added segments
-            if direction in ('top', 'bottom'):
-                borders[current].sort_in_line_order()
-            else:
-                borders[current].sort_in_reading_order()                
 
 
     @staticmethod
