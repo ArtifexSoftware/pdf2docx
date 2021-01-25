@@ -106,6 +106,7 @@ class Shapes(Collection):
         * Delete small shapes (either width or height).
         * Delete shapes out of page.
         * Merge shapes with same filling color and significant overlap.
+        * Detect semantic type.
 
         Args:
             max_border_width (float): The max border width.
@@ -144,8 +145,10 @@ class Shapes(Collection):
                 shapes.append(stroke if stroke else shape)
             else:
                 shapes.append(shape)
-
         self.reset(shapes).sort_in_reading_order() # sort in reading order
+
+        # detect semantic type of shapes
+        self.detect_initial_categories()
 
 
     def detect_initial_categories(self):
