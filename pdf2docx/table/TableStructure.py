@@ -347,46 +347,32 @@ class TableStructure:
             y2  +--------h6--------+----h7---+
 
         '''
+        def group_strokes(stroke:Shape, strokes:dict):
+            # y-coordinate of h-strokes or x-coordinate of v-strokes
+            t = round(stroke.y0, 1) if stroke.horizontal else round(stroke.x0, 1)
+
+            # ignore minor error resulting from different stroke width
+            for t_ in strokes:
+                if abs(t-t_)>min_border_clearance: continue
+                t = (t_+t)/2.0 # average
+                strokes[t] = strokes.pop(t_)
+                strokes[t].append(stroke)
+                break
+            else:
+                strokes[t] = Shapes([stroke])
+        
         h_strokes = {} # type: dict [float, Shapes]
         v_strokes = {} # type: dict [float, Shapes]
-
         X0, Y0, X1, Y1 = float('inf'), float('inf'), -float('inf'), -float('inf')
         for stroke in strokes:
-            # group horizontal strokes in each row
-            if stroke.horizontal:
-                y = round(stroke.y0, 1)
+            # group horizontal/vertical strokes in each row/column
+            group_strokes(stroke, h_strokes if stroke.horizontal else v_strokes)
 
-                # ignore minor error resulting from different stroke width
-                for y_ in h_strokes:
-                    if abs(y-y_)>min_border_clearance: continue
-                    y = (y_+y)/2.0 # average
-                    h_strokes[y] = h_strokes.pop(y_)
-                    h_strokes[y].append(stroke)
-                    break
-                else:
-                    h_strokes[y] = Shapes([stroke])
-
-                # update table region
-                X0 = min(X0, stroke.x0)
-                X1 = max(X1, stroke.x1)
-
-            # group vertical strokes in each column
-            elif stroke.vertical:
-                x = round(stroke.x0, 1)
-                
-                # ignore minor error resulting from different stroke width
-                for x_ in v_strokes:
-                    if abs(x-x_)>min_border_clearance: continue
-                    x = (x+x_)/2.0 # average
-                    v_strokes[x] = v_strokes.pop(x_)
-                    v_strokes[x].append(stroke)
-                    break
-                else:
-                    v_strokes[x] = Shapes([stroke])
-
-                # update table region
-                Y0 = min(Y0, stroke.y0)
-                Y1 = max(Y1, stroke.y1)
+            # update table region
+            X0 = min(X0, stroke.x0)
+            X1 = max(X1, stroke.x1)
+            Y0 = min(Y0, stroke.y0)
+            Y1 = max(Y1, stroke.y1)
 
         # at least 2 inner strokes exist
         if not h_strokes or not v_strokes: return None, None
@@ -399,8 +385,8 @@ class TableStructure:
         TableStructure._check_outer_strokes(table_bbox, v_strokes, 'right', max_border_width)
 
         # ATTENTION: sort in advance to avoid mistake when checking cell merging status
-        for y, borders in h_strokes.items(): borders.sort_in_line_order()        
-        for x, borders in v_strokes.items(): borders.sort_in_reading_order()
+        for _, borders in h_strokes.items(): borders.sort_in_line_order()        
+        for _, borders in v_strokes.items(): borders.sort_in_reading_order()
 
         return h_strokes, v_strokes
     
