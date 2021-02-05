@@ -104,10 +104,7 @@ class Layout:
         # clean up shapes        
         self.shapes.clean_up(settings['max_border_width'], 
                         settings['shape_merging_threshold'],
-                        settings['shape_min_dimension'])
-
-        # detect semantic type of shapes
-        self.shapes.detect_initial_categories()
+                        settings['shape_min_dimension'])       
 
 
     def _parse_layout_top_down(self, settings:dict):

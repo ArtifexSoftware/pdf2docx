@@ -26,7 +26,8 @@ class Blocks(Collection):
         self._parent = parent # type: Layout
         self._instances = []  # type: list[TextBlock or TableBlock]
 
-        # NOTE: no changes on floating image blocks once identified, so store them here
+        # NOTE: no changes on floating image blocks once identified, e.g. no merging to text block, 
+        # no assingning to table. So, store them here, rather than self._instances
         self.floating_image_blocks = []
     
         # Convert all original image blocks to text blocks, i.e. ImageSpan,
@@ -116,6 +117,8 @@ class Blocks(Collection):
             elif block_type == BlockType.FLOAT_IMAGE.value:
                 block = ImageBlock(raw_block)
                 block.set_float_image_block()
+                self.floating_image_blocks.append(block)
+                block = None
 
             # table block
             elif block_type in (BlockType.LATTICE_TABLE.value, BlockType.STREAM_TABLE.value):

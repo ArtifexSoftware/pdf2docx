@@ -95,6 +95,8 @@ class Shape(Element):
         # NOTE: blocks must be sorted in reading order
         rect_type = RectType.UNDEFINED
         for block in blocks:
+            if not block.is_text_block(): continue
+
             # not intersect yet
             if block.bbox.y1 < self.bbox.y0: continue
 

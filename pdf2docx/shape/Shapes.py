@@ -103,9 +103,10 @@ class Shapes(Collection):
     def clean_up(self, max_border_width:float, shape_merging_threshold:float, shape_min_dimension:float):
         """Clean rectangles.
 
-        * Delete rectangles fully contained in another one (beside, they have same bg-color).
-        * Join intersected and horizontally aligned rectangles with same height and bg-color.
-        * Join intersected and vertically aligned rectangles with same width and bg-color.
+        * Delete small shapes (either width or height).
+        * Delete shapes out of page.
+        * Merge shapes with same filling color and significant overlap.
+        * Detect semantic type.
 
         Args:
             max_border_width (float): The max border width.
@@ -113,9 +114,6 @@ class Shapes(Collection):
             shape_min_dimension (float): Ignore shape if both width and height is lower than this value.
         """
         if not self._instances: return
-        
-        # sort in reading order
-        self.sort_in_reading_order()
 
         # clean up shapes:
         # - remove shapes out of page
@@ -123,35 +121,34 @@ class Shapes(Collection):
         page_bbox = self.parent.bbox
         f = lambda shape: shape.bbox.intersects(page_bbox) and \
                         (shape.bbox.width>=shape_min_dimension or shape.bbox.height>=shape_min_dimension)
-        shapes = filter(f, self._instances)
+        cleaned_shapes = list(filter(f, self._instances))
 
-        # merge shapes if same filling color and significant overlap
-        shapes_unique = [] # type: list [Shape]
-        for shape in shapes:
-            for ref_shape in shapes_unique:
-                # Do nothing if these two shapes in different bg-color
-                if ref_shape.color!=shape.color: continue
-
-                # add hyperlink as it is
-                if shape.type==RectType.HYPERLINK or ref_shape.type==RectType.HYPERLINK: continue
-
-                main_bbox = shape.get_main_bbox(ref_shape, threshold=shape_merging_threshold)
-                if main_bbox:
-                    ref_shape.update_bbox(main_bbox)
-                    break            
-            else:
-                shapes_unique.append(shape)
+        # merge normal shapes if same filling color and significant overlap        
+        merged_shapes = []
+        normal_shapes = list(filter(
+            lambda shape: shape.type==RectType.UNDEFINED, cleaned_shapes))        
+        f = lambda a, b: a.color==b.color and (
+            a.get_main_bbox(b, threshold=shape_merging_threshold) or \
+            b.get_main_bbox(a, threshold=shape_merging_threshold))        
+        for group in Collection(normal_shapes).group(f):
+            merged_shapes.append(group[0].update_bbox(group.bbox))
+        
+        # add hyperlinks
+        hyperlinks = filter(lambda shape: shape.type==RectType.HYPERLINK, cleaned_shapes)
+        merged_shapes.extend(hyperlinks)
                 
         # convert Fill instance to Stroke if looks like stroke
         shapes = []
-        for shape in shapes_unique:
+        for shape in merged_shapes:
             if isinstance(shape, Fill):
                 stroke = shape.to_stroke(max_border_width)
                 shapes.append(stroke if stroke else shape)
             else:
                 shapes.append(shape)
+        self.reset(shapes).sort_in_reading_order() # sort in reading order
 
-        self.reset(shapes)
+        # detect semantic type of shapes
+        self.detect_initial_categories()
 
 
     def detect_initial_categories(self):
