@@ -109,6 +109,9 @@ class Layout:
         self.shapes.clean_up(settings['max_border_width'], 
                         settings['shape_merging_threshold'],
                         settings['shape_min_dimension'])
+        
+        # check shape semantic type
+        self.shapes.detect_initial_categories()
 
 
     def parse(self, settings:dict):
@@ -160,7 +163,7 @@ class Layout:
         * move table contained blocks (text block or explicit table) to associated cell layout.
         '''
         # check shape semantic type
-        self.shapes.detect_initial_categories()    
+        self.shapes.detect_initial_categories()
         
         # parse table structure/format recognized from explicit shapes
         self._table_parser.lattice_tables(
