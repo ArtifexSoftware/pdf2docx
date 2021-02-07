@@ -56,13 +56,14 @@ class Section(BaseCollection):
     def restore(self, raw:dict):
         '''Restore section from source dict.'''
         # bbox is maintained automatically based on columns
-        self.cols  = raw.get('cols', 1) # one column by default
         self.space = raw.get('space', 0)   # space between adjacent columns
 
         # get each column
         for raw_col in raw.get('columns', []):
             column = Column().restore(raw_col)
             self.append(column)
+
+        return self
 
 
     def parse(self, settings:dict):
