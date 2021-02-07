@@ -5,7 +5,7 @@
 
 from docx.shared import Pt
 from ..common import constants
-from ..common.Collection import Collection
+from ..common.Collection import ElementCollection
 from ..common.share import BlockType, rgb_value
 from ..common.Block import Block
 from ..common.docx import reset_paragraph_format
@@ -17,7 +17,7 @@ from ..table.TableBlock import TableBlock
 from ..table.Cell import Cell
 
 
-class Blocks(Collection):
+class Blocks(ElementCollection):
     '''Block collections.'''
     def __init__(self, instances:list=None, parent=None):
         ''' A collection of TextBlock and TableBlock instances. 
@@ -27,7 +27,7 @@ class Blocks(Collection):
         self._instances = []  # type: list[TextBlock or TableBlock]
 
         # NOTE: no changes on floating image blocks once identified, e.g. no merging to text block, 
-        # no assingning to table. So, store them here, rather than self._instances
+        # no assigning to table. So, store them here, rather than self._instances
         self.floating_image_blocks = []
     
         # Convert all original image blocks to text blocks, i.e. ImageSpan,
@@ -44,8 +44,8 @@ class Blocks(Collection):
 
 
     def _update_bbox(self, block:Block):
-        ''' Override. The parent is generally ``Layout`` or ``Cell``, which is not necessary to 
-            update its bbox. So, do nothing but required here.
+        '''Override. The parent is ``Layout``, which is not necessary to update its bbox. 
+        So, do nothing but required here.
         '''
         pass
 
@@ -152,7 +152,7 @@ class Blocks(Collection):
         """
         if not self._instances: return
         
-        page_bbox = self.parent.bbox
+        page_bbox = self.parent.working_bbox
         f = lambda block:   block.bbox.intersects(page_bbox) and \
                             block.text.strip() and (
                             block.is_horizontal_text or block.is_vertical_text)
@@ -340,7 +340,7 @@ class Blocks(Collection):
         # bbox of blocks
         # - page level, e.g. blocks in top layout
         # - table level, e.g. blocks in table cell
-        bbox = self.parent.bbox
+        bbox = self.parent.working_bbox
 
         # check text direction for vertical space calculation:
         # - normal reading direction (from left to right)    -> the reference boundary is top border, i.e. bbox[1].

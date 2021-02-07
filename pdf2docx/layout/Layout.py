@@ -9,11 +9,11 @@ parsing table block is the principle steps.
 
 The layout parsing idea:
 
-1. Clean source blocks and shapes (run only once in Page level). The main step is to merge blocks 
+1. Clean source blocks and shapes in Page level. The main step is to merge blocks 
    horizontally considering flow layout (only one block in horizontal direction).
-#. Parse layout top-down (run only once in Page level). There's a lack of information from top level, 
-   so this step is just to detect whether a two-columns page layout.
-#. Parse layout bottom-up.
+#. Parse Section and Column layout in Page level. This step is just to detect whether 
+   a two-columns layout.
+#. Parse table layout in Column level.
     (a) Detect explicit tables first based on shapes. 
     (#) Then, detect stream tables based on original text blocks and parsed explicit tables.
     (#) Move table contained blocks (text block or explicit table) to associated cell-layout.
@@ -21,7 +21,6 @@ The layout parsing idea:
 #. Repeat above steps for cell-layout in parsed table level.
 '''
 
-from . import Page
 from .Blocks import Blocks
 from ..shape.Shapes import Shapes
 from ..table.TablesConstructor import TablesConstructor
@@ -30,7 +29,7 @@ from ..table.TablesConstructor import TablesConstructor
 class Layout:
     '''Object representing the whole page, e.g. margins, blocks, shapes, spacing.'''
 
-    def __init__(self, blocks:Blocks=None, shapes:Shapes=None, parent=None):
+    def __init__(self, blocks:Blocks=None, shapes:Shapes=None):
         ''' Initialize layout.
 
         Args:
@@ -38,21 +37,16 @@ class Layout:
             shapes (Shapes): Shapes representing table border, shading and text style like underline, highlight.
             parent (Page, Cell): The object that this layout belonging to.
         '''
-        self._parent = parent
         self.blocks = blocks or Blocks(parent=self)
         self.shapes = shapes or Shapes(parent=self)        
-        self._table_parser = TablesConstructor(parent=self) # table parser
-    
-
-    @property
-    def bbox(self): return self._parent.working_bbox    
+        self._table_parser = TablesConstructor(parent=self) # table parser    
 
 
     def store(self):
         '''Store parsed layout in dict format.'''
         return {
             'blocks': self.blocks.store(),
-            'shapes': self.shapes.store(),
+            'shapes': self.shapes.store()
         }
 
 
@@ -69,11 +63,8 @@ class Layout:
         Args:
             settings (dict): Layout parsing parameters.
         '''
-        # parse layout in top down mode
-        self._parse_layout_top_down(settings)
-    
-        # parse layout in bottom up mode
-        self._parse_layout_bottom_up(settings)
+        # parse tables
+        self._parse_table_layout(settings)
 
         # parse text format in current layout
         self._parse_text_format(settings)
@@ -86,15 +77,12 @@ class Layout:
     # ----------------------------------------------------
     # wraping Blocks and Shapes methods
     # ----------------------------------------------------
-    def clean_up(self, settings:dict):
+    def _clean_up(self, settings:dict):
         '''Clean up blocks and shapes, e.g. 
         
         * remove negative or duplicated instances,
         * merge text blocks horizontally (preparing for layout parsing)
         * detect semantic type of shapes
-
-        .. note::
-            This method is for Page level only since it runs once for all.
         '''
         # clean up blocks first
         self.blocks.clean_up(settings['float_image_ignorable_gap'],
@@ -104,17 +92,11 @@ class Layout:
         # clean up shapes        
         self.shapes.clean_up(settings['max_border_width'], 
                         settings['shape_merging_threshold'],
-                        settings['shape_min_dimension'])       
+                        settings['shape_min_dimension'])
 
 
-    def _parse_layout_top_down(self, settings:dict):
-        '''Parse layout top-down (Page level only).'''
-        if not isinstance(self._parent, Page.Page): return
-        self._table_parser.page_layout_table()
-
-
-    def _parse_layout_bottom_up(self, settings:dict):
-        '''Parse layout bottom-up: 
+    def _parse_table_layout(self, settings:dict):
+        '''Parse table layout: 
         
         * detect explicit tables first based on shapes, 
         * then stream tables based on original text blocks and parsed explicit tables;

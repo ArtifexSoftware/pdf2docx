@@ -76,10 +76,13 @@ class Converter:
         num_pages = len(indexes)
         for i, idx in enumerate(indexes, start=1):
             print(f'\rParsing Page {idx+1}: {i}/{num_pages}...', end='', flush=True)
-            try:
+            if kwargs.get('debug', False):
                 self._pages[idx].parse(kwargs)
-            except Exception as e:
-                print(f'\nIgnore page due to error: {e}', flush=True)
+            else:
+                try:
+                    self._pages[idx].parse(kwargs)
+                except Exception as e:
+                    print(f'\nIgnore page due to error: {e}', flush=True)
 
         return self
 

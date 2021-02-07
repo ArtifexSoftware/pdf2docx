@@ -9,16 +9,17 @@ from .share import IText, TextDirection, solve_rects_intersection, graph_bfs
 
 
 class BaseCollection:
-    '''Base collection of specific instances.'''
-    def __init__(self, instances:list=None):
-        '''Init collection from a list of Element instances.'''
-        self._instances = instances or [] # type: list[Element]
+    '''Base collection representing a list of instances.'''
+    def __init__(self, instances:list=None, parent=None):
+        '''Init collection from a list of instances.'''
+        self._parent = parent
+        self._instances = instances or []
 
     def __getitem__(self, idx):
         try:
             instances = self._instances[idx]
         except IndexError:
-            msg = f'Collection index {idx} out of range'
+            msg = f'Collection index {idx} out of range.'
             raise IndexError(msg)
         else:
             return instances
@@ -27,7 +28,34 @@ class BaseCollection:
 
     def __len__(self): return len(self._instances)
 
+    @property
+    def parent(self): return self._parent
 
+    def append(self, instance): 
+        if not instance: return
+        self._instances.append(instance)
+
+    def extend(self, instances:list): 
+        for instance in instances: self.append(instance)
+
+    def reset(self, instances:list=None):
+        """Reset instances list.
+
+        Args:
+            instances (list, optional): reset to target instances. Defaults to None.
+
+        Returns:
+            BaseCollection: self
+        """
+        self._instances = []
+        self.extend(instances or [])
+        return self
+
+
+class Collection(BaseCollection):
+    '''Collection of instance with ``bbox`` property. 
+    Focus on grouping into sub-collection based on intersections.
+    '''
     @property
     def bbox(self):
         '''bbox of combined collection.'''
@@ -44,7 +72,7 @@ class BaseCollection:
             fun (function): with 2 arguments representing 2 instances (Element) and return bool.
 
         Returns:
-            list: a list of grouped ``BaseCollection`` instances.
+            list: a list of grouped ``Collection`` instances.
         
         Examples 1::
 
@@ -86,7 +114,7 @@ class BaseCollection:
             dy (float): y-tolerances to define connectivity
 
         Returns:
-            list: a list of grouped ``BaseCollection`` instances.
+            list: a list of grouped ``Collection`` instances.
         
         .. note::
             * It's equal to a GRAPH traversing problem, which the critical point in 
@@ -117,18 +145,8 @@ class BaseCollection:
         return groups
 
 
-class Collection(BaseCollection, IText):
-    '''Collection of specific instances.'''
-    def __init__(self, instances:list=None, parent=None):
-        '''Init collection from a list of Element instances.'''
-        self._parent = parent # type: Element
-        super().__init__(instances)
-
-
-    @property
-    def parent(self): return self._parent
-
-
+class ElementCollection(Collection, IText):
+    '''Collection of ``Element`` instances.'''
     @property
     def text_direction(self):
         '''Get text direction. All instances must have same text direction.''' 
@@ -168,28 +186,7 @@ class Collection(BaseCollection, IText):
         self._update_bbox(e)
 
         # set parent
-        if not self._parent is None:
-            e.parent = self._parent 
-
-
-    def extend(self, elements:list):
-        '''Append a list of instances.'''
-        for e in elements:
-            self.append(e)
-
-
-    def reset(self, elements:list=None):
-        """Reset instances list.
-
-        Args:
-            elements (list, optional): reset to target instances. Defaults to None.
-
-        Returns:
-            Collection: self
-        """
-        self._instances = []
-        self.extend(elements or [])
-        return self
+        if not self._parent is None: e.parent = self._parent 
 
 
     def insert(self, nth:int, e:Element):
@@ -212,7 +209,7 @@ class Collection(BaseCollection, IText):
             nth (int): the position to remove.
 
         Returns:
-            Collection: the removed instance.
+            ElementCollection: the removed instance.
         """        
         return self._instances.pop(nth)
 

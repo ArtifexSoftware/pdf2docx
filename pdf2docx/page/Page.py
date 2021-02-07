@@ -3,25 +3,35 @@
 '''Page object parsed with PDF raw dict.
 
 In addition to base structure described in :py:class:`~pdf2docx.page.RawPage`, 
-some new features are also included, e.g.
+some new features, e.g. sections, table block, are also included. 
+Page elements structure:
 
-* page margin
-* parsed table block and nested layout
+* :py:class:`~pdf2docx.page.Page` >> :py:class:`~pdf2docx.page.Section` >> :py:class:`~pdf2docx.page.Column`  
+    * :py:class:`~pdf2docx.layout.Blocks`
+        * :py:class:`~pdf2docx.text.TextBlock` >> 
+          :py:class:`~pdf2docx.text.Line` >> 
+          :py:class:`~pdf2docx.text.TextSpan` / :py:class:`~pdf2docx.image.ImageSpan` >>
+          :py:class:`~pdf2docx.text.Char`
+        * :py:class:`~pdf2docx.table.TableBlock` >>
+          :py:class:`~pdf2docx.table.Row` >> 
+          :py:class:`~pdf2docx.table.Cell`
+            * :py:class:`~pdf2docx.layout.Blocks`
+            * :py:class:`~pdf2docx.shape.Shapes`
+    * :py:class:`~pdf2docx.shape.Shapes`
+        * :py:class:`~pdf2docx.shape.Shape.Stroke`
+        * :py:class:`~pdf2docx.shape.Shape.Fill`
+        * :py:class:`~pdf2docx.shape.Shape.Hyperlink`
 
 ::
 
     {
-        # raw dict
-        ----------------------------
-        "width" : w,
-        "height": h,    
-        "blocks": [{...}, {...}, ...],
-
-        # introduced dict
-        ----------------------------
         "id": 0, # page index
+        "width" : w,
+        "height": h,
         "margin": [left, right, top, bottom],
-        "shapes" : [{...}, {...}, ...]
+        "sections": [{
+            ... # section properties
+        }, ...]
     }
 
 '''
@@ -30,12 +40,13 @@ from docx.shared import Pt
 from docx.enum.section import WD_SECTION
 from ..common.share import debug_plot
 from ..common import constants
+from ..layout.Layout import Layout
 from .RawPage import RawPage
-from .Layout import Layout
+from .Sections import Sections
 
 
-class Page(RawPage):
-    '''Object representing the whole page, e.g. margins, blocks, shapes, spacing.'''
+class Page(RawPage, Layout):
+    '''Object representing the whole page, e.g. margins, sections.'''
 
     def __init__(self, fitz_page=None):
         ''' Initialize page layout.
@@ -46,8 +57,8 @@ class Page(RawPage):
         super().__init__(fitz_page)
         self.id = -1
         self._margin = (0,) * 4
-        self.settings = self.init_settings()        
-        self.layout = Layout(parent=self)
+        self.settings = self.init_settings()
+        self.sections = Sections(parent=self)
         self._finalized = False
 
 
@@ -111,12 +122,12 @@ class Page(RawPage):
     def store(self):
         '''Store parsed layout in dict format.'''
         res = {
-            'id'    : self.id,
-            'width' : self.width,
-            'height': self.height,
-            'margin': self.margin
+            'id'      : self.id,
+            'width'   : self.width,
+            'height'  : self.height,
+            'margin'  : self.margin,
+            'sections': self.sections.store()
         }
-        res.update(self.layout.store())
         return res
 
 
@@ -129,9 +140,12 @@ class Page(RawPage):
         self.width = data.get('width', 0.0)
         self.height = data.get('height', 0.0)
         self._margin = data.get('margin', (0,) * 4)
+
+        # source blocks and shapes
+        super().restore(data)
         
-        # initialize layout  blocks and shapes
-        self.layout.restore(data)
+        # parsed layout
+        self.sections.restore(data.get('sections', []))
 
         # Suppose layout is finalized when restored; otherwise, set False explicitly
         # out of this method.
@@ -147,6 +161,9 @@ class Page(RawPage):
 
         # initialize layout based on source pdf page
         self._load_source()
+
+        # clean up blocks and shapes, and calculate page margin
+        self._clean_up()
 
         # parse layout
         self._parse_layout()
@@ -213,32 +230,26 @@ class Page(RawPage):
         '''Initialize layout extracted with ``PyMuPDF``.'''
         self.restore(self.raw_dict)
         self._finalized = False  # just restored from raw dict, not parsed yet
-        return self.layout.blocks
-    
+        return self.blocks
+
 
     @debug_plot('Cleaned Shapes')
-    def _clean_up_layout(self):
+    def _clean_up(self):
         '''Clean shapes and blocks, e.g. change block order, clean negative block, 
         and set page margin accordingly. 
         '''
-        self.layout.clean_up(self.settings)
+        super()._clean_up(self.settings)
 
         # set page margin based on cleaned layout
         self._margin = self._cal_margin()
         
-        return self.layout.shapes
+        return self.shapes
 
 
     @debug_plot('Final Layout')
     def _parse_layout(self):
         '''A wrapper of parsing layout for debug plot purpose.'''
-        # clean up
-        self._clean_up_layout()
-
-        # parse layout
-        self.layout.parse(self.settings)
-
-        return self.layout.blocks
+        return self.sections.parse(self.settings)
 
 
     def _cal_margin(self):

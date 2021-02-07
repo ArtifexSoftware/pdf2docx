@@ -53,13 +53,6 @@ class Paths(Collection):
         return len(curve_paths)/len(self._instances) > ratio
 
 
-    def append(self, path): self._instances.append(path)
-
-
-    def extend(self, paths):
-        for path in paths: self.append(path)
-
-
     def plot(self, page):
         """Plot paths for debug purpose.
 

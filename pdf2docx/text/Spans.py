@@ -3,11 +3,11 @@
 '''A group of TextSpan and ImageSpan objects.
 '''
 
-from ..common.Collection import Collection
+from ..common.Collection import ElementCollection
 from .TextSpan import TextSpan
 from ..image.ImageSpan import ImageSpan
 
-class Spans(Collection):
+class Spans(ElementCollection):
     '''Collection of TextSpan and ImageSpan instances.'''
 
     def restore(self, raws:list):

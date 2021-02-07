@@ -27,6 +27,7 @@ from ..shape.Shapes import Shapes
 from ..shape.Shape import Stroke
 from ..common import constants
 from ..common.share import RectType, rgb_value
+from ..common.Collection import BaseCollection
 
 
 class Border:
@@ -225,25 +226,8 @@ class VBorder(Border):
         super().__init__('v', border_range, borders, reference)
 
 
-class Borders:
+class Borders(BaseCollection):
     '''Collection of ``Border`` instances.'''
-    def __init__(self):
-        ''' Init collection with empty borders.'''
-        self._instances = [] # type: list[Border]
-
-
-    def __iter__(self):
-        return (instance for instance in self._instances)
-
-    def __len__(self):
-        return len(self._instances)
-    
-
-    def add(self, border:Border): self._instances.append(border)
-    
-
-    def extend(self, borders:list): self._instances.extend(borders)
-
 
     def finalize(self, strokes:Shapes, fills:Shapes):
         '''Finalize the position of all borders.

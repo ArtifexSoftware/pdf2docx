@@ -6,13 +6,13 @@
 from docx.shared import Pt
 from .Line import Line
 from ..image.ImageSpan import ImageSpan
-from ..common.Collection import Collection
+from ..common.Collection import ElementCollection
 from ..common.docx import add_stop
 from ..common.share import TextAlignment
 from ..common import constants
 
 
-class Lines(Collection):
+class Lines(ElementCollection):
     '''Collection of text lines.'''
 
     @property
