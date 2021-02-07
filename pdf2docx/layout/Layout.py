@@ -55,6 +55,21 @@ class Layout:
         raise NotImplementedError
 
 
+    def store(self):
+        '''Store parsed layout in dict format.'''
+        return {
+            'blocks': self.blocks.store(),
+            'shapes': self.shapes.store()
+        }
+
+
+    def restore(self, data:dict):
+        '''Restore Layout from parsed results.'''
+        self.blocks.restore(data.get('blocks', []))
+        self.shapes.restore(data.get('shapes', []))
+        return self
+
+
     def assign_blocks(self, blocks:list):
         '''Add blocks to this layout. 
         
@@ -76,21 +91,6 @@ class Layout:
         # add shape if contained in cell
         for shape in shapes:
             if self.working_bbox & shape.bbox: self.shapes.append(shape)
-
-
-    def store(self):
-        '''Store parsed layout in dict format.'''
-        return {
-            'blocks': self.blocks.store(),
-            'shapes': self.shapes.store()
-        }
-
-
-    def restore(self, data:dict):
-        '''Restore Layout from parsed results.'''
-        self.blocks.restore(data.get('blocks', []))
-        self.shapes.restore(data.get('shapes', []))
-        return self
 
 
     def clean_up(self, settings:dict):

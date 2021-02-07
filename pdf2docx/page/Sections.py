@@ -5,7 +5,6 @@
 
 from docx.enum.section import WD_SECTION
 from ..common.Collection import BaseCollection
-from ..text.Line import Line
 from .Section import Section
 from ..layout.Blocks import Blocks
 from ..shape.Shapes import Shapes

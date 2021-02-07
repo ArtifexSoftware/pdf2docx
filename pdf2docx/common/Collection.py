@@ -13,7 +13,8 @@ class BaseCollection:
     def __init__(self, instances:list=None, parent=None):
         '''Init collection from a list of instances.'''
         self._parent = parent
-        self._instances = list(instances or [])
+        self._instances = []
+        self.extend(instances or []) # Note to exclude empty instance by default
 
     def __getitem__(self, idx):
         try:

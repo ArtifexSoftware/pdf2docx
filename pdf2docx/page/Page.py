@@ -31,17 +31,22 @@ Page elements structure:
         "margin": [left, right, top, bottom],
         "sections": [{
             ... # section properties
+        }, ...],
+        "floats": [{
+            ... # floating picture
         }, ...]
     }
 
 '''
 
+from ..common.Collection import BaseCollection
 from docx.shared import Pt
 from ..common.share import debug_plot
 from ..common import constants
 from ..layout.Layout import Layout
 from .RawPage import RawPage
 from .Sections import Sections
+from ..image.ImageBlock import ImageBlock
 
 
 class Page(RawPage, Layout):
@@ -58,7 +63,13 @@ class Page(RawPage, Layout):
         self.id = -1
         self._margin = (0,) * 4
         self.settings = self.init_settings()
+
+        # flow structure: Section -> Column -> Blocks -> TextBlock/TableBlock
         self.sections = Sections(parent=self)
+        
+        # floating images are separate node under page
+        self.float_images = BaseCollection()
+
         self._finalized = False
 
 
@@ -126,7 +137,8 @@ class Page(RawPage, Layout):
             'width'   : self.width,
             'height'  : self.height,
             'margin'  : self.margin,
-            'sections': self.sections.store()
+            'sections': self.sections.store(),
+            'floats'  : self.float_images.store()
         }
         return res
 
@@ -146,6 +158,9 @@ class Page(RawPage, Layout):
         
         # parsed layout
         self.sections.restore(data.get('sections', []))
+
+        # float images
+        self._restore_float_images(data.get('floats', []))
 
         # Suppose layout is finalized when restored; otherwise, set False explicitly
         # out of this method.
@@ -217,8 +232,13 @@ class Page(RawPage, Layout):
         section.top_margin = Pt(top)
         section.bottom_margin = Pt(bottom)
 
-        # create sections
+        # create flow layout: sections
         self.sections.make_docx(doc)
+
+        # create floating images
+        p = doc.add_paragraph() if not doc.paragraphs else doc.paragraphs[-1]
+        for image in self.float_images:
+            image.make_docx(p)
 
     
     @debug_plot('Source Text Blocks')
@@ -234,7 +254,9 @@ class Page(RawPage, Layout):
         '''Clean shapes and blocks, e.g. change block order, clean negative block, 
         and set page margin accordingly. 
         '''
+        # floating images are detected when cleaning up blocks, so collect them here
         super().clean_up(self.settings)
+        self.float_images.extend(self.blocks.floating_image_blocks)
 
         # set page margin based on cleaned layout
         self._margin = self._cal_margin()
@@ -277,3 +299,12 @@ class Page(RawPage, Layout):
             min(constants.ITP, round(right, 1)), 
             min(constants.ITP, round(top, 1)), 
             min(constants.ITP, round(bottom, 1)))
+    
+
+    def _restore_float_images(self, raws:list):
+        '''Restore float images.'''
+        self.float_images.reset()
+        for raw in raws:
+            image = ImageBlock(raw)
+            image.set_float_image_block()
+            self.float_images.append(image)

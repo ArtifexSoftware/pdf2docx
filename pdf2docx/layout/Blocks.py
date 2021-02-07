@@ -21,27 +21,9 @@ from ..table.TableBlock import TableBlock
 class Blocks(ElementCollection):
     '''Block collections.'''
     def __init__(self, instances:list=None, parent=None):
-        ''' A collection of TextBlock and TableBlock instances. 
-            ImageBlock is converted to ImageSpan contained in TextBlock.
-        '''
-        self._parent = parent # type: Layout
-        self._instances = []  # type: list[TextBlock or TableBlock]
-
-        # NOTE: no changes on floating image blocks once identified, e.g. no merging to text block, 
-        # no assigning to table. So, store them here, rather than self._instances
-        self.floating_image_blocks = []
-    
-        # Convert all original image blocks to text blocks, i.e. ImageSpan,
-        # So we can focus on single TextBlock later on; TableBlock is also combination of TextBlocks.
-        # NOTE: for a converted image block
-        # - isinstance(image_block, TextBlock)==True
-        # - image_block.is_text_block()==False
-        for block in (instances or []):
-            if isinstance(block, ImageBlock):
-                text_block = block.to_text_block()
-                self.append(text_block)
-            else:
-                self.append(block)
+        ''' A collection of TextBlock and TableBlock instances.'''
+        super().__init__(instances, parent)
+        self._floating_image_blocks = []
 
 
     def _update_bbox(self, block:Block):
@@ -49,6 +31,11 @@ class Blocks(ElementCollection):
         So, do nothing but required here.
         '''
         pass
+
+
+    @property
+    def floating_image_blocks(self):
+        return self._floating_image_blocks
 
 
     @property
@@ -85,16 +72,10 @@ class Blocks(ElementCollection):
         return list(filter(
             lambda block: block.is_text_image_block(), self._instances))
 
-    
-    def store(self):
-        '''Store attributes in json format.'''
-        res = super().store()
-        res.extend([ instance.store() for instance in self.floating_image_blocks ])
-        return res
-
 
     def restore(self, raws:list):
         '''Clean current instances and restore them from source dict.
+        ImageBlock is converted to ImageSpan contained in TextBlock.
 
         Args:
             raws (list): A list of raw dicts representing text/image/table blocks.
@@ -114,13 +95,6 @@ class Blocks(ElementCollection):
             elif block_type == BlockType.TEXT.value:
                 block = TextBlock(raw_block)
             
-            # floating image block
-            elif block_type == BlockType.FLOAT_IMAGE.value:
-                block = ImageBlock(raw_block)
-                block.set_float_image_block()
-                self.floating_image_blocks.append(block)
-                block = None
-
             # table block
             elif block_type in (BlockType.LATTICE_TABLE.value, BlockType.STREAM_TABLE.value):
                 block = TableBlock(raw_block)
@@ -159,7 +133,7 @@ class Blocks(ElementCollection):
                             block.is_horizontal_text or block.is_vertical_text)
         self.reset(filter(f, self._instances))
 
-        # merge blocks horizontally, e.g. remove overlap blocks, since no floating elements are supported
+        # merge blocks horizontally, e.g. remove overlap blocks.
         # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
         self.strip() \
             .sort_in_reading_order() \
@@ -168,6 +142,7 @@ class Blocks(ElementCollection):
                             line_overlap_threshold=line_overlap_threshold,
                             line_merging_threshold=line_merging_threshold)
    
+
     def strip(self):
         '''Remove redundant blanks exist in text block lines. These redundant blanks may affect bbox of text block.
         '''
@@ -196,7 +171,7 @@ class Blocks(ElementCollection):
 
                 float_image = ImageBlock().from_text_block(block)
                 float_image.set_float_image_block()
-                self.floating_image_blocks.append(float_image)
+                self._floating_image_blocks.append(float_image)
 
                 # remove the original image block from flow layout
                 block.update_bbox((0,0,0,0))
@@ -458,6 +433,7 @@ class Blocks(ElementCollection):
         # add table blocks
         blocks.extend(self.table_blocks)
         self.reset(blocks)
+        
 
         return self
 
@@ -556,11 +532,6 @@ class Blocks(ElementCollection):
             # otherwise, add a small paragraph
             p = doc.add_paragraph()
             reset_paragraph_format(p, Pt(constants.MIN_LINE_SPACING)) # a small line height
-
-        # Finally, add floating image to last paragraph
-        p = doc.add_paragraph() if not doc.paragraphs else doc.paragraphs[-1]
-        for image_block in self.floating_image_blocks:
-            image_block.make_docx(p)
 
   
     def plot(self, page):
