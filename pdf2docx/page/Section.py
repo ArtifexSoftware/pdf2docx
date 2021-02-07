@@ -20,39 +20,70 @@ to distinguish these different layouts.
 }
 '''
 
-from ..common.Element import Element
+from ..common.docx import set_columns
 from ..common.Collection import BaseCollection
 from .Column import Column
 
 
-class Section(Element, BaseCollection):
+class Section(BaseCollection):
     
-    def __init__(self, raw:dict=None):
-        raw = raw or {}
-        # get bbox from raw dict, e.g. parsed result. 
-        # Note no bbox provided when source dict from pdf.
-        super().__init__(raw)
+    def __init__(self, space:int=0, columns:list=None, parent=None):
+        """Initialize Section instance.
 
-        self.cols  = raw.get('cols', 1) # one column by default
-        self.space = raw.get('space', 0)   # space between adjacent columns
+        Args:
+            space (int, optional): [description]. Defaults to 0.
+            columns (list, optional): [description]. Defaults to None.
+            parent (Sections, optional): [description]. Defaults to None.
+        """
+        self.space = space
+        super().__init__(columns, parent)
+    
 
-        # get each column
-        BaseCollection.__init__(self)
-        for raw_col in raw.get('columns', []):
-            column = Column(parent=self).restore(raw_col)
-            self.append(column)
+    @property
+    def cols(self): return len(self)
 
 
     def store(self):
         '''Store parsed section layout in dict format.'''
-        res = super().store()
-        res.update({
+        return {
+            'bbox'   : tuple([x for x in self.bbox]),
             'cols'   : self.cols,
             'space'  : self.space,
-            'columns': [column.store() for column in self._instances]
-        })
-        return res
+            'columns': super().store()
+        }
+    
 
+    def restore(self, raw:dict):
+        '''Restore section from source dict.'''
+        # bbox is maintained automatically based on columns
+        self.cols  = raw.get('cols', 1) # one column by default
+        self.space = raw.get('space', 0)   # space between adjacent columns
+
+        # get each column
+        for raw_col in raw.get('columns', []):
+            column = Column().restore(raw_col)
+            self.append(column)
+
+
+    def parse(self, settings:dict):
+        '''Parse section layout.'''
+        for column in self: column.parse(settings)        
+        return self
+    
+
+    def make_docx(self, doc):
+        '''Create section in docx. 
+
+        Args:
+            doc (Document): ``python-docx`` document object
+        '''
+        # set section column
+        section = doc.sections[-1]
+        set_columns(section, self.cols, self.space)
+
+        # add create each column
+        for column in self:
+            column.make_docx(doc)
 
 
 

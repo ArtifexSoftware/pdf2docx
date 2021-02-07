@@ -134,7 +134,7 @@ class TableBlock(Block):
         for row in self._rows:
             for cell in row:
                 if not cell: continue
-                cell.layout.parse(settings)
+                cell.parse(settings)
 
 
     def plot(self, page):

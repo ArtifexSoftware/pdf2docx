@@ -37,7 +37,6 @@ Page elements structure:
 '''
 
 from docx.shared import Pt
-from docx.enum.section import WD_SECTION
 from ..common.share import debug_plot
 from ..common import constants
 from ..layout.Layout import Layout
@@ -55,6 +54,7 @@ class Page(RawPage, Layout):
             fitz_page (fitz.Page): Source pdf page.
         '''
         super().__init__(fitz_page)
+        Layout.__init__(self)
         self.id = -1
         self._margin = (0,) * 4
         self.settings = self.init_settings()
@@ -194,7 +194,7 @@ class Page(RawPage, Layout):
 
 
     def make_docx(self, doc):
-        '''Create page based on layout data. 
+        '''Set page size, margin, and create page. 
 
         .. note::
             Before running this method, the page layout must be either parsed from source 
@@ -203,26 +203,22 @@ class Page(RawPage, Layout):
         Args:
             doc (Document): ``python-docx`` document object
         '''
-        # new page section
-        # a default section is created when initialize the document,
-        # so we do not have to add section for the first time.
-        if not doc.paragraphs:
-            section = doc.sections[0]
-        else:
-            section = doc.add_section(WD_SECTION.NEW_PAGE)
+        # a default section is created when initialize the document
+        section = doc.sections[0]
 
+        # page size
         section.page_width  = Pt(self.width)
         section.page_height = Pt(self.height)
 
-        # set page margin
+        # page margin
         left,right,top,bottom = self.margin
         section.left_margin = Pt(left)
         section.right_margin = Pt(right)
         section.top_margin = Pt(top)
         section.bottom_margin = Pt(bottom)
 
-        # add paragraph or table according to parsed block
-        self.layout.blocks.make_docx(doc)
+        # create sections
+        self.sections.make_docx(doc)
 
     
     @debug_plot('Source Text Blocks')
@@ -238,7 +234,7 @@ class Page(RawPage, Layout):
         '''Clean shapes and blocks, e.g. change block order, clean negative block, 
         and set page margin accordingly. 
         '''
-        super()._clean_up(self.settings)
+        super().clean_up(self.settings)
 
         # set page margin based on cleaned layout
         self._margin = self._cal_margin()
@@ -260,10 +256,10 @@ class Page(RawPage, Layout):
             calculated based on valid layout, and stay constant.
         """
         # return default margin if no blocks exist
-        if not self.layout.blocks and not self.layout.shapes: return (constants.ITP, ) * 4
+        if not self.blocks and not self.shapes: return (constants.ITP, ) * 4
 
         x0, y0, x1, y1 = self.bbox
-        u0, v0, u1, v1 = self.layout.blocks.bbox | self.layout.shapes.bbox
+        u0, v0, u1, v1 = self.blocks.bbox | self.shapes.bbox
 
         # margin
         left = max(u0-x0, 0.0)

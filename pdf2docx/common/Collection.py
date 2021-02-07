@@ -13,7 +13,7 @@ class BaseCollection:
     def __init__(self, instances:list=None, parent=None):
         '''Init collection from a list of instances.'''
         self._parent = parent
-        self._instances = instances or []
+        self._instances = list(instances or [])
 
     def __getitem__(self, idx):
         try:
@@ -31,12 +31,24 @@ class BaseCollection:
     @property
     def parent(self): return self._parent
 
+
+    @property
+    def bbox(self):
+        '''bbox of combined collection.'''
+        rect = fitz.Rect()
+        for instance in self._instances:
+            rect |= instance.bbox
+        return fitz.Rect([round(x,1) for x in rect]) # NOTE: round to avoid digital error
+
+
     def append(self, instance): 
         if not instance: return
         self._instances.append(instance)
 
+
     def extend(self, instances:list): 
         for instance in instances: self.append(instance)
+
 
     def reset(self, instances:list=None):
         """Reset instances list.
@@ -52,19 +64,20 @@ class BaseCollection:
         return self
 
 
+    def store(self):
+        '''Store attributes in json format.'''
+        return [ instance.store() for instance in self._instances ]
+
+
+    def restore(self, *args, **kwargs):
+        '''Construct Collection from a list of dict.'''
+        raise NotImplementedError
+
+
+
 class Collection(BaseCollection):
-    '''Collection of instance with ``bbox`` property. 
-    Focus on grouping into sub-collection based on intersections.
+    '''Collection of instance focusing on grouping sub-collection based on intersections.
     '''
-    @property
-    def bbox(self):
-        '''bbox of combined collection.'''
-        rect = fitz.Rect()
-        for instance in self._instances:
-            rect |= instance.bbox
-        return fitz.Rect([round(x,1) for x in rect]) # NOTE: round to avoid digital error
-
-
     def group(self, fun):
         """Group instances according to user defined criterion.
 
@@ -145,6 +158,7 @@ class Collection(BaseCollection):
         return groups
 
 
+
 class ElementCollection(Collection, IText):
     '''Collection of ``Element`` instances.'''
     @property
@@ -157,16 +171,6 @@ class ElementCollection(Collection, IText):
 
         # normal direction by default
         return TextDirection.LEFT_RIGHT 
-
-
-    def store(self):
-        '''Store attributes in json format.'''
-        return [ instance.store() for instance in self._instances ]
-
-
-    def restore(self, *args, **kwargs):
-        '''Construct Collection from a list of dict.'''
-        raise NotImplementedError
 
 
     def _update_bbox(self, e:Element):

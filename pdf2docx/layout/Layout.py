@@ -21,25 +21,61 @@ The layout parsing idea:
 #. Repeat above steps for cell-layout in parsed table level.
 '''
 
-from .Blocks import Blocks
+from ..common import constants
+from ..text.TextBlock import TextBlock
 from ..shape.Shapes import Shapes
-from ..table.TablesConstructor import TablesConstructor
 
 
 class Layout:
-    '''Object representing the whole page, e.g. margins, blocks, shapes, spacing.'''
+    '''Blocks and shapes structure and formats.'''
 
-    def __init__(self, blocks:Blocks=None, shapes:Shapes=None):
+    def __init__(self, blocks=None, shapes=None):
         ''' Initialize layout.
 
         Args:
             blocks (Blocks): Blocks representing text/table contents.
             shapes (Shapes): Shapes representing table border, shading and text style like underline, highlight.
-            parent (Page, Cell): The object that this layout belonging to.
+            parent (Page, Column, Cell): The object that this layout belonging to.
         '''
-        self.blocks = blocks or Blocks(parent=self)
-        self.shapes = shapes or Shapes(parent=self)        
-        self._table_parser = TablesConstructor(parent=self) # table parser    
+        from .Blocks import Blocks # avoid import conflicts
+        from ..table.TablesConstructor import TablesConstructor
+
+        self.blocks = Blocks(instances=blocks, parent=self)
+        self.shapes = Shapes(instances=shapes, parent=self)        
+        self._table_parser = TablesConstructor(parent=self) # table parser
+
+
+    def working_bbox(self, *args, **kwargs):
+        '''Working bbox of current Layout.'''
+        raise NotImplementedError
+
+
+    def constains(self, *args, **kwargs):
+        '''Whether given element is contained in this layout.'''
+        raise NotImplementedError
+
+
+    def assign_blocks(self, blocks:list):
+        '''Add blocks to this layout. 
+        
+        Args:
+            blocks (list): a list of text/table block to add.
+        
+        .. note::
+            If a text block is partly contained, it must deep into line -> span -> char.
+        '''
+        for block in blocks: self._assign_block(block)
+
+
+    def assign_shapes(self, shapes:list):
+        '''Add shapes to this cell. 
+        
+        Args:
+            shapes (list): a list of Shape instance to add.
+        '''
+        # add shape if contained in cell
+        for shape in shapes:
+            if self.working_bbox & shape.bbox: self.shapes.append(shape)
 
 
     def store(self):
@@ -55,6 +91,24 @@ class Layout:
         self.blocks.restore(data.get('blocks', []))
         self.shapes.restore(data.get('shapes', []))
         return self
+
+
+    def clean_up(self, settings:dict):
+        '''Clean up blocks and shapes, e.g. 
+        
+        * remove negative or duplicated instances,
+        * merge text blocks horizontally (preparing for layout parsing)
+        * detect semantic type of shapes
+        '''
+        # clean up blocks first
+        self.blocks.clean_up(settings['float_image_ignorable_gap'],
+                        settings['line_overlap_threshold'],
+                        settings['line_merging_threshold'])
+
+        # clean up shapes        
+        self.shapes.clean_up(settings['max_border_width'], 
+                        settings['shape_merging_threshold'],
+                        settings['shape_min_dimension'])
 
 
     def parse(self, settings:dict):
@@ -74,25 +128,28 @@ class Layout:
             block.parse(settings)
 
 
-    # ----------------------------------------------------
-    # wraping Blocks and Shapes methods
-    # ----------------------------------------------------
-    def _clean_up(self, settings:dict):
-        '''Clean up blocks and shapes, e.g. 
+    def _assign_block(self, block):
+        '''Add block to this cell. 
         
-        * remove negative or duplicated instances,
-        * merge text blocks horizontally (preparing for layout parsing)
-        * detect semantic type of shapes
+        Args:
+            block (TextBlock, TableBlock): Text/table block to add. 
         '''
-        # clean up blocks first
-        self.blocks.clean_up(settings['float_image_ignorable_gap'],
-                        settings['line_overlap_threshold'],
-                        settings['line_merging_threshold'])
+        # add block directly if fully contained in cell
+        if self.contains(block, constants.FACTOR_ALMOST):
+            self.blocks.append(block)
+            return
+        
+        # add nothing if no intersection
+        if not self.bbox & block.bbox: return
 
-        # clean up shapes        
-        self.shapes.clean_up(settings['max_border_width'], 
-                        settings['shape_merging_threshold'],
-                        settings['shape_min_dimension'])
+        # otherwise, further check lines in text block
+        if not block.is_text_image_block():  return
+        
+        # NOTE: add each line as a single text block to avoid overlap between table block and combined lines
+        split_block = TextBlock()
+        lines = [line.intersects(self.bbox) for line in block.lines]
+        split_block.add(lines)
+        self.blocks.append(split_block)
 
 
     def _parse_table_layout(self, settings:dict):
@@ -102,6 +159,9 @@ class Layout:
         * then stream tables based on original text blocks and parsed explicit tables;
         * move table contained blocks (text block or explicit table) to associated cell layout.
         '''
+        # check shape semantic type
+        self.shapes.detect_initial_categories()    
+        
         # parse table structure/format recognized from explicit shapes
         self._table_parser.lattice_tables(
                         settings['connected_border_tolerance'],

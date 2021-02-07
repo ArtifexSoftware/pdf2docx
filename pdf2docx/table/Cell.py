@@ -5,12 +5,11 @@
 
 from docx.shared import Pt
 from ..common.Element import Element
-from ..common import docx, constants
-from ..text.TextBlock import TextBlock
-from ..layout import Layout # avoid import conflict
+from ..layout.Layout import Layout
+from ..common import docx
 
 
-class Cell(Element, Layout.Layout):
+class Cell(Element, Layout):
     '''Cell object.'''
     def __init__(self, raw:dict=None):
         raw = raw or {}
@@ -39,7 +38,8 @@ class Cell(Element, Layout.Layout):
         '''Bbox with border considered.'''
         x0, y0, x1, y1 = self.bbox
         w_top, w_right, w_bottom, w_left = self.border_width
-        return (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
+        bbox = (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
+        return Element().update_bbox(bbox).bbox # convert to fitz.Rect
 
     
     def compare(self, cell, threshold:float=0.9):
@@ -91,54 +91,6 @@ class Cell(Element, Layout.Layout):
         '''Plot cell and its sub-layout.'''        
         super().plot(page)
         self.blocks.plot(page)
-
-
-    def assign_blocks(self, blocks:list):
-        '''Add blocks to this cell. 
-        
-        Args:
-            blocks (list): a list of text/table block to add.
-        
-        .. note::
-            If a text block is partly contained in a cell, it must deep into line -> span -> char.
-        '''
-        for block in blocks: self._assign_block(block)
-    
-
-    def _assign_block(self, block):
-        '''Add block to this cell. 
-        
-        Args:
-            block (TextBlock, TableBlock): Text/table block to add. 
-        '''
-        # add block directly if fully contained in cell
-        if self.contains(block, constants.FACTOR_ALMOST):
-            self.blocks.append(block)
-            return
-        
-        # add nothing if no intersection
-        if not self.bbox & block.bbox: return
-
-        # otherwise, further check lines in text block
-        if not block.is_text_image_block():  return
-        
-        # NOTE: add each line as a single text block to avoid overlap between table block and combined lines
-        split_block = TextBlock()
-        lines = [line.intersects(self.bbox) for line in block.lines]
-        split_block.add(lines)
-        self.blocks.append(split_block)
-
-
-    def assign_shapes(self, shapes:list):
-        '''Add shapes to this cell. 
-        
-        Args:
-            shapes (list): a list of Shape instance to add.
-        '''
-        # add shape if contained in cell
-        for shape in shapes:
-            if self.bbox & shape.bbox: self.shapes.append(shape)
-        self.shapes.detect_initial_categories()
 
 
     def make_docx(self, table, indexes):

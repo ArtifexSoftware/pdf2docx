@@ -331,7 +331,7 @@ class TablesConstructor:
                     border_range=(x0, x1), 
                     borders=(TOP, BOTTOM), 
                     reference=False) # vertical border always valuable
-                borders.add(right) # right border of current column            
+                borders.append(right) # right border of current column            
             
             # NOTE: unnecessary to split row if the count of row is 1
             rows_lines = group_lines[i]
@@ -358,7 +358,7 @@ class TablesConstructor:
                         border_range=(y0, y1), 
                         borders=(left, right), 
                         reference=is_reference)
-                    borders.add(bottom)
+                    borders.append(bottom)
 
                 # recursion to check borders further
                 borders_ = TablesConstructor._inner_borders(rows_lines[j], (top, bottom, left, right))

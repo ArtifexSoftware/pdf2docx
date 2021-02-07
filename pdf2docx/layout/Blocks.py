@@ -12,9 +12,10 @@ from ..common.docx import reset_paragraph_format
 from ..text.TextBlock import TextBlock
 from ..text.Line import Line
 from ..text.Lines import Lines
+from ..table.Cell import Cell
 from ..image.ImageBlock import ImageBlock
 from ..table.TableBlock import TableBlock
-from ..table.Cell import Cell
+
 
 
 class Blocks(ElementCollection):
