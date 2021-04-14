@@ -5,8 +5,6 @@
 
 from docx.enum.table import WD_ROW_HEIGHT
 from docx.shared import Pt
-
-from .Cell import Cell
 from .Cells import Cells
 from ..common.Element import Element
 
@@ -40,7 +38,7 @@ class Row(Element):
         return len(self._cells)
 
 
-    def append(self, cell:Cell):
+    def append(self, cell):
         '''Append cell to row and update bbox accordingly.'''
         self._cells.append(cell)
 

@@ -18,8 +18,21 @@ from . import constants
 
 
 # ---------------------------------------------------------
-# paragraph
+# section and paragraph
 # ---------------------------------------------------------
+def set_columns(section, num=2, space=0):
+    """Set section column count and space.
+
+    Args:
+        section : ``python-docx`` Section instance.
+        num (int): Column count. Defaults to 2.
+        space (int, optional): Space between adjacent columns. Unit: Pt. Defaults to 0.
+    """
+    col = section._sectPr.xpath('./w:cols')[0]
+    col.set(qn('w:num'), str(num))
+    col.set(qn('w:space'), str(20*space)) # basic unit 1/20 Pt
+
+
 def delete_paragraph(paragraph):
     '''Delete a paragraph.
 

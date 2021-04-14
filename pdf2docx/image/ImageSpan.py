@@ -10,9 +10,6 @@ from .Image import Image
 class ImageSpan(Image):
     '''Image span.'''
 
-    def store(self): return super().store_image()
-
-
     def intersects(self, rect):
         '''Create new ImageSpan object with image contained in given bbox.
         

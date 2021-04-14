@@ -4,10 +4,10 @@
 '''
 
 from .Row import Row
-from ..common.Collection import Collection
+from ..common.Collection import ElementCollection
 
 
-class Rows(Collection):
+class Rows(ElementCollection):
     '''A group of Rows.'''
 
     def restore(self, raws:list):

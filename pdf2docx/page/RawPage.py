@@ -64,7 +64,7 @@ class RawPage:
         # pre-processing for layout blocks and shapes based on parent page
         self._preprocess_images(raw_layout)
         self._preprocess_shapes(raw_layout)
-        
+       
         # Element is a base class processing coordinates, so set rotation matrix globally
         Element.set_rotation_matrix(self.fitz_page.rotationMatrix)
 

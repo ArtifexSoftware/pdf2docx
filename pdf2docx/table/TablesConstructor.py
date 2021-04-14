@@ -19,11 +19,9 @@ Terms definition:
   and finally applied to detect table border.
 '''
 
-from ..common import constants
 from ..common.Element import Element
 from ..common.Collection import Collection
-from ..page.Blocks import Blocks
-from ..shape.Shape import Stroke
+from ..layout.Blocks import Blocks
 from ..shape.Shapes import Shapes
 from ..text.Lines import Lines
 from .TableStructure import TableStructure
@@ -37,64 +35,6 @@ class TablesConstructor:
         self._parent = parent # Layout
         self._blocks = parent.blocks # type: Blocks
         self._shapes = parent.shapes # type: Shapes
-
-
-    def page_layout_table(self):
-        '''Set page layout if two-columns layout.
-
-        ::
-
-            +------------|--------------+ span_elements
-            +------------|--------------+
-                         |
-            +----------+ | +------------+ v0
-            |  column  | | |  elements  | 
-            +----------+ | +------------+ v1
-            u0           |             u1
-            +------------|--------------+ 
-            +------------|--------------+ span_elements
-                         |
-
-        .. note::
-            Run this method in Page level only, right after cleaning blocks and shapes.
-        '''
-        # collect all lines and shapes
-        elements = Collection()
-        for block in self._blocks: elements.extend(block.lines)
-        for shape in self._shapes: elements.append(shape)
-        
-        # filter with page center line
-        x0, y0, x1, y1 = self._parent.bbox
-        X = (x0+x1) / 2.0
-        column_elements = list(filter(
-                lambda line: line.bbox[2]<X or line.bbox[0]>X, elements))
-        span_elements = filter(
-                lambda line: line.bbox[2]>=X>=line.bbox[0], elements)
-        
-        # check: intersected elements must on the top or bottom side
-        u0, v0, u1, v1 = Collection(column_elements).bbox
-        if not all(e.bbox[3]<v0 or e.bbox[1]>v1 for e in span_elements): return
-
-        # create dummy strokes for table parsing        
-        m0, m1 = (x0+u0)/2.0, (x1+u1)/2.0
-        n0, n1 = v0-constants.MAJOR_DIST, v1+constants.MAJOR_DIST        
-        strokes = [
-            Stroke().update_bbox((m0, n0, m1, n0)), # top
-            Stroke().update_bbox((m0, n1, m1, n1)), # bottom
-            Stroke().update_bbox((m0, n0, m0, n1)), # left
-            Stroke().update_bbox((m1, n0, m1, n1)), # right
-            Stroke().update_bbox((X , n0, X,  n1))]   # center
-        
-        # parse table structure
-        table = TableStructure(strokes).parse([]).to_table_block()
-        tables = []
-        if table:
-            table.set_stream_table_block()
-            tables.append(table)
-
-        # assign blocks/shapes to each table
-        self._blocks.assign_to_tables(tables)
-        self._shapes.assign_to_tables(tables)
 
 
     def lattice_tables(self, 
@@ -391,7 +331,7 @@ class TablesConstructor:
                     border_range=(x0, x1), 
                     borders=(TOP, BOTTOM), 
                     reference=False) # vertical border always valuable
-                borders.add(right) # right border of current column            
+                borders.append(right) # right border of current column            
             
             # NOTE: unnecessary to split row if the count of row is 1
             rows_lines = group_lines[i]
@@ -418,7 +358,7 @@ class TablesConstructor:
                         border_range=(y0, y1), 
                         borders=(left, right), 
                         reference=is_reference)
-                    borders.add(bottom)
+                    borders.append(bottom)
 
                 # recursion to check borders further
                 borders_ = TablesConstructor._inner_borders(rows_lines[j], (top, bottom, left, right))

@@ -4,10 +4,10 @@
 '''
 
 from .Cell import Cell
-from ..common.Collection import Collection
+from ..common.Collection import ElementCollection
 
 
-class Cells(Collection):
+class Cells(ElementCollection):
     '''A group of Cells.'''
     def restore(self, raws:list):
         '''Restore Cells from source dict.

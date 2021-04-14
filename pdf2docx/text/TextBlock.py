@@ -207,29 +207,63 @@ class TextBlock(Block):
         self.lines.parse_line_break(line_free_space_ratio_threshold)
 
 
-    def parse_line_spacing(self):
-        '''Calculate average line spacing.
+    def parse_line_spacing_relatively(self):
+        '''Calculate relative line spacing, e.g. `spacing = 1.02`. 
+
+        It's complicated to calculate relative line spacing, e.g. considering font style. 
+        A simple rule is used:
+
+            line_height = 1.3 * font_size
+
+        .. note::
+            The line spacing could be updated automatically when changing the font size, while the layout might
+            be broken in exact spacing mode, e.g. overlapping of lines.
+        '''
+        factor = 1.22
+
+        # block height
+        idx = 1 if self.is_horizontal_text else 0
+        block_height = self.bbox[idx+2]-self.bbox[idx]
+        
+        # The layout of pdf text block:    line-space-line-space-line, while
+        # The layout of paragraph in docx: line-space-line-space-line-space, note the extra space at the end.
+        # So, (1) calculate the line spacing x => x*1.3*sum_{n-1}(H_i) + Hn = H, 
+        #     (2) calculate the extra space at the end, to be excluded from the before space of next block.
+        rows = self.lines.group_by_rows()
+        count = len(rows)
+        
+        max_line_height = lambda row: max(abs(line.bbox[idx+2]-line.bbox[idx]) for line in row)
+        last_line_height = max_line_height(rows[-1])
+
+        if count > 1:
+            sum_pre_line_height = sum(max_line_height(row) for row in rows[:-1])            
+            self.line_space = (block_height-last_line_height)/sum_pre_line_height/factor
+        else:
+            self.line_space = 1.0
+        
+        # extra space at the end
+        end_space = (self.line_space*factor-1.0) * last_line_height if self.line_space>1.0 else 0.0
+        return end_space
+
+
+    def parse_line_spacing_exactly(self):
+        '''Calculate exact line spacing, e.g. `spacing = Pt(12)`. 
 
         The layout of pdf text block: line-space-line-space-line, excepting space before first line, 
         i.e. space-line-space-line, when creating paragraph in docx. So, an average line height is 
-        ``space+line``.
+        ``space+line``. Then, the height of first line can be adjusted by updating paragraph before-spacing.
 
-        Then, the height of first line can be adjusted by updating paragraph before-spacing.
+        .. note::
+            Compared with the relative spacing mode, it has a more precise layout, but less flexible editing
+            ability, especially changing the font size.
         '''
 
         # check text direction
         idx = 1 if self.is_horizontal_text else 0
 
-        ref_line = None
-        count = 0
+        # count of rows
+        count = len(self.lines.group_by_rows())
 
-        for line in self.lines:
-            # count of lines
-            if not line.in_same_row(ref_line): count += 1
-
-            # update reference line
-            ref_line = line            
-        
         bbox = self.lines[0].bbox   # first line
         first_line_height = bbox[idx+2] - bbox[idx]
         block_height = self.bbox[idx+2]-self.bbox[idx]

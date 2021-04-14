@@ -5,49 +5,37 @@
 
 from docx.shared import Pt
 from ..common import constants
-from ..common.Collection import Collection
+from ..common.Collection import ElementCollection
 from ..common.share import BlockType, rgb_value
 from ..common.Block import Block
 from ..common.docx import reset_paragraph_format
 from ..text.TextBlock import TextBlock
 from ..text.Line import Line
 from ..text.Lines import Lines
+from ..table.Cell import Cell
 from ..image.ImageBlock import ImageBlock
 from ..table.TableBlock import TableBlock
-from ..table.Cell import Cell
 
 
-class Blocks(Collection):
+
+class Blocks(ElementCollection):
     '''Block collections.'''
     def __init__(self, instances:list=None, parent=None):
-        ''' A collection of TextBlock and TableBlock instances. 
-            ImageBlock is converted to ImageSpan contained in TextBlock.
-        '''
-        self._parent = parent # type: Layout
-        self._instances = []  # type: list[TextBlock or TableBlock]
-
-        # NOTE: no changes on floating image blocks once identified, e.g. no merging to text block, 
-        # no assingning to table. So, store them here, rather than self._instances
-        self.floating_image_blocks = []
-    
-        # Convert all original image blocks to text blocks, i.e. ImageSpan,
-        # So we can focus on single TextBlock later on; TableBlock is also combination of TextBlocks.
-        # NOTE: for a converted image block
-        # - isinstance(image_block, TextBlock)==True
-        # - image_block.is_text_block()==False
-        for block in (instances or []):
-            if isinstance(block, ImageBlock):
-                text_block = block.to_text_block()
-                self.append(text_block)
-            else:
-                self.append(block)
+        ''' A collection of TextBlock and TableBlock instances.'''
+        super().__init__(instances, parent)
+        self._floating_image_blocks = []
 
 
     def _update_bbox(self, block:Block):
-        ''' Override. The parent is generally ``Layout`` or ``Cell``, which is not necessary to 
-            update its bbox. So, do nothing but required here.
+        '''Override. The parent is ``Layout``, which is not necessary to update its bbox. 
+        So, do nothing but required here.
         '''
         pass
+
+
+    @property
+    def floating_image_blocks(self):
+        return self._floating_image_blocks
 
 
     @property
@@ -84,16 +72,10 @@ class Blocks(Collection):
         return list(filter(
             lambda block: block.is_text_image_block(), self._instances))
 
-    
-    def store(self):
-        '''Store attributes in json format.'''
-        res = super().store()
-        res.extend([ instance.store() for instance in self.floating_image_blocks ])
-        return res
-
 
     def restore(self, raws:list):
         '''Clean current instances and restore them from source dict.
+        ImageBlock is converted to ImageSpan contained in TextBlock.
 
         Args:
             raws (list): A list of raw dicts representing text/image/table blocks.
@@ -113,13 +95,6 @@ class Blocks(Collection):
             elif block_type == BlockType.TEXT.value:
                 block = TextBlock(raw_block)
             
-            # floating image block
-            elif block_type == BlockType.FLOAT_IMAGE.value:
-                block = ImageBlock(raw_block)
-                block.set_float_image_block()
-                self.floating_image_blocks.append(block)
-                block = None
-
             # table block
             elif block_type in (BlockType.LATTICE_TABLE.value, BlockType.STREAM_TABLE.value):
                 block = TableBlock(raw_block)
@@ -152,13 +127,13 @@ class Blocks(Collection):
         """
         if not self._instances: return
         
-        page_bbox = self.parent.bbox
+        page_bbox = self.parent.working_bbox
         f = lambda block:   block.bbox.intersects(page_bbox) and \
                             block.text.strip() and (
                             block.is_horizontal_text or block.is_vertical_text)
         self.reset(filter(f, self._instances))
 
-        # merge blocks horizontally, e.g. remove overlap blocks, since no floating elements are supported
+        # merge blocks horizontally, e.g. remove overlap blocks.
         # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
         self.strip() \
             .sort_in_reading_order() \
@@ -167,6 +142,7 @@ class Blocks(Collection):
                             line_overlap_threshold=line_overlap_threshold,
                             line_merging_threshold=line_merging_threshold)
    
+
     def strip(self):
         '''Remove redundant blanks exist in text block lines. These redundant blanks may affect bbox of text block.
         '''
@@ -195,7 +171,7 @@ class Blocks(Collection):
 
                 float_image = ImageBlock().from_text_block(block)
                 float_image.set_float_image_block()
-                self.floating_image_blocks.append(float_image)
+                self._floating_image_blocks.append(float_image)
 
                 # remove the original image block from flow layout
                 block.update_bbox((0,0,0,0))
@@ -324,96 +300,16 @@ class Blocks(Collection):
 
 
     def parse_spacing(self, *args):
-        '''Calculate external and internal vertical space for text blocks.
-        
-        * Paragraph spacing is determined by the vertical distance to previous block.
-          For the first block, the reference position is top margin.
-        * Line spacing is defined as the average line height in current block.
+        '''Calculate external and internal space for text blocks:
 
-        It's easy to set before-space or after-space for a paragraph with ``python-docx``,
-        so, if current block is a paragraph, set before-space for it; if current block is 
-        not a paragraph, e.g. a table, set after-space for previous block (generally, 
-        previous block should be a paragraph).
+        - vertical distance between blocks, i.e. paragraph before/after spacing
+        - horizontal distance to left/right border, i.e. paragraph left/right indent
+        - vertical distance between lines, i.e. paragraph line spacing
         '''
         if not self._instances: return
-
-        # bbox of blocks
-        # - page level, e.g. blocks in top layout
-        # - table level, e.g. blocks in table cell
-        bbox = self.parent.bbox
-
-        # check text direction for vertical space calculation:
-        # - normal reading direction (from left to right)    -> the reference boundary is top border, i.e. bbox[1].
-        # - vertical text direction, e.g. from bottom to top -> left border bbox[0] is the reference
-        idx = 1 if self.is_horizontal_text else 0
-
-        ref_block = self._instances[0]
-        ref_pos = bbox[idx]
-
-        for block in self._instances:
-
-            #---------------------------------------------------------
-            # alignment mode and left spacing:
-            # - horizontal block -> take left boundary as reference
-            # - vertical block   -> take bottom boundary as reference
-            #---------------------------------------------------------
-            block.parse_horizontal_spacing(bbox, *args)            
-
-            #---------------------------------------------------------
-            # vertical space calculation
-            #---------------------------------------------------------
-
-            # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
-            # size should be excluded from the calculated vertical spacing
-            if block.is_table_block():
-                dw = block[0][0].border_width[0] / 2.0 # use top border of the first cell
-            
-            else:
-                dw = 0.0
-
-            start_pos = block.bbox[idx] - dw
-            para_space = start_pos-ref_pos
-
-            # modify vertical space in case the block is out of bottom boundary
-            dy = max(block.bbox[idx+2]-bbox[idx+2], 0.0)
-            para_space -= dy
-            para_space = max(para_space, 0.0) # ignore negative value
-
-            # ref to current (paragraph): set before-space for paragraph
-            if block.is_text_block():
-
-                # spacing before this paragraph
-                block.before_space = start_pos-ref_pos # keep negative value temperally
-
-                # calculate average line spacing in paragraph
-                # NOTE: adjust before space if negative value
-                block.parse_line_spacing()
-
-            # if ref to current (image): set before-space for paragraph
-            elif block.is_inline_image_block():
-                block.before_space = para_space
-
-            # ref (paragraph/image) to current: set after-space for ref paragraph        
-            elif ref_block.is_text_block() or ref_block.is_inline_image_block():
-                ref_block.after_space = para_space
-
-            # situation with very low probability, e.g. ref (table) to current (table)
-            # we can't set before space for table in docx, but the tricky way is to
-            # create an empty paragraph and set paragraph line spacing and before space
-            else:
-                # let para_space>=1 Pt to accommodate the dummy paragraph if not the first block
-                block.before_space = max(para_space, int(block!=self._instances[0])*constants.MINOR_DIST)
-
-            # update reference block        
-            ref_block = block
-            ref_pos = ref_block.bbox[idx+2] + dw # assume same bottom border with top one
-
-        # NOTE: when a table is at the end of a page, a dummy paragraph with a small line spacing 
-        # is added after this table, to avoid unexpected page break. Accordingly, this extra spacing 
-        # must be remove in other place, especially the page space is run out.
-        # Here, reduce the last row of table.
-        block = self._instances[-1]
-        if block.is_table_block(): block[-1].height -= constants.MINOR_DIST
+        self._parse_block_horizontal_spacing(*args)
+        self._parse_block_vertical_spacing()
+        self._parse_line_spacing(*args)
 
 
     def join_horizontally(self, 
@@ -457,6 +353,7 @@ class Blocks(Collection):
         # add table blocks
         blocks.extend(self.table_blocks)
         self.reset(blocks)
+        
 
         return self
 
@@ -556,11 +453,6 @@ class Blocks(Collection):
             p = doc.add_paragraph()
             reset_paragraph_format(p, Pt(constants.MIN_LINE_SPACING)) # a small line height
 
-        # Finally, add floating image to last paragraph
-        p = doc.add_paragraph() if not doc.paragraphs else doc.paragraphs[-1]
-        for image_block in self.floating_image_blocks:
-            image_block.make_docx(p)
-
   
     def plot(self, page):
         '''Plot blocks in PDF page for debug purpose.'''
@@ -611,3 +503,102 @@ class Blocks(Collection):
                 blocks.append(text_block)
 
 
+    def _parse_block_horizontal_spacing(self, *args):
+        '''Calculate external horizontal space for text blocks, i.e. alignment mode and left spacing 
+        for paragraph in docx:
+        
+            - horizontal block -> take left boundary as reference
+            - vertical block   -> take bottom boundary as reference
+        '''
+        # bbox of blocks
+        # - page level, e.g. blocks in top layout
+        # - table level, e.g. blocks in table cell
+        bbox = self.parent.working_bbox
+
+        for block in self._instances:
+            block.parse_horizontal_spacing(bbox, *args)
+
+
+    def _parse_block_vertical_spacing(self):
+        '''Calculate external vertical space for text blocks, i.e. before/after space in docx.
+        
+        The vertical spacing is determined by the vertical distance to previous block.
+        For the first block, the reference position is top margin.
+
+        It's easy to set before-space or after-space for a paragraph with ``python-docx``,
+        so, if current block is a paragraph, set before-space for it; if current block is 
+        not a paragraph, e.g. a table, set after-space for previous block (generally, 
+        previous block should be a paragraph).
+        '''
+        # bbox of blocks
+        # - page level, e.g. blocks in top layout
+        # - table level, e.g. blocks in table cell
+        bbox = self.parent.working_bbox
+
+        # check text direction for vertical space calculation:
+        # - normal reading direction (from left to right)    -> the reference boundary is top border, i.e. bbox[1].
+        # - vertical text direction, e.g. from bottom to top -> left border bbox[0] is the reference
+        idx = 1 if self.is_horizontal_text else 0
+
+        ref_block = self._instances[0]
+        ref_pos = bbox[idx]
+
+        for block in self._instances:
+
+            # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
+            # size should be excluded from the calculated vertical spacing
+            if block.is_table_block():
+                dw = block[0][0].border_width[0] / 2.0 # use top border of the first cell
+            
+            else:
+                dw = 0.0
+
+            start_pos = block.bbox[idx] - dw
+            para_space = start_pos-ref_pos
+
+            # modify vertical space in case the block is out of bottom boundary
+            dy = max(block.bbox[idx+2]-bbox[idx+2], 0.0)
+            para_space -= dy
+            para_space = max(para_space, 0.0) # ignore negative value
+
+            # ref to current (paragraph): set before-space for paragraph
+            if block.is_text_block():
+                # spacing before this paragraph
+                block.before_space = para_space
+
+            # if ref to current (image): set before-space for paragraph
+            elif block.is_inline_image_block():
+                block.before_space = para_space
+
+            # ref (paragraph/image) to current: set after-space for ref paragraph        
+            elif ref_block.is_text_block() or ref_block.is_inline_image_block():
+                ref_block.after_space = para_space
+
+            # situation with very low probability, e.g. ref (table) to current (table)
+            # we can't set before space for table in docx, but the tricky way is to
+            # create an empty paragraph and set paragraph line spacing and before space
+            else:
+                # let para_space>=1 Pt to accommodate the dummy paragraph if not the first block
+                block.before_space = max(para_space, int(block!=self._instances[0])*constants.MINOR_DIST)
+
+            # update reference block        
+            ref_block = block
+            ref_pos = ref_block.bbox[idx+2] + dw # assume same bottom border with top one
+
+        # NOTE: when a table is at the end of a page, a dummy paragraph with a small line spacing 
+        # is added after this table, to avoid unexpected page break. Accordingly, this extra spacing 
+        # must be remove in other place, especially the page space is run out.
+        # Here, reduce the last row of table.
+        block = self._instances[-1]
+        if block.is_table_block(): block[-1].height -= constants.MINOR_DIST
+
+
+    def _parse_line_spacing(self, *args):
+        '''Calculate internal vertical space for text blocks, i.e. paragraph line spacing in docx.
+
+        .. note::
+            Run parsing block vertical spacing in advance.
+        '''
+        for block in self._instances:
+            if block.is_text_block():
+                block.parse_line_spacing_exactly()

@@ -62,7 +62,7 @@ class Image(Element):
         return self
 
 
-    def store_image(self):
+    def store(self):
         '''Store image with base64 encode.
 
         * Encode image bytes with base64 -> base64 bytes

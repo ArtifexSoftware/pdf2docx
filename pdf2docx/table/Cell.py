@@ -5,24 +5,23 @@
 
 from docx.shared import Pt
 from ..common.Element import Element
-from ..common import docx, constants
-from ..text.TextBlock import TextBlock
-from ..page import Layout # avoid import conflict
+from ..layout.Layout import Layout
+from ..common import docx
 
 
-class Cell(Element):
+class Cell(Element, Layout):
     '''Cell object.'''
     def __init__(self, raw:dict=None):
-        raw = raw or {}        
+        raw = raw or {}
+        Element.__init__(self, raw=raw)
         self.bg_color     = raw.get('bg_color', None) # type: int
         self.border_color = raw.get('border_color', (0,0,0,0)) # type: tuple [int]
         self.border_width = raw.get('border_width', (0,0,0,0)) # type: tuple [float]
         self.merged_cells = raw.get('merged_cells', (1,1)) # type: tuple [int]
 
-        # layout
-        self.layout = Layout.Layout(parent=self).restore(raw)
-
-        super().__init__(raw)
+        # restore layout
+        Layout.__init__(self, blocks=None, shapes=None) # init empty layout
+        self.restore(raw)
 
 
     @property
@@ -31,7 +30,7 @@ class Cell(Element):
         if not self: return None
         # NOTE: sub-table may exists in 
         return '\n'.join([block.text if block.is_text_block() else '<NEST TABLE>'
-                                 for block in self.layout.blocks])
+                                 for block in self.blocks])
 
 
     @property
@@ -39,7 +38,8 @@ class Cell(Element):
         '''Bbox with border considered.'''
         x0, y0, x1, y1 = self.bbox
         w_top, w_right, w_bottom, w_left = self.border_width
-        return (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
+        bbox = (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
+        return Element().update_bbox(bbox).bbox # convert to fitz.Rect
 
     
     def compare(self, cell, threshold:float=0.9):
@@ -80,7 +80,7 @@ class Cell(Element):
                 'border_color': self.border_color,
                 'border_width': self.border_width,
                 'merged_cells': self.merged_cells,
-                'blocks': self.layout.blocks.store()
+                'blocks': self.blocks.store()
             })
             return res
         else:
@@ -90,55 +90,7 @@ class Cell(Element):
     def plot(self, page):
         '''Plot cell and its sub-layout.'''        
         super().plot(page)
-        self.layout.blocks.plot(page)
-
-
-    def assign_blocks(self, blocks:list):
-        '''Add blocks to this cell. 
-        
-        Args:
-            blocks (list): a list of text/table block to add.
-        
-        .. note::
-            If a text block is partly contained in a cell, it must deep into line -> span -> char.
-        '''
-        for block in blocks: self._assign_block(block)
-    
-
-    def _assign_block(self, block):
-        '''Add block to this cell. 
-        
-        Args:
-            block (TextBlock, TableBlock): Text/table block to add. 
-        '''
-        # add block directly if fully contained in cell
-        if self.contains(block, constants.FACTOR_ALMOST):
-            self.layout.blocks.append(block)
-            return
-        
-        # add nothing if no intersection
-        if not self.bbox & block.bbox: return
-
-        # otherwise, further check lines in text block
-        if not block.is_text_image_block():  return
-        
-        # NOTE: add each line as a single text block to avoid overlap between table block and combined lines
-        split_block = TextBlock()
-        lines = [line.intersects(self.bbox) for line in block.lines]
-        split_block.add(lines)
-        self.layout.blocks.append(split_block)
-
-
-    def assign_shapes(self, shapes:list):
-        '''Add shapes to this cell. 
-        
-        Args:
-            shapes (list): a list of Shape instance to add.
-        '''
-        # add shape if contained in cell
-        for shape in shapes:
-            if self.bbox & shape.bbox: self.layout.shapes.append(shape)
-        self.layout.shapes.detect_initial_categories()
+        self.blocks.plot(page)
 
 
     def make_docx(self, table, indexes):
@@ -173,9 +125,9 @@ class Cell(Element):
         # NOTE: there exists an empty paragraph already in each cell, which should be deleted first to
         # avoid unexpected layout. `docx_cell._element.clear_content()` works here.
         # But, docx requires at least one paragraph in each cell, otherwise resulting in a repair error. 
-        if self.layout.blocks:
+        if self.blocks:
             docx_cell._element.clear_content()
-            self.layout.blocks.make_docx(docx_cell)
+            self.blocks.make_docx(docx_cell)
 
 
     def _set_style(self, table, indexes):
@@ -225,5 +177,5 @@ class Cell(Element):
         docx.set_cell_margins(docx_cell, start=0, end=0)
 
         # set vertical direction if contained text blocks are in vertical direction
-        if self.layout.blocks.is_vertical_text:
+        if self.blocks.is_vertical_text:
             docx.set_vertical_cell_direction(docx_cell)

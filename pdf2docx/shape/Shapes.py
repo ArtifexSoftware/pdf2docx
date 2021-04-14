@@ -5,11 +5,11 @@
 
 from .Shape import Shape, Stroke, Fill, Hyperlink
 from ..common.share import RectType, lazyproperty
-from ..common.Collection import Collection
+from ..common.Collection import Collection, ElementCollection
 from ..common import share
 
 
-class Shapes(Collection):
+class Shapes(ElementCollection):
     ''' A collection of ``Shape`` instances: ``Stroke`` or ``Fill``.'''
     def __init__(self, instances:list=None, parent=None):
         
@@ -18,11 +18,11 @@ class Shapes(Collection):
         # properties for context type of shape, e.g. 
         # a Stroke instace may be either table border or text underline or strike-through,
         # a Fill instance may be either cell shading or text highlight.
-        self._table_strokes = Collection()
-        self._table_fillings = Collection()
+        self._table_strokes = ElementCollection()
+        self._table_fillings = ElementCollection()
 
-        self._text_underlines_strikes = Collection() # they're combined at this moment
-        self._text_highlights = Collection()
+        self._text_underlines_strikes = ElementCollection() # they're combined at this moment
+        self._text_highlights = ElementCollection()
 
 
     def restore(self, raws:list):
@@ -146,9 +146,6 @@ class Shapes(Collection):
             else:
                 shapes.append(shape)
         self.reset(shapes).sort_in_reading_order() # sort in reading order
-
-        # detect semantic type of shapes
-        self.detect_initial_categories()
 
 
     def detect_initial_categories(self):

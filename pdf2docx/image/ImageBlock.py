@@ -14,7 +14,7 @@ from ..common.Block import Block
 from ..common.docx import add_float_image
 
 
-class ImageBlock(Image, Block): # to get Image.plot() in first priority
+class ImageBlock(Image, Block):
     '''Image block.'''
     def __init__(self, raw:dict=None):
         super().__init__(raw)
@@ -65,9 +65,9 @@ class ImageBlock(Image, Block): # to get Image.plot() in first priority
 
     def store(self):
         '''Store ImageBlock instance in raw dict.'''
-        res = super().store()
+        res = Block.store(self)
         res.update(
-            super().store_image()
+            Image.store(self)
         )
         return res
 
