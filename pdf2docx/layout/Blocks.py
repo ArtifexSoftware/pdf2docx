@@ -300,96 +300,16 @@ class Blocks(ElementCollection):
 
 
     def parse_spacing(self, *args):
-        '''Calculate external and internal vertical space for text blocks.
-        
-        * Paragraph spacing is determined by the vertical distance to previous block.
-          For the first block, the reference position is top margin.
-        * Line spacing is defined as the average line height in current block.
+        '''Calculate external and internal space for text blocks:
 
-        It's easy to set before-space or after-space for a paragraph with ``python-docx``,
-        so, if current block is a paragraph, set before-space for it; if current block is 
-        not a paragraph, e.g. a table, set after-space for previous block (generally, 
-        previous block should be a paragraph).
+        - vertical distance between blocks, i.e. paragraph before/after spacing
+        - horizontal distance to left/right border, i.e. paragraph left/right indent
+        - vertical distance between lines, i.e. paragraph line spacing
         '''
         if not self._instances: return
-
-        # bbox of blocks
-        # - page level, e.g. blocks in top layout
-        # - table level, e.g. blocks in table cell
-        bbox = self.parent.working_bbox
-
-        # check text direction for vertical space calculation:
-        # - normal reading direction (from left to right)    -> the reference boundary is top border, i.e. bbox[1].
-        # - vertical text direction, e.g. from bottom to top -> left border bbox[0] is the reference
-        idx = 1 if self.is_horizontal_text else 0
-
-        ref_block = self._instances[0]
-        ref_pos = bbox[idx]
-
-        for block in self._instances:
-
-            #---------------------------------------------------------
-            # alignment mode and left spacing:
-            # - horizontal block -> take left boundary as reference
-            # - vertical block   -> take bottom boundary as reference
-            #---------------------------------------------------------
-            block.parse_horizontal_spacing(bbox, *args)            
-
-            #---------------------------------------------------------
-            # vertical space calculation
-            #---------------------------------------------------------
-
-            # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
-            # size should be excluded from the calculated vertical spacing
-            if block.is_table_block():
-                dw = block[0][0].border_width[0] / 2.0 # use top border of the first cell
-            
-            else:
-                dw = 0.0
-
-            start_pos = block.bbox[idx] - dw
-            para_space = start_pos-ref_pos
-
-            # modify vertical space in case the block is out of bottom boundary
-            dy = max(block.bbox[idx+2]-bbox[idx+2], 0.0)
-            para_space -= dy
-            para_space = max(para_space, 0.0) # ignore negative value
-
-            # ref to current (paragraph): set before-space for paragraph
-            if block.is_text_block():
-
-                # spacing before this paragraph
-                block.before_space = start_pos-ref_pos # keep negative value temperally
-
-                # calculate average line spacing in paragraph
-                # NOTE: adjust before space if negative value
-                block.parse_line_spacing()
-
-            # if ref to current (image): set before-space for paragraph
-            elif block.is_inline_image_block():
-                block.before_space = para_space
-
-            # ref (paragraph/image) to current: set after-space for ref paragraph        
-            elif ref_block.is_text_block() or ref_block.is_inline_image_block():
-                ref_block.after_space = para_space
-
-            # situation with very low probability, e.g. ref (table) to current (table)
-            # we can't set before space for table in docx, but the tricky way is to
-            # create an empty paragraph and set paragraph line spacing and before space
-            else:
-                # let para_space>=1 Pt to accommodate the dummy paragraph if not the first block
-                block.before_space = max(para_space, int(block!=self._instances[0])*constants.MINOR_DIST)
-
-            # update reference block        
-            ref_block = block
-            ref_pos = ref_block.bbox[idx+2] + dw # assume same bottom border with top one
-
-        # NOTE: when a table is at the end of a page, a dummy paragraph with a small line spacing 
-        # is added after this table, to avoid unexpected page break. Accordingly, this extra spacing 
-        # must be remove in other place, especially the page space is run out.
-        # Here, reduce the last row of table.
-        block = self._instances[-1]
-        if block.is_table_block(): block[-1].height -= constants.MINOR_DIST
+        self._parse_block_horizontal_spacing(*args)
+        self._parse_block_vertical_spacing()
+        self._parse_line_spacing(*args)
 
 
     def join_horizontally(self, 
@@ -583,3 +503,102 @@ class Blocks(ElementCollection):
                 blocks.append(text_block)
 
 
+    def _parse_block_horizontal_spacing(self, *args):
+        '''Calculate external horizontal space for text blocks, i.e. alignment mode and left spacing 
+        for paragraph in docx:
+        
+            - horizontal block -> take left boundary as reference
+            - vertical block   -> take bottom boundary as reference
+        '''
+        # bbox of blocks
+        # - page level, e.g. blocks in top layout
+        # - table level, e.g. blocks in table cell
+        bbox = self.parent.working_bbox
+
+        for block in self._instances:
+            block.parse_horizontal_spacing(bbox, *args)
+
+
+    def _parse_block_vertical_spacing(self):
+        '''Calculate external vertical space for text blocks, i.e. before/after space in docx.
+        
+        The vertical spacing is determined by the vertical distance to previous block.
+        For the first block, the reference position is top margin.
+
+        It's easy to set before-space or after-space for a paragraph with ``python-docx``,
+        so, if current block is a paragraph, set before-space for it; if current block is 
+        not a paragraph, e.g. a table, set after-space for previous block (generally, 
+        previous block should be a paragraph).
+        '''
+        # bbox of blocks
+        # - page level, e.g. blocks in top layout
+        # - table level, e.g. blocks in table cell
+        bbox = self.parent.working_bbox
+
+        # check text direction for vertical space calculation:
+        # - normal reading direction (from left to right)    -> the reference boundary is top border, i.e. bbox[1].
+        # - vertical text direction, e.g. from bottom to top -> left border bbox[0] is the reference
+        idx = 1 if self.is_horizontal_text else 0
+
+        ref_block = self._instances[0]
+        ref_pos = bbox[idx]
+
+        for block in self._instances:
+
+            # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
+            # size should be excluded from the calculated vertical spacing
+            if block.is_table_block():
+                dw = block[0][0].border_width[0] / 2.0 # use top border of the first cell
+            
+            else:
+                dw = 0.0
+
+            start_pos = block.bbox[idx] - dw
+            para_space = start_pos-ref_pos
+
+            # modify vertical space in case the block is out of bottom boundary
+            dy = max(block.bbox[idx+2]-bbox[idx+2], 0.0)
+            para_space -= dy
+            para_space = max(para_space, 0.0) # ignore negative value
+
+            # ref to current (paragraph): set before-space for paragraph
+            if block.is_text_block():
+                # spacing before this paragraph
+                block.before_space = para_space
+
+            # if ref to current (image): set before-space for paragraph
+            elif block.is_inline_image_block():
+                block.before_space = para_space
+
+            # ref (paragraph/image) to current: set after-space for ref paragraph        
+            elif ref_block.is_text_block() or ref_block.is_inline_image_block():
+                ref_block.after_space = para_space
+
+            # situation with very low probability, e.g. ref (table) to current (table)
+            # we can't set before space for table in docx, but the tricky way is to
+            # create an empty paragraph and set paragraph line spacing and before space
+            else:
+                # let para_space>=1 Pt to accommodate the dummy paragraph if not the first block
+                block.before_space = max(para_space, int(block!=self._instances[0])*constants.MINOR_DIST)
+
+            # update reference block        
+            ref_block = block
+            ref_pos = ref_block.bbox[idx+2] + dw # assume same bottom border with top one
+
+        # NOTE: when a table is at the end of a page, a dummy paragraph with a small line spacing 
+        # is added after this table, to avoid unexpected page break. Accordingly, this extra spacing 
+        # must be remove in other place, especially the page space is run out.
+        # Here, reduce the last row of table.
+        block = self._instances[-1]
+        if block.is_table_block(): block[-1].height -= constants.MINOR_DIST
+
+
+    def _parse_line_spacing(self, *args):
+        '''Calculate internal vertical space for text blocks, i.e. paragraph line spacing in docx.
+
+        .. note::
+            Run parsing block vertical spacing in advance.
+        '''
+        for block in self._instances:
+            if block.is_text_block():
+                block.parse_line_spacing_exactly()
