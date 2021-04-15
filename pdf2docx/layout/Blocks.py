@@ -387,6 +387,62 @@ class Blocks(ElementCollection):
         self.reset(blocks).sort_in_reading_order()
 
 
+    def join_vertically(self, block_merging_threshold):
+        '''Merge adjacent blocks in vertical direction when the distance between blocks:
+        
+        * is smaller than average line distance when multi-lines; or
+        * is smaller that a threshold * block height when single line.
+
+        .. note::
+            Blocks belonging to same paragraph might be split by ``PyMuPDF`` unreasonably.
+        '''
+        blocks = [] # type: list[TextBlock]
+        ref = None # type: TextBlock
+
+        # check adjacent two text blocks
+        for block in self._instances:
+            merged = False
+
+            # add block if previous isn't a text block
+            if ref is None or not ref.is_text_image_block():
+                blocks.append(block)
+            
+            # add block if this isn't a text block
+            elif not block.is_text_image_block():
+                blocks.append(block)
+            
+            # check two adjacent text blocks
+            else:
+                # block gap
+                idx = 1 if ref.is_horizontal_text else 0                
+                gap_block = block.bbox[idx] - ref.bbox[idx+2]
+
+                # lines gap
+                gap_line1, gap_line2 = ref.average_row_gap, block.average_row_gap
+
+                # single line blocks
+                if gap_line1==gap_line2==None:
+                    # block height
+                    h1 = ref.bbox[idx+2]-ref.bbox[idx]
+                    h2 = block.bbox[idx+2]-block.bbox[idx]
+                    merged = abs(gap_block-block_merging_threshold*min(h1, h2))<=constants.TINY_DIST
+                
+                # multi-lines block
+                else:                    
+                    gap_line = gap_line1 if not gap_line1 is None else gap_line2
+                    merged = abs(gap_block-gap_line) <= constants.TINY_DIST
+                
+                if merged:
+                    ref.add(block.lines)
+                else:
+                    blocks.append(block)
+
+            # NOTE: update ref block only no merging happens
+            if not merged: ref = block
+       
+        self.reset(blocks)
+
+
     def parse_text_format(self, rects):
         '''Parse text format with style represented by stroke/fill shapes.
         

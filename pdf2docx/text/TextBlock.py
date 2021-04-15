@@ -74,6 +74,23 @@ class TextBlock(Block):
             return TextDirection.LEFT_RIGHT
 
 
+    @property
+    def average_row_gap(self):
+        '''Average distance between adjacent two physical rows.'''
+        idx = 1 if self.is_horizontal_text else 0
+        rows = self.lines.group_by_rows()
+        num = len(rows)
+
+        # no gap if single row
+        if num==1: return None
+        
+        # multi-lines block
+        block_height = self.bbox[idx+2]-self.bbox[idx]
+        f_max_row_height = lambda row: max(abs(line.bbox[idx+2]-line.bbox[idx]) for line in row)
+        sum_row_height = sum(map(f_max_row_height, rows))
+        return (block_height-sum_row_height) / (num-1)                    
+
+
     def is_flow_layout(self, *args):
         '''Check if flow layout'''
         return self.lines.is_flow_layout(*args)
