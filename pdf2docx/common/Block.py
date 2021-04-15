@@ -25,9 +25,6 @@ class Block(Element):
         self.right_space = raw.get('right_space', 0.0)
         self.first_line_space = raw.get('first_line_space', 0.0)
 
-        self.left_space_total = raw.get('left_space_total', 0.0)
-        self.right_space_total = raw.get('right_space_total', 0.0)
-
         # RELATIVE position of tab stops
         self.tab_stops = raw.get('tab_stops', []) 
 
@@ -155,9 +152,7 @@ class Block(Element):
             'before_space'     : self.before_space,
             'after_space'      : self.after_space,
             'line_space'       : self.line_space,
-            'tab_stops'        : self.tab_stops,
-            'left_space_total' : self.left_space_total,
-            'right_space_total': self.right_space_total
+            'tab_stops'        : self.tab_stops
             })
         return res
 

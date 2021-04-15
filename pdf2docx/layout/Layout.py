@@ -212,7 +212,7 @@ class Layout:
         # paragraph / line spacing         
         self.blocks.parse_spacing(
                         settings['line_separate_threshold'],
-                        settings['line_free_space_ratio_threshold'],
+                        settings['line_break_width_ratio'],
                         settings['lines_left_aligned_threshold'],
                         settings['lines_right_aligned_threshold'],
                         settings['lines_center_aligned_threshold'])

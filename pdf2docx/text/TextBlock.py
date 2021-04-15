@@ -78,7 +78,8 @@ class TextBlock(Block):
     def average_row_gap(self):
         '''Average distance between adjacent two physical rows.'''
         idx = 1 if self.is_horizontal_text else 0
-        rows = self.lines.group_by_rows()
+        fun = lambda a,b: a.in_same_row(b)
+        rows = self.lines.group(fun)
         num = len(rows)
 
         # no gap if single row
@@ -88,7 +89,15 @@ class TextBlock(Block):
         block_height = self.bbox[idx+2]-self.bbox[idx]
         f_max_row_height = lambda row: max(abs(line.bbox[idx+2]-line.bbox[idx]) for line in row)
         sum_row_height = sum(map(f_max_row_height, rows))
-        return (block_height-sum_row_height) / (num-1)                    
+        return (block_height-sum_row_height) / (num-1)
+    
+
+    @property
+    def row_count(self):
+        '''Count of physical rows.'''
+        fun = lambda a,b: a.in_same_row(b)
+        rows = self.lines.group(fun)
+        return len(rows)
 
 
     def is_flow_layout(self, *args):
@@ -167,7 +176,7 @@ class TextBlock(Block):
 
     def parse_horizontal_spacing(self, bbox,
                     line_separate_threshold:float,
-                    line_free_space_ratio_threshold:float,
+                    line_break_width_ratio:float,
                     lines_left_aligned_threshold:float,
                     lines_right_aligned_threshold:float,
                     lines_center_aligned_threshold:float):
@@ -205,23 +214,36 @@ class TextBlock(Block):
             fun = lambda line: round((line.bbox[idx0]-self.bbox[idx0])*f, 1) # relative position to block
             all_pos = set(map(fun, self.lines))
             self.tab_stops = list(filter(lambda pos: pos>=constants.MINOR_DIST, all_pos))
-            
-        # adjust left/right indentation to save tolerance space
+        
+        # adjust left/right indentation:
+        # - set single side indentation if single line
+        # - add minor space if multi-lines
+        row_count = self.row_count
         if self.alignment == TextAlignment.LEFT:
-            self.left_space = self.left_space_total
-            self.right_space = min(self.left_space_total, self.right_space_total)
-        elif self.alignment == TextAlignment.RIGHT:
-            self.left_space = min(self.left_space_total, self.right_space_total)
-            self.right_space = self.right_space_total
-        elif self.alignment == TextAlignment.CENTER:
-            self.left_space = 0
-            self.right_space = 0
-        else:
-            self.left_space = self.left_space_total
-            self.right_space = self.right_space_total
+            if row_count==1:
+                self.right_space = 0
+            else:
+                self.right_space -= constants.MAJOR_DIST
 
+        elif self.alignment == TextAlignment.RIGHT:
+            if row_count==1:
+                self.left_space = 0
+            else:
+                self.left_space -= constants.MAJOR_DIST
+
+        elif self.alignment == TextAlignment.CENTER:
+            if row_count==1:
+                self.left_space = 0
+                self.right_space = 0
+            else:
+                self.left_space -= constants.MAJOR_DIST
+                self.right_space -= constants.MAJOR_DIST
+
+            
         # parse line break
-        self.lines.parse_line_break(line_free_space_ratio_threshold)
+        layout_width = bbox[idx1] - bbox[idx0]
+        block_width = self.bbox[idx1] - self.bbox[idx0]
+        self.lines.parse_line_break(block_width/layout_width, line_break_width_ratio)
 
 
     def parse_line_spacing_relatively(self):
@@ -246,7 +268,8 @@ class TextBlock(Block):
         # The layout of paragraph in docx: line-space-line-space-line-space, note the extra space at the end.
         # So, (1) calculate the line spacing x => x*1.3*sum_{n-1}(H_i) + Hn = H, 
         #     (2) calculate the extra space at the end, to be excluded from the before space of next block.
-        rows = self.lines.group_by_rows()
+        fun = lambda a,b: a.in_same_row(b)
+        rows = self.lines.group(fun)
         count = len(rows)
         
         max_line_height = lambda row: max(abs(line.bbox[idx+2]-line.bbox[idx]) for line in row)
@@ -276,16 +299,14 @@ class TextBlock(Block):
         '''
 
         # check text direction
-        idx = 1 if self.is_horizontal_text else 0
-
-        # count of rows
-        count = len(self.lines.group_by_rows())
+        idx = 1 if self.is_horizontal_text else 0       
 
         bbox = self.lines[0].bbox   # first line
         first_line_height = bbox[idx+2] - bbox[idx]
         block_height = self.bbox[idx+2]-self.bbox[idx]
         
         # average line spacing
+        count = self.row_count # count of rows
         if count > 1:
             line_space = (block_height-first_line_height)/(count-1)
         else:
@@ -336,17 +357,22 @@ class TextBlock(Block):
             # set tab stops to ensure line position
             for pos in self.tab_stops:
                 pf.tab_stops.add_tab_stop(Pt(self.left_space + pos))
+
         elif self.alignment==TextAlignment.RIGHT:
             pf.alignment = WD_ALIGN_PARAGRAPH.RIGHT            
 
         elif self.alignment==TextAlignment.CENTER:
             pf.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
         else:
             pf.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
 
         # - paragraph indentation
-        # NOTE: first-line-indent should be excluded
-        pf.left_indent  = Pt(self.left_space-self.first_line_space)
+        # NOTE: different left spacing setting in case first line indent and hanging
+        if self.first_line_space<0: # hanging
+            pf.left_indent  = Pt(self.left_space-self.first_line_space)
+        else: # first line indent
+            pf.left_indent  = Pt(self.left_space)
         pf.right_indent  = Pt(self.right_space)
 
         # - first line indentation
@@ -415,13 +441,17 @@ class TextBlock(Block):
         if left_aligned and right_aligned:
             # need further external check if two lines only
             return TextAlignment.JUSTIFY if len(rows)>=3 else TextAlignment.UNKNOWN
+
         elif left_aligned:
             self.first_line_space = rows[0][0].bbox[idx0] - rows[1][0].bbox[idx0]
             return TextAlignment.LEFT
+
         elif right_aligned:
             return TextAlignment.RIGHT
+
         elif center_aligned:
             return TextAlignment.CENTER
+
         else:
             return TextAlignment.NONE
 
@@ -447,8 +477,8 @@ class TextBlock(Block):
         d_right  = max(d_right, 0.0)
 
         # NOTE: set horizontal space
-        self.left_space_total  = d_left
-        self.right_space_total = d_right
+        self.left_space  = d_left
+        self.right_space = d_right
 
         # block location: left/center/right
         if abs(d_center) < lines_center_aligned_threshold: 

@@ -294,27 +294,18 @@ class Lines(ElementCollection):
         return flag
 
 
-    def parse_line_break(self, line_free_space_ratio_threshold):
+    def parse_line_break(self, line_width_ratio, line_break_width_ratio):
         '''Whether hard break each line.
 
         Hard line break helps ensure paragraph structure, but pdf-based layout calculation may
         change in docx due to different rendering mechanism like font, spacing. For instance, when
         one paragraph row can't accommodate a Line, the hard break leads to an unnecessary empty row.
         Since we can't 100% ensure a same structure, it's better to focus on the content - add line
-        break only when it's necessary to, e.g. explicit free space exists.
+        break only when it's necessary to, e.g. short lines.
         '''
-        block = self.parent        
-        idx0 = 0 if block.is_horizontal_text else 3
-        idx1 = (idx0+2)%4 # H: x1->2, or V: y0->1
-        width = abs(block.bbox[idx1]-block.bbox[idx0])
 
-        # space for checking line break
-        if block.alignment == TextAlignment.RIGHT:
-            delta_space = block.left_space_total - block.left_space
-            idx = idx0
-        else:
-            delta_space = block.right_space_total - block.right_space
-            idx = idx1        
+        # hard break if exceed the width ratio
+        line_break = line_width_ratio <= line_break_width_ratio
 
         for i, line in enumerate(self._instances):            
             if line==self._instances[-1]: # no more lines after last line
@@ -323,8 +314,8 @@ class Lines(ElementCollection):
             elif line.in_same_row(self._instances[i+1]):
                 line.line_break = 0
             
-            # break line if free space exceeds a threshold
-            elif (abs(block.bbox[idx]-line.bbox[idx]) + delta_space) / width > line_free_space_ratio_threshold:
+            # break line if exceeds a threshold
+            elif line_break:
                 line.line_break = 1
             
             # break line if next line is a only a space (otherwise, MS Word leaves it in previous line)
