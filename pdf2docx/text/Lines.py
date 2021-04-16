@@ -337,6 +337,8 @@ class Lines(ElementCollection):
                 end_line = lines[-1]
                 free_space = abs(block.bbox[idx1]-end_line.bbox[idx1])
             
+            if block.alignment == TextAlignment.CENTER: free_space *= 2 # two side space
+            
             # break line if 
             # - width ratio lower than the threshold; or 
             # - free space exceeds the threshold

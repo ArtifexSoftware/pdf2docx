@@ -337,7 +337,7 @@ class Blocks(ElementCollection):
             final_block = TextBlock()
             for block in blocks_collection:
                 if not block.is_text_image_block(): continue
-                final_block.add(block.lines) # keep empty line, may help to identify table layout
+                final_block.add(block.lines) # keep empty line, may help to identify cell shading
 
             # merge lines/spans contained in this text block
             # NOTE:            
@@ -374,7 +374,7 @@ class Blocks(ElementCollection):
         # collect lines for further step, or table block directly
         for block in self._instances:
             if block.is_text_image_block() and block.is_flow_layout(*args):
-                lines.extend(block.lines)
+                lines.extend([line for line in block.lines if line.text.strip()]) # filter empty line
             else:
                 blocks.append(block)
         
