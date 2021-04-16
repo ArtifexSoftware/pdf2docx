@@ -78,8 +78,7 @@ class TextBlock(Block):
     def average_row_gap(self):
         '''Average distance between adjacent two physical rows.'''
         idx = 1 if self.is_horizontal_text else 0
-        fun = lambda a,b: a.in_same_row(b)
-        rows = self.lines.group(fun)
+        rows = self.lines.group_by_physical_rows()
         num = len(rows)
 
         # no gap if single row
@@ -95,9 +94,7 @@ class TextBlock(Block):
     @property
     def row_count(self):
         '''Count of physical rows.'''
-        fun = lambda a,b: a.in_same_row(b)
-        rows = self.lines.group(fun)
-        return len(rows)
+        return len(self.lines.group_by_physical_rows())
 
 
     def is_flow_layout(self, *args):
@@ -177,6 +174,7 @@ class TextBlock(Block):
     def parse_horizontal_spacing(self, bbox,
                     line_separate_threshold:float,
                     line_break_width_ratio:float,
+                    line_break_free_space_ratio:float,
                     lines_left_aligned_threshold:float,
                     lines_right_aligned_threshold:float,
                     lines_center_aligned_threshold:float):
@@ -205,7 +203,7 @@ class TextBlock(Block):
                         lines_center_aligned_threshold)
         self.alignment = int_alignment if int_alignment!=TextAlignment.UNKNOWN else ext_alignment
 
-        # if still can't decide, set LEFT by default and ensure position by TAB stops
+        # if still can't decide, set LEFT by default and ensure position by TAB stops        
         if self.alignment == TextAlignment.NONE:
             self.alignment = TextAlignment.LEFT
 
@@ -213,7 +211,8 @@ class TextBlock(Block):
             # so block.left_space is required
             fun = lambda line: round((line.bbox[idx0]-self.bbox[idx0])*f, 1) # relative position to block
             all_pos = set(map(fun, self.lines))
-            self.tab_stops = list(filter(lambda pos: pos>=constants.MINOR_DIST, all_pos))
+            self.tab_stops = list(filter(lambda pos: pos>=constants.MINOR_DIST, all_pos))           
+
         
         # adjust left/right indentation:
         # - set single side indentation if single line
@@ -238,12 +237,10 @@ class TextBlock(Block):
             else:
                 self.left_space -= constants.MAJOR_DIST
                 self.right_space -= constants.MAJOR_DIST
-
-            
+        
         # parse line break
-        layout_width = bbox[idx1] - bbox[idx0]
-        block_width = self.bbox[idx1] - self.bbox[idx0]
-        self.lines.parse_line_break(block_width/layout_width, line_break_width_ratio)
+        self.lines.parse_line_break(bbox, line_break_width_ratio, line_break_free_space_ratio)
+        
 
 
     def parse_line_spacing_relatively(self):
@@ -268,8 +265,7 @@ class TextBlock(Block):
         # The layout of paragraph in docx: line-space-line-space-line-space, note the extra space at the end.
         # So, (1) calculate the line spacing x => x*1.3*sum_{n-1}(H_i) + Hn = H, 
         #     (2) calculate the extra space at the end, to be excluded from the before space of next block.
-        fun = lambda a,b: a.in_same_row(b)
-        rows = self.lines.group(fun)
+        rows = self.lines.group_by_physical_rows()
         count = len(rows)
         
         max_line_height = lambda row: max(abs(line.bbox[idx+2]-line.bbox[idx]) for line in row)
@@ -397,8 +393,7 @@ class TextBlock(Block):
                 e.g. ``(0, 2, 1)`` for horizontal text, while ``(3, 1, -1)`` for vertical text.
         '''
         # get lines in each physical row
-        fun = lambda a,b: a.in_same_row(b)
-        rows = self.lines.group(fun)
+        rows = self.lines.group_by_physical_rows()
 
         # indexes based on text direction
         idx0, idx1, f = text_direction_param

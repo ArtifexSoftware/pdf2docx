@@ -257,6 +257,12 @@ class Lines(ElementCollection):
         return groups
 
 
+    def group_by_physical_rows(self):
+        '''Group lines into physical rows.'''
+        fun = lambda a,b: a.in_same_row(b)
+        return self.group(fun)
+
+
     def parse_text_format(self, rect):
         '''Parse text format with style represented by rectangle shape.
         
@@ -294,8 +300,13 @@ class Lines(ElementCollection):
         return flag
 
 
-    def parse_line_break(self, line_width_ratio, line_break_width_ratio):
+    def parse_line_break(self, bbox, line_break_width_ratio:float, line_break_free_space_ratio:float):
         '''Whether hard break each line.
+
+        Args:
+            bbox (Rect): bbox of parent layout, e.g. page or cell.
+            line_break_width_ratio (float): user defined threshold, break line if smaller than this value.
+            line_break_free_space_ratio (float): user defined threshold, break line if exceeds this value.
 
         Hard line break helps ensure paragraph structure, but pdf-based layout calculation may
         change in docx due to different rendering mechanism like font, spacing. For instance, when
@@ -304,26 +315,36 @@ class Lines(ElementCollection):
         break only when it's necessary to, e.g. short lines.
         '''
 
-        # hard break if exceed the width ratio
-        line_break = line_width_ratio <= line_break_width_ratio
+        block = self.parent        
+        idx0, idx1 = (0, 2) if block.is_horizontal_text else (3, 1)
+        block_width = abs(block.bbox[idx1]-block.bbox[idx0])
+        layout_width = bbox[idx1] - bbox[idx0]
 
-        for i, line in enumerate(self._instances):            
-            if line==self._instances[-1]: # no more lines after last line
-                line.line_break = 0
-            
-            elif line.in_same_row(self._instances[i+1]):
-                line.line_break = 0
-            
-            # break line if exceeds a threshold
-            elif line_break:
-                line.line_break = 1
-            
-            # break line if next line is a only a space (otherwise, MS Word leaves it in previous line)
-            elif not self._instances[i+1].text.strip():
-                line.line_break = 1
-            
+        # hard break if exceed the width ratio
+        line_break = block_width/layout_width <= line_break_width_ratio
+
+        # check by each physical row
+        rows = self.group_by_physical_rows()
+        for lines in rows:
+            # no break by default
+            for line in lines: line.line_break = 0
+
+            # check the end line depending on text alignment
+            if block.alignment == TextAlignment.RIGHT:
+                end_line = lines[0]
+                free_space = abs(block.bbox[idx0]-end_line.bbox[idx0])
             else:
-                line.line_break = 0
+                end_line = lines[-1]
+                free_space = abs(block.bbox[idx1]-end_line.bbox[idx1])
+            
+            # break line if 
+            # - width ratio lower than the threshold; or 
+            # - free space exceeds the threshold
+            if line_break or free_space/block_width > line_break_free_space_ratio:
+                end_line.line_break = 1
+        
+        # no break for last row
+        for line in rows[-1]: line.line_break = 0
 
 
     def make_docx(self, p):
