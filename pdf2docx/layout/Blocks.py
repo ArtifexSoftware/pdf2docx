@@ -8,7 +8,7 @@ from ..common import constants
 from ..common.Collection import ElementCollection
 from ..common.share import BlockType, rgb_value
 from ..common.Block import Block
-from ..common.docx import reset_paragraph_format
+from ..common.docx import reset_paragraph_format, delete_paragraph
 from ..text.TextBlock import TextBlock
 from ..text.Line import Line
 from ..text.Lines import Lines
@@ -476,9 +476,10 @@ class Blocks(ElementCollection):
             table_block.make_docx(table)
 
         pre_table = False
+        cell_layout = isinstance(self.parent, Cell)
         for block in self._instances:
             # make paragraphs
-            if block.is_text_image_block():
+            if block.is_text_image_block():                
                 # new paragraph
                 p = doc.add_paragraph()
                 block.make_docx(p)
@@ -490,9 +491,12 @@ class Blocks(ElementCollection):
                 make_table(block, pre_table)
                 pre_table = True # mark block type
 
-        # below table processing is necessary for page level only
-        if isinstance(self.parent, Cell): return
-        
+                # NOTE: within a cell, there is always an empty paragraph after table,
+                # so needn't to add new one in this case, just reuse it.
+                # https://github.com/dothinking/pdf2docx/issues/76 
+                if cell_layout:
+                    delete_paragraph(doc.paragraphs[-1])
+       
         # NOTE: If a table is at the end of a page, a new paragraph will be automatically 
         # added by the rending engine, e.g. MS Word, which resulting in an unexpected
         # page break. The solution is to never put a table at the end of a page, so add
