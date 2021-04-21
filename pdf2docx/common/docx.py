@@ -211,17 +211,18 @@ def add_hyperlink(paragraph, url, text):
 # ---------------------------------------------------------
 # image properties
 # ---------------------------------------------------------
-def add_image(p, image_path_or_stream, width):
+def add_image(p, image_path_or_stream, width, height):
     ''' Add image to paragraph.
     
     Args:
         p (Paragraph): ``python-docx`` paragraph instance.
         image_path_or_stream (str, bytes): Image path or stream.
         width (float): Image width in Pt.
+        height (float): Image height in Pt.
     '''
     docx_span = p.add_run()
     try:
-        docx_span.add_picture(image_path_or_stream, width=Pt(width))
+        docx_span.add_picture(image_path_or_stream, width=Pt(width), height=Pt(height))
     except UnrecognizedImageError:
         print('Unrecognized Image.')
         return
