@@ -492,7 +492,7 @@ class Blocks(ElementCollection):
                 pre_table = True # mark block type
 
                 # NOTE: within a cell, there is always an empty paragraph after table,
-                # so needn't to add new one in this case, just reuse it.
+                # so, delete it right here.
                 # https://github.com/dothinking/pdf2docx/issues/76 
                 if cell_layout:
                     delete_paragraph(doc.paragraphs[-1])
