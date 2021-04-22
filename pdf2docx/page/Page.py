@@ -197,13 +197,17 @@ class Page(RawPage, Layout):
             Before running this method, the page layout must be either parsed from source 
             page or restored from parsed data.
         '''
+        # table blocks
+        collections = []        
+        for section in self.sections:
+            for column in section:
+                if self.settings['extract_stream_table']:
+                    collections.extend(column.blocks.table_blocks)
+                else:
+                    collections.extend(column.blocks.lattice_table_blocks)
+        
         # check table
         tables = [] # type: list[ list[list[str]] ]
-        if self.settings['extract_stream_table']:
-            collections = self.layout.blocks.table_blocks
-        else:
-            collections = self.layout.blocks.lattice_table_blocks
-        
         for table_block in collections:
             tables.append(table_block.text)
 
