@@ -94,4 +94,4 @@ class Image(Element):
     def make_docx(self, paragraph):
         '''Add image span to a docx paragraph.'''
         # add image
-        docx.add_image(paragraph, BytesIO(self.image), self.bbox.x1-self.bbox.x0)
+        docx.add_image(paragraph, BytesIO(self.image), self.bbox.x1-self.bbox.x0, self.bbox.y1-self.bbox.y0)

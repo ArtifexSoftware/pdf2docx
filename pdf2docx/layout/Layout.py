@@ -123,6 +123,9 @@ class Layout:
         # parse tables
         self._parse_table_layout(settings)
 
+        # improve layout after table parsing
+        self._improve_layout(settings)
+
         # parse text format in current layout
         self._parse_text_format(settings)
 
@@ -179,6 +182,24 @@ class Layout:
                         settings['line_separate_threshold'])
     
 
+    def _improve_layout(self, settings):
+        '''Adjust layout after table parsing:
+
+        * split blocks in current level back to original layout if possible
+        * merge adjacent and similar blocks in vertical direction
+        '''
+        # blocks are joined horizontally in clean up stage, now change back to original layout
+        self.blocks.split_back(
+            settings['float_layout_tolerance'], 
+            settings['line_separate_threshold'])
+        
+        # one paragraph may be split in separate blocks by `PyMuPDF`, now merge them together
+        # by checking vertical distance
+        self.blocks.join_vertically(
+            settings['block_merging_threshold']
+        )
+    
+
     def _parse_text_format(self, settings:dict):
         '''Parse text format, e.g. text highlight, paragraph indentation. 
         '''
@@ -191,7 +212,8 @@ class Layout:
         # paragraph / line spacing         
         self.blocks.parse_spacing(
                         settings['line_separate_threshold'],
-                        settings['line_free_space_ratio_threshold'],
+                        settings['line_break_width_ratio'],
+                        settings['line_break_free_space_ratio'],
                         settings['lines_left_aligned_threshold'],
                         settings['lines_right_aligned_threshold'],
                         settings['lines_center_aligned_threshold'])

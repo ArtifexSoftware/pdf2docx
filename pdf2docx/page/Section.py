@@ -31,9 +31,9 @@ class Section(BaseCollection):
         """Initialize Section instance.
 
         Args:
-            space (int, optional): [description]. Defaults to 0.
-            columns (list, optional): [description]. Defaults to None.
-            parent (Sections, optional): [description]. Defaults to None.
+            space (int, optional): Space between adjacent columns. Defaults to 0.
+            columns (list, optional): A list of Column instances. Defaults to None.
+            parent (Sections, optional): Parent element. Defaults to None.
         """
         self.space = space
         super().__init__(columns, parent)

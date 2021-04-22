@@ -8,7 +8,7 @@ from ..common import constants
 from ..common.Collection import ElementCollection
 from ..common.share import BlockType, rgb_value
 from ..common.Block import Block
-from ..common.docx import reset_paragraph_format
+from ..common.docx import reset_paragraph_format, delete_paragraph
 from ..text.TextBlock import TextBlock
 from ..text.Line import Line
 from ..text.Lines import Lines
@@ -337,7 +337,7 @@ class Blocks(ElementCollection):
             final_block = TextBlock()
             for block in blocks_collection:
                 if not block.is_text_image_block(): continue
-                final_block.add(block.lines) # keep empty line, may help to identify table layout
+                final_block.add(block.lines) # keep empty line, may help to identify cell shading
 
             # merge lines/spans contained in this text block
             # NOTE:            
@@ -374,7 +374,7 @@ class Blocks(ElementCollection):
         # collect lines for further step, or table block directly
         for block in self._instances:
             if block.is_text_image_block() and block.is_flow_layout(*args):
-                lines.extend(block.lines)
+                lines.extend([line for line in block.lines if line.text.strip()]) # filter empty line
             else:
                 blocks.append(block)
         
@@ -385,6 +385,62 @@ class Blocks(ElementCollection):
             blocks.append(text_block)
        
         self.reset(blocks).sort_in_reading_order()
+
+
+    def join_vertically(self, block_merging_threshold):
+        '''Merge adjacent blocks in vertical direction when the distance between blocks:
+        
+        * is smaller than average line distance when multi-lines; or
+        * is smaller that a threshold * block height when single line.
+
+        .. note::
+            Blocks belonging to same paragraph might be split by ``PyMuPDF`` unreasonably.
+        '''
+        blocks = [] # type: list[TextBlock]
+        ref = None # type: TextBlock
+
+        # check adjacent two text blocks
+        for block in self._instances:
+            merged = False
+
+            # add block if previous isn't a text block
+            if ref is None or not ref.is_text_image_block():
+                blocks.append(block)
+            
+            # add block if this isn't a text block
+            elif not block.is_text_image_block():
+                blocks.append(block)
+            
+            # check two adjacent text blocks
+            else:
+                # block gap
+                idx = 1 if ref.is_horizontal_text else 0                
+                gap_block = block.bbox[idx] - ref.bbox[idx+2]
+
+                # lines gap
+                gap_line1, gap_line2 = ref.average_row_gap, block.average_row_gap
+
+                # single line blocks
+                if gap_line1==gap_line2==None:
+                    # block height
+                    h1 = ref.bbox[idx+2]-ref.bbox[idx]
+                    h2 = block.bbox[idx+2]-block.bbox[idx]
+                    merged = abs(gap_block-block_merging_threshold*min(h1, h2))<=constants.TINY_DIST
+                
+                # multi-lines block
+                else:                    
+                    gap_line = gap_line1 if not gap_line1 is None else gap_line2
+                    merged = abs(gap_block-gap_line) <= constants.TINY_DIST
+                
+                if merged:
+                    ref.add(block.lines)
+                else:
+                    blocks.append(block)
+
+            # NOTE: update ref block only no merging happens
+            if not merged: ref = block
+       
+        self.reset(blocks)
 
 
     def parse_text_format(self, rects):
@@ -420,9 +476,10 @@ class Blocks(ElementCollection):
             table_block.make_docx(table)
 
         pre_table = False
+        cell_layout = isinstance(self.parent, Cell)
         for block in self._instances:
             # make paragraphs
-            if block.is_text_image_block():
+            if block.is_text_image_block():                
                 # new paragraph
                 p = doc.add_paragraph()
                 block.make_docx(p)
@@ -434,9 +491,12 @@ class Blocks(ElementCollection):
                 make_table(block, pre_table)
                 pre_table = True # mark block type
 
-        # below table processing is necessary for page level only
-        if isinstance(self.parent, Cell): return
-        
+                # NOTE: within a cell, there is always an empty paragraph after table,
+                # so, delete it right here.
+                # https://github.com/dothinking/pdf2docx/issues/76 
+                if cell_layout:
+                    delete_paragraph(doc.paragraphs[-1])
+       
         # NOTE: If a table is at the end of a page, a new paragraph will be automatically 
         # added by the rending engine, e.g. MS Word, which resulting in an unexpected
         # page break. The solution is to never put a table at the end of a page, so add

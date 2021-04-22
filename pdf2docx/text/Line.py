@@ -163,11 +163,13 @@ class Line(Element):
         # add line directly if fully contained in bbox
         if rect.contains(self.bbox):
             return self.copy()
-
-        # further check spans in line
-        # new line with same text attributes
+        
+        # new line with same text attributes and pid
         line = Line({'wmode': self.wmode})
         line.dir = self.dir # update line direction relative to final CS
+        line.pid = self.pid
+
+        # further check spans in line        
         for span in self.spans:
             contained_span = span.intersects(rect)
             line.add(contained_span)
