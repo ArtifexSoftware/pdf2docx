@@ -20,6 +20,7 @@ to distinguish these different layouts.
 }
 '''
 
+from docx.enum.section import WD_SECTION
 from ..common.docx import set_columns
 from ..common.Collection import BaseCollection
 from .Column import Column
@@ -80,12 +81,12 @@ class Section(BaseCollection):
         '''
         # set section column
         section = doc.sections[-1]
-        set_columns(section, self.cols, self.space)
+        width_list = [c.bbox[2]-c.bbox[0] for c in self]
+        set_columns(section, width_list, self.space)
 
         # add create each column
         for column in self:
             column.make_docx(doc)
 
-
-
-
+            # add continuous section if exists next section
+            if column!=self[-1]: doc.add_section(WD_SECTION.NEW_COLUMN)

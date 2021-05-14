@@ -6,6 +6,7 @@
 import fitz
 from .Element import Element
 from .share import IText, TextDirection, solve_rects_intersection, graph_bfs
+from . import constants
 
 
 class BaseCollection:
@@ -77,8 +78,8 @@ class BaseCollection:
 
 
 class Collection(BaseCollection):
-    '''Collection of instance focusing on grouping sub-collection based on intersections.
-    '''
+    '''Collection of instance focusing on grouping sub-collection based on intersection/alignment.'''
+
     def group(self, fun):
         """Group instances according to user defined criterion.
 
@@ -157,6 +158,35 @@ class Collection(BaseCollection):
         groups = graph_bfs(index_groups)
         groups = [self.__class__([self._instances[i] for i in group]) for group in groups]
         return groups
+    
+    
+    def group_by_columns(self):
+        '''Group lines into columns.'''
+        # split in columns
+        fun = lambda a,b: a.vertically_align_with(b, text_direction=False)
+        groups = self.group(fun)
+        
+        # NOTE: increasing in x-direction is required!
+        groups.sort(key=lambda group: group.bbox.x0)
+        return groups
+
+
+    def group_by_rows(self):
+        '''Group lines into rows.'''
+        # split in rows, with original text block considered
+        fun = lambda a,b: a.horizontally_align_with(b, factor=constants.FACTOR_A_FEW)
+        groups = self.group(fun)
+
+        # NOTE: increasing in y-direction is required!
+        groups.sort(key=lambda group: group.bbox.y0)
+
+        return groups
+
+
+    def group_by_physical_rows(self):
+        '''Group lines into physical rows.'''
+        fun = lambda a,b: a.in_same_row(b)
+        return self.group(fun)
 
 
 

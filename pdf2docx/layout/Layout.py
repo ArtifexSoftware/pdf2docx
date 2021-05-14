@@ -101,9 +101,7 @@ class Layout:
         * detect semantic type of shapes
         '''
         # clean up blocks first
-        self.blocks.clean_up(settings['float_image_ignorable_gap'],
-                        settings['line_overlap_threshold'],
-                        settings['line_merging_threshold'])
+        self.blocks.clean_up(settings['float_image_ignorable_gap'])
 
         # clean up shapes        
         self.shapes.clean_up(settings['max_border_width'], 
@@ -165,6 +163,12 @@ class Layout:
         * then stream tables based on original text blocks and parsed explicit tables;
         * move table contained blocks (text block or explicit table) to associated cell layout.
         '''
+        # merge blocks horizontally, e.g. remove overlap blocks.
+        # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
+        self.blocks.join_horizontally(False, 
+                        settings['line_overlap_threshold'],
+                        settings['line_merging_threshold'])
+
         # check shape semantic type
         self.shapes.detect_initial_categories()
         
@@ -188,7 +192,7 @@ class Layout:
         * split blocks in current level back to original layout if possible
         * merge adjacent and similar blocks in vertical direction
         '''
-        # blocks are joined horizontally in clean up stage, now change back to original layout
+        # blocks are joined horizontally in table parsing stage, now change back to original layout
         self.blocks.split_back(
             settings['float_layout_tolerance'], 
             settings['line_separate_threshold'])

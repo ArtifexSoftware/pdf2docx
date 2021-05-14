@@ -108,7 +108,7 @@ class Blocks(ElementCollection):
         return self
 
 
-    def clean_up(self, float_image_ignorable_gap:float, line_overlap_threshold:float, line_merging_threshold:float):
+    def clean_up(self, float_image_ignorable_gap:float):
         """Clean up blocks in page level.
 
         * remove blocks out of page
@@ -117,8 +117,6 @@ class Blocks(ElementCollection):
 
         Args:
             float_image_ignorable_gap (float): Regarded as float image if the intersection exceeds this value.
-            line_overlap_threshold (float): Delete line if the intersection to other lines exceeds this value.
-            line_merging_threshold (float): Combine two lines if the x-distance is lower than this value.
 
         .. note::
             This method works ONLY for layout initialized from raw dict extracted by ``page.getText()``.
@@ -133,14 +131,10 @@ class Blocks(ElementCollection):
                             block.is_horizontal_text or block.is_vertical_text)
         self.reset(filter(f, self._instances))
 
-        # merge blocks horizontally, e.g. remove overlap blocks.
-        # NOTE: It's to merge blocks in physically horizontal direction, i.e. without considering text direction.
+        # sort
         self.strip() \
             .sort_in_reading_order() \
-            .identify_floating_images(float_image_ignorable_gap) \
-            .join_horizontally(text_direction=False, 
-                            line_overlap_threshold=line_overlap_threshold,
-                            line_merging_threshold=line_merging_threshold)
+            .identify_floating_images(float_image_ignorable_gap)
    
 
     def strip(self):

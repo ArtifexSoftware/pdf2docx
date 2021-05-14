@@ -20,8 +20,8 @@ from . import constants
 # ---------------------------------------------------------
 # section and paragraph
 # ---------------------------------------------------------
-def set_columns(section, num=2, space=0):
-    """Set section column count and space.
+def set_equal_columns(section, num=2, space=0):
+    """Set section column count and space. All the columns have same width.
 
     Args:
         section : ``python-docx`` Section instance.
@@ -31,6 +31,32 @@ def set_columns(section, num=2, space=0):
     col = section._sectPr.xpath('./w:cols')[0]
     col.set(qn('w:num'), str(num))
     col.set(qn('w:space'), str(20*space)) # basic unit 1/20 Pt
+
+
+def set_columns(section, width_list:list, space=0):
+    """Set section column count and space.
+
+    Args:
+        section : ``python-docx`` Section instance.
+        width_list (list|tuple): Width of each column.
+        space (int, optional): Space between adjacent columns. Unit: Pt. Defaults to 0.
+    
+    Scheme::
+        <w:cols w:num="2" w:space="0" w:equalWidth="0">
+            <w:col w:w="2600" w:space="0"/>
+            <w:col w:w="7632"/>
+        </w:cols>
+    """
+    cols = section._sectPr.xpath('./w:cols')[0]
+    cols.set(qn('w:num'), str(len(width_list)))
+    cols.set(qn('w:space'), str(20*space)) # basic unit 1/20 Pt
+    cols.set(qn('w:equalWidth'), '0')
+
+    # insert column with width
+    for w in width_list[::-1]:
+        e = OxmlElement('w:col')
+        e.set(qn('w:w'), str(20*w))
+        cols.append(e)
 
 
 def delete_paragraph(paragraph):
