@@ -7,13 +7,16 @@ source blocks and shapes to a *flow layout* that can be re-created as docx eleme
 table. In this library, The page structure/layout is maintained by ``TableBlock``. So, detecting and 
 parsing table block is the principle steps.
 
-The layout parsing idea:
+The prerequite work is done before this step:
 
 1. Clean source blocks and shapes in Page level. The main step is to merge blocks 
    horizontally considering flow layout (only one block in horizontal direction).
-#. Parse Section and Column layout in Page level. This step is just to detect whether 
-   a two-columns layout.
-#. Parse table layout in Column level.
+#. Parse structure in document level, e.g. page header/footer.
+#. Parse Section and Column layout in Page level. 
+
+The page layout parsing idea:
+
+1. Parse table layout in Column level.
     (a) Detect explicit tables first based on shapes. 
     (#) Then, detect stream tables based on original text blocks and parsed explicit tables.
     (#) Move table contained blocks (text block or explicit table) to associated cell-layout.
@@ -91,25 +94,6 @@ class Layout:
         # add shape if contained in cell
         for shape in shapes:
             if self.working_bbox & shape.bbox: self.shapes.append(shape)
-
-
-    def clean_up(self, settings:dict):
-        '''Clean up blocks and shapes, e.g. 
-        
-        * remove negative or duplicated instances,
-        * merge text blocks horizontally (preparing for layout parsing)
-        * detect semantic type of shapes
-        '''
-        # clean up blocks first
-        self.blocks.clean_up(settings['float_image_ignorable_gap'])
-
-        # clean up shapes        
-        self.shapes.clean_up(settings['max_border_width'], 
-                        settings['shape_merging_threshold'],
-                        settings['shape_min_dimension'])
-        
-        # check shape semantic type
-        self.shapes.detect_initial_categories()
 
 
     def parse(self, settings:dict):

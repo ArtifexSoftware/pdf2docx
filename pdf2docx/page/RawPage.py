@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 
-'''A wrapper of ``fitz.Page`` to extract source contents.
+'''A wrapper of ``fitz.Page`` to do the following work:
+
+* extract source contents
+* clean up blocks/shapes, e.g. elements out of page
+* calculate page margin
+* parse page structure roughly, i.e. section and column
 
 The raw page content extracted with ``PyMuPDF`` API ``page.getText('rawdict')`` 
 is described per link https://pymupdf.readthedocs.io/en/latest/textpage.html:: 
@@ -21,13 +26,21 @@ In addition to the raw layout dict, rectangle shapes are also included.
 '''
 
 from collections import defaultdict
+from .BasePage import BasePage
+from ..layout.Layout import Layout
+from ..layout.Section import Section
+from ..layout.Column import Column
+from ..shape.Shape import Shape
 from ..image.ImagesExtractor import ImagesExtractor
 from ..shape.Paths import Paths
 from ..common.Element import Element
+from ..common.Block import Block
 from ..common.share import RectType, debug_plot
+from ..common import constants
+from ..common.Collection import Collection
 
 
-class RawPage:
+class RawPage(BasePage, Layout):
     '''A wrapper of ``fitz.Page`` to extract source contents.'''
 
     def __init__(self, fitz_page=None):
@@ -36,23 +49,141 @@ class RawPage:
         Args:
             fitz_page (fitz.Page): Source pdf page.
         '''
+        BasePage.__init__(self)
+        Layout.__init__(self)
+
         self.fitz_page = fitz_page
-        self.width, self.height = 0, 0
 
 
-    @property
-    def raw_dict(self):
-        '''Source data extracted from page by ``PyMuPDF``.'''
+    @debug_plot('Source Text Blocks')
+    def restore(self, settings:dict):
+        '''Initialize layout extracted with ``PyMuPDF``.'''
+        raw_dict = self.extract_raw_dict(settings)
+        super().restore(raw_dict)
+        return self.blocks
+
+    
+    @debug_plot('Cleaned Shapes')
+    def clean_up(self, settings:dict):
+        '''Clean up raw blocks and shapes, e.g. 
+        
+        * remove negative or duplicated instances,
+        * merge text blocks horizontally (preparing for layout parsing)
+        * detect semantic type of shapes
+        '''
+        # clean up blocks first
+        self.blocks.clean_up(settings['float_image_ignorable_gap'])
+
+        # clean up shapes        
+        self.shapes.clean_up(settings['max_border_width'], 
+                        settings['shape_merging_threshold'],
+                        settings['shape_min_dimension'])
+        
+        # check shape semantic type
+        self.shapes.detect_initial_categories()
+        
+        return self.shapes
+
+
+    def calculate_margin(self, settings:dict):
+        """Calculate page margin.
+
+        .. note::
+            Ensure this method is run right after cleaning up the layout, so the page margin is 
+            calculated based on valid layout, and stay constant.
+        """
+        # return default margin if no blocks exist
+        if not self.blocks and not self.shapes: return (constants.ITP, ) * 4
+
+        x0, y0, x1, y1 = self.bbox
+        u0, v0, u1, v1 = self.blocks.bbox | self.shapes.bbox
+
+        # margin
+        left = max(u0-x0, 0.0)
+        right = max(x1-u1-constants.MINOR_DIST, 0.0)
+        top = max(v0-y0, 0.0)
+        bottom = max(y1-v1, 0.0)
+
+        # reduce calculated top/bottom margin to leave some free space
+        top *= settings['page_margin_factor_top']
+        bottom *= settings['page_margin_factor_bottom']
+
+        # use normal margin if calculated margin is large enough
+        return (
+            min(constants.ITP, round(left, 1)), 
+            min(constants.ITP, round(right, 1)), 
+            min(constants.ITP, round(top, 1)), 
+            min(constants.ITP, round(bottom, 1)))
+
+
+    def parse_section(self, settings:dict):
+        '''Detect and create page sections.
+
+        .. note::
+            - Only two-columns Sections are considered for now.
+            - Page margin must be parsed before this step.
+        '''
+        # bbox
+        X0, Y0, X1, _ = self.working_bbox        
+    
+        # collect all blocks and shapes
+        elements = Collection()
+        elements.extend(self.blocks)
+        elements.extend(self.shapes)
+        
+        # check section row by row
+        pre_section = Collection()
+        pre_num_col = 1
+        y_ref = Y0 # to calculate v-distance between sections
+        sections = []
+        for row in elements.group_by_rows():
+            # check column col by col
+            cols = row.group_by_columns()
+            current_num_col = len(cols)
+
+            # consider 2-cols only
+            if current_num_col>2: current_num_col = 1 
+
+            # further check 2-cols -> the height
+            x0, y0, x1, y1 = pre_section.bbox
+            if pre_num_col==2 and current_num_col==1 and y1-y0<20:
+                pre_num_col = 1
+
+            # TODO:
+            # 1. pre_num_col==2 and current_num_col==1, but current row in the left side
+            # 2. pre_num_col==2 and current_num_col==2, but not aligned
+
+            # finalize pre-section if different to current section
+            if current_num_col!=pre_num_col:
+                # create pre-section
+                section = self._create_section(pre_num_col, pre_section, (X0, X1), y_ref)
+                if section:
+                    sections.append(section)
+                    y_ref = section[-1].bbox[3]
+
+                # start new section                
+                pre_section = Collection(row)
+                pre_num_col = current_num_col
+
+            # otherwise, append to pre-section
+            else:
+                pre_section.extend(row)
+
+        # the final section
+        section = self._create_section(current_num_col, pre_section, (X0, X1), y_ref)
+        sections.append(section)
+
+        return sections
+
+
+    def extract_raw_dict(self, settings:dict):
+        '''Extract source data from page by ``PyMuPDF``.'''
         if not self.fitz_page: return {}
-
-        raw_layout = {'id': self.fitz_page.number}
 
         # source blocks
         # NOTE: all these coordinates are relative to un-rotated page
         # https://pymupdf.readthedocs.io/en/latest/page.html#modifying-pages
-        raw_layout.update(
-            self.fitz_page.getText('rawdict')
-        )
+        raw_layout = self.fitz_page.getText('rawdict')
 
         # page size: though 'width', 'height' are contained in `raw_dict`, 
         # they are based on un-rotated page. So, update page width/height 
@@ -62,8 +193,8 @@ class RawPage:
         self.width, self.height = w, h
 
         # pre-processing for layout blocks and shapes based on parent page
-        self._preprocess_images(raw_layout)
-        self._preprocess_shapes(raw_layout)
+        self._preprocess_images(raw_layout, settings)
+        self._preprocess_shapes(raw_layout, settings)
        
         # Element is a base class processing coordinates, so set rotation matrix globally
         Element.set_rotation_matrix(self.fitz_page.rotationMatrix)
@@ -71,7 +202,7 @@ class RawPage:
         return raw_layout
 
 
-    def _preprocess_images(self, raw):
+    def _preprocess_images(self, raw, settings:dict):
         '''Adjust image blocks. 
         
         Image block extracted by ``page.getText('rawdict')`` doesn't contain alpha channel data,
@@ -88,8 +219,9 @@ class RawPage:
         * Get image location with ``page.getText('rawdict')`` -> ensure correct locations
         '''
         # recover image blocks
-        recovered_images = ImagesExtractor.extract_images(self.fitz_page, 
-                                            self.settings['clip_image_res_ratio'])
+        recovered_images = ImagesExtractor.extract_images(
+            self.fitz_page, 
+            settings['clip_image_res_ratio'])
 
         # group original image blocks by image contents
         image_blocks_group = defaultdict(list)
@@ -124,14 +256,14 @@ class RawPage:
 
 
     @debug_plot('Source Paths')
-    def _preprocess_shapes(self, raw):
+    def _preprocess_shapes(self, raw, settings:dict):
         '''Identify iso-oriented paths and convert vector graphic paths to pixmap.'''
         # extract paths ed by `page.getDrawings()`
         raw_paths = self.fitz_page.getDrawings()
 
         # iso-oriented paths to shapes
         paths = Paths(parent=self).restore(raw_paths)
-        shapes, iso_areas, exist_svg = paths.to_shapes(self.settings['curve_path_ratio'])
+        shapes, iso_areas, exist_svg = paths.to_shapes(settings['curve_path_ratio'])
         raw['shapes'] = shapes
 
         # vector graphics (curved paths in general) to images
@@ -139,7 +271,7 @@ class RawPage:
             excluding_areas = iso_areas
             excluding_areas.extend([block['bbox'] for block in raw['blocks'] if block['type']==1]) # normal images
             images = ImagesExtractor.extract_vector_graphics(
-                self.fitz_page, excluding_areas, self.settings['clip_image_res_ratio'])
+                self.fitz_page, excluding_areas, settings['clip_image_res_ratio'])
             raw['blocks'].extend(images)
 
         # Hyperlink is considered as a Shape
@@ -169,4 +301,42 @@ class RawPage:
             })
 
         return hyperlinks
+    
+
+    @staticmethod
+    def _create_column(bbox, elements:Collection):
+        '''Create column based on bbox and candidate elements: blocks and shapes.'''
+        if not bbox: return None
+        column = Column().update_bbox(bbox)
+        blocks = [e for e in elements if isinstance(e, Block)]
+        shapes = [e for e in elements if isinstance(e, Shape)]
+        column.assign_blocks(blocks)
+        column.assign_shapes(shapes)
+        return column
+
+
+    @staticmethod
+    def _create_section(num_col:int, elements:Collection, h_range:tuple, y_ref:float):
+        '''Create section based on column count, candidate elements and horizontal boundary.'''
+        if not elements: return
+        X0, X1 = h_range
+
+        if num_col==1:
+            x0, y0, x1, y1 = elements.bbox
+            column = RawPage._create_column((X0, y0, X1, y1), elements)
+            section = Section(space=0, columns=[column])
+            before_space = y0 - y_ref
+        else:
+            cols = elements.group_by_columns()
+            u0, v0, u1, v1 = cols[0].bbox
+            m0, n0, m1, n1 = cols[1].bbox
+            u = (u1+m0)/2.0
+            column_1 = RawPage._create_column((X0, v0, u, v1), elements)
+            column_2 = RawPage._create_column((u, n0, X1, n1), elements)
+            section = Section(space=0, columns=[column_1, column_2])
+            before_space = v0 - y_ref
+
+        section.before_space = round(before_space, 1)
+        return section
+                
 
