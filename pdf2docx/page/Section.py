@@ -37,6 +37,7 @@ class Section(BaseCollection):
             parent (Sections, optional): Parent element. Defaults to None.
         """
         self.space = space
+        self.before_space = 0.0
         super().__init__(columns, parent)
     
 
@@ -50,6 +51,7 @@ class Section(BaseCollection):
             'bbox'   : tuple([x for x in self.bbox]),
             'cols'   : self.cols,
             'space'  : self.space,
+            'before_space'  : self.before_space,
             'columns': super().store()
         }
     
@@ -58,6 +60,7 @@ class Section(BaseCollection):
         '''Restore section from source dict.'''
         # bbox is maintained automatically based on columns
         self.space = raw.get('space', 0)   # space between adjacent columns
+        self.before_space = raw.get('before_space', 0)   # space between adjacent columns
 
         # get each column
         for raw_col in raw.get('columns', []):
@@ -86,7 +89,8 @@ class Section(BaseCollection):
 
         # add create each column
         for column in self:
-            column.make_docx(doc)
+            # column break to start new column
+            if column!=self[0]: doc.add_section(WD_SECTION.NEW_COLUMN)
 
-            # add continuous section if exists next section
-            if column!=self[-1]: doc.add_section(WD_SECTION.NEW_COLUMN)
+            # make doc
+            column.make_docx(doc)

@@ -4,8 +4,10 @@
 '''
 
 from docx.enum.section import WD_SECTION
+from docx.shared import Pt
 from ..common.Collection import Collection, BaseCollection
 from ..common.Block import Block
+from ..common.docx import reset_paragraph_format
 from ..layout.Blocks import Blocks
 from ..shape.Shapes import Shapes
 from ..shape.Shape import Shape
@@ -41,16 +43,41 @@ class Sections(BaseCollection):
 
     def make_docx(self, doc):
         '''Create sections in docx.'''
-        # new page section
+        # -----------------
+        # new page
+        # -----------------
         if doc.paragraphs:
             doc.add_section(WD_SECTION.NEW_PAGE)
 
-        # internal sections
-        for section in self:
+        # -----------------
+        # first section
+        # -----------------
+        # vertical position
+        p = doc.add_paragraph()
+        line_height = min(self[0].before_space, 11)
+        pf = reset_paragraph_format(p, line_spacing=Pt(line_height))
+        pf.space_after = Pt(self[0].before_space-line_height)
+        if self[0].cols==2: 
+            doc.add_section(WD_SECTION.CONTINUOUS)
+        
+        # create first section
+        self[0].make_docx(doc)        
+
+        # -----------------
+        # more sections
+        # -----------------
+        for section in self[1:]:
+            # create new section symbol
+            doc.add_section(WD_SECTION.CONTINUOUS)
+
+            # set after space of last paragraph to define the vertical
+            # position of current section
+            p = doc.paragraphs[-2] # -1 is the section break
+            pf = p.paragraph_format
+            pf.space_after = Pt(section.before_space)
+            
+            # section content
             section.make_docx(doc)
-            # add continuous section if exists next section
-            if section!=self[-1]:
-                doc.add_section(WD_SECTION.CONTINUOUS)
 
 
     def plot(self, page):
@@ -71,7 +98,7 @@ class Sections(BaseCollection):
             Consider two-columns Section only.
         '''
         # bbox
-        X0, _, X1, _ = self.parent.working_bbox        
+        X0, Y0, X1, _ = self.parent.working_bbox        
     
         # collect all blocks and shapes
         elements = Collection()
@@ -81,6 +108,7 @@ class Sections(BaseCollection):
         # check section row by row
         pre_section = Collection()
         pre_num_col = 1
+        y_ref = Y0 # to calculate v-distance between sections
         for row in elements.group_by_rows():
             # check column col by col
             cols = row.group_by_columns()
@@ -101,7 +129,10 @@ class Sections(BaseCollection):
             # finalize pre-section if different to current section
             if current_num_col!=pre_num_col:
                 # create pre-section
-                self._create_section(pre_num_col, pre_section, (X0, X1))
+                section = self._create_section(pre_num_col, pre_section, (X0, X1), y_ref)
+                if section:
+                    self.append(section)
+                    y_ref = section[-1].bbox[3]
 
                 # start new section                
                 pre_section = Collection(row)
@@ -112,7 +143,8 @@ class Sections(BaseCollection):
                 pre_section.extend(row)
 
         # the final section
-        self._create_section(current_num_col, pre_section, (X0, X1))
+        section = self._create_section(current_num_col, pre_section, (X0, X1), y_ref)
+        self.append(section)
 
 
     @staticmethod
@@ -127,21 +159,27 @@ class Sections(BaseCollection):
         return column
 
 
-    def _create_section(self, num_col:int, elements:Collection, h_range:tuple):
+    @staticmethod
+    def _create_section(num_col:int, elements:Collection, h_range:tuple, y_ref:float):
         '''Create section based on column count, candidate elements and horizontal boundary.'''
         if not elements: return
         X0, X1 = h_range
-        x0, y0, x1, y1 = elements.bbox
 
         if num_col==1:
-            column = self._create_column((X0, y0, X1, y1), elements)
-            self.append(Section(space=0, columns=[column]))
+            x0, y0, x1, y1 = elements.bbox
+            column = Sections._create_column((X0, y0, X1, y1), elements)
+            section = Section(space=0, columns=[column])
+            before_space = y0 - y_ref
         else:
             cols = elements.group_by_columns()
-            *_, u1, _ = cols[0].bbox
-            u0, *_ = cols[1].bbox
-            u = (u0+u1)/2.0
-            column_1 = self._create_column((X0, y0, u, y1), elements)
-            column_2 = self._create_column((u, y0, X1, y1), elements)
-            self.append(Section(space=0, columns=[column_1, column_2]))
+            u0, v0, u1, v1 = cols[0].bbox
+            m0, n0, m1, n1 = cols[1].bbox
+            u = (u1+m0)/2.0
+            column_1 = Sections._create_column((X0, v0, u, v1), elements)
+            column_2 = Sections._create_column((u, n0, X1, n1), elements)
+            section = Section(space=0, columns=[column_1, column_2])
+            before_space = v0 - y_ref
+
+        section.before_space = round(before_space, 1)
+        return section
                 

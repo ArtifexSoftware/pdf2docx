@@ -30,7 +30,7 @@ def set_equal_columns(section, num=2, space=0):
     """
     col = section._sectPr.xpath('./w:cols')[0]
     col.set(qn('w:num'), str(num))
-    col.set(qn('w:space'), str(20*space)) # basic unit 1/20 Pt
+    col.set(qn('w:space'), str(int(20*space))) # basic unit 1/20 Pt
 
 
 def set_columns(section, width_list:list, space=0):
@@ -48,15 +48,16 @@ def set_columns(section, width_list:list, space=0):
         </w:cols>
     """
     cols = section._sectPr.xpath('./w:cols')[0]
-    cols.set(qn('w:num'), str(len(width_list)))
-    cols.set(qn('w:space'), str(20*space)) # basic unit 1/20 Pt
+    cols.set(qn('w:num'), str(len(width_list)))    
     cols.set(qn('w:equalWidth'), '0')
 
     # insert column with width
+    # default col exists in cols, so insert new col to the beginning
     for w in width_list[::-1]:
         e = OxmlElement('w:col')
-        e.set(qn('w:w'), str(20*w))
-        cols.append(e)
+        e.set(qn('w:w'), str(int(20*w)))
+        e.set(qn('w:space'), str(int(20*space))) # basic unit 1/20 Pt
+        cols.insert(0, e)
 
 
 def delete_paragraph(paragraph):
