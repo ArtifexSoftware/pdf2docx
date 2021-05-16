@@ -181,10 +181,16 @@ class Layout:
             settings['float_layout_tolerance'], 
             settings['line_separate_threshold'])
         
-        # one paragraph may be split in separate blocks by `PyMuPDF`, now merge them together
+        # one paragraph may be split in multiple blocks by `PyMuPDF`, now merge them together
         # by checking vertical distance
-        self.blocks.join_vertically(
+        self.blocks.join_vertically_by_space(
             settings['block_merging_threshold']
+        )
+
+        # one block may consist of multiple real paragraphs by `PyMuPDF`, now split them back
+        # by checking text
+        self.blocks.split_vertically_by_text(
+            settings['line_break_free_space_ratio']
         )
     
 

@@ -67,6 +67,7 @@ class Converter:
         '''Default parsing parameters.'''
         return {
             'debug': False, # plot layout if True
+            'min_section_height'             : 20.0,# The minimum height of a valid section.
             'connected_border_tolerance'     : 0.5, # two borders are intersected if the gap lower than this value
             'max_border_width'               : 6.0, # max border width
             'min_border_clearance'           : 2.0, # the minimum allowable clearance of two borders
@@ -110,7 +111,7 @@ class Converter:
         # parse structure in document level
         pages = [self._pages[i] for i in page_indexes]
         Pages(pages).parse(self.fitz_doc, settings)
-        print(f'* Analyzing document structure...', flush=True)
+        print(f'* Analyzing document...', flush=True)
 
         # parse page structures
         num_pages = len(page_indexes)

@@ -82,8 +82,8 @@ class Page(BasePage):
         self.sections = sections or Sections(parent=self)
 
         # page header, footer
-        self.header = header
-        self.footer = footer
+        self.header = header or ''
+        self.footer = footer or ''
         
         # floating images are separate node under page
         self.float_images = float_images or BaseCollection()

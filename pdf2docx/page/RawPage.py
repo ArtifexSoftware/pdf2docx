@@ -144,14 +144,24 @@ class RawPage(BasePage, Layout):
             # consider 2-cols only
             if current_num_col>2: current_num_col = 1 
 
-            # further check 2-cols -> the height
+            # process exception
             x0, y0, x1, y1 = pre_section.bbox
-            if pre_num_col==2 and current_num_col==1 and y1-y0<20:
-                pre_num_col = 1
+            if pre_num_col==2 and current_num_col==1:
+                # current row belongs to left column?
+                cols = pre_section.group_by_columns()
+                if row.bbox[2] <= cols[0].bbox[2]:
+                    current_num_col = 2
+                
+                # further check 2-cols -> the height
+                elif y1-y0<settings['min_section_height']:
+                    pre_num_col = 1                
 
-            # TODO:
-            # 1. pre_num_col==2 and current_num_col==1, but current row in the left side
-            # 2. pre_num_col==2 and current_num_col==2, but not aligned
+            elif pre_num_col==2 and current_num_col==2:
+                # current 2-cols not align with pre-section ?
+                combine = Collection(pre_section)
+                combine.extend(row)
+                if len(combine.group_by_columns())==1:
+                    current_num_col = 1
 
             # finalize pre-section if different to current section
             if current_num_col!=pre_num_col:

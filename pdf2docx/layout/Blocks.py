@@ -352,43 +352,18 @@ class Blocks(ElementCollection):
         return self
 
 
-    def split_back(self, *args):
-        '''Split the joined lines back to original text block if possible.
-
-        With preceding joining step, current text block may contain lines coming from various original blocks.
-        Considering that different text block may have different line properties, e.g. height, spacing, 
-        this function is to split them back to original text block. 
-
-        .. note::
-            Don't split block if the splitting breaks flow layout, e.g. two blocks (i.e. two paragraphs in docx) 
-            in same row.
-        '''
-        blocks = [] # type: list[TextBlock]
-        lines = Lines()
-        # collect lines for further step, or table block directly
-        for block in self._instances:
-            if block.is_text_image_block() and block.is_flow_layout(*args):
-                lines.extend([line for line in block.lines if line.text.strip()]) # filter empty line
-            else:
-                blocks.append(block)
+    def join_vertically_by_space(self, block_merging_threshold):
+        '''Merge adjacent blocks in vertical direction because blocks belonging to 
+        same paragraph might be split by ``PyMuPDF`` unreasonably.
         
-        # regroup lines
-        for group_lines in lines.split_back():
-            text_block = TextBlock()
-            text_block.lines.reset(group_lines)
-            blocks.append(text_block)
-       
-        self.reset(blocks).sort_in_reading_order()
-
-
-    def join_vertically(self, block_merging_threshold):
-        '''Merge adjacent blocks in vertical direction when the distance between blocks:
+        The splitting criterion is that when the distance between blocks:
         
         * is smaller than average line distance when multi-lines; or
-        * is smaller that a threshold * block height when single line.
+        * is smaller than a threshold * block height when single line.
 
         .. note::
-            Blocks belonging to same paragraph might be split by ``PyMuPDF`` unreasonably.
+            Considered only normal reading direction, from left to right, from top
+            to bottom.
         '''
         blocks = [] # type: list[TextBlock]
         ref = None # type: TextBlock
@@ -434,6 +409,63 @@ class Blocks(ElementCollection):
             # NOTE: update ref block only no merging happens
             if not merged: ref = block
        
+        self.reset(blocks)
+
+
+    def split_back(self, *args):
+        '''Split the joined lines back to original text block if possible.
+
+        With preceding joining step, current text block may contain lines coming from various original blocks.
+        Considering that different text block may have different line properties, e.g. height, spacing, 
+        this function is to split them back to original text block. 
+
+        .. note::
+            Don't split block if the splitting breaks flow layout, e.g. two blocks (i.e. two paragraphs in docx) 
+            in same row.
+        '''
+        blocks = [] # type: list[TextBlock]
+        lines = Lines()
+        # collect lines for further step, or table block directly
+        for block in self._instances:
+            if block.is_text_image_block() and block.is_flow_layout(*args):
+                lines.extend([line for line in block.lines if line.text.strip()]) # filter empty line
+            else:
+                blocks.append(block)
+        
+        # regroup lines
+        for group_lines in lines.split_back():
+            text_block = TextBlock()
+            text_block.lines.reset(group_lines)
+            blocks.append(text_block)
+       
+        self.reset(blocks).sort_in_reading_order()
+
+
+    def split_vertically_by_text(self, line_break_free_space_ratio:float):
+        '''Split text block into separate paragraph based on punctuation of sentense.
+
+        .. note::
+            Considered only normal reading direction, from left to right, from top
+            to bottom.
+        '''
+        blocks = [] # type: list[TextBlock]
+        for block in self._instances:
+
+            # add block if this isn't a text block
+            if not block.is_text_block(): 
+                blocks.append(block)
+                continue
+            
+            # add split blocks if necessary
+            lines_list = block.lines.split_vertically_by_text(line_break_free_space_ratio)
+            if len(lines_list)==1:
+                blocks.append(block)
+            else:
+                for lines in lines_list:
+                    text_block = TextBlock()
+                    text_block.add(lines)
+                    blocks.append(text_block)
+
         self.reset(blocks)
 
 

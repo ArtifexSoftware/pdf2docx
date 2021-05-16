@@ -140,6 +140,62 @@ class Lines(ElementCollection):
 
         return groups
 
+    
+    def split_vertically_by_text(self, line_break_free_space_ratio:float):
+        '''Split lines into separate paragraph, because ``PyMuPDF`` stores lines in ``block``,
+        rather than real paragraph.
+
+        .. note::
+            Considered only normal reading direction, from left to right, from top
+            to bottom.
+        '''
+        rows = self.group_by_physical_rows()
+
+        # skip if only one row
+        if len(rows)==1: return rows
+
+        # standard row width with first row excluded, considering potential indentation of fist line
+        W = max(row[-1].bbox[2]-row[0].bbox[0] for row in rows)
+
+        # check row by row
+        res = []
+        lines = Lines()
+        punc = tuple(constants.SENTENSE_END_PUNC)
+        start_of_para = end_of_para = False # start/end of paragraph
+        start_of_sen = end_of_sen = False   # start/end of sentense
+        for row in rows:
+            end_of_sen = row[-1].text.strip().endswith(punc)
+            free_space = (row[-1].bbox[2]-row[0].bbox[0])/W <= 1.0-line_break_free_space_ratio
+
+            # end of a sentense and free space at the end -> end of paragraph
+            if end_of_sen and free_space:
+                end_of_para = True
+
+            # start of sentense and free space at the start -> start of paragraph
+            if start_of_sen and free_space:
+                start_of_para = True
+
+            # take action
+            if end_of_para:
+                lines.extend(row)
+                res.append(lines)
+                lines = Lines()
+            elif start_of_para:
+                res.append(lines)
+                lines = Lines()
+                lines.extend(row)
+            else:
+                lines.extend(row)
+
+            # for next round
+            start_of_sen = end_of_sen
+            start_of_para = end_of_para = False
+        
+        # close the action
+        if lines: res.append(lines)
+
+        return res
+
 
     def strip(self):
         '''Remove redundant blanks of each line.'''

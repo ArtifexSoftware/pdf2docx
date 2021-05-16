@@ -39,7 +39,7 @@ from ..common import docx
 class TextBlock(Block):
     '''Text block.'''
     def __init__(self, raw:dict=None):
-        if raw is None: raw = {}
+        raw = raw or {}
         
         # remove key 'bbox' since it is calculated from contained lines
         if 'bbox' in raw: raw.pop('bbox') 
@@ -240,7 +240,6 @@ class TextBlock(Block):
         
         # parse line break
         self.lines.parse_line_break(bbox, line_break_width_ratio, line_break_free_space_ratio)
-        
 
 
     def parse_line_spacing_relatively(self):
