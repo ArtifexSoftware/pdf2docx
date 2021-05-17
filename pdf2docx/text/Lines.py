@@ -5,6 +5,7 @@
 
 from docx.shared import Pt
 from .Line import Line
+from .TextSpan import TextSpan
 from ..image.ImageSpan import ImageSpan
 from ..common.Collection import ElementCollection
 from ..common.docx import add_stop
@@ -141,7 +142,7 @@ class Lines(ElementCollection):
         return groups
 
     
-    def split_vertically_by_text(self, line_break_free_space_ratio:float):
+    def split_vertically_by_text(self, line_break_free_space_ratio:float, new_paragraph_free_space_ratio:float):
         '''Split lines into separate paragraph, because ``PyMuPDF`` stores lines in ``block``,
         rather than real paragraph.
 
@@ -152,10 +153,12 @@ class Lines(ElementCollection):
         rows = self.group_by_physical_rows()
 
         # skip if only one row
-        if len(rows)==1: return rows
+        num = len(rows)
+        if num==1: return rows
 
         # standard row width with first row excluded, considering potential indentation of fist line
-        W = max(row[-1].bbox[2]-row[0].bbox[0] for row in rows)
+        W = max(row[-1].bbox[2]-row[0].bbox[0] for row in rows[1:])
+        H = sum(row[0].bbox[3]-row[0].bbox[1] for row in rows) / num
 
         # check row by row
         res = []
@@ -165,14 +168,14 @@ class Lines(ElementCollection):
         start_of_sen = end_of_sen = False   # start/end of sentense
         for row in rows:
             end_of_sen = row[-1].text.strip().endswith(punc)
-            free_space = (row[-1].bbox[2]-row[0].bbox[0])/W <= 1.0-line_break_free_space_ratio
+            w =  row[-1].bbox[2]-row[0].bbox[0]
 
             # end of a sentense and free space at the end -> end of paragraph
-            if end_of_sen and free_space:
+            if end_of_sen and w/W <= 1.0-line_break_free_space_ratio:
                 end_of_para = True
 
             # start of sentense and free space at the start -> start of paragraph
-            if start_of_sen and free_space:
+            elif start_of_sen and w/H >= new_paragraph_free_space_ratio:
                 start_of_para = True
 
             # take action
@@ -197,13 +200,35 @@ class Lines(ElementCollection):
         return res
 
 
-    def strip(self):
-        '''Remove redundant blanks of each line.'''
+    def strip(self, delete_end_line_hyphen:bool):
+        '''Remove redundant blanks of each line and update bbox accordingly.'''
         # strip each line
-        status = [line.strip() for line in self._instances]
+        strip_status = []
+        
+        rows = self.group_by_physical_rows()
+        for row in rows:
+            # for each line: 
+            # - keep at least one blank at both sides
+            strip_status.extend([line.strip() for line in row])
+
+            # for line at end of each row:
+            # - add blank if the last chat is alphabet or number
+            # - delete hyphen at the end
+            end_span = row[-1].spans[-1]
+            if not isinstance(end_span, TextSpan): continue
+
+            end_chars = end_span.chars
+            if not end_chars: continue 
+            c = end_chars[-1].c
+            encode_c = c.encode('utf-8')
+            if encode_c.isalpha() or encode_c.isdigit():
+                end_chars[-1].c += " " # add blank in a tricky way
+
+            if delete_end_line_hyphen and c.endswith('-'):
+                end_chars[-1].c = "" # delete hyphen in a tricky way
 
         # update bbox
-        stripped = any(status)
+        stripped = any(strip_status)
         if stripped: self._parent.update_bbox(self.bbox)
 
         return stripped

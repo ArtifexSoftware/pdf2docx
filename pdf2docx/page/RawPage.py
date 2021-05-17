@@ -72,12 +72,15 @@ class RawPage(BasePage, Layout):
         * detect semantic type of shapes
         '''
         # clean up blocks first
-        self.blocks.clean_up(settings['float_image_ignorable_gap'])
+        self.blocks.clean_up(
+            settings['delete_end_line_hyphen'],
+            settings['float_image_ignorable_gap'])
 
         # clean up shapes        
-        self.shapes.clean_up(settings['max_border_width'], 
-                        settings['shape_merging_threshold'],
-                        settings['shape_min_dimension'])
+        self.shapes.clean_up(
+            settings['max_border_width'], 
+            settings['shape_merging_threshold'],
+            settings['shape_min_dimension'])
         
         # check shape semantic type
         self.shapes.detect_initial_categories()

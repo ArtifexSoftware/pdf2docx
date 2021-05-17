@@ -190,7 +190,8 @@ class Layout:
         # one block may consist of multiple real paragraphs by `PyMuPDF`, now split them back
         # by checking text
         self.blocks.split_vertically_by_text(
-            settings['line_break_free_space_ratio']
+            settings['line_break_free_space_ratio'],
+            settings['new_paragraph_free_space_ratio']
         )
     
 

@@ -54,9 +54,9 @@ class TextBlock(Block):
 
     @property
     def text(self):
-        '''Get text content in block, joning each line with ``\\n``.'''
+        '''Text content in block.'''
         lines_text = [line.text for line in self.lines]
-        return '\n'.join(lines_text)
+        return ''.join(lines_text)
 
     
     @property
@@ -119,9 +119,9 @@ class TextBlock(Block):
             self.lines.append(line_or_lines)
 
 
-    def strip(self):
+    def strip(self, delete_end_line_hyphen:bool):
         '''Strip each Line instance.'''
-        self.lines.strip()
+        self.lines.strip(delete_end_line_hyphen)
 
 
     def plot(self, page):

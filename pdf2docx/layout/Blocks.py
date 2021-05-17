@@ -108,7 +108,7 @@ class Blocks(ElementCollection):
         return self
 
 
-    def clean_up(self, float_image_ignorable_gap:float):
+    def clean_up(self, delete_end_line_hyphen:bool, float_image_ignorable_gap:float):
         """Clean up blocks in page level.
 
         * remove blocks out of page
@@ -132,15 +132,15 @@ class Blocks(ElementCollection):
         self.reset(filter(f, self._instances))
 
         # sort
-        self.strip() \
+        self.strip(delete_end_line_hyphen) \
             .sort_in_reading_order() \
             .identify_floating_images(float_image_ignorable_gap)
    
 
-    def strip(self):
+    def strip(self, delete_end_line_hyphen:bool):
         '''Remove redundant blanks exist in text block lines. These redundant blanks may affect bbox of text block.
         '''
-        for block in self._instances: block.strip()
+        for block in self._instances: block.strip(delete_end_line_hyphen)
         return self
 
 
@@ -441,7 +441,7 @@ class Blocks(ElementCollection):
         self.reset(blocks).sort_in_reading_order()
 
 
-    def split_vertically_by_text(self, line_break_free_space_ratio:float):
+    def split_vertically_by_text(self, line_break_free_space_ratio:float, new_paragraph_free_space_ratio:float):
         '''Split text block into separate paragraph based on punctuation of sentense.
 
         .. note::
@@ -457,7 +457,8 @@ class Blocks(ElementCollection):
                 continue
             
             # add split blocks if necessary
-            lines_list = block.lines.split_vertically_by_text(line_break_free_space_ratio)
+            lines_list = block.lines.split_vertically_by_text(line_break_free_space_ratio, 
+                                                                new_paragraph_free_space_ratio)
             if len(lines_list)==1:
                 blocks.append(block)
             else:
