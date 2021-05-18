@@ -3,6 +3,7 @@
 '''A group of Line objects.
 '''
 
+import string
 from docx.shared import Pt
 from .Line import Line
 from .TextSpan import TextSpan
@@ -202,35 +203,48 @@ class Lines(ElementCollection):
 
     def strip(self, delete_end_line_hyphen:bool):
         '''Remove redundant blanks of each line and update bbox accordingly.'''
-        # strip each line
+        # strip each line and update bbox: 
+        # keep at least one blank at both sides in case extra blanks existed
         strip_status = []
+        strip_status.extend([line.strip() for line in self._instances])
+        stripped = any(strip_status)
+        if stripped: self._parent.update_bbox(self.bbox) # update bbox        
+
+        # word process:
+        # - it might miss blank between words from adjacent lines
+        # - it's optional to delete hyphen since it might not at the line end
+        #   after conversion
+
+        punc_ex_hyphen = ''.join(c for c in string.punctuation if c!='-')
+        def is_end_of_english_word(c):
+            return c.isalnum() or (c and c in punc_ex_hyphen)
         
-        rows = self.group_by_physical_rows()
-        for row in rows:
-            # for each line: 
-            # - keep at least one blank at both sides
-            strip_status.extend([line.strip() for line in row])
-
-            # for line at end of each row:
-            # - add blank if the last chat is alphabet or number
-            # - delete hyphen at the end
-            end_span = row[-1].spans[-1]
+        for i, line in enumerate(self._instances[:-1]):
+            # last char in this line
+            end_span = line.spans[-1]
             if not isinstance(end_span, TextSpan): continue
-
             end_chars = end_span.chars
             if not end_chars: continue 
-            c = end_chars[-1].c
-            encode_c = c.encode('utf-8')
-            if encode_c.isalpha() or encode_c.isdigit():
-                end_chars[-1].c += " " # add blank in a tricky way
+            end_char = end_chars[-1]
 
-            if delete_end_line_hyphen and c.endswith('-'):
-                end_chars[-1].c = "" # delete hyphen in a tricky way
+            # first char in next line
+            start_span = self._instances[i+1].spans[0]
+            if not isinstance(start_span, TextSpan): continue
+            start_chars = start_span.chars
+            if not start_chars: continue 
+            next_start_char = start_chars[0]            
 
-        # update bbox
-        stripped = any(strip_status)
-        if stripped: self._parent.update_bbox(self.bbox)
+            # delete hyphen if next line starts with lower case letter
+            if delete_end_line_hyphen and \
+                end_char.c.endswith('-') and next_start_char.c.islower(): 
+                end_char.c = '' # delete hyphen in a tricky way
 
+
+            # add a space if both the last char and the first char in next line are alphabet,  
+            # number, or English punctuation (excepting hyphen)
+            if is_end_of_english_word(end_char.c) and is_end_of_english_word(next_start_char.c):
+                end_char.c += ' ' # add blank in a tricky way
+            
         return stripped
 
 
