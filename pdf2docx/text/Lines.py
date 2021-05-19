@@ -176,7 +176,7 @@ class Lines(ElementCollection):
                 end_of_para = True
 
             # start of sentense and free space at the start -> start of paragraph
-            elif start_of_sen and w/H >= new_paragraph_free_space_ratio:
+            elif start_of_sen and (W-w)/H >= new_paragraph_free_space_ratio:
                 start_of_para = True
 
             # take action
