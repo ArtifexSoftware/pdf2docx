@@ -7,6 +7,7 @@
 
 from ..common.Collection import BaseCollection
 from .RawPage import RawPage
+from ..font.Fonts import Fonts
 
 
 class Pages(BaseCollection):
@@ -23,10 +24,18 @@ class Pages(BaseCollection):
         # 1. extract and then clean up raw page
         # ---------------------------------------------
         raw_pages = []
+        fonts = Fonts.extract(fitz_doc)
         for page in self:
+            # init and extract data from PDF
             raw_page = RawPage(fitz_page=fitz_doc[page.id])
             raw_page.restore(settings)
+
+            # process blocks and shapes based on bbox
             raw_page.clean_up(settings)
+
+            # process font properties
+            raw_page.process_font(fonts)
+
             raw_pages.append(raw_page)
 
             # after this step, we can get some basic properties

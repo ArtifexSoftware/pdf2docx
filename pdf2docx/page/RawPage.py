@@ -33,6 +33,8 @@ from ..layout.Column import Column
 from ..shape.Shape import Shape
 from ..image.ImagesExtractor import ImagesExtractor
 from ..shape.Paths import Paths
+from ..font.Fonts import Fonts
+from ..text.TextSpan import TextSpan
 from ..common.Element import Element
 from ..common.Block import Block
 from ..common.share import RectType, debug_plot
@@ -86,6 +88,27 @@ class RawPage(BasePage, Layout):
         self.shapes.detect_initial_categories()
         
         return self.shapes
+
+
+    def process_font(self, fonts:Fonts):      
+        '''Update font properties, e.g. font name, font line height ratio, of ``TextSpan``.
+        
+        Args:
+            fonts (Fonts): Fonts used in current document.
+        '''
+        for block in self.blocks:
+            for line in block.lines:
+                for span in line.spans:
+                    if not isinstance(span, TextSpan): continue
+
+                    # check and update font name, line height
+                    font = fonts.get(span.font)
+                    span.font = font.name
+                    span.line_height = font.line_height * span.size
+
+                    # in rare case, the font is unamed, so change font and update bbox accordingly
+                    if 'UNNAMED' in span.font.upper():
+                        span.change_font_and_update_bbox()
 
 
     def calculate_margin(self, settings:dict):
