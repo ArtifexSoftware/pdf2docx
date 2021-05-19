@@ -100,15 +100,10 @@ class RawPage(BasePage, Layout):
             for line in block.lines:
                 for span in line.spans:
                     if not isinstance(span, TextSpan): continue
-
                     # check and update font name, line height
                     font = fonts.get(span.font)
                     span.font = font.name
                     span.line_height = font.line_height * span.size
-
-                    # in rare case, the font is unamed, so change font and update bbox accordingly
-                    if 'UNNAMED' in span.font.upper():
-                        span.change_font_and_update_bbox()
 
 
     def calculate_margin(self, settings:dict):

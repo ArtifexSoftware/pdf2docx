@@ -174,7 +174,7 @@ class Collection(BaseCollection):
     def group_by_rows(self):
         '''Group lines into rows.'''
         # split in rows, with original text block considered
-        fun = lambda a,b: a.horizontally_align_with(b, factor=constants.FACTOR_A_FEW)
+        fun = lambda a,b: a.horizontally_align_with(b)
         groups = self.group(fun)
 
         # NOTE: increasing in y-direction is required!

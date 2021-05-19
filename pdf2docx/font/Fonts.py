@@ -56,7 +56,7 @@ class Fonts(BaseCollection):
         for xref in xrefs:
             valid = False
             basename, ext, _, buffer = fitz_doc.extract_font(xref)
-            name = cls._process_font_name(basename)
+            name = cls._normalized_font_name(basename)
             if ext != "n/a": # embedded fonts
                 try:
                     tt = TTFont(io.BytesIO(buffer))
@@ -95,9 +95,9 @@ class Fonts(BaseCollection):
 
 
     @staticmethod
-    def _process_font_name(font_name):
-        '''Parse raw font name, e.g. BCDGEE+Calibri-Bold, BCDGEE+Calibri -> Calibri.'''
-        return font_name.split('+')[-1].split('-')[0]
+    def _normalized_font_name(name):
+        '''Normalize raw font name, e.g. BCDGEE+Calibri-Bold, BCDGEE+Calibri -> Calibri.'''
+        return name.split('+')[-1].split('-')[0]
 
     
     @staticmethod
@@ -123,7 +123,8 @@ class Fonts(BaseCollection):
 
             if name and family: break
 
-        return family # need font family only
+        # in case the font name is modified to pattern like BCDGEE+Calibri-Bold
+        return Fonts._normalized_font_name(family)
 
 
     @staticmethod

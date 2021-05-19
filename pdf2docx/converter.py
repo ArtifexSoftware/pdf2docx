@@ -111,9 +111,9 @@ class Converter:
         settings.update(kwargs)
 
         # parse structure in document level
-        pages = [self._pages[i] for i in page_indexes]
-        Pages(pages).parse(self.fitz_doc, settings)
         print(f'* Analyzing document...', flush=True)
+        pages = [self._pages[i] for i in page_indexes]
+        Pages(pages).parse(self.fitz_doc, settings)        
 
         # parse page structures
         num_pages = len(page_indexes)

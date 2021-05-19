@@ -61,6 +61,10 @@ class TextSpan(Element):
         # init text span element
         super().__init__(raw)
 
+        # in rare case, the font is unamed, so change font and update bbox accordingly
+        if 'UNNAMED' in self.font.upper():
+            self._change_font_and_update_bbox()
+
 
     @property
     def text(self):
@@ -75,7 +79,7 @@ class TextSpan(Element):
         return bbox
 
 
-    def change_font_and_update_bbox(self, font_name:str='Arial', line_height:float=1.15):
+    def _change_font_and_update_bbox(self, font_name:str='Arial'):
         '''Set new font, and update font size, span/char bbox accordingly.
 
         It's generally used for span with unnamed fonts. 
@@ -94,7 +98,6 @@ class TextSpan(Element):
         '''
         # set new font property
         self.font = font_name
-        self.line_height = line_height * self.size
 
         # compute text length under new font with that size
         font = fitz.Font(font_name)
