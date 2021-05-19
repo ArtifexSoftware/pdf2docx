@@ -12,7 +12,7 @@ but more generic properties are required further:
   but it's in fact a font-related value, especially for CJK font.
 '''
 
-import io
+from io import BytesIO
 from collections import namedtuple 
 from fontTools.ttLib import TTFont, TTLibError
 from ..common.Collection import BaseCollection
@@ -29,10 +29,10 @@ class Fonts(BaseCollection):
     def get(self, font_name:str):
         '''Get matched font by font name, or return new font with same name 
         and default line height 1.20.'''
-        normalized_font_name = font_name.replace(' ', '').upper()
+        target = font_name.replace(' ', '').upper()
         for font in self:
-            name = font.name.replace(' ', '').upper()
-            if normalized_font_name in name or name in normalized_font_name:
+            normalized_name = font.name.replace(' ', '').upper()
+            if normalized_name in target or target in normalized_name:
                 return font
         
         return Font(name=font_name, line_height=1.2)
@@ -59,7 +59,7 @@ class Fonts(BaseCollection):
             name = cls._normalized_font_name(basename)
             if ext != "n/a": # embedded fonts
                 try:
-                    tt = TTFont(io.BytesIO(buffer))
+                    tt = TTFont(BytesIO(buffer))
                 except TTLibError as e:
                     tt = None
                     print(f'Font error {name}: {e}')
@@ -174,25 +174,27 @@ class Fonts(BaseCollection):
 
         # OS/2 code page checks
         for _, bit in CJK_CODEPAGE_BITS.items():
-            if os2.ulCodePageRange1 & (1 << bit):
+            if hasattr(os2, 'ulCodePageRange1') and os2.ulCodePageRange1 & (1 << bit):
                 return True
 
         # OS/2 Unicode range checks
         for _, bit in CJK_UNICODE_RANGE_BITS.items():
             if bit in range(0, 32):
-                if os2.ulUnicodeRange1 & (1 << bit):
+                if hasattr(os2, 'ulCodePageRange1') and os2.ulUnicodeRange1 & (1 << bit):
                     return True
 
             elif bit in range(32, 64):
-                if os2.ulUnicodeRange2 & (1 << (bit-32)):
+                if hasattr(os2, 'ulCodePageRange2') and os2.ulUnicodeRange2 & (1 << (bit-32)):
                     return True
 
             elif bit in range(64, 96):
-                if os2.ulUnicodeRange3 & (1 << (bit-64)):
+                if hasattr(os2, 'ulCodePageRange3') and os2.ulUnicodeRange3 & (1 << (bit-64)):
                     return True
 
         # defined CJK Unicode code point in cmap table checks
         cmap = tt_font.getBestCmap()
+        if not cmap: return False
+
         for unicode_range in CJK_UNICODE_RANGES:
             for x in range(unicode_range[0], unicode_range[1]+1):
                 if int(x) in cmap:
