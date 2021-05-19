@@ -50,44 +50,60 @@ class Utility:
         docx_file = os.path.join(self.output_dir, f'{filename}.docx')
         cv = Converter(pdf_file)        
         cv.convert(docx_file, pages=[0])
-        self.test = cv[0] # type: Page
+        self.test = cv[0].sections
         cv.close()
 
         # restore sample layout
         cv = Converter(pdf_file)
         layout_file = os.path.join(self.layout_dir, f'{filename}.json')
         cv.deserialize(layout_file)
-        self.sample = cv[0] # type: Page
+        self.sample = cv[0].sections
 
         return self
 
 
     def verify_layout(self, threshold=0.95):
         ''' Check layout between benchmark and parsed one.'''
-        sample_text_image_blocks = self.sample.layout.blocks.text_blocks
-        test_text_image_blocks = self.test.layout.blocks.text_blocks
+        # count of sections
+        m, n = len(self.sample), len(self.test)
+        assert m==n, f"\nThe count of parsed sections '{n}' is inconsistent with sample '{m}'"
+
+        for s_section, t_section in zip(self.sample, self.test):
+            # count of columns
+            m, n = len(s_section), len(t_section)
+            assert m==n, f"\nThe count of parsed columns '{n}' is inconsistent with sample '{m}'"
+
+            for s_col, t_col in zip(s_section, t_section):
+                Utility._verify_layout(s_col.blocks, t_col.blocks, threshold)
+    
+
+    @staticmethod
+    def _verify_layout(sample_blocks, test_blocks, threshold):
+        ''' Check layout between benchmark and parsed one.'''
+        sample_text_image_blocks = sample_blocks.text_blocks
+        test_text_image_blocks = test_blocks.text_blocks
         
         # text blocks
         f = lambda block: block.is_text_block()
         sample_text_blocks = list(filter(f, sample_text_image_blocks))
         test_text_blocks   = list(filter(f, test_text_image_blocks))
-        self._check_text_layout(sample_text_blocks, test_text_blocks, threshold)
+        Utility._check_text_layout(sample_text_blocks, test_text_blocks, threshold)
 
         # inline images
-        sample_inline_images = self.sample.layout.blocks.inline_image_blocks
-        test_inline_images = self.test.layout.blocks.inline_image_blocks
-        self._check_inline_image_layout(sample_inline_images, test_inline_images, threshold)
+        sample_inline_images = sample_blocks.inline_image_blocks
+        test_inline_images = test_blocks.inline_image_blocks
+        Utility._check_inline_image_layout(sample_inline_images, test_inline_images, threshold)
 
         # floating images
         f = lambda block: block.is_float_image_block()
         sample_float_images = list(filter(f, sample_text_image_blocks))
         test_float_images = list(filter(f, test_text_image_blocks))
-        self._check_float_image_layout(sample_float_images, test_float_images, threshold)        
+        Utility._check_float_image_layout(sample_float_images, test_float_images, threshold)        
 
         # table blocks
-        sample_tables = self.sample.layout.blocks.table_blocks
-        test_tables = self.test.layout.blocks.table_blocks        
-        self._check_table_layout(sample_tables, test_tables, threshold)
+        sample_tables = sample_blocks.table_blocks
+        test_tables = test_blocks.table_blocks        
+        Utility._check_table_layout(sample_tables, test_tables, threshold)
 
 
     @staticmethod

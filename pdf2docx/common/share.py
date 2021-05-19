@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from enum import Enum
 import random
 from collections import deque
@@ -203,6 +202,12 @@ def debug_plot(title:str, show=True):
     
     Args:
         title (str): Page title.
+        show (bool, optional): Don't plot if show==False. Default to True.
+    
+    .. note::
+        Prerequisite of the inner function: 
+            - the first argument is a :py:class:`~pdf2docx.page.BasePage` instance.
+            - the last argument is configuration parameters in ``dict`` type.
     '''
     def wrapper(func):
         def inner(*args, **kwargs):
@@ -210,10 +215,11 @@ def debug_plot(title:str, show=True):
             objects = func(*args, **kwargs)
 
             # check if plot page
-            page = args[0] # Page object
-            debug = page.settings.get('debug', False)
-            doc = page.settings.get('debug_doc', None)
-            filename = page.settings.get('debug_filename', None)
+            page = args[0] # BasePage object
+            settings = args[-1] # type: dict
+            debug = settings.get('debug', False)
+            doc = settings.get('debug_doc', None)
+            filename = settings.get('debug_filename', None)
 
             if show and objects and debug and doc is not None:                
                 # create a new page

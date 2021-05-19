@@ -61,3 +61,6 @@ DICT_FONTS = {
     'STXINWEI': '华文新魏',
     'ARIALNARROW': 'Arial Narrow'
 }
+
+# punctuation implying end of a sentense
+SENTENSE_END_PUNC = '.．。?？!！'

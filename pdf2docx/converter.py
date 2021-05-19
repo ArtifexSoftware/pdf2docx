@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import os
 import json
 from time import perf_counter
@@ -7,6 +6,7 @@ from multiprocessing import Pool, cpu_count
 import fitz
 from docx import Document
 from .page.Page import Page
+from .page.Pages import Pages
 
 
 class Converter:
@@ -28,7 +28,7 @@ class Converter:
         self._fitz_doc = fitz.Document(pdf_file)
 
         # initialize pages
-        self._pages = [Page(fitz_page) for fitz_page in self._fitz_doc]
+        self._pages = [Page(id=i) for i in range(len(self._fitz_doc))]
 
 
     def __getitem__(self, index):
@@ -61,26 +61,69 @@ class Converter:
 
     def close(self): self._fitz_doc.close()
 
+
+    @property
+    def default_settings(self):
+        '''Default parsing parameters.'''
+        return {
+            'debug': False, # plot layout if True
+            'min_section_height'             : 20.0,# The minimum height of a valid section.
+            'connected_border_tolerance'     : 0.5, # two borders are intersected if the gap lower than this value
+            'max_border_width'               : 6.0, # max border width
+            'min_border_clearance'           : 2.0, # the minimum allowable clearance of two borders
+            'float_image_ignorable_gap'      : 5.0, # float image if the intersection exceeds this value
+            'float_layout_tolerance'         : 0.1, # [0,1] the larger of this value, the more tolerable of float layout
+            'page_margin_factor_top'         : 0.5, # [0,1] reduce top margin by factor
+            'page_margin_factor_bottom'      : 0.5, # [0,1] reduce bottom margin by factor
+            'shape_merging_threshold'        : 0.5, # [0,1] merge shape if the intersection exceeds this value
+            'shape_min_dimension'            : 2.0, # ignore shape if both width and height is lower than this value
+            'block_merging_threshold'        : 0.5, # merge single line blocks when vertical distance is smaller than this value * block height
+            'line_overlap_threshold'         : 0.9, # [0,1] delete line if the intersection to other lines exceeds this value
+            'line_break_width_ratio'         : 0.5, # break line if the ratio of line width to entire layout bbox is lower than this value
+            'line_break_free_space_ratio'    : 0.1, # break line if the ratio of free space to entire line exceeds this value            
+            'line_merging_threshold'         : 2.0, # combine two lines if the x-distance is lower than this value
+            'line_separate_threshold'        : 5.0, # two separate lines if the x-distance exceeds this value
+            'new_paragraph_free_space_ratio' : 1.0, # new paragraph if the ratio of free space to line height exceeds this value
+            'lines_left_aligned_threshold'   : 1.0, # left aligned if delta left edge of two lines is lower than this value
+            'lines_right_aligned_threshold'  : 1.0, # right aligned if delta right edge of two lines is lower than this value
+            'lines_center_aligned_threshold' : 2.0, # center aligned if delta center of two lines is lower than this value
+            'clip_image_res_ratio'           : 3.0, # resolution ratio (to 72dpi) when cliping page image
+            'curve_path_ratio'               : 0.2, # clip page bitmap if the component of curve paths exceeds this ratio
+            'extract_stream_table'           : False, # don't consider stream table when extracting tables
+            'delete_end_line_hyphen'         : True, # delete hyphen at the end of a line
+        }
+
     
-    def parse(self, page_indexes=None, kwargs:dict=None):
+    def parse(self, page_indexes:list, kwargs:dict):
         """Parse pages in specified ``page_indexes``.
 
         Args:
-            page_indexes (list, optional): Pages to parse. Defaults to None, the entire pages.
-            kwargs (dict, optional): Configuration parameters. Defaults to None.
+            page_indexes (list, optional): Pages to parse
+            kwargs (dict, optional): Configuration parameters.
 
         Returns:
             Converter: self
-        """        
-        indexes = page_indexes if page_indexes else range(len(self._pages))
-        num_pages = len(indexes)
-        for i, idx in enumerate(indexes, start=1):
-            print(f'\rParsing Page {idx+1}: {i}/{num_pages}...', end='', flush=True)
-            if kwargs.get('debug', False):
-                self._pages[idx].parse(kwargs)
+        """
+        print(f'Convert {self.filename_pdf}', flush=True)
+
+        # parsing parameters
+        settings = self.default_settings
+        settings.update(kwargs)
+
+        # parse structure in document level
+        pages = [self._pages[i] for i in page_indexes]
+        Pages(pages).parse(self.fitz_doc, settings)
+        print(f'* Analyzing document...', flush=True)
+
+        # parse page structures
+        num_pages = len(page_indexes)
+        for i, idx in enumerate(page_indexes, start=1):
+            print(f'\r* Parsing Page {idx+1}: {i}/{num_pages}...', end='', flush=True)
+            if settings.get('debug', False):
+                self._pages[idx].parse(settings)
             else:
                 try:
-                    self._pages[idx].parse(kwargs)
+                    self._pages[idx].parse(settings)
                 except Exception as e:
                     print(f'\nIgnore page due to error: {e}', flush=True)
 
@@ -114,7 +157,7 @@ class Converter:
         print()
         for i, page in enumerate(parsed_pages, start=1):
             if not page.finalized: continue # ignore unparsed pages
-            print(f'\rCreating Page {page.id+1}: {i}/{num_pages}...', end='')
+            print(f'\r* Creating Page {page.id+1}: {i}/{num_pages}...', end='')
             try:
                 page.make_docx(docx_file)
             except Exception as e:
@@ -162,14 +205,13 @@ class Converter:
             debug_pdf (str): New pdf file storing layout information. Default to add prefix ``debug_``.
             layout_file (str): New json file storing parsed layout data. Default to ``layout.json``.
         '''
-        kwargs = kwargs if kwargs else {}
-
         # include debug information
         # fitz object in debug mode: plot page layout
         # file path for this debug pdf: demo.pdf -> debug_demo.pdf
         path, filename = os.path.split(self.filename_pdf)
         if not debug_pdf: debug_pdf = os.path.join(path, f'debug_{filename}')
         if not layout_file: layout_file  = os.path.join(path, 'layout.json')
+        kwargs = kwargs or {}
         kwargs.update({
             'debug'         : True,
             'debug_doc'     : fitz.Document(),
@@ -193,28 +235,8 @@ class Converter:
             pages (list, optional): Range of page indexes. Defaults to None.
             kwargs (dict, optional): Configuration parameters. Defaults to None.
         
-        List of configuration parameters::
-
-            zero_based_index               : True, page index from 0 if True else 1
-            multi_processing               : False, set multi-processes, especially for PDF with large pages
-            cpu_count                      : cpu_count(), the count of cpu used for multi-processing
-            connected_border_tolerance     : 0.5, two borders are intersected if the gap lower than this value
-            max_border_width               : 6.0, max border width
-            min_border_clearance           : 2.0, the minimum allowable clearance of two borders
-            float_image_ignorable_gap      : 5.0, float image if the intersection exceeds this value
-            float_layout_tolerance         : 0.1, [0,1] the larger of this value, the more tolerable of float layout
-            page_margin_factor_top         : 0.5, [0,1] reduce top margin by factor
-            page_margin_factor_bottom      : 0.5, [0,1] reduce bottom margin by factor
-            shape_merging_threshold        : 0.5, [0,1] merge shape if the intersection exceeds this value
-            shape_min_dimension            : 2.0, ignore shape if both width and height is lower than this value
-            line_overlap_threshold         : 0.9, [0,1] delete line if the intersection to other lines exceeds this value
-            line_merging_threshold         : 2.0, combine two lines if the x-distance is lower than this value
-            line_separate_threshold        : 5.0, two separate lines if the x-distance exceeds this value
-            lines_left_aligned_threshold   : 1.0, left aligned if delta left edge of two lines is lower than this value
-            lines_right_aligned_threshold  : 1.0, right aligned if delta right edge of two lines is lower than this value
-            lines_center_aligned_threshold : 2.0, center aligned if delta center of two lines is lower than this value
-            clip_image_res_ratio           : 3.0, resolution ratio (to 72dpi) when cliping page image
-            curve_path_ratio               : 0.2, clip page bitmap if the component of curve paths exceeds this ratio
+        Refer to :py:meth:`~pdf2docx.converter.Converter.default_settings` for detail of 
+        configuration parameters.
         
         .. note::
             Change extension from ``pdf`` to ``docx`` if ``docx_file`` is None.
@@ -227,14 +249,13 @@ class Converter:
         .. note::
             ``pages`` has a higher priority than ``start`` and ``end``. ``start`` and ``end`` works only
             if ``pages`` is omitted.
-        """ 
-        kwargs = kwargs if kwargs else {}
-        
+        """         
         # pages to convert
         page_indexes = self._page_indexes(start, end, pages, len(self))
         
         # convert page by page
-        t0 = perf_counter()        
+        t0 = perf_counter()
+        kwargs = kwargs or {}
         if kwargs.get('multi_processing', False):
             self._parse_and_create_pages_with_multi_processing(docx_filename, page_indexes, kwargs)
         else:
@@ -254,9 +275,9 @@ class Converter:
         Returns:
             list: A list of parsed table content.
         '''
-        # PDF pages to convert
-        kwargs = kwargs if kwargs else {}
+        # pages to convert
         page_indexes = self._page_indexes(start, end, pages, len(self))
+        kwargs = kwargs or {}
 
         # process page by page
         self.parse(page_indexes, kwargs)
@@ -264,7 +285,7 @@ class Converter:
         # get parsed tables
         tables = []
         for page in self._pages:
-            if page.finalized: tables.extend(page.extract_tables())
+            if page.finalized: tables.extend(page.extract_tables(kwargs))
         return tables
 
 
@@ -275,7 +296,7 @@ class Converter:
             docx_filename (str): docx filename to write to.
             page_indexes (list[int]): Page indexes to parse.
         '''
-        self.parse(page_indexes=page_indexes, kwargs=kwargs).make_docx(docx_filename)
+        self.parse(page_indexes, kwargs).make_docx(docx_filename)
 
 
     def _parse_and_create_pages_with_multi_processing(self, docx_filename:str, page_indexes:list, kwargs:dict):
