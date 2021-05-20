@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-'''Collection of :py:class:`~pdf2docx.page.Page` instances.
+'''Collection of :py:class:`~pdf2docx.page.Page` instances.'''
 
-
-'''
-
+import fitz
 from ..common.Collection import BaseCollection
 from .RawPage import RawPage
 from ..font.Fonts import Fonts
@@ -59,9 +57,17 @@ class Pages(BaseCollection):
         # ---------------------------------------------
         # 3. parse structure in page level, e.g. page margin, section
         # ---------------------------------------------
+        # page margin with all pages considered
+        rect = fitz.Rect()
         for page, raw_page in zip(self, raw_pages):
             # page margin
             margin = raw_page.calculate_margin(settings)
+            rect |= margin
+        margin = tuple(rect)
+
+        # parse sections
+        for page, raw_page in zip(self, raw_pages):
+            # page margin
             raw_page.margin = page.margin = margin
 
             # page section

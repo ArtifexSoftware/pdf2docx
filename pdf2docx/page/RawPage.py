@@ -30,7 +30,8 @@ from .BasePage import BasePage
 from ..layout.Layout import Layout
 from ..layout.Section import Section
 from ..layout.Column import Column
-from ..shape.Shape import Shape
+from ..shape.Shape import Hyperlink, Shape
+from ..shape.Shapes import Shapes
 from ..image.ImagesExtractor import ImagesExtractor
 from ..shape.Paths import Paths
 from ..font.Fonts import Font, Fonts
@@ -116,11 +117,15 @@ class RawPage(BasePage, Layout):
             Ensure this method is run right after cleaning up the layout, so the page margin is 
             calculated based on valid layout, and stay constant.
         """
+        # Exclude hyperlink from shapes because hyperlink might exist out of page unreasonablely, 
+        # while it should always within page since attached to text.
+        shapes = Shapes([shape for shape in self.shapes if not isinstance(shape, Hyperlink)])
+
         # return default margin if no blocks exist
-        if not self.blocks and not self.shapes: return (constants.ITP, ) * 4
+        if not self.blocks and not shapes: return (constants.ITP, ) * 4
 
         x0, y0, x1, y1 = self.bbox
-        u0, v0, u1, v1 = self.blocks.bbox | self.shapes.bbox
+        u0, v0, u1, v1 = self.blocks.bbox | shapes.bbox
 
         # margin
         left = max(u0-x0, 0.0)
