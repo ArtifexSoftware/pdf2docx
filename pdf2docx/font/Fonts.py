@@ -12,6 +12,7 @@ but more generic properties are required further:
   but it's in fact a font-related value, especially for CJK font.
 '''
 
+import os
 from io import BytesIO
 from collections import namedtuple 
 from fontTools.ttLib import TTFont, TTLibError
@@ -34,8 +35,9 @@ class Fonts(BaseCollection):
             normalized_name = font.name.replace(' ', '').upper()
             if normalized_name in target or target in normalized_name:
                 return font
-        
-        return Font(name=font_name, line_height=1.2)
+
+        # not found: unknown line height ratio
+        return Font(name=font_name, line_height=0.0)
 
 
     @classmethod
@@ -57,20 +59,21 @@ class Fonts(BaseCollection):
             valid = False
             basename, ext, _, buffer = fitz_doc.extract_font(xref)
             name = cls._normalized_font_name(basename)
-            if ext != "n/a": # embedded fonts
+            if ext not in ('n/a', 'ccf'): # embedded fonts, or not supported fonts
                 try:
                     tt = TTFont(BytesIO(buffer))
                 except TTLibError as e:
                     tt = None
-                    print(f'Font error {name}: {e}')
+                    print(f'Font error {name}.{ext}: {e}')
 
+                # valid true type font, no matter installed in the system or not
                 if cls._is_valid(tt):
                     fonts.append(Font(
                         name=cls.get_font_family_name(tt),
                         line_height=cls.get_line_height_factor(tt)))
                     valid = True
                 
-            # check default if not valid
+            # check default font if not valid
             if not valid:
                 font = default_fonts.get(name)
                 fonts.append(font)
@@ -129,32 +132,57 @@ class Fonts(BaseCollection):
 
     @staticmethod
     def get_line_height_factor(tt_font:TTFont):
-        '''Calculate line height ratio based on ``hhea``.
+        '''Calculate line height ratio based on ``hhea`` and ``OS/2`` tables.
 
         Fon non-CJK fonts::
 
-            f = (hhea_ascent-hhea_descent+hhea_linegap) / units_per_em
+            f = (hhea.Ascent - hhea.Descent + hhea.LineGap) / units_per_em
+        
+        For non-CJK fonts (Windows)::
+
+            f = (OS/2.winAscent + OS/2.winDescent + [External Leading]) / units_per_em
+            External Leading = MAX(0, hhea.LineGap - ((OS/2.WinAscent + OS/2.winDescent) - (hhea.Ascent - hhea.Descent)))
 
         For CJK fonts::
 
-            f = 1.3 * (hhea_ascent-hhea_descent) / units_per_em
+            f = 1.3 * (hhea.Ascent - hhea.Descent) / units_per_em
 
-        Read more:        
+        Read more:
+        * https://docs.microsoft.com/en-us/typography/opentype/spec/recom#baseline-to-baseline-distances
+        * https://github.com/source-foundry/font-line#baseline-to-baseline-distance-calculations
         * https://www.zhihu.com/question/23349103
         * https://github.com/source-foundry/font-line/blob/master/lib/fontline/metrics.py
         '''
+        units_per_em = tt_font["head"].unitsPerEm
+
+        # hhea metrics
         hhea = tt_font["hhea"]
         hhea_ascent = hhea.ascent
         hhea_descent = hhea.descent
         hhea_linegap = hhea.lineGap
-        units_per_em = tt_font["head"].unitsPerEm
-
-        cjk = Fonts.is_cjk_font(tt_font)
 
         hhea_total_height = hhea_ascent + abs(hhea_descent)
         hhea_btb_distance =  hhea_total_height + hhea_linegap
 
-        distance = 1.3*hhea_total_height if cjk else 1.0*hhea_btb_distance
+        # depends on System
+        if os.name=='nt':
+
+            # OS/2 metrics
+            os2 = tt_font["OS/2"]
+            os2_win_ascent = os2.usWinAscent
+            os2_win_descent = os2.usWinDescent
+            os2_win_total_height = os2_win_ascent + os2_win_descent
+            win_external_leading = max(0.0, hhea_linegap-(os2_win_total_height-hhea_total_height))
+            win_btb_distance = os2_win_total_height + win_external_leading
+            
+            btb_distance = win_btb_distance
+        
+        else:
+            btb_distance = hhea_btb_distance
+
+        # depends on CJK font or not
+        cjk = Fonts.is_cjk_font(tt_font)
+        distance = 1.3*hhea_total_height if cjk else 1.0*btb_distance
 
         return distance / units_per_em
     
