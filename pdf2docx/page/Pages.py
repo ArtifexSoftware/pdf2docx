@@ -21,10 +21,14 @@ class Pages(BaseCollection):
             settings (dict): Parsing parameters.
         '''
         # ---------------------------------------------
+        # 0. extract fonts properties
+        # ---------------------------------------------
+        fonts, default_font = Pages._extract_fonts(fitz_doc, settings)
+
+        # ---------------------------------------------
         # 1. extract and then clean up raw page
         # ---------------------------------------------
-        raw_pages = []
-        fonts = Fonts.extract(fitz_doc)
+        raw_pages = []        
         for page in self:
             # init and extract data from PDF
             raw_page = RawPage(fitz_page=fitz_doc[page.id])
@@ -34,7 +38,7 @@ class Pages(BaseCollection):
             raw_page.clean_up(settings)
 
             # process font properties
-            raw_page.process_font(fonts)
+            raw_page.process_font(fonts, default_font)
 
             raw_pages.append(raw_page)
 
@@ -63,6 +67,15 @@ class Pages(BaseCollection):
             # page section
             sections = raw_page.parse_section(settings)
             page.sections.extend(sections)
+    
+
+    @staticmethod
+    def _extract_fonts(fitz_doc, settings:dict):
+        '''Extract font properties, e.g. font family name and line height ratio.'''
+        default_name = settings['default_font_name']
+        default_font = Fonts.get_defult_font(default_name)
+        fonts = Fonts.extract(fitz_doc, default_font)
+        return fonts, default_font
 
 
     @staticmethod

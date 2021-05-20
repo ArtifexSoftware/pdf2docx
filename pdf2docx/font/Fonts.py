@@ -21,31 +21,42 @@ from ..common.constants import (CJK_CODEPAGE_BITS, CJK_UNICODE_RANGE_BITS,
                                     CJK_UNICODE_RANGES, DICT_FONT_LINE_HEIGHT)
 
 
-Font = namedtuple('Font', ['name','line_height'])
+Font = namedtuple('Font', [ 'descriptor',     # font descriptor
+                            'name',           # real font name
+                            'line_height'])   # standard line height ratio
 
 
 class Fonts(BaseCollection):
     '''Extracted fonts properties from PDF.'''
 
-    def get(self, font_name:str):
-        '''Get matched font by font name, or return new font with same name 
-        and default line height 1.20.'''
-        target = font_name.replace(' ', '').upper()
-        for font in self:
-            normalized_name = font.name.replace(' ', '').upper()
-            if normalized_name in target or target in normalized_name:
-                return font
+    def get(self, font_name:str, default:Font=None):
+        '''Get matched font by font name, or return default font.'''
+        target = self._to_descriptor(font_name)
 
-        # not found: unknown line height ratio
-        return Font(name=font_name, line_height=0.0)
+        # 1st priority: check right the name
+        for font in self:
+            if target==font.descriptor: return font
+        
+        # 2nd priority: target name is contained in font name
+        for font in self:
+            if target in font.descriptor: return font
+
+        # 3rd priority: target name contains font name
+        for font in self:
+            if font.descriptor in target: return font
+        
+        # print warning msg if not found
+        if default:
+            print(f'Warning: font "{font_name}" was replaced by "{default.name}" due to lack of data.')
+        return Font(descriptor=target, name=default.name, line_height=default.line_height)
 
 
     @classmethod
-    def extract(cls, fitz_doc):
-        '''Extract fonts with ``PyMuPDF``.
+    def extract(cls, fitz_doc, default_font:Font):
+        '''Extract fonts from PDF and get properties.
         * Only embedded fonts (v.s. the base 14 fonts) can be extracted.
         * The extracted fonts may be invalid due to reason from PDF file itself.
-        * Check a default font table for those failed case.
+        * Check a default font table for those failed cases.
         '''        
         # get unique font references
         xrefs = set()
@@ -62,21 +73,22 @@ class Fonts(BaseCollection):
             if ext not in ('n/a', 'ccf'): # embedded fonts, or not supported fonts
                 try:
                     tt = TTFont(BytesIO(buffer))
-                except TTLibError as e:
+                except TTLibError:
                     tt = None
-                    print(f'Font error {name}.{ext}: {e}')
 
                 # valid true type font, no matter installed in the system or not
                 if cls._is_valid(tt):
+                    name = cls.get_font_family_name(tt)
                     fonts.append(Font(
-                        name=cls.get_font_family_name(tt),
+                        descriptor=cls._to_descriptor(name),
+                        name=name,
                         line_height=cls.get_line_height_factor(tt)))
                     valid = True
                 
             # check default font if not valid
             if not valid:
-                font = default_fonts.get(name)
-                fonts.append(font)
+                font = default_fonts.get(name, default_font)
+                if font: fonts.append(font)
         
         return cls(fonts)
 
@@ -84,9 +96,22 @@ class Fonts(BaseCollection):
 
     @classmethod
     def get_defult_fonts(cls):
-        '''Get default font, e.g. base 14 font.'''
-        fonts = [Font(name=name, line_height=f) for name, f in DICT_FONT_LINE_HEIGHT.items()]
-        return Fonts(fonts)
+        '''Default fonts, e.g. base 14 font and pre-defined fonts.'''
+        fonts = [Font(descriptor=cls._to_descriptor(name), 
+                        name=name, 
+                        line_height=f) for name, f in DICT_FONT_LINE_HEIGHT.items()]
+        return cls(fonts)
+
+    
+    @classmethod
+    def get_defult_font(cls, default_name:str):
+        '''Get default font by name.'''
+        font = cls.get_defult_fonts().get(default_name, None)
+        if not font:
+            font = Font(descriptor=cls._to_descriptor(default_name),
+                        name=default_name, 
+                        line_height=1.20) # an approximate value
+        return font
 
     
     @staticmethod
@@ -101,6 +126,12 @@ class Fonts(BaseCollection):
     def _normalized_font_name(name):
         '''Normalize raw font name, e.g. BCDGEE+Calibri-Bold, BCDGEE+Calibri -> Calibri.'''
         return name.split('+')[-1].split('-')[0]
+
+
+    @staticmethod
+    def _to_descriptor(name:str):
+        '''Remove potential space, dash in font name, and turn to upper case.'''
+        return name.replace(' ', '').replace('-', '').upper()
 
     
     @staticmethod
