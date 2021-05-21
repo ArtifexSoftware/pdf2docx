@@ -418,8 +418,7 @@ class Lines(ElementCollection):
     def make_docx(self, p):
         '''Create lines in paragraph.'''
         block = self.parent        
-        idx0 = 0 if block.is_horizontal_text else 3
-        idx1 = (idx0+2)%4 # H: x1->2, or V: y0->1
+        idx0, idx1 = (0, 2) if block.is_horizontal_text else (3, 1)
         current_pos = block.left_space
 
         for i, line in enumerate(self._instances):
