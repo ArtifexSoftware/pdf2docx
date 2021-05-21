@@ -6,7 +6,6 @@
 import fitz
 from .Element import Element
 from .share import IText, TextDirection, solve_rects_intersection, graph_bfs
-from . import constants
 
 
 class BaseCollection:

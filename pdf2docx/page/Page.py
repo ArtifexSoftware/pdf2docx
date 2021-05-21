@@ -51,6 +51,7 @@ class Page(BasePage):
     '''Object representing the whole page, e.g. margins, sections.'''
 
     def __init__(self, id:int=-1, 
+                        skip_parsing:bool=True,
                         width:float=0.0,
                         height:float=0.0,
                         header:str=None, 
@@ -62,6 +63,7 @@ class Page(BasePage):
 
         Args:
             id (int, optional): Page index. Defaults to -1.
+            skip_parsing (bool, optional): Don't parse page if True. Defaults to True.
             width (float, optional): Page width. Defaults to 0.0.
             height (float, optional): Page height. Defaults to 0.0.
             header (str, optional): Page header. Defaults to None.
@@ -72,6 +74,7 @@ class Page(BasePage):
         ''' 
         # page index
         self.id = id
+        self.skip_parsing = skip_parsing
 
         # page size and margin
         super().__init__(width=width, height=height, margin=margin)

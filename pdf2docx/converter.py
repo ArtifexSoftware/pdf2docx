@@ -21,7 +21,8 @@ class Converter:
     
     * Read PDF file with ``PyMuPDF`` to get raw layout data page by page, including text,
       image, drawing and its properties, e.g. boundary box, font, size, image width, height.
-    * Then parse it to docx structure, e.g. paragraph and its properties like indentaton, 
+    * Analyze layout in document level, e.g. page header, footer and margin.
+    * Parse page layout to docx structure, e.g. paragraph and its properties like indentaton, 
       spacing, text alignment; table and its properties like border, shading, merging. 
     * Finally, generate docx with ``python-docx``.
     '''
@@ -38,36 +39,15 @@ class Converter:
         self.password = str(password or '')
         self._fitz_doc = fitz.Document(pdf_file)
 
-        # initialize empty pages
-        self._pages = []
-
-
-    def __getitem__(self, index):
-        num = self._fitz_doc.pageCount
-        if isinstance(index, slice):
-            if index.stop is None or index.stop > num:
-                stop = num
-            else:
-                stop = index.stop
-            pages = [self._pages[i] for i in range(stop)]
-            return pages[index]
-        else:
-            try:
-                page = self._pages[index]
-            except IndexError:
-                msg = f'Page index {index} out of range'
-                raise IndexError(msg)
-            else:
-                return page
-
-
-    def __len__(self): return len(self._pages)
+        # initialize empty pages container
+        self._pages = Pages()
 
 
     @property
-    def fitz_doc(self): 
-        '''fitz.Document: The fitz ``Document``.'''
-        return self._fitz_doc
+    def fitz_doc(self): return self._fitz_doc    
+
+    @property
+    def pages(self): return self._pages
 
 
     def close(self): self._fitz_doc.close()
@@ -107,9 +87,19 @@ class Converter:
             'default_font_name'              : 'Times New Roman' # default font name in case valid font are extracted
         }
 
+    # -----------------------------------------------------------------------
+    # Parsing process: load -> analyze document -> parse pages -> make docx
+    # -----------------------------------------------------------------------
 
-    def load(self):
-        '''Open PDF file with ``PyMuPDF``, especially for password encrypted file.'''
+    def load_pages(self, start:int=0, end:int=None, pages:list=None):
+        '''Step 1 of converting process: open PDF file with ``PyMuPDF``, 
+        especially for password encrypted file.
+        
+        Args:
+            start (int, optional): First page to process. Defaults to 0, the first page.
+            end (int, optional): Last page to process. Defaults to None, the last page.
+            pages (list, optional): Range of page indexes to parse. Defaults to None.
+        '''
         logging.info('[1/4] Open document...')
 
         # encrypted pdf ?
@@ -120,41 +110,41 @@ class Converter:
             elif not self._fitz_doc.authenticate(self.password):
                 raise ConversionException('Incorrect password.')
 
-        # initialize pages
-        self._pages = [Page(id=i) for i in range(len(self._fitz_doc))]
+        # initialize empty pages
+        num = len(self._fitz_doc)
+        page_indexes = self._page_indexes(start, end, pages, num)
+        self._pages.reset([Page(id=i) for i in range(num)])
 
+        # set pages to parse
+        for i in page_indexes:
+            self._pages[i].skip_parsing = False
+
+        return self
+    
+
+    def parse_document(self, kwargs:dict):
+        '''Step 2 of converting process: analyze whole document, e.g. page section,
+        header/footer and margin.'''
+        logging.info('[2/4] Analyzing document...')
+        
+        self._pages.parse(self.fitz_doc, kwargs)
         return self
 
     
-    def parse(self, page_indexes:list, kwargs:dict):
-        """Parse pages in specified ``page_indexes``.
-
-        Args:
-            page_indexes (list, optional): Pages to parse
-            kwargs (dict, optional): Configuration parameters.
-
-        Returns:
-            Converter: self
-        """
-        # parsing parameters
-        settings = self.default_settings
-        settings.update(kwargs)
-
-        # parse structure in document level
-        logging.info('[2/4] Analyzing document...')
-        pages = [self._pages[i] for i in page_indexes]
-        Pages(pages).parse(self.fitz_doc, settings)        
-
-        # parse page structures
+    def parse_pages(self, kwargs:dict):
+        '''Step 3 of converting process: parse pages, e.g. paragraph, image and table.'''
         logging.info('[3/4] Parsing pages...')
-        num_pages = len(page_indexes)
-        for i, idx in enumerate(page_indexes, start=1):
-            logging.info('Page %d: %d/%d', idx+1, i, num_pages)
-            if settings.get('debug', False):
-                self._pages[idx].parse(settings)
+
+        pages = [page for page in self._pages if not page.skip_parsing]
+        num_pages = len(pages)
+        for i, page in enumerate(pages, start=1):
+            logging.info('Page %d: %d/%d', page.id+1, i, num_pages)
+
+            if kwargs.get('debug', False):
+                page.parse(kwargs)
             else:
                 try:
-                    self._pages[idx].parse(settings)
+                    page.parse(kwargs)
                 except Exception as e:
                     logging.warning('Ignore page due to error: %s', e)
 
@@ -162,15 +152,13 @@ class Converter:
 
 
     def make_docx(self, docx_filename=None):
-        '''Create docx file with converted pages.
+        '''Step 4 of converting process: create docx file with converted pages.
         
         Args:
             docx_filename (str): docx filename to write to.
-        
-        .. note::
-            It should be run after parsing page ``parse()``. Otherwise, no parsed pages
-            for creating docx file.
         '''
+        logging.info('[4/4] Creating pages...')
+
         # check parsed pages
         parsed_pages = list(filter(
             lambda page: page.finalized, self._pages
@@ -182,8 +170,7 @@ class Converter:
         filename = docx_filename or f'{self.filename_pdf[0:-4]}.docx'
         if os.path.exists(filename): os.remove(filename)
 
-        # create page by page
-        logging.info('[4/4] Creating pages...')
+        # create page by page        
         docx_file = Document() 
         num_pages = len(parsed_pages)
         for i, page in enumerate(parsed_pages, start=1):
@@ -197,6 +184,10 @@ class Converter:
         # save docx
         docx_file.save(filename)
 
+
+    # -----------------------------------------------------------------------
+    # Store / restore parsed results
+    # -----------------------------------------------------------------------
 
     def store(self):
         '''Store parsed pages in dict format.'''
@@ -226,6 +217,10 @@ class Converter:
             data = json.load(f)
         self.restore(data)
 
+
+    # -----------------------------------------------------------------------
+    # high level methods, e.g. convert, extract table
+    # -----------------------------------------------------------------------
 
     def debug_page(self, i:int, docx_filename:str=None, debug_pdf:str=None, layout_file:str=None, kwargs:dict=None):
         '''Parse, create and plot single page for debug purpose.
@@ -282,17 +277,18 @@ class Converter:
             if ``pages`` is omitted.
         """
         t0 = perf_counter()
-        logging.info('Start to convert %s', self.filename_pdf)
+        logging.info('Start to convert %s', self.filename_pdf)        
 
         # open document
-        page_indexes = self.load()._page_indexes(start, end, pages, len(self))
+        self.load_pages(start, end, pages)
         
-        # convert page by page        
-        kwargs = kwargs or {}
-        if kwargs.get('multi_processing', False):
-            self._parse_and_create_pages_with_multi_processing(docx_filename, page_indexes, kwargs)
+        # convert page by page
+        settings = self.default_settings
+        settings.update(kwargs or {})
+        if settings.get('multi_processing', False):
+            self._parse_and_create_pages_with_multi_processing(docx_filename, settings)
         else:
-            self._parse_and_create_pages(docx_filename, page_indexes, kwargs)
+            self._parse_and_create_pages(docx_filename, settings)
 
         logging.info('Terminated in %.2fs.', perf_counter()-t0)        
 
@@ -309,46 +305,42 @@ class Converter:
         Returns:
             list: A list of parsed table content.
         '''
-        # pages to convert
-        page_indexes = self.load()._page_indexes(start, end, pages, len(self))
-        kwargs = kwargs or {}
+        # open document
+        self.load_pages(start, end, pages)
 
-        # process page by page
-        self.parse(page_indexes, kwargs)
+        # parsing
+        settings = self.default_settings
+        settings.update(kwargs or {})
+        self.parse_document(settings).parse_pages(settings)
 
         # get parsed tables
         tables = []
         for page in self._pages:
-            if page.finalized: tables.extend(page.extract_tables(kwargs))
+            if page.finalized: tables.extend(page.extract_tables(settings))
+
         return tables
 
 
-    def _parse_and_create_pages(self, docx_filename:str, page_indexes:list, kwargs:dict):
-        '''Parse and create pages based on page indexes.
-        
-        Args:
-            docx_filename (str): docx filename to write to.
-            page_indexes (list[int]): Page indexes to parse.
-        '''
-        self.parse(page_indexes, kwargs).make_docx(docx_filename)
+    def _parse_and_create_pages(self, docx_filename:str, kwargs:dict):
+        '''Parse and create pages based on page indexes.'''
+        self.parse_document(kwargs) \
+            .parse_pages(kwargs) \
+            .make_docx(docx_filename)
 
 
-    def _parse_and_create_pages_with_multi_processing(self, docx_filename:str, page_indexes:list, kwargs:dict):
+    def _parse_and_create_pages_with_multi_processing(self, docx_filename:str, kwargs:dict):
         '''Parse and create pages based on page indexes with multi-processing.
 
         Reference:
 
             https://pymupdf.readthedocs.io/en/latest/faq.html#multiprocessing
-
-        Args:
-            docx_filename (str): docx filename to write to.
-            page_indexes (list[int]): Page indexes to parse.
         '''
         # make vectors of arguments for the processes
         cpu = min(kwargs['cpu_count'], cpu_count()) if 'cpu_count' in kwargs else cpu_count()
+        page_indexes = [page.id for page in self._pages if not page.skip_parsing]
         start, end = min(page_indexes), max(page_indexes)
         prefix = 'pages' # json file writing parsed pages per process
-        vectors = [(i, cpu, start, end, self.filename_pdf, kwargs, f'{prefix}-{i}.json') for i in range(cpu)]
+        vectors = [(i, cpu, start, end, self.filename_pdf, self.password, kwargs, f'{prefix}-{i}.json') for i in range(cpu)]
 
         # start parsing processes
         pool = Pool()
@@ -375,14 +367,15 @@ class Converter:
                 * 1  : count of CPUs
                 * 2,3: whole pages range to process since sometimes need only parts of pdf pages                
                 * 4  : pdf filename
-                * 5  : configuration parameters
-                * 6  : json filename storing parsed results
+                * 5  : password for encrypted pdf
+                * 6  : configuration parameters
+                * 7  : json filename storing parsed results
         '''
         # recreate the arguments
-        idx, cpu, s, e, pdf_filename, kwargs, json_filename = vector
+        idx, cpu, s, e, pdf_filename, password, kwargs, json_filename = vector
 
         # worker
-        cv = Converter(pdf_filename)
+        cv = Converter(pdf_filename, password)
 
         # all pages to process
         all_indexes = range(s, e+1)
@@ -395,8 +388,10 @@ class Converter:
         page_indexes = [all_indexes[i] for i in range(seg_from, seg_to)]
 
         # parse pages and serialize data for further processing
-        cv.parse(page_indexes, kwargs)
-        cv.serialize(json_filename)
+        cv.load_pages(pages=page_indexes) \
+            .parse_document(kwargs) \
+            .parse_pages(kwargs) \
+            .serialize(json_filename)
         cv.close()
 
 
@@ -404,7 +399,7 @@ class Converter:
     def _page_indexes(start, end, pages, pdf_len):
         '''Parsing arguments.'''
         if pages: 
-            indexes = [int(x) for x in pages if 0<=x<pdf_len]
+            indexes = [int(x) for x in pages]
         else:
             end = end or pdf_len
             s = slice(int(start), int(end))

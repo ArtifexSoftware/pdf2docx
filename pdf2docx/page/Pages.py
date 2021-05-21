@@ -27,8 +27,10 @@ class Pages(BaseCollection):
         # ---------------------------------------------
         # 1. extract and then clean up raw page
         # ---------------------------------------------
-        raw_pages = []        
+        pages, raw_pages = [], []
         for page in self:
+            if page.skip_parsing: continue
+
             # init and extract data from PDF
             raw_page = RawPage(fitz_page=fitz_doc[page.id])
             raw_page.restore(settings)
@@ -37,15 +39,16 @@ class Pages(BaseCollection):
             raw_page.clean_up(settings)
 
             # process font properties
-            raw_page.process_font(fonts, default_font)
-
-            raw_pages.append(raw_page)
+            raw_page.process_font(fonts, default_font)            
 
             # after this step, we can get some basic properties
             # NOTE: floating images are detected when cleaning up blocks, so collect them here
             page.width = raw_page.width
             page.height = raw_page.height
             page.float_images.reset().extend(raw_page.blocks.floating_image_blocks)
+
+            raw_pages.append(raw_page)
+            pages.append(page)
         
         # ---------------------------------------------
         # 2. parse structure in document/pages level
@@ -55,19 +58,20 @@ class Pages(BaseCollection):
         # run after this step.
         header, footer = Pages._parse_document(raw_pages)
 
+        # page margin with all pages considered
+        rect = fitz.Rect()
+        W, H = self[0].width, self[0].height # assume all pages have same size
+        for page, raw_page in zip(pages, raw_pages):
+            # page margin
+            left, right, top, bottom = raw_page.calculate_margin(settings)
+            rect |= (left, top, W-right, H-bottom)
+        margin = (rect.x0, W-rect.x1, rect.y0, H-rect.y1)
+
         # ---------------------------------------------
         # 3. parse structure in page level, e.g. page margin, section
         # ---------------------------------------------
-        # page margin with all pages considered
-        rect = fitz.Rect()
-        for page, raw_page in zip(self, raw_pages):
-            # page margin
-            margin = raw_page.calculate_margin(settings)
-            rect |= margin
-        margin = tuple(rect)
-
         # parse sections
-        for page, raw_page in zip(self, raw_pages):
+        for page, raw_page in zip(pages, raw_pages):
             # page margin
             raw_page.margin = page.margin = margin
 
