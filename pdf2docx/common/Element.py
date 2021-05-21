@@ -221,7 +221,8 @@ class Element(IText):
         L2 = e.bbox[idx+2]-e.bbox[idx]
         L = max(self.bbox[idx+2], e.bbox[idx+2]) - min(self.bbox[idx], e.bbox[idx])
 
-        return L1+L2-L>=factor*min(L1,L2)
+        eps = 1e-3 # tolerent
+        return L1+L2-L+eps >= factor*min(L1,L2)
 
 
     def horizontally_align_with(self, e, factor:float=0.0, text_direction:bool=True):
@@ -252,7 +253,9 @@ class Element(IText):
         L1 = self.bbox[idx+2]-self.bbox[idx]
         L2 = e.bbox[idx+2]-e.bbox[idx]
         L = max(self.bbox[idx+2], e.bbox[idx+2]) - min(self.bbox[idx], e.bbox[idx])
-        return L1+L2-L>=factor*min(L1,L2)
+
+        eps = 1e-3 # tolerent
+        return L1+L2-L+eps >= factor*min(L1,L2)
 
 
     def in_same_row(self, e):

@@ -176,7 +176,7 @@ class Lines(ElementCollection):
                 end_of_para = True
 
             # start of sentense and free space at the start -> start of paragraph
-            elif start_of_sen and w/H >= new_paragraph_free_space_ratio:
+            elif start_of_sen and (W-w)/H >= new_paragraph_free_space_ratio:
                 start_of_para = True
 
             # take action
@@ -418,8 +418,7 @@ class Lines(ElementCollection):
     def make_docx(self, p):
         '''Create lines in paragraph.'''
         block = self.parent        
-        idx0 = 0 if block.is_horizontal_text else 3
-        idx1 = (idx0+2)%4 # H: x1->2, or V: y0->1
+        idx0, idx1 = (0, 2) if block.is_horizontal_text else (3, 1)
         current_pos = block.left_space
 
         for i, line in enumerate(self._instances):

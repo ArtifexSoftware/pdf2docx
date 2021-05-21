@@ -303,7 +303,7 @@ class Blocks(ElementCollection):
         if not self._instances: return
         self._parse_block_horizontal_spacing(*args)
         self._parse_block_vertical_spacing()
-        self._parse_line_spacing(*args)
+        self._parse_line_spacing()
 
 
     def join_horizontally(self, 
@@ -680,7 +680,7 @@ class Blocks(ElementCollection):
         if block.is_table_block(): block[-1].height -= constants.MINOR_DIST
 
 
-    def _parse_line_spacing(self, *args):
+    def _parse_line_spacing(self):
         '''Calculate internal vertical space for text blocks, i.e. paragraph line spacing in docx.
 
         .. note::
@@ -688,4 +688,4 @@ class Blocks(ElementCollection):
         '''
         for block in self._instances:
             if block.is_text_block():
-                block.parse_line_spacing_exactly()
+                block.parse_relative_line_spacing()

@@ -89,8 +89,9 @@ class Converter:
             'lines_center_aligned_threshold' : 2.0, # center aligned if delta center of two lines is lower than this value
             'clip_image_res_ratio'           : 3.0, # resolution ratio (to 72dpi) when cliping page image
             'curve_path_ratio'               : 0.2, # clip page bitmap if the component of curve paths exceeds this ratio
-            'extract_stream_table'           : False, # don't consider stream table when extracting tables
-            'delete_end_line_hyphen'         : True, # delete hyphen at the end of a line
+            'extract_stream_table'           : False,  # don't consider stream table when extracting tables
+            'delete_end_line_hyphen'         : True,   # delete hyphen at the end of a line
+            'default_font_name'              : 'Times New Roman' # default font name in case valid font are extracted
         }
 
     
@@ -111,9 +112,9 @@ class Converter:
         settings.update(kwargs)
 
         # parse structure in document level
-        pages = [self._pages[i] for i in page_indexes]
-        Pages(pages).parse(self.fitz_doc, settings)
         print(f'* Analyzing document...', flush=True)
+        pages = [self._pages[i] for i in page_indexes]
+        Pages(pages).parse(self.fitz_doc, settings)        
 
         # parse page structures
         num_pages = len(page_indexes)

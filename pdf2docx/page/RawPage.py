@@ -30,9 +30,12 @@ from .BasePage import BasePage
 from ..layout.Layout import Layout
 from ..layout.Section import Section
 from ..layout.Column import Column
-from ..shape.Shape import Shape
+from ..shape.Shape import Hyperlink, Shape
+from ..shape.Shapes import Shapes
 from ..image.ImagesExtractor import ImagesExtractor
 from ..shape.Paths import Paths
+from ..font.Fonts import Font, Fonts
+from ..text.TextSpan import TextSpan
 from ..common.Element import Element
 from ..common.Block import Block
 from ..common.share import RectType, debug_plot
@@ -88,6 +91,25 @@ class RawPage(BasePage, Layout):
         return self.shapes
 
 
+    def process_font(self, fonts:Fonts, default_font:Font):      
+        '''Update font properties, e.g. font name, font line height ratio, of ``TextSpan``.
+        
+        Args:
+            fonts (Fonts): Fonts used in current document.
+        '''
+        # get all text span
+        spans = []
+        for block in self.blocks:
+            for line in block.lines:
+                spans.extend([span for span in line.spans if isinstance(span, TextSpan)])
+
+        # check and update font name, line height
+        for span in spans:
+            font = fonts.get(span.font, default_font)
+            span.font = font.name
+            span.line_height = font.line_height * span.size
+
+
     def calculate_margin(self, settings:dict):
         """Calculate page margin.
 
@@ -95,11 +117,15 @@ class RawPage(BasePage, Layout):
             Ensure this method is run right after cleaning up the layout, so the page margin is 
             calculated based on valid layout, and stay constant.
         """
+        # Exclude hyperlink from shapes because hyperlink might exist out of page unreasonablely, 
+        # while it should always within page since attached to text.
+        shapes = Shapes([shape for shape in self.shapes if not isinstance(shape, Hyperlink)])
+
         # return default margin if no blocks exist
-        if not self.blocks and not self.shapes: return (constants.ITP, ) * 4
+        if not self.blocks and not shapes: return (constants.ITP, ) * 4
 
         x0, y0, x1, y1 = self.bbox
-        u0, v0, u1, v1 = self.blocks.bbox | self.shapes.bbox
+        u0, v0, u1, v1 = self.blocks.bbox | shapes.bbox
 
         # margin
         left = max(u0-x0, 0.0)

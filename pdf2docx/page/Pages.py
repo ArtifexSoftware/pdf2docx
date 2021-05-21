@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-'''Collection of :py:class:`~pdf2docx.page.Page` instances.
+'''Collection of :py:class:`~pdf2docx.page.Page` instances.'''
 
-
-'''
-
+import fitz
 from ..common.Collection import BaseCollection
 from .RawPage import RawPage
+from ..font.Fonts import Fonts
 
 
 class Pages(BaseCollection):
@@ -20,13 +19,25 @@ class Pages(BaseCollection):
             settings (dict): Parsing parameters.
         '''
         # ---------------------------------------------
+        # 0. extract fonts properties
+        # ---------------------------------------------
+        fonts, default_font = Pages._extract_fonts(fitz_doc, settings)
+
+        # ---------------------------------------------
         # 1. extract and then clean up raw page
         # ---------------------------------------------
-        raw_pages = []
+        raw_pages = []        
         for page in self:
+            # init and extract data from PDF
             raw_page = RawPage(fitz_page=fitz_doc[page.id])
             raw_page.restore(settings)
+
+            # process blocks and shapes based on bbox
             raw_page.clean_up(settings)
+
+            # process font properties
+            raw_page.process_font(fonts, default_font)
+
             raw_pages.append(raw_page)
 
             # after this step, we can get some basic properties
@@ -46,14 +57,31 @@ class Pages(BaseCollection):
         # ---------------------------------------------
         # 3. parse structure in page level, e.g. page margin, section
         # ---------------------------------------------
+        # page margin with all pages considered
+        rect = fitz.Rect()
         for page, raw_page in zip(self, raw_pages):
             # page margin
             margin = raw_page.calculate_margin(settings)
+            rect |= margin
+        margin = tuple(rect)
+
+        # parse sections
+        for page, raw_page in zip(self, raw_pages):
+            # page margin
             raw_page.margin = page.margin = margin
 
             # page section
             sections = raw_page.parse_section(settings)
             page.sections.extend(sections)
+    
+
+    @staticmethod
+    def _extract_fonts(fitz_doc, settings:dict):
+        '''Extract font properties, e.g. font family name and line height ratio.'''
+        default_name = settings['default_font_name']
+        default_font = Fonts.get_defult_font(default_name)
+        fonts = Fonts.extract(fitz_doc, default_font)
+        return fonts, default_font
 
 
     @staticmethod

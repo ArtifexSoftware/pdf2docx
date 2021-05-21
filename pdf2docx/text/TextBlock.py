@@ -27,8 +27,8 @@ Data structure based on this `link <https://pymupdf.readthedocs.io/en/latest/tex
 
 from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-
 from .Lines import Lines
+from ..image.ImageSpan import ImageSpan
 from ..common.share import RectType, TextDirection, TextAlignment
 from ..common.Block import Block
 from ..common.share import rgb_component_from_name
@@ -242,46 +242,38 @@ class TextBlock(Block):
         self.lines.parse_line_break(bbox, line_break_width_ratio, line_break_free_space_ratio)
 
 
-    def parse_line_spacing_relatively(self):
-        '''Calculate relative line spacing, e.g. `spacing = 1.02`. 
-
-        It's complicated to calculate relative line spacing, e.g. considering font style. 
-        A simple rule is used:
-
-            line_height = 1.3 * font_size
+    def parse_relative_line_spacing(self):
+        '''Calculate relative line spacing, e.g. `spacing = 1.02`.  Relative line spacing is based on standard 
+        single line height, which is font-related. 
 
         .. note::
             The line spacing could be updated automatically when changing the font size, while the layout might
             be broken in exact spacing mode, e.g. overlapping of lines.
         '''
-        factor = 1.22
+        # return default line spacing if any images exists
+        for line in self.lines:
+            if list(span for span in line.spans if isinstance(span, ImageSpan)):
+                self.line_space = constants.DEFULT_LINE_SPACING
+                return
 
-        # block height
+        # otherwise, calculate average line spacing
         idx = 1 if self.is_horizontal_text else 0
         block_height = self.bbox[idx+2]-self.bbox[idx]
         
-        # The layout of pdf text block:    line-space-line-space-line, while
-        # The layout of paragraph in docx: line-space-line-space-line-space, note the extra space at the end.
-        # So, (1) calculate the line spacing x => x*1.3*sum_{n-1}(H_i) + Hn = H, 
-        #     (2) calculate the extra space at the end, to be excluded from the before space of next block.
-        rows = self.lines.group_by_physical_rows()
-        count = len(rows)
-        
-        max_line_height = lambda row: max(abs(line.bbox[idx+2]-line.bbox[idx]) for line in row)
-        last_line_height = max_line_height(rows[-1])
+        # An approximate expression: 
+        # standard_line_height * relative_line_spacing = block_height
+        rows = self.lines.group_by_physical_rows()        
+        fun_max_line_height = lambda line: max(span.line_height for span in line.spans)
+        fun_max_row_height = lambda row: max(fun_max_line_height(line) for line in row)
+        standard_height = sum(fun_max_row_height(row) for row in rows)
+        line_space = block_height/standard_height
 
-        if count > 1:
-            sum_pre_line_height = sum(max_line_height(row) for row in rows[:-1])            
-            self.line_space = (block_height-last_line_height)/sum_pre_line_height/factor
-        else:
-            self.line_space = 1.0
-        
-        # extra space at the end
-        end_space = (self.line_space*factor-1.0) * last_line_height if self.line_space>1.0 else 0.0
-        return end_space
+        # overlap may exist when multi-rows, so set minimum spacing  -> default spacing
+        if len(rows)>1: line_space = max(line_space, constants.DEFULT_LINE_SPACING)
+        self.line_space = line_space
 
 
-    def parse_line_spacing_exactly(self):
+    def parse_exact_line_spacing(self):
         '''Calculate exact line spacing, e.g. `spacing = Pt(12)`. 
 
         The layout of pdf text block: line-space-line-space-line, excepting space before first line, 
@@ -334,7 +326,6 @@ class TextBlock(Block):
             The left position of paragraph is set by paragraph indent, rather than ``TAB`` stop.
         '''
         pf = docx.reset_paragraph_format(p)
-
         # vertical spacing
         before_spacing = max(round(self.before_space, 1), 0.0)
         after_spacing = max(round(self.after_space, 1), 0.0)
@@ -343,7 +334,8 @@ class TextBlock(Block):
         pf.space_after = Pt(after_spacing)        
 
         # line spacing
-        pf.line_spacing = Pt(round(self.line_space, 1))
+        pf.line_spacing = round(self.line_space, 2)
+
 
         # horizontal alignment
         # - alignment mode
@@ -385,15 +377,13 @@ class TextBlock(Block):
                     lines_left_aligned_threshold:float,
                     lines_right_aligned_threshold:float,
                     lines_center_aligned_threshold:float):
-        '''Detect text alignment mode based on layout of internal lines. 
+        '''Detect text alignment mode based on layout of internal lines. It can't decide when only
+        one line, in such case, the alignment mode is determined by externally check.
         
         Args:
             text_direction_param (tuple): ``(x0_index, x1_index, direction_factor)``, 
                 e.g. ``(0, 2, 1)`` for horizontal text, while ``(3, 1, -1)`` for vertical text.
         '''
-        # get lines in each physical row
-        rows = self.lines.group_by_physical_rows()
-
         # indexes based on text direction
         idx0, idx1, f = text_direction_param
 
@@ -402,6 +392,7 @@ class TextBlock(Block):
         # set unknown alignment temporarily. Assign left-align to it later and ensure
         # exact position of each line by TAB stop. 
         # --------------------------------------------------------------------------
+        rows = self.lines.group_by_physical_rows() # lines in each physical row
         for row in rows:
             if len(row)==1: continue
             dis = [(row[i].bbox[idx0]-row[i-1].bbox[idx1])*f>=line_separate_threshold \
@@ -409,8 +400,8 @@ class TextBlock(Block):
             if any(dis):
                 return TextAlignment.NONE
 
-        # just one row -> can't decide -> full possibility
-        if len(rows) < 2: return TextAlignment.UNKNOWN
+        # need further external check if one line only
+        if len(rows) == 1: return TextAlignment.UNKNOWN
 
         # --------------------------------------------------------------------------
         # Then check alignment of internal lines:
@@ -427,14 +418,17 @@ class TextBlock(Block):
         X1 = [lines[-1].bbox[idx1] for lines in rows]
         X  = [(x0+x1)/2.0 for (x0, x1) in zip(X0, X1)]
 
-        if len(rows) >= 3: X0, X1 = X0[1:], X1[0:-1]
+        X0, X1 = X0[1:], X1[:-1]
         left_aligned   = abs(max(X0)-min(X0))<=lines_left_aligned_threshold
         right_aligned  = abs(max(X1)-min(X1))<=lines_right_aligned_threshold
         center_aligned = abs(max(X)-min(X))<=lines_center_aligned_threshold # coarse margin for center alignment
 
-        if left_aligned and right_aligned:
-            # need further external check if two lines only
-            return TextAlignment.JUSTIFY if len(rows)>=3 else TextAlignment.UNKNOWN
+        if len(rows)>2 and left_aligned and right_aligned:
+            self.first_line_space = rows[0][0].bbox[idx0] - rows[1][0].bbox[idx0]
+            return TextAlignment.JUSTIFY
+
+        elif center_aligned:
+            return TextAlignment.CENTER
 
         elif left_aligned:
             self.first_line_space = rows[0][0].bbox[idx0] - rows[1][0].bbox[idx0]
@@ -442,9 +436,6 @@ class TextBlock(Block):
 
         elif right_aligned:
             return TextAlignment.RIGHT
-
-        elif center_aligned:
-            return TextAlignment.CENTER
 
         else:
             return TextAlignment.NONE
@@ -474,8 +465,12 @@ class TextBlock(Block):
         self.left_space  = d_left
         self.right_space = d_right
 
-        # block location: left/center/right
+        # alignment mode based on block location, the priority: center > left > right
         if abs(d_center) < lines_center_aligned_threshold: 
             return TextAlignment.CENTER
+
+        elif d_left <= 0.25*abs(bbox[idx1]-bbox[idx0]):
+            return TextAlignment.LEFT
+
         else:
-            return TextAlignment.LEFT if abs(d_left) <= abs(d_right) else TextAlignment.RIGHT
+            return TextAlignment.RIGHT
