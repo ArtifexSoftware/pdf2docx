@@ -30,10 +30,8 @@ this `link <https://pymupdf.readthedocs.io/en/latest/textpage.html>`_::
 '''
 
 import fitz
-
 from docx.shared import Pt, RGBColor
 from docx.oxml.ns import qn
-
 from .Char import Char
 from ..common.Element import Element
 from ..common.share import RectType
@@ -63,7 +61,7 @@ class TextSpan(Element):
 
         # in rare case, the font is unamed, so change font and update bbox accordingly
         if 'UNNAMED' in self.font.upper():
-            self._change_font_and_update_bbox()
+            self._change_font_and_update_bbox(constants.DEFAULT_FONT_NAME)
 
 
     @property
@@ -79,7 +77,7 @@ class TextSpan(Element):
         return bbox
 
 
-    def _change_font_and_update_bbox(self, font_name:str='Arial'):
+    def _change_font_and_update_bbox(self, font_name:str='Times New Roman'):
         '''Set new font, and update font size, span/char bbox accordingly.
 
         It's generally used for span with unnamed fonts. 

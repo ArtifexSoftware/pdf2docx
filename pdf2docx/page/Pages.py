@@ -4,6 +4,7 @@
 
 import fitz
 from ..common.Collection import BaseCollection
+from ..common import constants
 from .RawPage import RawPage
 from ..font.Fonts import Fonts
 
@@ -78,9 +79,17 @@ class Pages(BaseCollection):
     @staticmethod
     def _extract_fonts(fitz_doc, settings:dict):
         '''Extract font properties, e.g. font family name and line height ratio.'''
+        # default font specified by user
         default_name = settings['default_font_name']
         default_font = Fonts.get_defult_font(default_name)
+
+        # extract fonts from pdf
         fonts = Fonts.extract(fitz_doc, default_font)
+
+        # always add a program defined defult font -> in case unnamed font in TextSpan
+        font = Fonts.get_defult_font(constants.DEFAULT_FONT_NAME)
+        fonts.append(font)
+
         return fonts, default_font
 
 

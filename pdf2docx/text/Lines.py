@@ -3,6 +3,7 @@
 '''A group of Line objects.
 '''
 
+import logging
 import string
 from docx.shared import Pt
 from .Line import Line
@@ -83,7 +84,7 @@ class Lines(ElementCollection):
            
             # ignore this line if overlap with previous line
             if line.get_main_bbox(pre_line, threshold=line_overlap_threshold):
-                print(f'Ignore Line "{line.text}" due to overlap')
+                logging.warning('Ignore Line "%s" due to overlap', line.text)
                 continue
 
             # add line directly if not aligned horizontally with previous line

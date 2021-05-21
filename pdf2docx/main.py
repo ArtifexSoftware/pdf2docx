@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+import logging
 from .converter import Converter
 
 
@@ -33,7 +34,7 @@ class PDF2DOCX:
         try:
             cv.convert(docx_file, start, end, pages, kwargs)
         except Exception as e:
-            print(e)
+            logging.error(e)
         finally:
             cv.close()
     
@@ -55,13 +56,11 @@ class PDF2DOCX:
         if not kwargs.get('zero_based_index', True):
             page_index = max(page_index-1, 0)
 
+        # explode exception directly if debug mode
         cv = Converter(pdf_file, password)
-        try:
-            cv.debug_page(page_index, docx_file, debug_pdf, layout_file, kwargs)    
-        except Exception as e:
-            print(e)
-        finally:            
-            cv.close()
+        cv.debug_page(page_index, docx_file, debug_pdf, layout_file, kwargs)
+        cv.close()
+            
 
 
     @staticmethod
@@ -86,7 +85,7 @@ class PDF2DOCX:
             tables = cv.extract_tables(start, end, pages, kwargs)
         except Exception as e:
             tables = []
-            print(e)
+            logging.error(e)
         finally:
             cv.close()
 

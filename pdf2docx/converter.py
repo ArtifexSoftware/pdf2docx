@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import json
+import logging
 from time import perf_counter
 from multiprocessing import Pool, cpu_count
 import fitz
@@ -8,8 +9,11 @@ from docx import Document
 from .page.Page import Page
 from .page.Pages import Pages
 
-
-class ConversionException(Exception): pass
+# logging
+logging.basicConfig(
+    level=logging.INFO, 
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S")
 
 
 class Converter:
@@ -106,7 +110,7 @@ class Converter:
 
     def load(self):
         '''Open PDF file with ``PyMuPDF``, especially for password encrypted file.'''
-        print(f'[1/4] Open document...', flush=True)
+        logging.info('[1/4] Open document...')
 
         # encrypted pdf ?
         if self._fitz_doc.needs_pass:
@@ -137,21 +141,22 @@ class Converter:
         settings.update(kwargs)
 
         # parse structure in document level
-        print(f'[2/4] Analyzing document...', flush=True)
+        logging.info('[2/4] Analyzing document...')
         pages = [self._pages[i] for i in page_indexes]
         Pages(pages).parse(self.fitz_doc, settings)        
 
         # parse page structures
+        logging.info('[3/4] Parsing pages...')
         num_pages = len(page_indexes)
         for i, idx in enumerate(page_indexes, start=1):
-            print(f'\r[3/4] Parsing Page {idx+1}: {i}/{num_pages}...', end='', flush=True)
+            logging.info('Page %d: %d/%d', idx+1, i, num_pages)
             if settings.get('debug', False):
                 self._pages[idx].parse(settings)
             else:
                 try:
                     self._pages[idx].parse(settings)
                 except Exception as e:
-                    print(f'\nIgnore page due to error: {e}', flush=True)
+                    logging.warning('Ignore page due to error: %s', e)
 
         return self
 
@@ -178,16 +183,16 @@ class Converter:
         if os.path.exists(filename): os.remove(filename)
 
         # create page by page
+        logging.info('[4/4] Creating pages...')
         docx_file = Document() 
         num_pages = len(parsed_pages)
-        print()
         for i, page in enumerate(parsed_pages, start=1):
             if not page.finalized: continue # ignore unparsed pages
-            print(f'\r[4/4] Creating Page {page.id+1}: {i}/{num_pages}...', end='')
+            logging.info('Page %d: %d/%d', page.id+1, i, num_pages)
             try:
                 page.make_docx(docx_file)
             except Exception as e:
-                print(f'Ignore page due to error: {e}', flush=True)
+                logging.warning('Ignore page due to error: %s', e)
 
         # save docx
         docx_file.save(filename)
@@ -277,7 +282,7 @@ class Converter:
             if ``pages`` is omitted.
         """
         t0 = perf_counter()
-        print(f'Convert {self.filename_pdf}', flush=True)
+        logging.info('Start to convert %s', self.filename_pdf)
 
         # open document
         page_indexes = self.load()._page_indexes(start, end, pages, len(self))
@@ -289,7 +294,7 @@ class Converter:
         else:
             self._parse_and_create_pages(docx_filename, page_indexes, kwargs)
 
-        print(f'\n{"-"*50}\nTerminated in {perf_counter()-t0}s.')        
+        logging.info('Terminated in %.2fs.', perf_counter()-t0)        
 
 
     def extract_tables(self, start:int=0, end:int=None, pages:list=None, kwargs:dict=None):
@@ -406,3 +411,7 @@ class Converter:
             indexes = range(pdf_len)[s]
         
         return indexes
+
+
+class ConversionException(Exception): 
+    pass
