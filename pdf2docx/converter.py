@@ -90,6 +90,8 @@ class Converter:
             'clip_image_res_ratio'           : 3.0, # resolution ratio (to 72dpi) when cliping page image
             'curve_path_ratio'               : 0.2, # clip page bitmap if the component of curve paths exceeds this ratio
             'extract_stream_table'           : False,  # don't consider stream table when extracting tables
+            'parse_lattice_table'            : True,   # whether parse lattice table or not; may destroy the layout if set False
+            'parse_stream_table'             : True,   # whether parse stream table or not; may destroy the layout if set False
             'delete_end_line_hyphen'         : True,   # delete hyphen at the end of a line
             'default_font_name'              : 'Times New Roman' # default font name in case valid font are extracted
         }

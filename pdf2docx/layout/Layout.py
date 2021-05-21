@@ -157,17 +157,19 @@ class Layout:
         self.shapes.detect_initial_categories()
         
         # parse table structure/format recognized from explicit shapes
-        self._table_parser.lattice_tables(
-                        settings['connected_border_tolerance'],
-                        settings['min_border_clearance'],
-                        settings['max_border_width'])
+        if settings['parse_lattice_table']:
+            self._table_parser.lattice_tables(
+                            settings['connected_border_tolerance'],
+                            settings['min_border_clearance'],
+                            settings['max_border_width'])
         
         # parse table structure based on implicit layout of text blocks
-        self._table_parser.stream_tables(
-                        settings['min_border_clearance'],
-                        settings['max_border_width'],
-                        settings['float_layout_tolerance'],
-                        settings['line_separate_threshold'])
+        if settings['parse_stream_table']:
+            self._table_parser.stream_tables(
+                            settings['min_border_clearance'],
+                            settings['max_border_width'],
+                            settings['float_layout_tolerance'],
+                            settings['line_separate_threshold'])
     
 
     def _improve_layout(self, settings):
