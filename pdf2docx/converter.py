@@ -9,6 +9,9 @@ from .page.Page import Page
 from .page.Pages import Pages
 
 
+class ConversionException(Exception): pass
+
+
 class Converter:
     '''The ``PDF`` to ``docx`` converter.
     
@@ -19,16 +22,20 @@ class Converter:
     * Finally, generate docx with ``python-docx``.
     '''
 
-    def __init__(self, pdf_file:str):
-        ''' Initialize fitz object with given pdf file path; initialize docx object.'''
-        # pdf/docx filename
-        self.filename_pdf = pdf_file        
+    def __init__(self, pdf_file:str, password:str=None):
+        '''Initialize fitz object with given pdf file path.
 
-        # fitz object to read pdf
+        Args:
+            pdf_file (str): pdf file path.
+            password (str): Password for encrypted pdf. Default to None if not encrypted.
+        '''
+        # fitz object
+        self.filename_pdf = pdf_file
+        self.password = str(password or '')
         self._fitz_doc = fitz.Document(pdf_file)
 
-        # initialize pages
-        self._pages = [Page(id=i) for i in range(len(self._fitz_doc))]
+        # initialize empty pages
+        self._pages = []
 
 
     def __getitem__(self, index):
@@ -96,6 +103,24 @@ class Converter:
             'default_font_name'              : 'Times New Roman' # default font name in case valid font are extracted
         }
 
+
+    def load(self):
+        '''Open PDF file with ``PyMuPDF``, especially for password encrypted file.'''
+        print(f'[1/4] Open document...', flush=True)
+
+        # encrypted pdf ?
+        if self._fitz_doc.needs_pass:
+            if not self.password:
+                raise ConversionException(f'Require password for {self.filename_pdf}.')
+
+            elif not self._fitz_doc.authenticate(self.password):
+                raise ConversionException('Incorrect password.')
+
+        # initialize pages
+        self._pages = [Page(id=i) for i in range(len(self._fitz_doc))]
+
+        return self
+
     
     def parse(self, page_indexes:list, kwargs:dict):
         """Parse pages in specified ``page_indexes``.
@@ -107,21 +132,19 @@ class Converter:
         Returns:
             Converter: self
         """
-        print(f'Convert {self.filename_pdf}', flush=True)
-
         # parsing parameters
         settings = self.default_settings
         settings.update(kwargs)
 
         # parse structure in document level
-        print(f'* Analyzing document...', flush=True)
+        print(f'[2/4] Analyzing document...', flush=True)
         pages = [self._pages[i] for i in page_indexes]
         Pages(pages).parse(self.fitz_doc, settings)        
 
         # parse page structures
         num_pages = len(page_indexes)
         for i, idx in enumerate(page_indexes, start=1):
-            print(f'\r* Parsing Page {idx+1}: {i}/{num_pages}...', end='', flush=True)
+            print(f'\r[3/4] Parsing Page {idx+1}: {i}/{num_pages}...', end='', flush=True)
             if settings.get('debug', False):
                 self._pages[idx].parse(settings)
             else:
@@ -148,7 +171,7 @@ class Converter:
             lambda page: page.finalized, self._pages
         ))
         if not parsed_pages:
-            raise Exception('No parsed pages. Please parse page first.')
+            raise ConversionException('No parsed pages. Please parse page first.')
 
         # docx file to convert to        
         filename = docx_filename or f'{self.filename_pdf[0:-4]}.docx'
@@ -160,7 +183,7 @@ class Converter:
         print()
         for i, page in enumerate(parsed_pages, start=1):
             if not page.finalized: continue # ignore unparsed pages
-            print(f'\r* Creating Page {page.id+1}: {i}/{num_pages}...', end='')
+            print(f'\r[4/4] Creating Page {page.id+1}: {i}/{num_pages}...', end='')
             try:
                 page.make_docx(docx_file)
             except Exception as e:
@@ -174,7 +197,7 @@ class Converter:
         '''Store parsed pages in dict format.'''
         return {
             'filename': os.path.basename(self.filename_pdf),
-            'page_num': len(self._pages), # count of all pages
+            'page_cnt': len(self._pages), # count of all pages
             'pages'   : [page.store() for page in self._pages if page.finalized], # parsed pages only
         }
 
@@ -252,17 +275,20 @@ class Converter:
         .. note::
             ``pages`` has a higher priority than ``start`` and ``end``. ``start`` and ``end`` works only
             if ``pages`` is omitted.
-        """         
-        # pages to convert
-        page_indexes = self._page_indexes(start, end, pages, len(self))
-        
-        # convert page by page
+        """
         t0 = perf_counter()
+        print(f'Convert {self.filename_pdf}', flush=True)
+
+        # open document
+        page_indexes = self.load()._page_indexes(start, end, pages, len(self))
+        
+        # convert page by page        
         kwargs = kwargs or {}
         if kwargs.get('multi_processing', False):
             self._parse_and_create_pages_with_multi_processing(docx_filename, page_indexes, kwargs)
         else:
-            self._parse_and_create_pages(docx_filename, page_indexes, kwargs)       
+            self._parse_and_create_pages(docx_filename, page_indexes, kwargs)
+
         print(f'\n{"-"*50}\nTerminated in {perf_counter()-t0}s.')        
 
 
@@ -279,7 +305,7 @@ class Converter:
             list: A list of parsed table content.
         '''
         # pages to convert
-        page_indexes = self._page_indexes(start, end, pages, len(self))
+        page_indexes = self.load()._page_indexes(start, end, pages, len(self))
         kwargs = kwargs or {}
 
         # process page by page
