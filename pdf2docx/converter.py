@@ -100,7 +100,7 @@ class Converter:
             end (int, optional): Last page to process. Defaults to None, the last page.
             pages (list, optional): Range of page indexes to parse. Defaults to None.
         '''
-        logging.info('[1/4] Open document...')
+        logging.info(self._color_output('[1/4] Open document...'))
 
         # encrypted pdf ?
         if self._fitz_doc.needs_pass:
@@ -125,7 +125,7 @@ class Converter:
     def parse_document(self, kwargs:dict):
         '''Step 2 of converting process: analyze whole document, e.g. page section,
         header/footer and margin.'''
-        logging.info('[2/4] Analyzing document...')
+        logging.info(self._color_output('[2/4] Analyzing document...'))
         
         self._pages.parse(self.fitz_doc, kwargs)
         return self
@@ -133,12 +133,12 @@ class Converter:
     
     def parse_pages(self, kwargs:dict):
         '''Step 3 of converting process: parse pages, e.g. paragraph, image and table.'''
-        logging.info('[3/4] Parsing pages...')
+        logging.info(self._color_output('[3/4] Parsing pages...'))
 
         pages = [page for page in self._pages if not page.skip_parsing]
         num_pages = len(pages)
         for i, page in enumerate(pages, start=1):
-            logging.info('Page %d: %d/%d', page.id+1, i, num_pages)
+            logging.info('(%d/%d) Page %d', i, num_pages, page.id+1)
 
             if kwargs.get('debug', False):
                 page.parse(kwargs)
@@ -157,7 +157,7 @@ class Converter:
         Args:
             docx_filename (str): docx filename to write to.
         '''
-        logging.info('[4/4] Creating pages...')
+        logging.info(self._color_output('[4/4] Creating pages...'))
 
         # check parsed pages
         parsed_pages = list(filter(
@@ -175,7 +175,7 @@ class Converter:
         num_pages = len(parsed_pages)
         for i, page in enumerate(parsed_pages, start=1):
             if not page.finalized: continue # ignore unparsed pages
-            logging.info('Page %d: %d/%d', page.id+1, i, num_pages)
+            logging.info('(%d/%d) Page %d', i, num_pages, page.id+1)
             try:
                 page.make_docx(docx_file)
             except Exception as e:
@@ -406,6 +406,10 @@ class Converter:
             indexes = range(pdf_len)[s]
         
         return indexes
+
+    
+    @staticmethod
+    def _color_output(msg): return f'\033[1;36m{msg}\033[0m'
 
 
 class ConversionException(Exception): 
