@@ -118,7 +118,7 @@ class Fonts(BaseCollection):
     @staticmethod
     def _is_valid(tt_font:TTFont):
         if not tt_font: return False
-        for key in ('name', 'hhea', 'head', 'OS/2'):
+        for key in ('name', 'hhea', 'head', 'OS/2', 'cmap'):
             if not tt_font.has_key(key): return False
         return True
 

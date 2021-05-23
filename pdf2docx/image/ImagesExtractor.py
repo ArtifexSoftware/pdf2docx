@@ -17,14 +17,19 @@ from ..common.Element import Element
 
 
 class ImagesExtractor:
-    '''Extract images from PDF.'''
-
-    @classmethod
-    def extract_images(cls, page:fitz.Page, clip_image_res_ratio:float=3.0):
-        """Extract normal images with ``Page.getImageList()``.
-
+    def __init__(self, page:fitz.Page) -> None:
+        '''Extract images from PDF page.
+        
         Args:
             page (fitz.Page): pdf page to extract images.
+        '''
+        self._page = page
+
+
+    def extract_images(self, clip_image_res_ratio:float=3.0):
+        '''Extract normal images with ``Page.getImageList()``.
+
+        Args:
             clip_image_res_ratio (float, optional): Resolution ratio of clipped bitmap. Defaults to 3.0.
 
         Returns:
@@ -32,47 +37,45 @@ class ImagesExtractor:
         
         .. note::
             ``Page.getImageList()`` contains each image only once, which may less than the real count of images in a page.
-        """
+        '''
         # pdf document
-        doc = page.parent
+        doc = self._page.parent
 
         # check each image item:
         # (xref, smask, width, height, bpc, colorspace, ...)
         images = []
-        for item in page.getImageList(full=True):
+        for item in self._page.getImageList(full=True):
             # should always wrap getImageBbox in a try-except clause, per
             # https://github.com/pymupdf/PyMuPDF/issues/487
             try:
                 item = list(item)
                 item[-1] = 0
-                bbox = page.getImageBbox(item) # item[7]: name entry of such an item
+                bbox = self._page.getImageBbox(item) # item[7]: name entry of such an item
             except ValueError:
                 continue
 
             # ignore images outside page
-            if not bbox.intersects(page.rect): continue
+            if not bbox.intersects(self._page.rect): continue
 
             # recover image
-            pix = cls._recover_pixmap(doc, item)
+            pix = self._recover_pixmap(doc, item)
 
             # regarding images consist of alpha values only, i.e. colorspace is None,
             # the turquoise color shown in the PDF is not part of the image, but part of PDF background.
             # So, just to clip page pixmap according to the right bbox
             # https://github.com/pymupdf/PyMuPDF/issues/677
             if not pix.colorspace:
-                pix = cls._clip_page(page, bbox, zoom=clip_image_res_ratio)
+                pix = self._clip_page(bbox, zoom=clip_image_res_ratio)
 
-            raw_dict = cls._to_raw_dict(pix, bbox)
+            raw_dict = self._to_raw_dict(pix, bbox)
             images.append(raw_dict)
         return images
     
 
-    @classmethod
-    def extract_vector_graphics(cls, page:fitz.Page, exclude_areas:list, clip_image_res_ratio:float=3.0):
-        """Detect and extract vector graphics by clipping associated page area.
+    def extract_vector_graphics(self, exclude_areas:list, clip_image_res_ratio:float=3.0):
+        '''Detect and extract vector graphics by clipping associated page area.
 
         Args:
-            page (fitz.Page): pdf page to extract images.
             exclude_areas (list): A list of bbox-like ``(x0, y0, x1, y1)`` area to exclude, 
                 e.g. raster image area, table area.
             clip_image_res_ratio (float, optional): Resolution ratio of clipped bitmap. Defaults to 3.0.
@@ -82,9 +85,9 @@ class ImagesExtractor:
         
         .. note::
             Contours for vector graphics are detected first with ``opencv-python``.
-        """
+        '''
         # find contours
-        contours = cls._detect_svg_contours(page, exclude_areas)
+        contours = self._detect_svg_contours(exclude_areas)
 
         # filter contours
         fun = lambda a,b: a.bbox & b.bbox
@@ -92,23 +95,23 @@ class ImagesExtractor:
 
         # clip images
         images = []
-        for group in groups:
+        for i,group in enumerate(groups):
             bbox = group.bbox
-            pix = page.getPixmap(clip=bbox, matrix=fitz.Matrix(clip_image_res_ratio, clip_image_res_ratio))
-            raw_dict = cls._to_raw_dict(pix, bbox)
+            pix = self._page.getPixmap(clip=bbox, matrix=fitz.Matrix(clip_image_res_ratio, clip_image_res_ratio))
+            pix.save(f'{i}.png')
+            raw_dict = self._to_raw_dict(pix, bbox)
             images.append(raw_dict)
         
         return images
 
 
-    @classmethod
-    def _detect_svg_contours(cls, page:fitz.Page, exclude_areas:list):
+    def _detect_svg_contours(self, exclude_areas:list):
         '''Find contour of potential vector graphics.'''
         import cv2 as cv
         import numpy as np
 
         # clip page and convert to opencv image
-        img_byte = cls._clip_page(page, zoom=1.0).getPNGData()
+        img_byte = self._clip_page(zoom=1.0).getPNGData()
         src = cv.imdecode(np.frombuffer(img_byte, np.uint8), cv.IMREAD_COLOR)        
 
         # gray and exclude areas      
@@ -135,16 +138,16 @@ class ImagesExtractor:
             collection.append(e)
             # cv.rectangle(src, (x,y), (x+w,y+h), (255,0,0), 1)  # detected svg bbox
         
-        # # plot detected images for debug
+        # plot detected images for debug
         # cv.imshow("img", src)
         # cv.waitKey(0)
 
         return collection
 
 
-    @classmethod
-    def _to_raw_dict(cls, image:fitz.Pixmap, bbox:fitz.Rect):
-        """Store Pixmap ``image`` to raw dict.
+    @staticmethod
+    def _to_raw_dict(image:fitz.Pixmap, bbox:fitz.Rect):
+        '''Store Pixmap ``image`` to raw dict.
 
         Args:
             image (fitz.Pixmap): Pixmap to store.
@@ -152,7 +155,7 @@ class ImagesExtractor:
 
         Returns:
             dict: Raw dict of the pixmap.
-        """
+        '''
         return {
             'type': BlockType.IMAGE.value,
             'bbox': tuple(bbox),
@@ -163,29 +166,32 @@ class ImagesExtractor:
         }
 
 
-    @classmethod
-    def _hide_page_text(cls, page:fitz.Page):
-        """Hide page text before clipping page.
-
-        Args:
-            page (fitz.Page): pdf page to extract.
-        """
+    def _hide_page_text(self):
+        '''Hide page text before clipping page.'''
         # render Tr: set the text rendering mode
         # - 3: neither fill nor stroke the text -> invisible
         # read more:
         # - https://github.com/pymupdf/PyMuPDF/issues/257
         # - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/pdf_reference_archives/PDFReference.pdf
-        doc = page.parent
-        for xref in page.get_contents():
-            stream = doc.xrefStream(xref).replace(b'BT', b'BT 3 Tr') \
+        doc = self._page.parent # type: fitz.Document
+
+        # NOTE: contents referenced in this page
+        for (xref, name, invoker, bbox) in self._page.get_xobjects():
+            stream = doc.xref_stream(xref).replace(b'BT', b'BT 3 Tr') \
                                              .replace(b'Tm', b'Tm 3 Tr') \
                                              .replace(b'Td', b'Td 3 Tr')
-            doc.updateStream(xref, stream)
+            doc.update_stream(xref, stream)
+
+        # direct page content
+        for xref in self._page.get_contents():
+            stream = doc.xref_stream(xref).replace(b'BT', b'BT 3 Tr') \
+                                             .replace(b'Tm', b'Tm 3 Tr') \
+                                             .replace(b'Td', b'Td 3 Tr')
+            doc.update_stream(xref, stream)
 
 
-    @classmethod
-    def _clip_page(cls, page:fitz.Page, bbox:fitz.Rect=None, zoom:float=3.0):
-        """Clip page pixmap (without text) according to ``bbox``.
+    def _clip_page(self, bbox:fitz.Rect=None, zoom:float=3.0):
+        '''Clip page pixmap (without text) according to ``bbox``.
 
         Args:
             page (fitz.Page): pdf page to extract.
@@ -194,15 +200,15 @@ class ImagesExtractor:
 
         Returns:
             fitz.Pixmap: The extracted pixmap.
-        """        
+        '''        
         # hide text 
-        cls._hide_page_text(page)
+        self._hide_page_text()
         
         # improve resolution
         # - https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-increase-image-resolution
         # - https://github.com/pymupdf/PyMuPDF/issues/181
-        bbox = page.rect if bbox is None else bbox & page.rect
-        return page.getPixmap(clip=bbox, matrix=fitz.Matrix(zoom, zoom)) # type: fitz.Pixmap
+        bbox = self._page.rect if bbox is None else bbox & self._page.rect
+        return self._page.getPixmap(clip=bbox, matrix=fitz.Matrix(zoom, zoom)) # type: fitz.Pixmap
 
    
     @staticmethod

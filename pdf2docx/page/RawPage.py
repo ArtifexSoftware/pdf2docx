@@ -258,9 +258,8 @@ class RawPage(BasePage, Layout):
         * Get image location with ``page.getText('rawdict')`` -> ensure correct locations
         '''
         # recover image blocks
-        recovered_images = ImagesExtractor.extract_images(
-            self.fitz_page, 
-            settings['clip_image_res_ratio'])
+        recovered_images = ImagesExtractor(self.fitz_page). \
+                                extract_images(settings['clip_image_res_ratio'])
 
         # group original image blocks by image contents
         image_blocks_group = defaultdict(list)
@@ -309,8 +308,8 @@ class RawPage(BasePage, Layout):
         if exist_svg:
             excluding_areas = iso_areas
             excluding_areas.extend([block['bbox'] for block in raw['blocks'] if block['type']==1]) # normal images
-            images = ImagesExtractor.extract_vector_graphics(
-                self.fitz_page, excluding_areas, settings['clip_image_res_ratio'])
+            images = ImagesExtractor(self.fitz_page) \
+                .extract_vector_graphics(excluding_areas, settings['clip_image_res_ratio'])
             raw['blocks'].extend(images)
 
         # Hyperlink is considered as a Shape
