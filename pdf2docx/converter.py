@@ -12,8 +12,7 @@ from .page.Pages import Pages
 # logging
 logging.basicConfig(
     level=logging.INFO, 
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S")
+    format="[%(levelname)s] %(message)s")
 
 
 class Converter:
@@ -58,28 +57,28 @@ class Converter:
         '''Default parsing parameters.'''
         return {
             'debug': False, # plot layout if True
-            'min_section_height'             : 20.0,# The minimum height of a valid section.
-            'connected_border_tolerance'     : 0.5, # two borders are intersected if the gap lower than this value
-            'max_border_width'               : 6.0, # max border width
-            'min_border_clearance'           : 2.0, # the minimum allowable clearance of two borders
-            'float_image_ignorable_gap'      : 5.0, # float image if the intersection exceeds this value
-            'float_layout_tolerance'         : 0.1, # [0,1] the larger of this value, the more tolerable of float layout
-            'page_margin_factor_top'         : 0.5, # [0,1] reduce top margin by factor
-            'page_margin_factor_bottom'      : 0.5, # [0,1] reduce bottom margin by factor
-            'shape_merging_threshold'        : 0.5, # [0,1] merge shape if the intersection exceeds this value
-            'shape_min_dimension'            : 2.0, # ignore shape if both width and height is lower than this value
-            'block_merging_threshold'        : 0.5, # merge single line blocks when vertical distance is smaller than this value * block height
-            'line_overlap_threshold'         : 0.9, # [0,1] delete line if the intersection to other lines exceeds this value
-            'line_break_width_ratio'         : 0.5, # break line if the ratio of line width to entire layout bbox is lower than this value
-            'line_break_free_space_ratio'    : 0.1, # break line if the ratio of free space to entire line exceeds this value            
-            'line_merging_threshold'         : 2.0, # combine two lines if the x-distance is lower than this value
-            'line_separate_threshold'        : 5.0, # two separate lines if the x-distance exceeds this value
-            'new_paragraph_free_space_ratio' : 1.0, # new paragraph if the ratio of free space to line height exceeds this value
-            'lines_left_aligned_threshold'   : 1.0, # left aligned if delta left edge of two lines is lower than this value
-            'lines_right_aligned_threshold'  : 1.0, # right aligned if delta right edge of two lines is lower than this value
-            'lines_center_aligned_threshold' : 2.0, # center aligned if delta center of two lines is lower than this value
-            'clip_image_res_ratio'           : 3.0, # resolution ratio (to 72dpi) when cliping page image
-            'curve_path_ratio'               : 0.2, # clip page bitmap if the component of curve paths exceeds this ratio
+            'min_section_height'             : 20.0,   # The minimum height of a valid section.
+            'connected_border_tolerance'     : 0.5,    # two borders are intersected if the gap lower than this value
+            'max_border_width'               : 6.0,    # max border width
+            'min_border_clearance'           : 2.0,    # the minimum allowable clearance of two borders
+            'float_image_ignorable_gap'      : 5.0,    # float image if the intersection exceeds this value
+            'float_layout_tolerance'         : 0.1,    # [0,1] the larger of this value, the more tolerable of float layout
+            'page_margin_factor_top'         : 0.5,    # [0,1] reduce top margin by factor
+            'page_margin_factor_bottom'      : 0.5,    # [0,1] reduce bottom margin by factor
+            'shape_merging_threshold'        : 0.5,    # [0,1] merge shape if the intersection exceeds this value
+            'shape_min_dimension'            : 2.0,    # ignore shape if both width and height is lower than this value
+            'block_merging_threshold'        : 0.5,    # merge single line blocks when vertical distance is smaller than this value * block height
+            'line_overlap_threshold'         : 0.9,    # [0,1] delete line if the intersection to other lines exceeds this value
+            'line_break_width_ratio'         : 0.5,    # break line if the ratio of line width to entire layout bbox is lower than this value
+            'line_break_free_space_ratio'    : 0.1,    # break line if the ratio of free space to entire line exceeds this value            
+            'line_merging_threshold'         : 2.0,    # combine two lines if the x-distance is lower than this value
+            'line_separate_threshold'        : 5.0,    # two separate lines if the x-distance exceeds this value
+            'new_paragraph_free_space_ratio' : 0.85,   # new paragraph if the ratio of free space to line height exceeds this value
+            'lines_left_aligned_threshold'   : 1.0,    # left aligned if d_x0 of two lines is lower than this value (Pt)
+            'lines_right_aligned_threshold'  : 1.0,    # right aligned if d_x1 of two lines is lower than this value (Pt)
+            'lines_center_aligned_threshold' : 2.0,    # center aligned if delta center of two lines is lower than this value
+            'clip_image_res_ratio'           : 3.0,    # resolution ratio (to 72dpi) when cliping page image
+            'curve_path_ratio'               : 0.2,    # clip page bitmap if the component of curve paths exceeds this ratio
             'extract_stream_table'           : False,  # don't consider stream table when extracting tables
             'parse_lattice_table'            : True,   # whether parse lattice table or not; may destroy the layout if set False
             'parse_stream_table'             : True,   # whether parse stream table or not; may destroy the layout if set False
