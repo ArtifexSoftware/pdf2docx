@@ -98,7 +98,7 @@ class ImagesExtractor:
         for i,group in enumerate(groups):
             bbox = group.bbox
             pix = self._page.getPixmap(clip=bbox, matrix=fitz.Matrix(clip_image_res_ratio, clip_image_res_ratio))
-            pix.save(f'{i}.png')
+            # pix.save(f'{i}.png')
             raw_dict = self._to_raw_dict(pix, bbox)
             images.append(raw_dict)
         

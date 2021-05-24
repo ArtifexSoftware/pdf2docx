@@ -70,7 +70,8 @@ class Converter:
             'block_merging_threshold'        : 0.5,    # merge single line blocks when vertical distance is smaller than this value * block height
             'line_overlap_threshold'         : 0.9,    # [0,1] delete line if the intersection to other lines exceeds this value
             'line_break_width_ratio'         : 0.5,    # break line if the ratio of line width to entire layout bbox is lower than this value
-            'line_break_free_space_ratio'    : 0.1,    # break line if the ratio of free space to entire line exceeds this value            
+            'line_break_free_space_ratio'    : 0.1,    # break line if the ratio of free space to entire line exceeds this value
+            'condense_char_spacing'          : -0.4,   # condense charaters spacing (in Pt) at end of line to avoid unexpected line break
             'line_merging_threshold'         : 2.0,    # combine two lines if the x-distance is lower than this value
             'line_separate_threshold'        : 5.0,    # two separate lines if the x-distance exceeds this value
             'new_paragraph_free_space_ratio' : 0.85,   # new paragraph if the ratio of free space to line height exceeds this value

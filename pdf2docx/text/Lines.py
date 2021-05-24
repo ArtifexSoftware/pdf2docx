@@ -367,13 +367,19 @@ class Lines(ElementCollection):
         return flag
 
 
-    def parse_line_break(self, bbox, line_break_width_ratio:float, line_break_free_space_ratio:float):
-        '''Whether hard break each line.
+    def parse_line_break(self, bbox, 
+                line_break_width_ratio:float, 
+                line_break_free_space_ratio:float,
+                condense_char_spacing:float):
+        '''Whether hard break each line. In addition, condense charaters at end of line to avoid unexpected 
+        line break. PDF sets precisely width of each word, here just an approximation to set condense spacing
+        for last two words.
 
         Args:
             bbox (Rect): bbox of parent layout, e.g. page or cell.
             line_break_width_ratio (float): user defined threshold, break line if smaller than this value.
             line_break_free_space_ratio (float): user defined threshold, break line if exceeds this value.
+            condense_char_spacing (float): user defined condense char spacing to avoid unexpected line break.
 
         Hard line break helps ensure paragraph structure, but pdf-based layout calculation may
         change in docx due to different rendering mechanism like font, spacing. For instance, when
@@ -392,8 +398,11 @@ class Lines(ElementCollection):
 
         # check by each physical row
         rows = self.group_by_physical_rows()
+        single_row = len(rows)==1
         for lines in rows:
-            # no break by default
+            # ----------------------------
+            # line break
+            # ----------------------------
             for line in lines: line.line_break = 0
 
             # check the end line depending on text alignment
@@ -411,6 +420,17 @@ class Lines(ElementCollection):
             # - free space exceeds the threshold
             if line_break or free_space/block_width > line_break_free_space_ratio:
                 end_line.line_break = 1
+
+            # ----------------------------
+            # character spacing
+            # ----------------------------
+            row_width = abs(lines[-1].bbox[idx1]-lines[0].bbox[idx0])
+            if block_width-row_width>constants.MINOR_DIST: continue
+            last_span = lines[-1].spans[-1]
+            if isinstance(last_span, TextSpan) and not single_row: 
+                # condense characters if negative value
+                last_span.char_spacing = condense_char_spacing
+
         
         # no break for last row
         for line in rows[-1]: line.line_break = 0
@@ -421,19 +441,15 @@ class Lines(ElementCollection):
         block = self.parent        
         idx0, idx1 = (0, 2) if block.is_horizontal_text else (3, 1)
         current_pos = block.left_space
-        W = abs(block.bbox[idx1]-block.bbox[idx0])
-
+        
         for i, line in enumerate(self._instances):
             # left indentation implemented with tab
             pos = block.left_space + (line.bbox[idx0]-block.bbox[idx0])
             if pos>block.left_space and block.tab_stops: # sometimes set by first line indentation
                 add_stop(p, Pt(pos), Pt(current_pos))
 
-            # condense characters at the end of line if the line is long enough
-            condense = W-abs(line.bbox[idx1]-line.bbox[idx0])<constants.MINOR_DIST
-
             # add line
-            line.make_docx(p, condense)
+            line.make_docx(p)
 
             # update stop position            
             if line==self._instances[-1]: break

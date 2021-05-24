@@ -178,39 +178,32 @@ class Line(Element):
         return line
 
 
-    def make_docx(self, p, condense:bool=False):
-        '''Create docx line, i.e. a run in ``python-docx``.
-
-        Args:
-            condense (bool): Condense characters at the end of line if True to avoid line break.
-        '''
-        # split last span if necessary
-        spans, last_span = self.spans[:-1], self.spans[-1]
-        condense_span = None
-        if condense and isinstance(last_span, TextSpan):
-            # condense the last word or at most 7 charecters
-            text = last_span.text.strip()
-            words = text.split(' ')
-            num = min(len(words[-1]), 7)
-
-            # split the span
-            raw = last_span.store()
-            span = TextSpan(raw)
-            span.chars = last_span.chars[:-num]
-            spans.append(span)
-
-            condense_span = TextSpan(raw)
-            condense_span.chars = last_span.chars[-num:]
-
-        else:
-            spans.append(last_span)
-
+    def make_docx(self, p):
+        '''Create docx line, i.e. a run in ``python-docx``.'''
         # create span -> run in paragraph
-        for span in spans: span.make_docx(p, False)
+        for span in self.spans: 
+            if not isinstance(span, TextSpan) or not span.char_spacing:
+                span.make_docx(p)
+            
+            # split the span: the last two words
+            else:
+                words = span.text.strip().split(' ')
+                last_2_words = ' '.join(words[-2:])
+                num = len(last_2_words)+1
+                raw = span.store()
 
-        if condense_span:  condense_span.make_docx(p, True)
+                # NOTE: didn't update bbox after splitting, but there's no
+                # side effect for making docx
+                span_1 = TextSpan(raw)
+                span_1.chars = span.chars[:-num]
+                span_1.char_spacing = 0.0
+
+                span_2 = TextSpan(raw)
+                span_2.chars = span.chars[-num:]
+
+                if span_1.chars: span_1.make_docx(p)
+                if span_2.chars: span_2.make_docx(p)
 
         # line break
-        if self.line_break: 
-            p.add_run('\n')
+        if self.line_break: p.add_run('\n')
             

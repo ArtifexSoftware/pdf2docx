@@ -177,7 +177,8 @@ class TextBlock(Block):
                     line_break_free_space_ratio:float,
                     lines_left_aligned_threshold:float,
                     lines_right_aligned_threshold:float,
-                    lines_center_aligned_threshold:float):
+                    lines_center_aligned_threshold:float,
+                    condense_char_spacing:float):
         ''' Set horizontal spacing based on lines layout and page bbox.
         
         * The general spacing is determined by paragraph alignment and indentation.
@@ -213,28 +214,21 @@ class TextBlock(Block):
         # - set single side indentation if single line
         # - add minor space if multi-lines
         row_count = self.row_count
-        if self.alignment == TextAlignment.LEFT:
-            if row_count==1:
-                self.right_space = 0
-            else:
-                self.right_space -= constants.MAJOR_DIST
+        if row_count==1 and self.alignment == TextAlignment.LEFT:
+            self.right_space = 0
 
-        elif self.alignment == TextAlignment.RIGHT:
-            if row_count==1:
-                self.left_space = 0
-            else:
-                self.left_space -= constants.MAJOR_DIST
-
-        elif self.alignment == TextAlignment.CENTER:
-            if row_count==1:
-                self.left_space = 0
-                self.right_space = 0
-            else:
-                self.left_space -= constants.MAJOR_DIST
-                self.right_space -= constants.MAJOR_DIST
+        elif row_count==1 and self.alignment == TextAlignment.RIGHT:
+            self.left_space = 0
+        
+        elif row_count==1 and self.alignment == TextAlignment.CENTER:
+            self.left_space = 0
+            self.right_space = 0
         
         # parse line break
-        self.lines.parse_line_break(bbox, line_break_width_ratio, line_break_free_space_ratio)
+        self.lines.parse_line_break(bbox, 
+            line_break_width_ratio, 
+            line_break_free_space_ratio, 
+            condense_char_spacing)
 
 
     def parse_relative_line_spacing(self):

@@ -11,7 +11,7 @@ this `link <https://pymupdf.readthedocs.io/en/latest/textpage.html>`_::
         'bbox': (x0,y0,x1,y1),
         'color': sRGB
         'font': fontname,
-        'size': fontzise,
+        'size': fontsize,
         'flags': fontflags,
         'chars': [ chars ],
 
@@ -55,6 +55,9 @@ class TextSpan(Element):
         # introduced attributes
         # a list of dict: { 'type': int, 'color': int }
         self.style = raw.get('style', [])
+
+        # charater spacing
+        self.char_spacing = raw.get('char_spacing', 0.0)
         
         # init text span element
         super().__init__(raw)
@@ -166,7 +169,8 @@ class TextSpan(Element):
             'line_height': self.line_height, 
             'flags': self.flags,
             'text': self.text,
-            'style': self.style
+            'style': self.style,
+            'char_spacing': self.char_spacing
         }) # not storing chars for space saving
         return res
 
@@ -341,7 +345,7 @@ class TextSpan(Element):
         return span
 
 
-    def make_docx(self, paragraph, condense:bool=False):
+    def make_docx(self, paragraph):
         '''Add text span to a docx paragraph, and set text style, e.g. font, color, underline, hyperlink, etc.
 
         .. note::
@@ -361,8 +365,8 @@ class TextSpan(Element):
         self._set_text_format(docx_run)
 
         # condense charaters to avoid potential line break
-        if condense:
-            docx.set_char_spacing(docx_run, -0.25)
+        if self.char_spacing:
+            docx.set_char_spacing(docx_run, self.char_spacing)
 
 
     def _set_text_format(self, docx_run):
