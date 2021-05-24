@@ -43,7 +43,7 @@ from ..shape.Shape import Shape
 class TextSpan(Element):
     '''Object representing text span.'''
     def __init__(self, raw:dict=None):
-        if raw is None: raw = {}
+        raw = raw or {}
         self.color = raw.get('color', 0)
         self.font = raw.get('font', '')
         self.size = raw.get('size', 12.0)
@@ -341,7 +341,7 @@ class TextSpan(Element):
         return span
 
 
-    def make_docx(self, paragraph):
+    def make_docx(self, paragraph, condense:bool=False):
         '''Add text span to a docx paragraph, and set text style, e.g. font, color, underline, hyperlink, etc.
 
         .. note::
@@ -359,6 +359,10 @@ class TextSpan(Element):
         
         # set text style, e.g. font, underline and highlight
         self._set_text_format(docx_run)
+
+        # condense charaters to avoid potential line break
+        if condense:
+            docx.set_char_spacing(docx_run, -0.25)
 
 
     def _set_text_format(self, docx_run):
@@ -415,5 +419,3 @@ class TextSpan(Element):
             # same color with text for strike line
             elif t==RectType.STRIKE.value:
                 docx_run.font.strike = True
-
-        

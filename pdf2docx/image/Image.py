@@ -91,7 +91,7 @@ class Image(Element):
         super().plot(page, stroke=color)
 
 
-    def make_docx(self, paragraph):
+    def make_docx(self, paragraph, condense:bool=False):
         '''Add image span to a docx paragraph.'''
         # add image
         docx.add_image(paragraph, BytesIO(self.image), self.bbox.x1-self.bbox.x0, self.bbox.y1-self.bbox.y0)

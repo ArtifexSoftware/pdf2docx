@@ -421,6 +421,7 @@ class Lines(ElementCollection):
         block = self.parent        
         idx0, idx1 = (0, 2) if block.is_horizontal_text else (3, 1)
         current_pos = block.left_space
+        W = abs(block.bbox[idx1]-block.bbox[idx0])
 
         for i, line in enumerate(self._instances):
             # left indentation implemented with tab
@@ -428,8 +429,11 @@ class Lines(ElementCollection):
             if pos>block.left_space and block.tab_stops: # sometimes set by first line indentation
                 add_stop(p, Pt(pos), Pt(current_pos))
 
+            # condense characters at the end of line if the line is long enough
+            condense = W-abs(line.bbox[idx1]-line.bbox[idx0])<constants.MINOR_DIST
+
             # add line
-            line.make_docx(p)
+            line.make_docx(p, condense)
 
             # update stop position            
             if line==self._instances[-1]: break

@@ -16,6 +16,7 @@ Data structure of line in text block referring to this
 
 from fitz import Point
 from collections import Iterable
+from .TextSpan import TextSpan
 from ..common.Element import Element
 from ..common.share import TextDirection
 from .Spans import Spans
@@ -177,8 +178,39 @@ class Line(Element):
         return line
 
 
-    def make_docx(self, p):
-        '''Create docx line, i.e. a run in ``python-docx``.'''
-        for span in self.spans: span.make_docx(p)
-        if self.line_break: p.add_run('\n')
+    def make_docx(self, p, condense:bool=False):
+        '''Create docx line, i.e. a run in ``python-docx``.
+
+        Args:
+            condense (bool): Condense characters at the end of line if True to avoid line break.
+        '''
+        # split last span if necessary
+        spans, last_span = self.spans[:-1], self.spans[-1]
+        condense_span = None
+        if condense and isinstance(last_span, TextSpan):
+            # condense the last word or at most 7 charecters
+            text = last_span.text.strip()
+            words = text.split(' ')
+            num = min(len(words[-1]), 7)
+
+            # split the span
+            raw = last_span.store()
+            span = TextSpan(raw)
+            span.chars = last_span.chars[:-num]
+            spans.append(span)
+
+            condense_span = TextSpan(raw)
+            condense_span.chars = last_span.chars[-num:]
+
+        else:
+            spans.append(last_span)
+
+        # create span -> run in paragraph
+        for span in spans: span.make_docx(p, False)
+
+        if condense_span:  condense_span.make_docx(p, True)
+
+        # line break
+        if self.line_break: 
+            p.add_run('\n')
             
