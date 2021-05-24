@@ -19,6 +19,7 @@ Terms definition:
   and finally applied to detect table border.
 '''
 
+from ..common import constants
 from ..common.Element import Element
 from ..common.Collection import Collection
 from ..layout.Blocks import Blocks
@@ -179,6 +180,10 @@ class TablesConstructor:
             # NOTE: shading with any intersections should be counted to avoid missing any candidates
             explicit_shadings, _ = table_fillings.split_with_intersection(rect.bbox) 
 
+            # NOTE: ignore one-row / one-column table and has no explicit shading
+            if not explicit_shadings and (
+                len(table_lines.group_by_physical_rows())==1 or len(table_lines.group_by_columns())==1): continue
+
             # parse stream borders based on lines in cell and explicit borders/shadings
             strokes = self._stream_strokes(table_lines, outer_borders, explicit_strokes, explicit_shadings)
             if not strokes: continue
@@ -187,11 +192,8 @@ class TablesConstructor:
             strokes.sort_in_reading_order() # required
             table = TableStructure(strokes, settings).parse(explicit_shadings).to_table_block()
 
-            # NOTE: ignore stream table with only one column since it's of no use;
-            #       but when it has an explicit background, accept it.
-            if table.num_cols>1 or any(row[0].bg_color for row in table): 
-                table.set_stream_table_block()
-                tables.append(table)            
+            table.set_stream_table_block()
+            tables.append(table)
 
         # assign blocks/shapes to each table
         self._blocks.assign_to_tables(tables)
@@ -298,7 +300,7 @@ class TablesConstructor:
         '''
         # trying: deep into cells        
         cols_lines = lines.group_by_columns()
-        group_lines = [col_lines.group_by_rows() for col_lines in cols_lines]
+        group_lines = [col_lines.group_by_rows(factor=constants.FACTOR_A_FEW) for col_lines in cols_lines]
 
         # horizontal borders are for reference only when n_column<=2 -> 
         # consider 1-column or 2-columns text layout

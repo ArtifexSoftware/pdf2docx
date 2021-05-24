@@ -16,6 +16,7 @@ Data structure of line in text block referring to this
 
 from fitz import Point
 from collections import Iterable
+from .TextSpan import TextSpan
 from ..common.Element import Element
 from ..common.share import TextDirection
 from .Spans import Spans
@@ -179,6 +180,30 @@ class Line(Element):
 
     def make_docx(self, p):
         '''Create docx line, i.e. a run in ``python-docx``.'''
-        for span in self.spans: span.make_docx(p)
+        # create span -> run in paragraph
+        for span in self.spans: 
+            if not isinstance(span, TextSpan) or not span.char_spacing:
+                span.make_docx(p)
+            
+            # split the span: the last two words
+            else:
+                words = span.text.strip().split(' ')
+                last_2_words = ' '.join(words[-2:])
+                num = len(last_2_words)+1
+                raw = span.store()
+
+                # NOTE: didn't update bbox after splitting, but there's no
+                # side effect for making docx
+                span_1 = TextSpan(raw)
+                span_1.chars = span.chars[:-num]
+                span_1.char_spacing = 0.0
+
+                span_2 = TextSpan(raw)
+                span_2.chars = span.chars[-num:]
+
+                if span_1.chars: span_1.make_docx(p)
+                if span_2.chars: span_2.make_docx(p)
+
+        # line break
         if self.line_break: p.add_run('\n')
             

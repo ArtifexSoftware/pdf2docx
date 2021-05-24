@@ -6,7 +6,6 @@
 import fitz
 from .Element import Element
 from .share import IText, TextDirection, solve_rects_intersection, graph_bfs
-from . import constants
 
 
 class BaseCollection:
@@ -160,10 +159,10 @@ class Collection(BaseCollection):
         return groups
     
     
-    def group_by_columns(self):
+    def group_by_columns(self, factor:float=0.0):
         '''Group lines into columns.'''
         # split in columns
-        fun = lambda a,b: a.vertically_align_with(b, text_direction=False)
+        fun = lambda a,b: a.vertically_align_with(b, factor=factor, text_direction=False)
         groups = self.group(fun)
         
         # NOTE: increasing in x-direction is required!
@@ -171,10 +170,10 @@ class Collection(BaseCollection):
         return groups
 
 
-    def group_by_rows(self):
+    def group_by_rows(self, factor:float=0.0):
         '''Group lines into rows.'''
         # split in rows, with original text block considered
-        fun = lambda a,b: a.horizontally_align_with(b)
+        fun = lambda a,b: a.horizontally_align_with(b, factor=factor)
         groups = self.group(fun)
 
         # NOTE: increasing in y-direction is required!

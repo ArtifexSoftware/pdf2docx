@@ -13,6 +13,7 @@ but more generic properties are required further:
 '''
 
 import os
+import logging
 from io import BytesIO
 from collections import namedtuple 
 from fontTools.ttLib import TTFont, TTLibError
@@ -45,9 +46,9 @@ class Fonts(BaseCollection):
         for font in self:
             if font.descriptor in target: return font
         
-        # print warning msg if not found
+        # show warning msg if not found
         if default:
-            print(f'Warning: font "{font_name}" was replaced by "{default.name}" due to lack of data.')
+            logging.warning('Replace font "%s" with "%s" due to lack of data.', font_name, default.name)
         return Font(descriptor=target, name=default.name, line_height=default.line_height)
 
 
@@ -117,7 +118,7 @@ class Fonts(BaseCollection):
     @staticmethod
     def _is_valid(tt_font:TTFont):
         if not tt_font: return False
-        for key in ('name', 'hhea', 'head', 'OS/2'):
+        for key in ('name', 'hhea', 'head', 'OS/2', 'cmap'):
             if not tt_font.has_key(key): return False
         return True
 

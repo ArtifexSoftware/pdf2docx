@@ -141,7 +141,21 @@ def set_char_scaling(p_run, scale:float=1.0):
         p_run (docx.text.run.Run): Proxy object wrapping <w:r> element.
         scale (float, optional): scaling factor. Defaults to 1.0.
     '''
-    p_run._r.get_or_add_rPr().insert(0, parse_xml(r'<w:w {} w:val="{}"/>'.format(nsdecls('w'), 100*scale)))
+    p_run._r.get_or_add_rPr().insert(0, 
+        parse_xml(r'<w:w {} w:val="{}"/>'.format(nsdecls('w'), 100*scale)))
+
+
+def set_char_spacing(p_run, space:float=1.0):
+    '''Set character spacing. 
+    
+    Manual operation in MS Word: Font | Advanced | Character Spacing | Spacing.
+    
+    Args:
+        p_run (docx.text.run.Run): Proxy object wrapping <w:r> element.
+        space (float, optional): Spacing value in Pt. Expand if positive else condense. Defaults to 1.0.
+    '''
+    p_run._r.get_or_add_rPr().insert(0, 
+        parse_xml(r'<w:spacing {} w:val="{}"/>'.format(nsdecls('w'), 20*space)))
 
 
 def set_char_shading(p_run, srgb:int):

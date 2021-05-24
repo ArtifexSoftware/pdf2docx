@@ -83,10 +83,10 @@ CJK_UNICODE_RANGES = [
     [0xA490, 0xA4CF],  # Yi Radicals
 ]
 
+DEFAULT_FONT_NAME = 'Arial'
 
 # default font name and line height ratio, e.g. PDF base 14 fonts
 # https://appligent.com/what-are-the-base-14-fonts/
-
 DICT_FONT_LINE_HEIGHT = {
     'Agency FB': 1.18,
     'Algerian': 1.32,
