@@ -72,6 +72,11 @@ class TextSpan(Element):
         '''Get span text. Note joining chars is in a higher priority.'''
         return ''.join([char.c for char in self.chars]) if self.chars else self._text
 
+    @text.setter
+    def text(self, value):
+        '''Set span text directly in case no chars are stores, e.g. restored from json.'''
+        self._text = value
+
     
     def cal_bbox(self):
         '''Calculate bbox based on contained instances.'''

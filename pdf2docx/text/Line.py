@@ -208,17 +208,20 @@ class Line(Element):
                 num = len(last_2_words)+1
                 raw = span.store()
 
-                # NOTE: didn't update bbox after splitting, but there's no
-                # side effect for making docx
+                # NOTE 1: didn't update bbox after splitting, but there's no
+                # side effect for making docx.
+                # NOTE 2: don't use chars to update text since there is no chars 
+                # if span is restored from JSON. Chars are not stored considering 
+                # space saving.
                 span_1 = TextSpan(raw)
-                span_1.chars = span.chars[:-num]
+                span_1.text = span.text[:-num]
                 span_1.char_spacing = 0.0
 
                 span_2 = TextSpan(raw)
-                span_2.chars = span.chars[-num:]
+                span_2.text = span.text[-num:]
 
-                if span_1.chars: span_1.make_docx(p)
-                if span_2.chars: span_2.make_docx(p)
+                if span_1.text: span_1.make_docx(p)
+                if span_2.text: span_2.make_docx(p)
 
         # line break
         if self.line_break: p.add_run('\n')

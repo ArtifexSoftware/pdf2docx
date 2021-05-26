@@ -69,14 +69,6 @@ class Pages(BaseCollection):
         # run after this step.
         header, footer = Pages._parse_document(raw_pages)
 
-        # page margin with all pages considered
-        rect = fitz.Rect()
-        W, H = self[0].width, self[0].height # assume all pages have same size
-        for page, raw_page in zip(pages, raw_pages):
-            # page margin
-            left, right, top, bottom = raw_page.calculate_margin(settings)
-            rect |= (left, top, W-right, H-bottom)
-        margin = (rect.x0, W-rect.x1, rect.y0, H-rect.y1)
 
         # ---------------------------------------------
         # 3. parse structure in page level, e.g. page margin, section
@@ -84,6 +76,7 @@ class Pages(BaseCollection):
         # parse sections
         for page, raw_page in zip(pages, raw_pages):
             # page margin
+            margin = raw_page.calculate_margin(settings)
             raw_page.margin = page.margin = margin
 
             # page section

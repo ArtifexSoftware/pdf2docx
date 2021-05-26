@@ -112,10 +112,10 @@ class Converter:
 
         # initialize empty pages
         num = len(self._fitz_doc)
-        page_indexes = self._page_indexes(start, end, pages, num)
         self._pages.reset([Page(id=i, skip_parsing=True) for i in range(num)])
 
         # set pages to parse
+        page_indexes = self._page_indexes(start, end, pages, num)
         for i in page_indexes:
             self._pages[i].skip_parsing = False
 
@@ -200,6 +200,12 @@ class Converter:
 
     def restore(self, data:dict):
         '''Restore pages from parsed results.'''
+        # init empty pages if necessary
+        if not self._pages:
+            num = data.get('page_cnt', 100)
+            self._pages.reset([Page(id=i, skip_parsing=True) for i in range(num)])
+        
+        # restore pages
         for raw_page in data.get('pages', []):
             idx = raw_page.get('id', -1)
             self._pages[idx].restore(raw_page)
@@ -275,20 +281,28 @@ class Converter:
         .. note::
             ``pages`` has a higher priority than ``start`` and ``end``. ``start`` and ``end`` works only
             if ``pages`` is omitted.
+
+        .. note::
+            Multi-processing works only for continuous pages specified by ``start`` and ``end`` only.
         """
         t0 = perf_counter()
-        logging.info('Start to convert %s', self.filename_pdf)        
+        logging.info('Start to convert %s', self.filename_pdf)
 
-        # open document
-        self.load_pages(start, end, pages)
+        # input check
+        if pages and kwargs.get('multi_processing', False):
+            raise ConversionException('Multi-processing works for continuous pages '
+                                    'specified by "start" and "end" only.')
         
         # convert page by page
         settings = self.default_settings
         settings.update(kwargs or {})
         if settings.get('multi_processing', False):
-            self._parse_and_create_pages_with_multi_processing(docx_filename, settings)
+            self._convert_with_multi_processing(docx_filename, start, end, settings)
         else:
-            self._parse_and_create_pages(docx_filename, settings)
+            self.load_pages(start, end, pages) \
+                .parse_document(settings) \
+                .parse_pages(settings) \
+                .make_docx(docx_filename)
 
         logging.info('Terminated in %.2fs.', perf_counter()-t0)        
 
@@ -320,15 +334,8 @@ class Converter:
 
         return tables
 
-
-    def _parse_and_create_pages(self, docx_filename:str, kwargs:dict):
-        '''Parse and create pages based on page indexes.'''
-        self.parse_document(kwargs) \
-            .parse_pages(kwargs) \
-            .make_docx(docx_filename)
-
-
-    def _parse_and_create_pages_with_multi_processing(self, docx_filename:str, kwargs:dict):
+    
+    def _convert_with_multi_processing(self, docx_filename:str, start:int, end:int, kwargs:dict):
         '''Parse and create pages based on page indexes with multi-processing.
 
         Reference:
@@ -336,12 +343,10 @@ class Converter:
             https://pymupdf.readthedocs.io/en/latest/faq.html#multiprocessing
         '''
         # make vectors of arguments for the processes
-        cpu = min(kwargs['cpu_count'], cpu_count()) if 'cpu_count' in kwargs else cpu_count()
-        page_indexes = [page.id for page in self._pages if not page.skip_parsing]
-        start, end = min(page_indexes), max(page_indexes)
+        cpu = min(kwargs['cpu_count'], cpu_count()) if 'cpu_count' in kwargs else cpu_count()        
         prefix = 'pages' # json file writing parsed pages per process
         vectors = [(i, cpu, start, end, self.filename_pdf, self.password, 
-                                    kwargs, f'{prefix}-{i}.json') for i in range(cpu)]
+                            kwargs, f'{prefix}-{i}.json') for i in range(cpu)]
 
         # start parsing processes
         pool = Pool()
@@ -352,7 +357,7 @@ class Converter:
             filename = f'{prefix}-{i}.json'
             if not os.path.exists(filename): continue            
             self.deserialize(filename)
-            os.remove(filename)
+            # os.remove(filename)
         
         # create docx file
         self.make_docx(docx_filename)
@@ -366,31 +371,40 @@ class Converter:
             vector (list): A list containing required parameters.
                 * 0  : segment number for current process                
                 * 1  : count of CPUs
-                * 2,3: whole pages range to process since sometimes need only parts of pdf pages                
+                * 2,3: whole pages range to process
                 * 4  : pdf filename
                 * 5  : password for encrypted pdf
                 * 6  : configuration parameters
                 * 7  : json filename storing parsed results
-        '''
+        '''        
         # recreate the arguments
         idx, cpu, s, e, pdf_filename, password, kwargs, json_filename = vector
 
-        # worker
+        # open pdf to get page count: all pages are marked to parse temporarily 
+        # since don't know which pages to parse for this moment
         cv = Converter(pdf_filename, password)
+        cv.load_pages()
 
-        # all pages to process
-        all_indexes = range(s, e+1)
+        # the specified pages to process
+        e = e or len(cv.fitz_doc)
+        all_indexes = range(s, e)
         num_pages = len(all_indexes)
 
-        # pages per segment
-        seg_size = int(num_pages/cpu) + 1
-        seg_from = idx * seg_size
+        # page segment processed by this cpu
+        m = int(num_pages/cpu)
+        n = num_pages % cpu
+        seg_size = m + int(idx<n)
+        seg_from = (m+1)*idx + min(n-idx, 0)
         seg_to = min(seg_from + seg_size, num_pages)
         page_indexes = [all_indexes[i] for i in range(seg_from, seg_to)]
 
+        # now, mark the right pages
+        for page in cv.pages: page.skip_parsing = True
+        for i in page_indexes: 
+            cv.pages[i].skip_parsing = False
+
         # parse pages and serialize data for further processing
-        cv.load_pages(pages=page_indexes) \
-            .parse_document(kwargs) \
+        cv.parse_document(kwargs) \
             .parse_pages(kwargs) \
             .serialize(json_filename)
         cv.close()
