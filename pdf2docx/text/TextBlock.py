@@ -54,11 +54,21 @@ class TextBlock(Block):
 
     @property
     def text(self):
-        '''Text content in block.'''
+        '''Text content in block. Note image is counted as a placeholder ``<image>``.'''
         lines_text = [line.text for line in self.lines]
         return ''.join(lines_text)
 
-    
+    @property
+    def raw_text(self):
+        '''Raw text content in block without considering images.'''
+        lines_text = [line.raw_text for line in self.lines]
+        return ''.join(lines_text)
+
+    @property
+    def white_space_only(self):
+        '''If this block contains only white space or not. If True, this block is safe to be removed.'''
+        return all(line.white_space_only for line in self.lines)
+
     @property
     def text_direction(self):
         '''All lines contained in text block must have same text direction. 

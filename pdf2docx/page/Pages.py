@@ -2,6 +2,7 @@
 
 '''Collection of :py:class:`~pdf2docx.page.Page` instances.'''
 
+import logging
 import fitz
 from ..common.Collection import BaseCollection
 from ..common import constants
@@ -28,12 +29,17 @@ class Pages(BaseCollection):
         # 1. extract and then clean up raw page
         # ---------------------------------------------
         pages, raw_pages = [], []
+        words_found = False
         for page in self:
             if page.skip_parsing: continue
 
             # init and extract data from PDF
             raw_page = RawPage(fitz_page=fitz_doc[page.id])
             raw_page.restore(settings)
+
+            # check if any words are extracted since scanned pdf may be directed
+            if not words_found and raw_page.raw_text.strip():
+                words_found = True
 
             # process blocks and shapes based on bbox
             raw_page.clean_up(settings)
@@ -49,6 +55,11 @@ class Pages(BaseCollection):
 
             raw_pages.append(raw_page)
             pages.append(page)
+
+        # show message if no words found
+        if not words_found:
+            logging.warning('Words count: 0. It might be a scanned pdf, which is not supported yet.')
+
         
         # ---------------------------------------------
         # 2. parse structure in document/pages level

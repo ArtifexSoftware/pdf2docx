@@ -167,7 +167,7 @@ class Converter:
             raise ConversionException('No parsed pages. Please parse page first.')
 
         # docx file to convert to        
-        filename = docx_filename or f'{self.filename_pdf[0:-4]}.docx'
+        filename = docx_filename or f'{self.filename_pdf[0:-len(".pdf")]}.docx'
         if os.path.exists(filename): os.remove(filename)
 
         # create page by page        

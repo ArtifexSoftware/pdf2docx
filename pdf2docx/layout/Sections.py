@@ -30,15 +30,17 @@ class Sections(BaseCollection):
 
     def make_docx(self, doc):
         '''Create sections in docx.'''
-        # -----------------
+        if not self: return
+
+        # ---------------------------------------------------
         # new page
-        # -----------------
+        # ---------------------------------------------------
         if doc.paragraphs:
             doc.add_section(WD_SECTION.NEW_PAGE)
 
-        # -----------------
+        # ---------------------------------------------------
         # first section
-        # -----------------
+        # ---------------------------------------------------
         # vertical position
         p = doc.add_paragraph()
         line_height = min(self[0].before_space, 11)
@@ -50,9 +52,9 @@ class Sections(BaseCollection):
         # create first section
         self[0].make_docx(doc)        
 
-        # -----------------
+        # ---------------------------------------------------
         # more sections
-        # -----------------
+        # ---------------------------------------------------
         for section in self[1:]:
             # create new section symbol
             doc.add_section(WD_SECTION.CONTINUOUS)

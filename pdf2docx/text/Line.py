@@ -55,9 +55,25 @@ class Line(Element):
     
     @property
     def text(self):
-        '''Joining span text.'''
+        '''Joining span text. Note image is translated to a placeholder ``<image>``.'''
         spans_text = [span.text for span in self.spans]
         return ''.join(spans_text)
+
+
+    @property
+    def raw_text(self):
+        '''Joining span text with image ignored.'''
+        spans_text = [span.text for span in self.spans if isinstance(span, TextSpan)]
+        return ''.join(spans_text)
+
+
+    @property
+    def white_space_only(self):
+        '''If this line contains only white space or not. If True, this line is safe to be removed.'''
+        for span in self.spans:
+            if not isinstance(span, TextSpan): return False
+            if span.text.strip(): return False
+        return True
 
 
     @property

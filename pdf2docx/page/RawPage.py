@@ -57,6 +57,18 @@ class RawPage(BasePage, Layout):
 
         self.fitz_page = fitz_page
 
+    
+    @property
+    def text(self):
+        '''All extracted text in this page, with images considered as ``<image>``. 
+        Should be run after ``restore()`` data.'''
+        return '\n'.join([block.text for block in self.blocks])
+
+    @property
+    def raw_text(self):
+        '''Extracted raw text in current page. Should be run after ``restore()`` data.'''
+        return '\n'.join([block.raw_text for block in self.blocks])
+
 
     @debug_plot('Source Text Blocks')
     def restore(self, settings:dict):
@@ -159,6 +171,7 @@ class RawPage(BasePage, Layout):
         elements = Collection()
         elements.extend(self.blocks)
         elements.extend(self.shapes)
+        if not elements: return
         
         # check section row by row
         pre_section = Collection()
