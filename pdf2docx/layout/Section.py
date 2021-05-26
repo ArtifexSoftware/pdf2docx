@@ -90,7 +90,8 @@ class Section(BaseCollection):
         # add create each column
         for column in self:
             # column break to start new column
-            if column!=self[0]: doc.add_section(WD_SECTION.NEW_COLUMN)
+            if column != self[0]: 
+                doc.add_section(WD_SECTION.NEW_COLUMN)
 
             # make doc
             column.make_docx(doc)

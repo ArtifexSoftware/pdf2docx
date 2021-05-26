@@ -40,6 +40,7 @@ Page elements structure:
 '''
 
 from docx.shared import Pt
+from docx.enum.section import WD_SECTION
 from ..common.Collection import BaseCollection
 from ..common.share import debug_plot
 from .BasePage import BasePage
@@ -180,8 +181,11 @@ class Page(BasePage):
         Args:
             doc (Document): ``python-docx`` document object
         '''
-        # a default section is created when initialize the document
-        section = doc.sections[0]
+        # new page
+        if doc.paragraphs:
+            section = doc.add_section(WD_SECTION.NEW_PAGE)
+        else:
+            section = doc.sections[0] # a default section is there when opening docx
 
         # page size
         section.page_width  = Pt(self.width)

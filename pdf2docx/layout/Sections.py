@@ -29,14 +29,8 @@ class Sections(BaseCollection):
 
 
     def make_docx(self, doc):
-        '''Create sections in docx.'''
+        '''Create sections in docx.'''        
         if not self: return
-
-        # ---------------------------------------------------
-        # new page
-        # ---------------------------------------------------
-        if doc.paragraphs:
-            doc.add_section(WD_SECTION.NEW_PAGE)
 
         # ---------------------------------------------------
         # first section

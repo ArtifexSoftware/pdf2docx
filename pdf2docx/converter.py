@@ -100,7 +100,7 @@ class Converter:
             end (int, optional): Last page to process. Defaults to None, the last page.
             pages (list, optional): Range of page indexes to parse. Defaults to None.
         '''
-        logging.info(self._color_output('[1/4] Open document...'))
+        logging.info(self._color_output('[1/4] Opening document...'))
 
         # encrypted pdf ?
         if self._fitz_doc.needs_pass:
@@ -113,7 +113,7 @@ class Converter:
         # initialize empty pages
         num = len(self._fitz_doc)
         page_indexes = self._page_indexes(start, end, pages, num)
-        self._pages.reset([Page(id=i) for i in range(num)])
+        self._pages.reset([Page(id=i, skip_parsing=True) for i in range(num)])
 
         # set pages to parse
         for i in page_indexes:
@@ -340,7 +340,8 @@ class Converter:
         page_indexes = [page.id for page in self._pages if not page.skip_parsing]
         start, end = min(page_indexes), max(page_indexes)
         prefix = 'pages' # json file writing parsed pages per process
-        vectors = [(i, cpu, start, end, self.filename_pdf, self.password, kwargs, f'{prefix}-{i}.json') for i in range(cpu)]
+        vectors = [(i, cpu, start, end, self.filename_pdf, self.password, 
+                                    kwargs, f'{prefix}-{i}.json') for i in range(cpu)]
 
         # start parsing processes
         pool = Pool()

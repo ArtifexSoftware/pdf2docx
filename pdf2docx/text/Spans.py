@@ -13,7 +13,12 @@ class Spans(ElementCollection):
     def restore(self, raws:list):
         '''Recreate TextSpan or ImageSpan from source dict list.'''
         for raw_span in raws:
-            span = ImageSpan(raw_span) if 'image' in raw_span else TextSpan(raw_span)
+            if 'image' in raw_span:
+                span = ImageSpan(raw_span)
+            else:
+                span = TextSpan(raw_span)
+                if not span.text.strip(): span = None
+
             self.append(span)
         return self
 
