@@ -5,7 +5,6 @@
 
 import logging
 import string
-from docx.shared import Pt
 from .Line import Line
 from .TextSpan import TextSpan
 from ..image.ImageSpan import ImageSpan
@@ -309,7 +308,7 @@ class Lines(ElementCollection):
         groups = self.group(fun)        
         
         # check each row
-        idx = 0 if self.is_horizontal_text else 3
+        idx0, idx1 = (0, 2) if self.is_horizontal_text else (3, 1)
         for lines in groups:
             num = len(lines)
             if num==1: continue
@@ -324,7 +323,7 @@ class Lines(ElementCollection):
 
             # check distance between lines
             for i in range(1, num):
-                dis = abs(lines[i].bbox[idx]-lines[i-1].bbox[(idx+2)%4])
+                dis = abs(lines[i].bbox[idx0]-lines[i-1].bbox[idx1])
                 if dis >= line_separate_threshold: return False
 
         return True
@@ -436,24 +435,32 @@ class Lines(ElementCollection):
         for line in rows[-1]: line.line_break = 0
 
 
-    def make_docx(self, p):
-        '''Create lines in paragraph.'''
+    def parse_tab_stop(self, line_separate_threshold:float):
+        '''Whether add TAB stop before a certain line. 
+
+        Args:
+            line_separate_threshold (float): Don't need a tab stop if the line gap less than this value.
+        '''
+        # all tab stop positions relative to the left boundary of parent block
         block = self.parent        
         idx0, idx1 = (0, 2) if block.is_horizontal_text else (3, 1)
-        current_pos = block.left_space
-        
+        fun = lambda line: round(abs(line.bbox[idx0]-block.bbox[idx0]), 1)
+        all_pos = set(map(fun, self._instances))
+        tab_stops = list(filter(lambda pos: pos>=constants.MINOR_DIST, all_pos))
+
+        # no tab stop need
+        if not tab_stops: return tab_stops
+
+        # otherwise, set tab stop option for each line
+        ref = block.bbox[idx0]
         for i, line in enumerate(self._instances):
             # left indentation implemented with tab
-            pos = block.left_space + (line.bbox[idx0]-block.bbox[idx0])
-            if pos>block.left_space and block.tab_stops: # sometimes set by first line indentation
-                add_stop(p, Pt(pos), Pt(current_pos))
+            distance = line.bbox[idx0] - ref
+            if distance>line_separate_threshold:
+                line.tab_stop = 1
 
-            # add line
-            line.make_docx(p)
-
-            # update stop position            
+            # update stop reference position
             if line==self._instances[-1]: break
-            if line.in_same_row(self._instances[i+1]):
-                current_pos = pos + abs(line.bbox[idx1]-block.bbox[idx0])
-            else:
-                current_pos = block.left_space
+            ref = line.bbox[idx1] if line.in_same_row(self._instances[i+1]) else block.bbox[idx0]
+
+        return tab_stops

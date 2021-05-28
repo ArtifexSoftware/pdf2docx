@@ -198,7 +198,9 @@ class TextSpan(Element):
         intsec = rect.bbox & self.bbox
 
         # no, then add this span as it is
-        if not intsec: return [self]
+        # Note the case bool(intsec)=True but intsec.getArea()=0
+        if not intsec.getArea(): return [self]
+        
 
         # yes, then split spans:
         # - add new style to the intersection part

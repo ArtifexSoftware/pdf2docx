@@ -39,6 +39,7 @@ class Line(Element):
 
         # line break
         self.line_break = raw.get('line_break', 0) # don't break line by default
+        self.tab_stop = raw.get('tab_stop', 0) # no TAB stop before the line by default
 
         # Lines contained in text block may be re-grouped, so use an ID to track the parent block.
         # This ID can't be changed once set -> record the original parent extracted from PDF, 
@@ -142,6 +143,7 @@ class Line(Element):
             'wmode'     : self.wmode,
             'dir'       : self.dir,
             'line_break': self.line_break,
+            'tab_stop'  : self.tab_stop,
             'spans'     : [
                 span.store() for span in self.spans
             ]
@@ -196,6 +198,9 @@ class Line(Element):
 
     def make_docx(self, p):
         '''Create docx line, i.e. a run in ``python-docx``.'''
+        # tab stop before this line to ensure horizontal position
+        if self.tab_stop: p.add_run().add_tab()
+
         # create span -> run in paragraph
         for span in self.spans: 
             if not isinstance(span, TextSpan) or not span.char_spacing:

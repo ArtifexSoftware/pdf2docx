@@ -3,7 +3,6 @@
 '''Collection of :py:class:`~pdf2docx.page.Page` instances.'''
 
 import logging
-import fitz
 from ..common.Collection import BaseCollection
 from ..common import constants
 from .RawPage import RawPage

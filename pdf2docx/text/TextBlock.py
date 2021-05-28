@@ -213,12 +213,7 @@ class TextBlock(Block):
         # if still can't decide, set LEFT by default and ensure position by TAB stops        
         if self.alignment == TextAlignment.NONE:
             self.alignment = TextAlignment.LEFT
-
-            # NOTE: relative stop position to left boundary of block is calculated, 
-            # so block.left_space is required
-            fun = lambda line: round((line.bbox[idx0]-self.bbox[idx0])*f, 1) # relative position to block
-            all_pos = set(map(fun, self.lines))
-            self.tab_stops = list(filter(lambda pos: pos>=constants.MINOR_DIST, all_pos))
+            self.tab_stops = self.lines.parse_tab_stop(line_separate_threshold)
         
         # adjust left/right indentation:
         # - set single side indentation if single line
@@ -325,16 +320,15 @@ class TextBlock(Block):
             The left position of paragraph is set by paragraph indent, rather than ``TAB`` stop.
         '''
         pf = docx.reset_paragraph_format(p)
+
         # vertical spacing
         before_spacing = max(round(self.before_space, 1), 0.0)
         after_spacing = max(round(self.after_space, 1), 0.0)
-
         pf.space_before = Pt(before_spacing)
         pf.space_after = Pt(after_spacing)        
 
         # line spacing
         pf.line_spacing = round(self.line_space, 2)
-
 
         # horizontal alignment
         # - alignment mode
@@ -364,8 +358,8 @@ class TextBlock(Block):
         # - first line indentation
         pf.first_line_indent = Pt(self.first_line_space)
 
-        # add lines        
-        self.lines.make_docx(p)
+        # add lines
+        for line in self.lines: line.make_docx(p)
 
         return p
 
