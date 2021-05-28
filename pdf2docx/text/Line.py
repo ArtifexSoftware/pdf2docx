@@ -203,7 +203,7 @@ class Line(Element):
 
         # create span -> run in paragraph
         for span in self.spans: 
-            if not isinstance(span, TextSpan) or not span.char_spacing:
+            if not isinstance(span, TextSpan) or not span.condense_spacing:
                 span.make_docx(p)
             
             # split the span: the last two words
@@ -220,7 +220,7 @@ class Line(Element):
                 # space saving.
                 span_1 = TextSpan(raw)
                 span_1.text = span.text[:-num]
-                span_1.char_spacing = 0.0
+                span_1.condense_spacing = 0.0
 
                 span_2 = TextSpan(raw)
                 span_2.text = span.text[-num:]

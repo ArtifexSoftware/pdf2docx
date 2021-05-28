@@ -201,11 +201,6 @@ class Page(BasePage):
         # create flow layout: sections
         self.sections.make_docx(doc)
 
-        # create floating images
-        p = doc.add_paragraph() if not doc.paragraphs else doc.paragraphs[-1]
-        for image in self.float_images:
-            image.make_docx(p)
-
  
     def _restore_float_images(self, raws:list):
         '''Restore float images.'''

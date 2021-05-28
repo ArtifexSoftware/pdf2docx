@@ -120,7 +120,7 @@ def set_char_scaling(p_run, scale:float=1.0):
         parse_xml(r'<w:w {} w:val="{}"/>'.format(nsdecls('w'), 100*scale)))
 
 
-def set_char_spacing(p_run, space:float=1.0):
+def set_condense_spacing(p_run, space:float=1.0):
     '''Set character spacing. 
     
     Manual operation in MS Word: Font | Advanced | Character Spacing | Spacing.

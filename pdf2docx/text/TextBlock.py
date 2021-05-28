@@ -188,7 +188,7 @@ class TextBlock(Block):
                     lines_left_aligned_threshold:float,
                     lines_right_aligned_threshold:float,
                     lines_center_aligned_threshold:float,
-                    condense_char_spacing:float):
+                    line_condense_spacing:float):
         ''' Set horizontal spacing based on lines layout and page bbox.
         
         * The general spacing is determined by paragraph alignment and indentation.
@@ -213,7 +213,7 @@ class TextBlock(Block):
         # if still can't decide, set LEFT by default and ensure position by TAB stops        
         if self.alignment == TextAlignment.NONE:
             self.alignment = TextAlignment.LEFT
-            self.tab_stops = self.lines.parse_tab_stop(line_separate_threshold)
+            self.lines.parse_tab_stop(line_separate_threshold)
         
         # adjust left/right indentation:
         # - set single side indentation if single line
@@ -233,7 +233,7 @@ class TextBlock(Block):
         self.lines.parse_line_break(bbox, 
             line_break_width_ratio, 
             line_break_free_space_ratio, 
-            condense_char_spacing)
+            line_condense_spacing)
 
 
     def parse_relative_line_spacing(self):
@@ -413,13 +413,15 @@ class TextBlock(Block):
         # |    ============    | -> center
         # |   ================ | -> left
         # |        =========== | -> right
-        if len(rows) == 1: 
+        def external_alignment():         
             if abs(d_center) < lines_center_aligned_threshold: 
                 return TextAlignment.CENTER
             elif d_left <= 0.25*W:
                 return TextAlignment.LEFT
             else:
                 return TextAlignment.RIGHT
+        
+        if len(rows) == 1: return external_alignment()
 
         # --------------------------------------------------------------------------
         # Check alignment of internal lines:
@@ -443,21 +445,23 @@ class TextBlock(Block):
 
         if left_aligned and right_aligned:
             # need further external check if two lines only
-            if len(rows)>=3 or (d_left+d_right)/W < constants.FACTOR_A_FEW:
-                self.first_line_space = rows[0][0].bbox[idx0] - rows[1][0].bbox[idx0]
-                return TextAlignment.JUSTIFY
-            else:
-                return TextAlignment.CENTER
+            alignment = TextAlignment.JUSTIFY if len(rows)>=3 else external_alignment()
 
         elif center_aligned:
-            return TextAlignment.CENTER
+            alignment = TextAlignment.CENTER
 
-        elif left_aligned:
-            self.first_line_space = rows[0][0].bbox[idx0] - rows[1][0].bbox[idx0]
-            return TextAlignment.LEFT
+        elif left_aligned:            
+            alignment = TextAlignment.LEFT
 
         elif right_aligned:
-            return TextAlignment.RIGHT
+            # change right alignment to left if two lines only
+            alignment = TextAlignment.RIGHT if len(rows)>=3 else TextAlignment.LEFT
 
         else:
-            return TextAlignment.NONE
+            alignment = TextAlignment.NONE
+        
+        # set first line space in case left/justify
+        if alignment==TextAlignment.LEFT or alignment==TextAlignment.JUSTIFY:
+            self.first_line_space = rows[0][0].bbox[idx0] - rows[1][0].bbox[idx0]
+        
+        return alignment

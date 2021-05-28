@@ -62,6 +62,12 @@ class Sections(BaseCollection):
             # section content
             section.make_docx(doc)
 
+        # ---------------------------------------------------
+        # create floating images
+        # ---------------------------------------------------
+        for image in self.parent.float_images:
+            image.make_docx(p)
+
 
     def plot(self, page):
         '''Plot all section blocks for debug purpose.'''

@@ -214,4 +214,4 @@ class Layout:
                         settings['lines_left_aligned_threshold'],
                         settings['lines_right_aligned_threshold'],
                         settings['lines_center_aligned_threshold'],
-                        settings['condense_char_spacing'])
+                        settings['line_condense_spacing'])

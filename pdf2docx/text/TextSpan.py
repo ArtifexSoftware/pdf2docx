@@ -56,8 +56,8 @@ class TextSpan(Element):
         # a list of dict: { 'type': int, 'color': int }
         self.style = raw.get('style', [])
 
-        # charater spacing
-        self.char_spacing = raw.get('char_spacing', 0.0)
+        # total condense spacing
+        self.condense_spacing = raw.get('condense_spacing', 0.0)
         
         # init text span element
         super().__init__(raw)
@@ -175,7 +175,7 @@ class TextSpan(Element):
             'flags': self.flags,
             'text': self.text,
             'style': self.style,
-            'char_spacing': self.char_spacing
+            'condense_spacing': self.condense_spacing
         }) # not storing chars for space saving
         return res
 
@@ -372,8 +372,9 @@ class TextSpan(Element):
         self._set_text_format(docx_run)
 
         # condense charaters to avoid potential line break
-        if self.char_spacing:
-            docx.set_char_spacing(docx_run, self.char_spacing)
+        if self.condense_spacing:
+            v = min(self.condense_spacing/len(self.text), 1.0)
+            docx.set_condense_spacing(docx_run, -v)
 
 
     def _set_text_format(self, docx_run):
