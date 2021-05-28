@@ -53,7 +53,7 @@ class Layout:
         raise NotImplementedError
 
 
-    def constains(self, *args, **kwargs):
+    def contains(self, *args, **kwargs):
         '''Whether given element is contained in this layout.'''
         raise NotImplementedError
 
@@ -117,7 +117,7 @@ class Layout:
 
 
     def _assign_block(self, block):
-        '''Add block to this cell. 
+        '''Add block to this layout. 
         
         Args:
             block (TextBlock, TableBlock): Text/table block to add. 

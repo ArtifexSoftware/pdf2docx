@@ -56,7 +56,7 @@ class Converter:
     def default_settings(self):
         '''Default parsing parameters.'''
         return {
-            'debug': False, # plot layout if True
+            'debug'                          : False,  # plot layout if True
             'min_section_height'             : 20.0,   # The minimum height of a valid section.
             'connected_border_tolerance'     : 0.5,    # two borders are intersected if the gap lower than this value
             'max_border_width'               : 6.0,    # max border width

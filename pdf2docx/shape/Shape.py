@@ -204,19 +204,19 @@ class Stroke(Shape):
 
     def _check_semantic_type(self, block):
         '''Override. Check semantic type of a Stroke: table border v.s. text style line, e.g. underline 
-        and strike-through. It seems a text style line when:
+        and strike-through. It's a potential text style line when:
 
         * the stroke and the text line has same orientation; and
         * the stroke never exceeds the text line long the main direction
         '''
         # check orientation
-        h_stroke, h_line = self.horizontal, block.is_horizontal_text
-        if h_stroke != h_line:
+        h_shape, h_line = self.horizontal, block.is_horizontal_text
+        if h_shape != h_line:
             return RectType.UNDEFINED
 
         # check main dimension
         expanded_shape = self.get_expand_bbox(2.0)
-        w_shape = self.bbox.width if h_stroke else self.bbox.height
+        w_shape = self.bbox.width if h_shape else self.bbox.height
         for line in block.lines:
             if not line.bbox.intersects(expanded_shape): continue
 
@@ -273,7 +273,8 @@ class Fill(Shape):
     
 
     def _check_semantic_type(self, block):
-        """Override. Check semantic type based on the position to a text block.
+        """Override. Check semantic type based on the position to a text block. Along the main dimesion,
+        text highlight never exceeds text line.
 
         Args:
             block (TextBlock): A text block.
@@ -282,19 +283,26 @@ class Fill(Shape):
             RectType: Semantic type of this shape.
         
         .. note::
-            Generally, table shading always contains at least one block line, while text highlight doesn't
-            contain any lines. But in real cases, with margin exists, table shading may not 100% contain a
-            block line, e.g. a factor like 98% or so.
+            Generally, table shading always contains at least one block line, while text highlight never
+            contains any lines. But in real cases, with margin exists, table shading may not 100% contain a
+            block line.
         """
-        # check block first
-        if self.contains(block, threshold=constants.FACTOR_MAJOR): return RectType.SHADING
-        
-        # not contain but intersects -> check block line for another chance
+        # check orientation
+        h_line = block.is_horizontal_text
+
+        # check main dimension
+        w_shape = self.bbox.width if h_line else self.bbox.height
         for line in block.lines:
-            if self.contains(line, threshold=constants.FACTOR_MAJOR): 
+            if not self.get_main_bbox(line, threshold=constants.FACTOR_MAJOR): continue
+            
+            w_line = line.bbox.width if h_line else line.bbox.height            
+            if w_shape <= w_line + 2*constants.MINOR_DIST: # 1 pt tolerance at both sides
+                return RectType.HIGHLIGHT
+            else:
                 return RectType.SHADING
-        
-        return RectType.UNDEFINED # can't be determined by this block
+
+        # can't decide yet if no intersection with this block
+        return RectType.UNDEFINED
 
 
 class Hyperlink(Shape):

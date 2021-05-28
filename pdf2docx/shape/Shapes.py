@@ -179,18 +179,18 @@ class Shapes(ElementCollection):
 
             elif rect_type==RectType.UNDERLINE_OR_STRIKE:
                 self._text_underlines_strikes.append(shape)
+            
+            elif rect_type==RectType.HIGHLIGHT:
+                self._text_highlights.append(shape)
 
             elif rect_type==RectType.SHADING:
                 self._table_fillings.append(shape)
 
-            # otherwise, it should be the opposite type, e.g. table border for a Stroke, 
-            # highlight for a Fill. 
-            else:
-                if isinstance(shape, Stroke):
-                    self._table_strokes.append(shape)
-                
-                else:
-                    self._text_highlights.append(shape)
+            elif isinstance(shape, Stroke):
+                self._table_strokes.append(shape)
+            
+            elif isinstance(shape, Fill):
+                self._table_fillings.append(shape)
     
 
     def assign_to_tables(self, tables:list):

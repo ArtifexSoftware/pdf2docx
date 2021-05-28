@@ -97,8 +97,9 @@ class RawPage(BasePage, Layout):
             settings['shape_merging_threshold'],
             settings['shape_min_dimension'])
         
-        # check shape semantic type
-        self.shapes.detect_initial_categories()
+        # check shape semantic type: just for debug purpose
+        if settings.get('debug', False):
+            self.shapes.detect_initial_categories()
         
         return self.shapes
 
