@@ -138,7 +138,7 @@ class Stroke(Shape):
 
         # width, color
         super().__init__(raw) # type, color
-        self.width = raw.get('width', 0.0)
+        self.width = raw.get('width', 0.0) # Note this "width" is actually the height of stroke
 
         # update bbox
         super().update_bbox(self._to_rect())
@@ -203,30 +203,27 @@ class Stroke(Shape):
 
 
     def _check_semantic_type(self, block):
-        '''Override. Check semantic type of a Stroke: table border v.s. text style line, e.g. underline and strike-through.
+        '''Override. Check semantic type of a Stroke: table border v.s. text style line, e.g. underline 
+        and strike-through. It seems a text style line when:
 
-        Generally, text style line is contained in a certain block, while table border is never contained.
-        But in real cases, where tight layout or incorrectly organized text blocks exist,  
-
-        * a text style line may have no intersection with the applied text block
-        * a table border may be very close to a text block, which seems contained in that block
-        
-        Conservatively, try to determin semantic type like underline and strike-through on condition that:
-
-        * it's contained in a text block, AND
-        * also contained in a certain line of that text block.
-
-        .. note::
-            A stroke that not determined by this block, can be either table border or text style line.
-            So the returned RectType.UNDEFINED means not able to determin its type.
+        * the stroke and the text line has same orientation; and
+        * the stroke never exceeds the text line long the main direction
         '''
-        # check block first
-        if not block.contains(self): return RectType.UNDEFINED
+        # check orientation
+        h_stroke, h_line = self.horizontal, block.is_horizontal_text
+        if h_stroke != h_line:
+            return RectType.UNDEFINED
 
-        # check block line for further confirmation
-        for line in block.lines:            
-            if line.contains(self): return RectType.UNDERLINE_OR_STRIKE
-        
+        # check main dimension
+        expanded_shape = self.get_expand_bbox(2.0)
+        w_shape = self.bbox.width if h_stroke else self.bbox.height
+        for line in block.lines:
+            if not line.bbox.intersects(expanded_shape): continue
+
+            w_line = line.bbox.width if h_line else line.bbox.height
+            if w_shape <= w_line + 2*constants.MINOR_DIST: # 1 pt tolerance at both sides
+                return RectType.UNDERLINE_OR_STRIKE
+
         return RectType.UNDEFINED
 
 
