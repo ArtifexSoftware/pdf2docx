@@ -96,9 +96,8 @@ class RawPage(BasePage, Layout):
             settings['max_border_width'], 
             settings['shape_min_dimension'])
         
-        # check shape semantic type: just for debug purpose
-        if settings.get('debug', False):
-            self.shapes.detect_initial_categories()
+        # check shape semantic type: once for all
+        self.shapes.parse_semantic_type()
         
         return self.shapes
 

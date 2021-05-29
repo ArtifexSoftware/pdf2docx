@@ -328,11 +328,11 @@ class Lines(ElementCollection):
         return True
 
 
-    def parse_text_format(self, rect):
+    def parse_text_format(self, shape):
         '''Parse text format with style represented by rectangle shape.
         
         Args:
-            rect (Shape): Potential style shape applied on blocks.
+            shape (Shape): Potential style shape applied on blocks.
         
         Returns:
             bool: Whether a valid text style.
@@ -341,10 +341,10 @@ class Lines(ElementCollection):
 
         for line in self._instances:
             # any intersection in this line?
-            intsec = rect.bbox & line.get_expand_bbox(constants.MAJOR_DIST)
+            intsec = shape.bbox & line.get_expand_bbox(constants.MAJOR_DIST)
             
             if not intsec: 
-                if rect.bbox.y1 < line.bbox.y0: break # lines must be sorted in advance
+                if shape.bbox.y1 < line.bbox.y0: break # lines must be sorted in advance
                 continue
 
             # yes, then try to split the spans in this line
@@ -355,7 +355,7 @@ class Lines(ElementCollection):
 
                 # split text span with the format rectangle: span-intersection-span
                 else:
-                    spans = span.split(rect, line.is_horizontal_text)
+                    spans = span.split(shape, line.is_horizontal_text)
                     split_spans.extend(spans)
                     flag = True
                                             

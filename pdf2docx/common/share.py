@@ -18,14 +18,12 @@ class BlockType(Enum):
 
 class RectType(Enum):
     '''Shape type in context.'''
-    UNDEFINED = -1
-    HIGHLIGHT = 0
-    UNDERLINE = 1
-    STRIKE = 2
-    UNDERLINE_OR_STRIKE = 5
-    HYPERLINK = 7
-    BORDER = 10
-    SHADING = 11
+    HIGHLIGHT = 1
+    UNDERLINE = 1<<1
+    STRIKE = 1<<2
+    HYPERLINK = 1<<3
+    BORDER = 1<<4
+    SHADING = 1<<5
 
 
 class TextDirection(Enum):

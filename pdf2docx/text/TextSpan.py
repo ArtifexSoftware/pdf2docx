@@ -260,7 +260,7 @@ class TextSpan(Element):
         return split_spans
 
 
-    def _parse_text_format(self, rect: Shape, horizontal:bool=True):
+    def _parse_text_format(self, rect:Shape, horizontal:bool=True):
         """Parse text style based on the position to a rect shape.
 
         Args:
@@ -272,13 +272,13 @@ class TextSpan(Element):
         """
 
         # Skip table border/shading
-        if rect.type==RectType.BORDER or rect.type==RectType.SHADING:
+        if rect.equal_to_type(RectType.BORDER) or rect.equal_to_type(RectType.SHADING):
             return False
         
         # set hyperlink
-        elif rect.type==RectType.HYPERLINK:
+        elif rect.equal_to_type(RectType.HYPERLINK):
             self.style.append({
-                'type': rect.type.value,
+                'type': rect.type,
                 'color': rect.color,
                 'uri': rect.uri
             })
@@ -311,13 +311,13 @@ class TextSpan(Element):
 
         # unknown style
         else:
-            rect.type = RectType.UNDEFINED
+            rect.type = rect.default_type
 
         # check rect type again
-        if rect.type==RectType.UNDEFINED: return False
+        if rect.type==rect.default_type: return False
 
         style =  {
-            'type': rect.type.value,
+            'type': rect.type,
             'color': rect.color
         }
         self.style.append(style)

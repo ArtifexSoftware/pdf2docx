@@ -156,26 +156,26 @@ class TextBlock(Block):
                 span.plot(page, color=c)
 
 
-    def parse_text_format(self, rects):
+    def parse_text_format(self, shapes):
         '''Parse text format with style represented by rectangles.
         
         Args:
-            rects (Shapes): Shapes representing potential styles applied on blocks.
+            shapes (Shapes): Shapes representing potential styles applied on blocks.
         '''
         flag = False
 
         # use each rectangle (a specific text format) to split line spans
-        for rect in rects:
+        for shape in shapes:
 
-            # a same style rect applies on only one block
+            # a same style shape applies on only one block
             # EXCEPTION: hyperlink shape is determined in advance
-            if rect.type!=RectType.HYPERLINK and rect.is_determined: continue
+            if not shape.equal_to_type(RectType.HYPERLINK) and shape.is_determined: continue
 
             # any intersection with current block?
-            if not self.bbox.intersects(rect.bbox): continue
+            if not self.bbox.intersects(shape.bbox): continue
 
             # yes, then go further to lines in block
-            if self.lines.parse_text_format(rect):
+            if self.lines.parse_text_format(shape):
                 flag = True
 
         return flag

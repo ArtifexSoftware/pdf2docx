@@ -25,6 +25,7 @@ The page layout parsing idea:
 '''
 
 from ..common import constants
+from ..common.share import RectType
 from ..text.TextBlock import TextBlock
 from ..shape.Shapes import Shapes
 
@@ -152,9 +153,6 @@ class Layout:
         self.blocks.join_horizontally(False, 
                         settings['line_overlap_threshold'],
                         settings['line_merging_threshold'])
-
-        # check shape semantic type
-        self.shapes.detect_initial_categories()
         
         # parse table structure/format recognized from explicit shapes
         if settings['parse_lattice_table']:
@@ -201,12 +199,9 @@ class Layout:
         '''Parse text format, e.g. text highlight, paragraph indentation. 
         '''
         # parse text format, e.g. highlight, underline
-        text_shapes =   list(self.shapes.text_underlines_strikes) + \
-                        list(self.shapes.text_highlights) + \
-                        list(self.shapes.hyperlinks)
-        self.blocks.parse_text_format(text_shapes)
+        self.blocks.parse_text_format(self.shapes.text_style_shapes)
         
-        # paragraph / line spacing         
+        # paragraph / line spacing
         self.blocks.parse_spacing(
                         settings['line_separate_threshold'],
                         settings['line_break_width_ratio'],
