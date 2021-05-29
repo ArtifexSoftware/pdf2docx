@@ -31,14 +31,16 @@ def load_requirements(fname):
     try:
         from pip._internal.req import parse_requirements
         reqs = parse_requirements(fname, session=False)
-        requirements = [str(ir.requirement) for ir in reqs]
+        try:
+            requirements = [str(ir.requirement) for ir in reqs]
+        except AttributeError:
+            requirements = [str(ir.req) for ir in reqs]
     except ImportError:
         from pip.req import parse_requirements
         reqs = parse_requirements(fname, session=False)
         requirements = [str(ir.req) for ir in reqs]
 
     return requirements
-
 
 setup(
     name="pdf2docx",    
