@@ -287,12 +287,14 @@ class Fill(Shape):
             contains any lines. But in real cases, with margin exists, table shading may not 100% contain a
             block line.
         """
-        # check orientation
-        h_line = block.is_horizontal_text
-
         # check main dimension
-        w_shape = self.bbox.width if h_line else self.bbox.height
+        h_shape = self.bbox.width>self.bbox.height
+        w_shape = self.bbox.width if h_shape else self.bbox.height
         for line in block.lines:
+            # check orientation
+            h_line = line.is_horizontal_text
+            if h_shape != h_line: continue
+
             if not self.get_main_bbox(line, threshold=constants.FACTOR_MAJOR): continue
             
             w_line = line.bbox.width if h_line else line.bbox.height            

@@ -65,7 +65,6 @@ class Converter:
             'float_layout_tolerance'         : 0.1,    # [0,1] the larger of this value, the more tolerable of float layout
             'page_margin_factor_top'         : 0.5,    # [0,1] reduce top margin by factor
             'page_margin_factor_bottom'      : 0.5,    # [0,1] reduce bottom margin by factor
-            'shape_merging_threshold'        : 0.5,    # [0,1] merge shape if the intersection exceeds this value
             'shape_min_dimension'            : 2.0,    # ignore shape if both width and height is lower than this value
             'block_merging_threshold'        : 0.5,    # merge single line blocks when vertical distance is smaller than this value * block height
             'line_overlap_threshold'         : 0.9,    # [0,1] delete line if the intersection to other lines exceeds this value

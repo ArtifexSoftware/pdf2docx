@@ -7,6 +7,7 @@ from .Shape import Shape, Stroke, Fill, Hyperlink
 from ..common.share import RectType, lazyproperty
 from ..common.Collection import Collection, ElementCollection
 from ..common import share
+from ..common import constants
 
 
 class Shapes(ElementCollection):
@@ -100,7 +101,7 @@ class Shapes(ElementCollection):
         return self._text_underlines_strikes
 
 
-    def clean_up(self, max_border_width:float, shape_merging_threshold:float, shape_min_dimension:float):
+    def clean_up(self, max_border_width:float, shape_min_dimension:float):
         """Clean rectangles.
 
         * Delete small shapes (either width or height).
@@ -110,7 +111,6 @@ class Shapes(ElementCollection):
 
         Args:
             max_border_width (float): The max border width.
-            shape_merging_threshold (float): Merge shape if the intersection exceeds this value.
             shape_min_dimension (float): Ignore shape if both width and height is lower than this value.
         """
         if not self._instances: return
@@ -123,15 +123,8 @@ class Shapes(ElementCollection):
                         (shape.bbox.width>=shape_min_dimension or shape.bbox.height>=shape_min_dimension)
         cleaned_shapes = list(filter(f, self._instances))
 
-        # merge normal shapes if same filling color and significant overlap        
-        merged_shapes = []
-        normal_shapes = list(filter(
-            lambda shape: shape.type==RectType.UNDEFINED, cleaned_shapes))        
-        f = lambda a, b: a.color==b.color and (
-            a.get_main_bbox(b, threshold=shape_merging_threshold) or \
-            b.get_main_bbox(a, threshold=shape_merging_threshold))        
-        for group in Collection(normal_shapes).group(f):
-            merged_shapes.append(group[0].update_bbox(group.bbox))
+        # merge normal shapes if same filling color
+        merged_shapes = self._merge_shapes(cleaned_shapes)
         
         # add hyperlinks
         hyperlinks = filter(lambda shape: shape.type==RectType.HYPERLINK, cleaned_shapes)
@@ -258,3 +251,28 @@ class Shapes(ElementCollection):
         # - highlight
         color = (1, 1, 0)
         for shape in self._text_highlights: shape.plot(page, color)
+
+
+    @staticmethod
+    def _merge_shapes(shapes):
+        '''Merge shapes if same filling color. Note the merged bbox must match source shapes
+        as more as possible.'''
+        # shapes except hyperlink
+        normal_shapes = list(filter(
+            lambda shape: shape.type==RectType.UNDEFINED, shapes))
+        
+        # group by color and connectivity        
+        f = lambda a, b: a.color==b.color and a.bbox & b.bbox
+        groups = Collection(normal_shapes).group(f)
+
+        merged_shapes = []
+        for group in groups:
+            merged_area = group.bbox.getArea()
+            sum_area = sum(shape.bbox.getArea() for shape in group)
+            if sum_area/merged_area >= constants.FACTOR_ALMOST:
+                merged_shapes.append(group[0].update_bbox(group.bbox))
+            else:
+                merged_shapes.extend(group)
+        
+        return merged_shapes
+

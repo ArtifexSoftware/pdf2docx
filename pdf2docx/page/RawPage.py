@@ -94,7 +94,6 @@ class RawPage(BasePage, Layout):
         # clean up shapes        
         self.shapes.clean_up(
             settings['max_border_width'], 
-            settings['shape_merging_threshold'],
             settings['shape_min_dimension'])
         
         # check shape semantic type: just for debug purpose
