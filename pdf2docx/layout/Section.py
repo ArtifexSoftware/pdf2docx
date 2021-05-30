@@ -10,14 +10,14 @@ to distinguish these different layouts.
 
 ::
 
-{
-    'bbox': (x0,y0,x1,y1)
-    'cols': 1,
-    'space': 0,
-    'columns': [{
-        ... # column properties
-    }, ...]
-}
+    {
+        'bbox': (x0,y0,x1,y1)
+        'cols': 1,
+        'space': 0,
+        'columns': [{
+            ... # column properties
+        }, ...]
+    }
 '''
 
 from docx.enum.section import WD_SECTION

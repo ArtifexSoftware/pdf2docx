@@ -10,15 +10,15 @@ to distinguish these different layouts.
 
 ::
 
-{
-    'bbox': (x0, y0, x1, y1),
-    'blocks': [{
-        ... # block instances
-    }, ...],
-    'shapes': [{
-        ... # shape instances
-    }, ...]
-}
+    {
+        'bbox': (x0, y0, x1, y1),
+        'blocks': [{
+            ... # block instances
+        }, ...],
+        'shapes': [{
+            ... # shape instances
+        }, ...]
+    }
 '''
 
 from ..common.Element import Element

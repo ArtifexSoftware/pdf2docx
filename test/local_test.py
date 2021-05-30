@@ -191,7 +191,7 @@ if __name__ == '__main__':
 
     # single sample
     sub_path, filename = sys.argv[1:]
-    # local_test(sub_path, filename, compare=True, make_test_case=True)
+    local_test(sub_path, filename, compare=True, make_test_case=True)
 
     # batch mode
-    for filename in filenames: local_test(sub_path, filename, compare=True, make_test_case=True)
+    # for filename in filenames: local_test(sub_path, filename, compare=True, make_test_case=True)

@@ -1,8 +1,8 @@
 Welcome to pdf2docx's documentation!
 ====================================
 
-``pdf2docx`` is a Python library to parse PDF file with ``PyMuPDF`` and generate docx file with ``python-docx``.
-
+``pdf2docx`` is a Python library to extract data from PDF with ``PyMuPDF``, 
+parse layout with rule, and generate docx file with ``python-docx``.
 
 .. toctree::
    :maxdepth: 2
