@@ -48,6 +48,7 @@ class BaseCollection:
 
 
     def extend(self, instances:list): 
+        if not instances: return
         for instance in instances: self.append(instance)
 
 

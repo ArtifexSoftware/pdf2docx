@@ -39,6 +39,7 @@ class Line(Element):
 
         # line break
         self.line_break = raw.get('line_break', 0) # don't break line by default
+        self.tab_stop = raw.get('tab_stop', 0) # no TAB stop before the line by default
 
         # Lines contained in text block may be re-grouped, so use an ID to track the parent block.
         # This ID can't be changed once set -> record the original parent extracted from PDF, 
@@ -55,9 +56,25 @@ class Line(Element):
     
     @property
     def text(self):
-        '''Joining span text.'''
+        '''Joining span text. Note image is translated to a placeholder ``<image>``.'''
         spans_text = [span.text for span in self.spans]
         return ''.join(spans_text)
+
+
+    @property
+    def raw_text(self):
+        '''Joining span text with image ignored.'''
+        spans_text = [span.text for span in self.spans if isinstance(span, TextSpan)]
+        return ''.join(spans_text)
+
+
+    @property
+    def white_space_only(self):
+        '''If this line contains only white space or not. If True, this line is safe to be removed.'''
+        for span in self.spans:
+            if not isinstance(span, TextSpan): return False
+            if span.text.strip(): return False
+        return True
 
 
     @property
@@ -126,6 +143,7 @@ class Line(Element):
             'wmode'     : self.wmode,
             'dir'       : self.dir,
             'line_break': self.line_break,
+            'tab_stop'  : self.tab_stop,
             'spans'     : [
                 span.store() for span in self.spans
             ]
@@ -180,9 +198,12 @@ class Line(Element):
 
     def make_docx(self, p):
         '''Create docx line, i.e. a run in ``python-docx``.'''
+        # tab stop before this line to ensure horizontal position
+        if self.tab_stop: p.add_run().add_tab()
+
         # create span -> run in paragraph
         for span in self.spans: 
-            if not isinstance(span, TextSpan) or not span.char_spacing:
+            if not isinstance(span, TextSpan) or not span.condense_spacing:
                 span.make_docx(p)
             
             # split the span: the last two words
@@ -192,17 +213,20 @@ class Line(Element):
                 num = len(last_2_words)+1
                 raw = span.store()
 
-                # NOTE: didn't update bbox after splitting, but there's no
-                # side effect for making docx
+                # NOTE 1: didn't update bbox after splitting, but there's no
+                # side effect for making docx.
+                # NOTE 2: don't use chars to update text since there is no chars 
+                # if span is restored from JSON. Chars are not stored considering 
+                # space saving.
                 span_1 = TextSpan(raw)
-                span_1.chars = span.chars[:-num]
-                span_1.char_spacing = 0.0
+                span_1.text = span.text[:-num]
+                span_1.condense_spacing = 0.0
 
                 span_2 = TextSpan(raw)
-                span_2.chars = span.chars[-num:]
+                span_2.text = span.text[-num:]
 
-                if span_1.chars: span_1.make_docx(p)
-                if span_2.chars: span_2.make_docx(p)
+                if span_1.text: span_1.make_docx(p)
+                if span_2.text: span_2.make_docx(p)
 
         # line break
         if self.line_break: p.add_run('\n')

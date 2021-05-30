@@ -10,9 +10,9 @@ applied text isn't extracted explicitly. To reuse the process that identifying a
 text style shape (e.g. underline and highlight), hyperlink is also abstracted to be a ``Shape``.
 
 .. note::
-    The evident difference of hyperlink shape to text style shape is: 
-    the :py:class:`~pdf2docx.common.share.RectType` of hyperlink shape is determined in advance,
-    while text style shape needs to be identified by the position to associated text blocks.
+    The evident difference of hyperlink shape to text style shape is: the ``type`` of hyperlink 
+    shape is determined in advance, while text style shape needs to be identified by the position 
+    to associated text blocks.
 
 Above all, the semantic meaning of shape instance may be:
 
@@ -61,62 +61,78 @@ class Shape(Element):
         super().update_bbox(raw.get('bbox', (0,)*4))
         self._parent = None
 
-        # set rect type
-        raw_type = raw.get('type', RectType.UNDEFINED.value) # UNDEFINED by default
-        for t in RectType:
-            if t.value==raw_type:
-                rect_type = t
-                break
-        else:
-            rect_type = RectType.UNDEFINED
-        self.type = rect_type
-    
+        # shape semantic type
+        # It's able to set shape type in ``RectType``, but a shape might belong to multi-types before
+        # it's finalized. So, set int type here.
+        self._type = raw.get('type', -1)            # final type
+        self._potential_type = self.default_type    # potential types, a combination of raw RectType-s
+
+
     @property
-    def is_determined(self): return self.type != RectType.UNDEFINED
+    def type(self): return self._type
+
+    @type.setter
+    def type(self, rect_type:RectType): self._type = rect_type.value
+
+    @property
+    def is_determined(self): 
+        '''If the shape type is determined to a basic item of RectType.'''
+        return self._type != -1
+
+    def equal_to_type(self, rect_type:RectType): 
+        '''If shape type is equal to the specified one or not.'''
+        return self._type==rect_type.value
+
+    def has_potential_type(self, rect_type:RectType):
+        '''If shape type has a chance to be the specified one or not.'''
+        return self._potential_type & rect_type.value
+
+    @property
+    def default_type(self): 
+        '''Default semantic type for a shape.'''
+        return sum(t.value for t in RectType)
+
 
     def store(self):
         res = super().store()
         res.update({
-            'type': self.type.value,
+            'type': self._type,
             'color': self.color
         })
         return res
 
 
-    def semantic_type(self, blocks:list):
-        """Determin semantic type based on the position to text blocks.
+    def parse_semantic_type(self, blocks:list):
+        """Determin semantic type based on the position to text blocks. Note the results might be 
+        a combination of raw types, e.g. the semantic type of a stroke can be either text strike,
+        underline or table border.
 
         Args:
-            blocks (list): A list of ``TextBlock`` instance.
-
-        Returns:
-            RectType: Shape type.
+            blocks (list): A list of ``TextBlock`` instance, sorted in reading order in advance.
         """
-        # NOTE: blocks must be sorted in reading order
-        rect_type = RectType.UNDEFINED
         for block in blocks:
             if not block.is_text_block(): continue
 
             # not intersect yet
             if block.bbox.y1 < self.bbox.y0: continue
-
-            # check it when intersected
-            rect_type = self._check_semantic_type(block)
-            if rect_type != RectType.UNDEFINED: break
-
+            
             # no intersection any more
             if block.bbox.y0 > self.bbox.y1: break
-        
-        return rect_type
+
+            # check it when intersected
+            rect_type = self._semantic_type(block)
+            self._potential_type = rect_type
+
+            if rect_type!=self.default_type: break
 
 
-    def _check_semantic_type(self, block):
+    def _semantic_type(self, block):
         ''' Check semantic type based on the position to a text block.
-            Return RectType.UNDEFINED if can't be determined this this text block.
+            Return all possibilities if can't be determined with this text block.
             Prerequisite: intersection exists between this shape and block.
         '''
-        return RectType.UNDEFINED
-            
+        return self.default_type
+
 
     def plot(self, page, color):
         '''Plot rectangle shapes with ``PyMuPDF``.'''
@@ -138,7 +154,7 @@ class Stroke(Shape):
 
         # width, color
         super().__init__(raw) # type, color
-        self.width = raw.get('width', 0.0)
+        self.width = raw.get('width', 0.0) # Note this "width" is actually the height of stroke
 
         # update bbox
         super().update_bbox(self._to_rect())
@@ -201,33 +217,35 @@ class Stroke(Shape):
 
         return self
 
+    @property
+    def default_type(self):
+        '''Default sementic type for a Stroke shape: table border, underline or strike-through.'''
+        return RectType.BORDER.value | RectType.UNDERLINE.value | RectType.STRIKE.value
 
-    def _check_semantic_type(self, block):
-        '''Override. Check semantic type of a Stroke: table border v.s. text style line, e.g. underline and strike-through.
+    def _semantic_type(self, block):
+        '''Override. Check semantic type of a Stroke: table border v.s. text style line, e.g. underline 
+        and strike-through. It's a potential text style line when:
 
-        Generally, text style line is contained in a certain block, while table border is never contained.
-        But in real cases, where tight layout or incorrectly organized text blocks exist,  
-
-        * a text style line may have no intersection with the applied text block
-        * a table border may be very close to a text block, which seems contained in that block
-        
-        Conservatively, try to determin semantic type like underline and strike-through on condition that:
-
-        * it's contained in a text block, AND
-        * also contained in a certain line of that text block.
-
-        .. note::
-            A stroke that not determined by this block, can be either table border or text style line.
-            So the returned RectType.UNDEFINED means not able to determin its type.
+        * the stroke and the text line has same orientation; and
+        * the stroke never exceeds the text line long the main direction
         '''
-        # check block first
-        if not block.contains(self): return RectType.UNDEFINED
+        # check main dimension
+        expanded_shape = self.get_expand_bbox(2.0)
+        h_shape = self.horizontal
+        w_shape = self.bbox.width if h_shape else self.bbox.height
 
-        # check block line for further confirmation
-        for line in block.lines:            
-            if line.contains(self): return RectType.UNDERLINE_OR_STRIKE
-        
-        return RectType.UNDEFINED
+        for line in block.lines:
+            # check orientation
+            h_line = line.is_horizontal_text
+            if h_shape != h_line: continue
+
+            if not line.bbox.intersects(expanded_shape): continue
+
+            w_line = line.bbox.width if h_line else line.bbox.height
+            if w_shape <= w_line + 2*constants.MINOR_DIST: # 1 pt tolerance at both sides
+                return RectType.STRIKE.value | RectType.UNDERLINE.value
+
+        return self.default_type
 
 
     def store(self):
@@ -275,8 +293,14 @@ class Fill(Shape):
             return Stroke({'width': w, 'color': self.color}).update_bbox(self.bbox)
     
 
-    def _check_semantic_type(self, block):
-        """Override. Check semantic type based on the position to a text block.
+    @property
+    def default_type(self):
+        '''Default sementic type for a Fill shape: table shading or text highlight.'''
+        return RectType.SHADING.value | RectType.HIGHLIGHT.value
+    
+    def _semantic_type(self, block):
+        """Override. Check semantic type based on the position to a text block. Along the main dimesion,
+        text highlight never exceeds text line.
 
         Args:
             block (TextBlock): A text block.
@@ -285,19 +309,27 @@ class Fill(Shape):
             RectType: Semantic type of this shape.
         
         .. note::
-            Generally, table shading always contains at least one block line, while text highlight doesn't
-            contain any lines. But in real cases, with margin exists, table shading may not 100% contain a
-            block line, e.g. a factor like 98% or so.
+            Generally, table shading always contains at least one block line, while text highlight never
+            contains any lines. But in real cases, with margin exists, table shading may not 100% contain a
+            block line.
         """
-        # check block first
-        if self.contains(block, threshold=constants.FACTOR_MAJOR): return RectType.SHADING
-        
-        # not contain but intersects -> check block line for another chance
+        # check main dimension
+        h_shape = self.bbox.width>self.bbox.height
+        w_shape = self.bbox.width if h_shape else self.bbox.height
         for line in block.lines:
-            if self.contains(line, threshold=constants.FACTOR_MAJOR): 
-                return RectType.SHADING
-        
-        return RectType.UNDEFINED # can't be determined by this block
+            # check orientation
+            h_line = line.is_horizontal_text
+            if h_shape != h_line: continue
+
+            if not self.get_main_bbox(line, threshold=constants.FACTOR_MAJOR): continue
+            
+            w_line = line.bbox.width if h_line else line.bbox.height            
+            if w_shape <= w_line + 2*constants.MINOR_DIST: # 1 pt tolerance at both sides
+                return RectType.HIGHLIGHT.value
+            else:
+                return RectType.SHADING.value
+
+        return self.default_type
 
 
 class Hyperlink(Shape):
@@ -324,6 +356,11 @@ class Hyperlink(Shape):
         return res
 
 
-    def semantic_type(self, blocks:list=None):
+    @property
+    def default_type(self):
+        '''Default sementic type for a Hyperlink: always hyperlink.'''
+        return RectType.HYPERLINK.value
+
+    def parse_semantic_type(self, blocks:list=None):
         """Semantic type of Hyperlink shape is determined, i.e. ``RectType.HYPERLINK``."""
-        return RectType.HYPERLINK
+        self._potential_type = self.default_type

@@ -107,31 +107,6 @@ def reset_paragraph_format(p, line_spacing:float=1.05):
 # ---------------------------------------------------------
 # text properties
 # ---------------------------------------------------------
-def add_stop(p, pos:float, current_pos:float):
-    '''Set horizontal position in current position with tab stop.
-    
-    Args: 
-        p (Paragraph): ``python-docx`` paragraph instance.
-        pos (float): Target position in Pt.
-        current_pos (float): Current position in Pt.
-
-    .. note::
-        Multiple tab stops may exist in paragraph, so tabs are added based on 
-        current position and target position.         
-    '''
-    # ignore small pos
-    if pos < Pt(constants.MINOR_DIST): return
-
-    # add tab to reach target position
-    for t in p.paragraph_format.tab_stops:
-        if t.position < current_pos:
-            continue
-        elif t.position<pos or abs(t.position-pos)<=Pt(constants.MINOR_DIST):
-            p.add_run().add_tab()
-        else:
-            break
-
-
 def set_char_scaling(p_run, scale:float=1.0):
     '''Set character spacing: scaling. 
     
@@ -145,7 +120,7 @@ def set_char_scaling(p_run, scale:float=1.0):
         parse_xml(r'<w:w {} w:val="{}"/>'.format(nsdecls('w'), 100*scale)))
 
 
-def set_char_spacing(p_run, space:float=1.0):
+def set_condense_spacing(p_run, space:float=1.0):
     '''Set character spacing. 
     
     Manual operation in MS Word: Font | Advanced | Character Spacing | Spacing.

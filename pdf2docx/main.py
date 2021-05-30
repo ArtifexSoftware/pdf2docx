@@ -3,6 +3,7 @@
 
 import logging
 from .converter import Converter
+from .gui.App import App
 
 
 class PDF2DOCX:
@@ -90,6 +91,13 @@ class PDF2DOCX:
             cv.close()
 
         return tables
+
+
+    @staticmethod
+    def gui():
+        '''Simple user interface.'''
+        app = App(title='PDF_2_Docx Converter', width=500, height=600)
+        app.mainloop()
 
 
 parse = PDF2DOCX.convert

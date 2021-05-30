@@ -88,7 +88,7 @@ class Blocks(ElementCollection):
             block_type = raw_block.get('type', -1) # type: int
             
             # inline image block -> text block
-            if block_type==BlockType.IMAGE.value:
+            if block_type == BlockType.IMAGE.value:
                 block = ImageBlock(raw_block).to_text_block()
             
             # text block
@@ -127,7 +127,7 @@ class Blocks(ElementCollection):
         
         page_bbox = self.parent.working_bbox
         f = lambda block:   block.bbox.intersects(page_bbox) and \
-                            block.text.strip() and (
+                            not block.white_space_only and (
                             block.is_horizontal_text or block.is_vertical_text)
         self.reset(filter(f, self._instances))
 
@@ -428,7 +428,7 @@ class Blocks(ElementCollection):
         # collect lines for further step, or table block directly
         for block in self._instances:
             if block.is_text_image_block() and block.is_flow_layout(*args):
-                lines.extend([line for line in block.lines if line.text.strip()]) # filter empty line
+                lines.extend([line for line in block.lines if not line.white_space_only]) # filter empty line
             else:
                 blocks.append(block)
         

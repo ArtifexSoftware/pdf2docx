@@ -54,11 +54,21 @@ class TextBlock(Block):
 
     @property
     def text(self):
-        '''Text content in block.'''
+        '''Text content in block. Note image is counted as a placeholder ``<image>``.'''
         lines_text = [line.text for line in self.lines]
         return ''.join(lines_text)
 
-    
+    @property
+    def raw_text(self):
+        '''Raw text content in block without considering images.'''
+        lines_text = [line.raw_text for line in self.lines]
+        return ''.join(lines_text)
+
+    @property
+    def white_space_only(self):
+        '''If this block contains only white space or not. If True, this block is safe to be removed.'''
+        return all(line.white_space_only for line in self.lines)
+
     @property
     def text_direction(self):
         '''All lines contained in text block must have same text direction. 
@@ -146,26 +156,26 @@ class TextBlock(Block):
                 span.plot(page, color=c)
 
 
-    def parse_text_format(self, rects):
+    def parse_text_format(self, shapes):
         '''Parse text format with style represented by rectangles.
         
         Args:
-            rects (Shapes): Shapes representing potential styles applied on blocks.
+            shapes (Shapes): Shapes representing potential styles applied on blocks.
         '''
         flag = False
 
         # use each rectangle (a specific text format) to split line spans
-        for rect in rects:
+        for shape in shapes:
 
-            # a same style rect applies on only one block
+            # a same style shape applies on only one block
             # EXCEPTION: hyperlink shape is determined in advance
-            if rect.type!=RectType.HYPERLINK and rect.is_determined: continue
+            if not shape.equal_to_type(RectType.HYPERLINK) and shape.is_determined: continue
 
             # any intersection with current block?
-            if not self.bbox.intersects(rect.bbox): continue
+            if not self.bbox.intersects(shape.bbox): continue
 
             # yes, then go further to lines in block
-            if self.lines.parse_text_format(rect):
+            if self.lines.parse_text_format(shape):
                 flag = True
 
         return flag
@@ -178,7 +188,7 @@ class TextBlock(Block):
                     lines_left_aligned_threshold:float,
                     lines_right_aligned_threshold:float,
                     lines_center_aligned_threshold:float,
-                    condense_char_spacing:float):
+                    line_condense_spacing:float):
         ''' Set horizontal spacing based on lines layout and page bbox.
         
         * The general spacing is determined by paragraph alignment and indentation.
@@ -203,12 +213,7 @@ class TextBlock(Block):
         # if still can't decide, set LEFT by default and ensure position by TAB stops        
         if self.alignment == TextAlignment.NONE:
             self.alignment = TextAlignment.LEFT
-
-            # NOTE: relative stop position to left boundary of block is calculated, 
-            # so block.left_space is required
-            fun = lambda line: round((line.bbox[idx0]-self.bbox[idx0])*f, 1) # relative position to block
-            all_pos = set(map(fun, self.lines))
-            self.tab_stops = list(filter(lambda pos: pos>=constants.MINOR_DIST, all_pos))
+            self.lines.parse_tab_stop(line_separate_threshold)
         
         # adjust left/right indentation:
         # - set single side indentation if single line
@@ -228,7 +233,7 @@ class TextBlock(Block):
         self.lines.parse_line_break(bbox, 
             line_break_width_ratio, 
             line_break_free_space_ratio, 
-            condense_char_spacing)
+            line_condense_spacing)
 
 
     def parse_relative_line_spacing(self):
@@ -315,16 +320,15 @@ class TextBlock(Block):
             The left position of paragraph is set by paragraph indent, rather than ``TAB`` stop.
         '''
         pf = docx.reset_paragraph_format(p)
+
         # vertical spacing
         before_spacing = max(round(self.before_space, 1), 0.0)
         after_spacing = max(round(self.after_space, 1), 0.0)
-
         pf.space_before = Pt(before_spacing)
         pf.space_after = Pt(after_spacing)        
 
         # line spacing
         pf.line_spacing = round(self.line_space, 2)
-
 
         # horizontal alignment
         # - alignment mode
@@ -354,8 +358,8 @@ class TextBlock(Block):
         # - first line indentation
         pf.first_line_indent = Pt(self.first_line_space)
 
-        # add lines        
-        self.lines.make_docx(p)
+        # add lines
+        for line in self.lines: line.make_docx(p)
 
         return p
 
@@ -409,13 +413,15 @@ class TextBlock(Block):
         # |    ============    | -> center
         # |   ================ | -> left
         # |        =========== | -> right
-        if len(rows) == 1: 
+        def external_alignment():         
             if abs(d_center) < lines_center_aligned_threshold: 
                 return TextAlignment.CENTER
             elif d_left <= 0.25*W:
                 return TextAlignment.LEFT
             else:
                 return TextAlignment.RIGHT
+        
+        if len(rows) == 1: return external_alignment()
 
         # --------------------------------------------------------------------------
         # Check alignment of internal lines:
@@ -439,21 +445,23 @@ class TextBlock(Block):
 
         if left_aligned and right_aligned:
             # need further external check if two lines only
-            if len(rows)>=3 or (d_left+d_right)/W < constants.FACTOR_A_FEW:
-                self.first_line_space = rows[0][0].bbox[idx0] - rows[1][0].bbox[idx0]
-                return TextAlignment.JUSTIFY
-            else:
-                return TextAlignment.CENTER
+            alignment = TextAlignment.JUSTIFY if len(rows)>=3 else external_alignment()
 
         elif center_aligned:
-            return TextAlignment.CENTER
+            alignment = TextAlignment.CENTER
 
-        elif left_aligned:
-            self.first_line_space = rows[0][0].bbox[idx0] - rows[1][0].bbox[idx0]
-            return TextAlignment.LEFT
+        elif left_aligned:            
+            alignment = TextAlignment.LEFT
 
         elif right_aligned:
-            return TextAlignment.RIGHT
+            # change right alignment to left if two lines only
+            alignment = TextAlignment.RIGHT if len(rows)>=3 else TextAlignment.LEFT
 
         else:
-            return TextAlignment.NONE
+            alignment = TextAlignment.NONE
+        
+        # set first line space in case left/justify
+        if alignment==TextAlignment.LEFT or alignment==TextAlignment.JUSTIFY:
+            self.first_line_space = rows[0][0].bbox[idx0] - rows[1][0].bbox[idx0]
+        
+        return alignment

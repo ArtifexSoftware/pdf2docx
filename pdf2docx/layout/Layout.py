@@ -25,6 +25,7 @@ The page layout parsing idea:
 '''
 
 from ..common import constants
+from ..common.share import RectType
 from ..text.TextBlock import TextBlock
 from ..shape.Shapes import Shapes
 
@@ -53,7 +54,7 @@ class Layout:
         raise NotImplementedError
 
 
-    def constains(self, *args, **kwargs):
+    def contains(self, *args, **kwargs):
         '''Whether given element is contained in this layout.'''
         raise NotImplementedError
 
@@ -117,7 +118,7 @@ class Layout:
 
 
     def _assign_block(self, block):
-        '''Add block to this cell. 
+        '''Add block to this layout. 
         
         Args:
             block (TextBlock, TableBlock): Text/table block to add. 
@@ -152,9 +153,6 @@ class Layout:
         self.blocks.join_horizontally(False, 
                         settings['line_overlap_threshold'],
                         settings['line_merging_threshold'])
-
-        # check shape semantic type
-        self.shapes.detect_initial_categories()
         
         # parse table structure/format recognized from explicit shapes
         if settings['parse_lattice_table']:
@@ -201,12 +199,9 @@ class Layout:
         '''Parse text format, e.g. text highlight, paragraph indentation. 
         '''
         # parse text format, e.g. highlight, underline
-        text_shapes =   list(self.shapes.text_underlines_strikes) + \
-                        list(self.shapes.text_highlights) + \
-                        list(self.shapes.hyperlinks)
-        self.blocks.parse_text_format(text_shapes)
+        self.blocks.parse_text_format(self.shapes.text_style_shapes)
         
-        # paragraph / line spacing         
+        # paragraph / line spacing
         self.blocks.parse_spacing(
                         settings['line_separate_threshold'],
                         settings['line_break_width_ratio'],
@@ -214,4 +209,4 @@ class Layout:
                         settings['lines_left_aligned_threshold'],
                         settings['lines_right_aligned_threshold'],
                         settings['lines_center_aligned_threshold'],
-                        settings['condense_char_spacing'])
+                        settings['line_condense_spacing'])
