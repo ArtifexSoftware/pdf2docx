@@ -33,7 +33,7 @@ class PDF2DOCX:
 
         cv = Converter(pdf_file, password)
         try:
-            cv.convert(docx_file, start, end, pages, kwargs)
+            cv.convert(docx_file, start, end, pages, **kwargs)
         except Exception as e:
             logging.error(e)
         finally:
@@ -59,7 +59,7 @@ class PDF2DOCX:
 
         # explode exception directly if debug mode
         cv = Converter(pdf_file, password)
-        cv.debug_page(page_index, docx_file, debug_pdf, layout_file, kwargs)
+        cv.debug_page(page_index, docx_file, debug_pdf, layout_file, **kwargs)
         cv.close()
             
 
@@ -83,7 +83,7 @@ class PDF2DOCX:
         
         cv = Converter(pdf_file, password)
         try:
-            tables = cv.extract_tables(start, end, pages, kwargs)
+            tables = cv.extract_tables(start, end, pages, **kwargs)
         except Exception as e:
             tables = []
             logging.error(e)

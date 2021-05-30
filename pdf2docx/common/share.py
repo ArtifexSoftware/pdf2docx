@@ -214,10 +214,9 @@ def debug_plot(title:str, show=True):
 
             # check if plot page
             page = args[0] # BasePage object
-            settings = args[-1] # type: dict
-            debug = settings.get('debug', False)
-            doc = settings.get('debug_doc', None)
-            filename = settings.get('debug_filename', None)
+            debug = kwargs.get('debug', False)
+            doc = kwargs.get('debug_doc', None)
+            filename = kwargs.get('debug_filename', None)
 
             if show and objects and debug and doc is not None:                
                 # create a new page

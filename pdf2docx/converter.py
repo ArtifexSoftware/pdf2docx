@@ -57,6 +57,8 @@ class Converter:
         '''Default parsing parameters.'''
         return {
             'debug'                          : False,  # plot layout if True
+            'multi_processing'               : False,  # convert pages with multi-processing if True
+            'cpu_count'                      : 0,      # working cpu count when convert pages with multi-processing
             'min_section_height'             : 20.0,   # The minimum height of a valid section.
             'connected_border_tolerance'     : 0.5,    # two borders are intersected if the gap lower than this value
             'max_border_width'               : 6.0,    # max border width
@@ -121,16 +123,16 @@ class Converter:
         return self
     
 
-    def parse_document(self, kwargs:dict):
+    def parse_document(self, **kwargs):
         '''Step 2 of converting process: analyze whole document, e.g. page section,
         header/footer and margin.'''
         logging.info(self._color_output('[2/4] Analyzing document...'))
         
-        self._pages.parse(self.fitz_doc, kwargs)
+        self._pages.parse(self.fitz_doc, **kwargs)
         return self
 
     
-    def parse_pages(self, kwargs:dict):
+    def parse_pages(self, **kwargs):
         '''Step 3 of converting process: parse pages, e.g. paragraph, image and table.'''
         logging.info(self._color_output('[3/4] Parsing pages...'))
 
@@ -139,11 +141,11 @@ class Converter:
         for i, page in enumerate(pages, start=1):
             logging.info('(%d/%d) Page %d', i, num_pages, page.id+1)
 
-            if kwargs.get('debug', False):
-                page.parse(kwargs)
+            if kwargs['debug']:
+                page.parse(**kwargs)
             else:
                 try:
-                    page.parse(kwargs)
+                    page.parse(**kwargs)
                 except Exception as e:
                     logging.warning('Ignore page due to error: %s', e)
 
@@ -227,7 +229,7 @@ class Converter:
     # high level methods, e.g. convert, extract table
     # -----------------------------------------------------------------------
 
-    def debug_page(self, i:int, docx_filename:str=None, debug_pdf:str=None, layout_file:str=None, kwargs:dict=None):
+    def debug_page(self, i:int, docx_filename:str=None, debug_pdf:str=None, layout_file:str=None, **kwargs):
         '''Parse, create and plot single page for debug purpose.
         
         Args:
@@ -242,7 +244,6 @@ class Converter:
         path, filename = os.path.split(self.filename_pdf)
         if not debug_pdf: debug_pdf = os.path.join(path, f'debug_{filename}')
         if not layout_file: layout_file  = os.path.join(path, 'layout.json')
-        kwargs = kwargs or {}
         kwargs.update({
             'debug'         : True,
             'debug_doc'     : fitz.Document(),
@@ -250,13 +251,13 @@ class Converter:
         })
 
         # parse and create docx
-        self.convert(docx_filename, pages=[i], kwargs=kwargs)
+        self.convert(docx_filename, pages=[i], **kwargs)
         
         # layout information for debugging
         self.serialize(layout_file)
 
 
-    def convert(self, docx_filename:str=None, start:int=0, end:int=None, pages:list=None, kwargs:dict=None):
+    def convert(self, docx_filename:str=None, start:int=0, end:int=None, pages:list=None, **kwargs):
         """Convert specified PDF pages to docx file.
 
         Args:
@@ -287,26 +288,26 @@ class Converter:
         t0 = perf_counter()
         logging.info('Start to convert %s', self.filename_pdf)
         settings = self.default_settings
-        settings.update(kwargs or {})
+        settings.update(kwargs)
 
         # input check
-        if pages and settings.get('multi_processing', False):
+        if pages and settings['multi_processing']:
             raise ConversionException('Multi-processing works for continuous pages '
                                     'specified by "start" and "end" only.')
         
         # convert page by page
-        if settings.get('multi_processing', False):
-            self._convert_with_multi_processing(docx_filename, start, end, settings)
+        if settings['multi_processing']:
+            self._convert_with_multi_processing(docx_filename, start, end, **settings)
         else:
             self.load_pages(start, end, pages) \
-                .parse_document(settings) \
-                .parse_pages(settings) \
+                .parse_document(**settings) \
+                .parse_pages(**settings) \
                 .make_docx(docx_filename)
 
         logging.info('Terminated in %.2fs.', perf_counter()-t0)        
 
 
-    def extract_tables(self, start:int=0, end:int=None, pages:list=None, kwargs:dict=None):
+    def extract_tables(self, start:int=0, end:int=None, pages:list=None, **kwargs):
         '''Extract table contents from specified PDF pages.
 
         Args:
@@ -323,18 +324,18 @@ class Converter:
 
         # parsing
         settings = self.default_settings
-        settings.update(kwargs or {})
-        self.parse_document(settings).parse_pages(settings)
+        settings.update(kwargs)
+        self.parse_document(**settings).parse_pages(**settings)
 
         # get parsed tables
         tables = []
         for page in self._pages:
-            if page.finalized: tables.extend(page.extract_tables(settings))
+            if page.finalized: tables.extend(page.extract_tables(**settings))
 
         return tables
 
     
-    def _convert_with_multi_processing(self, docx_filename:str, start:int, end:int, kwargs:dict):
+    def _convert_with_multi_processing(self, docx_filename:str, start:int, end:int, **kwargs):
         '''Parse and create pages based on page indexes with multi-processing.
 
         Reference:
@@ -342,7 +343,7 @@ class Converter:
             https://pymupdf.readthedocs.io/en/latest/faq.html#multiprocessing
         '''
         # make vectors of arguments for the processes
-        cpu = min(kwargs['cpu_count'], cpu_count()) if 'cpu_count' in kwargs else cpu_count()        
+        cpu = min(kwargs['cpu_count'], cpu_count()) if kwargs['cpu_count'] else cpu_count()        
         prefix = 'pages' # json file writing parsed pages per process
         vectors = [(i, cpu, start, end, self.filename_pdf, self.password, 
                             kwargs, f'{prefix}-{i}.json') for i in range(cpu)]
@@ -403,8 +404,8 @@ class Converter:
             cv.pages[i].skip_parsing = False
 
         # parse pages and serialize data for further processing
-        cv.parse_document(kwargs) \
-            .parse_pages(kwargs) \
+        cv.parse_document(**kwargs) \
+            .parse_pages(**kwargs) \
             .serialize(json_filename)
         cv.close()
 

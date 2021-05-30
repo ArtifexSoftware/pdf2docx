@@ -21,10 +21,10 @@ class Sections(BaseCollection):
         return self
     
 
-    def parse(self, settings:dict):
+    def parse(self, **settings):
         '''Parse layout under section level.'''
         for section in self:
-            section.parse(settings)        
+            section.parse(**settings)        
         return self
 
 

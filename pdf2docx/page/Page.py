@@ -140,14 +140,14 @@ class Page(BasePage):
 
 
     @debug_plot('Final Layout')
-    def parse(self, settings:dict):
+    def parse(self, **settings):
         '''Parse page layout.'''
-        self.sections.parse(settings)
+        self.sections.parse(**settings)
         self._finalized = True
         return self.sections # for debug plot
 
 
-    def extract_tables(self, settings:dict):
+    def extract_tables(self, **settings):
         '''Extract content from tables (top layout only).
         
         .. note::

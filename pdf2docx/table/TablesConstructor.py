@@ -92,7 +92,7 @@ class TablesConstructor:
             group_fills = fills.contained_in_bbox(strokes.bbox)
 
             # parse table structure
-            table = TableStructure(strokes, settings).parse(group_fills).to_table_block()
+            table = TableStructure(strokes, **settings).parse(group_fills).to_table_block()
             if table:
                 table.set_lattice_table_block()
                 tables.append(table)            
@@ -190,7 +190,7 @@ class TablesConstructor:
 
             # parse table structure
             strokes.sort_in_reading_order() # required
-            table = TableStructure(strokes, settings).parse(explicit_shadings).to_table_block()
+            table = TableStructure(strokes, **settings).parse(explicit_shadings).to_table_block()
 
             table.set_stream_table_block()
             tables.append(table)
