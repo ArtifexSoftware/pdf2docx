@@ -1,6 +1,6 @@
 {
     "filename": "demo-blank.pdf",
-    "page_num": 1,
+    "page_cnt": 1,
     "pages": [
         {
             "id": 0,
@@ -12,40 +12,9 @@
                 72.0,
                 72.0
             ],
-            "sections": [
-                {
-                    "bbox": [
-                        72.0,
-                        72.0,
-                        420.9,
-                        0.0
-                    ],
-                    "cols": 2,
-                    "space": 0,
-                    "columns": [
-                        {
-                            "bbox": [
-                                72.0,
-                                72.0,
-                                420.9,
-                                0.0
-                            ],
-                            "blocks": [],
-                            "shapes": []
-                        },
-                        {
-                            "bbox": [
-                                420.9,
-                                72.0,
-                                769.9,
-                                0.0
-                            ],
-                            "blocks": [],
-                            "shapes": []
-                        }
-                    ]
-                }
-            ],
+            "sections": [],
+            "header": "",
+            "footer": "",
             "floats": []
         }
     ]

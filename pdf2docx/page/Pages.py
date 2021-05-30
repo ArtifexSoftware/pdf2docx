@@ -12,7 +12,7 @@ from ..font.Fonts import Fonts
 class Pages(BaseCollection):
     '''A collection of ``Page``.'''
 
-    def parse(self, fitz_doc, settings:dict):
+    def parse(self, fitz_doc, **settings):
         '''Analyse document structure, e.g. page section, header, footer.
 
         Args:
@@ -22,7 +22,7 @@ class Pages(BaseCollection):
         # ---------------------------------------------
         # 0. extract fonts properties
         # ---------------------------------------------
-        fonts, default_font = Pages._extract_fonts(fitz_doc, settings)
+        fonts, default_font = Pages._extract_fonts(fitz_doc, **settings)
 
         # ---------------------------------------------
         # 1. extract and then clean up raw page
@@ -34,14 +34,14 @@ class Pages(BaseCollection):
 
             # init and extract data from PDF
             raw_page = RawPage(fitz_page=fitz_doc[page.id])
-            raw_page.restore(settings)
+            raw_page.restore(**settings)
 
             # check if any words are extracted since scanned pdf may be directed
             if not words_found and raw_page.raw_text.strip():
                 words_found = True
 
             # process blocks and shapes based on bbox
-            raw_page.clean_up(settings)
+            raw_page.clean_up(**settings)
 
             # process font properties
             raw_page.process_font(fonts, default_font)            
@@ -75,16 +75,16 @@ class Pages(BaseCollection):
         # parse sections
         for page, raw_page in zip(pages, raw_pages):
             # page margin
-            margin = raw_page.calculate_margin(settings)
+            margin = raw_page.calculate_margin(**settings)
             raw_page.margin = page.margin = margin
 
             # page section
-            sections = raw_page.parse_section(settings)
+            sections = raw_page.parse_section(**settings)
             page.sections.extend(sections)
     
 
     @staticmethod
-    def _extract_fonts(fitz_doc, settings:dict):
+    def _extract_fonts(fitz_doc, **settings):
         '''Extract font properties, e.g. font family name and line height ratio.'''
         # default font specified by user
         default_name = settings['default_font_name']

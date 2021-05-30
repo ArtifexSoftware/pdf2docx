@@ -125,7 +125,7 @@ class TableBlock(Block):
                 cell.assign_shapes(shapes)
 
 
-    def parse(self, settings:dict):
+    def parse(self, **settings):
         '''Parse layout under cell level.
 
         Args:
@@ -134,7 +134,7 @@ class TableBlock(Block):
         for row in self._rows:
             for cell in row:
                 if not cell: continue
-                cell.parse(settings)
+                cell.parse(**settings)
 
 
     def plot(self, page):

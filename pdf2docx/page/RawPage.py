@@ -71,15 +71,15 @@ class RawPage(BasePage, Layout):
 
 
     @debug_plot('Source Text Blocks')
-    def restore(self, settings:dict):
+    def restore(self, **settings):
         '''Initialize layout extracted with ``PyMuPDF``.'''
-        raw_dict = self.extract_raw_dict(settings)
+        raw_dict = self.extract_raw_dict(**settings)
         super().restore(raw_dict)
         return self.blocks
 
     
     @debug_plot('Cleaned Shapes')
-    def clean_up(self, settings:dict):
+    def clean_up(self, **settings):
         '''Clean up raw blocks and shapes, e.g. 
         
         * remove negative or duplicated instances,
@@ -118,7 +118,7 @@ class RawPage(BasePage, Layout):
             span.line_height = font.line_height * span.size
 
 
-    def calculate_margin(self, settings:dict):
+    def calculate_margin(self, **settings):
         """Calculate page margin.
 
         .. note::
@@ -153,7 +153,7 @@ class RawPage(BasePage, Layout):
             min(constants.ITP, round(bottom, 1)))
 
 
-    def parse_section(self, settings:dict):
+    def parse_section(self, **settings):
         '''Detect and create page sections.
 
         .. note::
@@ -229,7 +229,7 @@ class RawPage(BasePage, Layout):
         return sections
 
 
-    def extract_raw_dict(self, settings:dict):
+    def extract_raw_dict(self, **settings):
         '''Extract source data from page by ``PyMuPDF``.'''
         if not self.fitz_page: return {}
 
@@ -246,8 +246,8 @@ class RawPage(BasePage, Layout):
         self.width, self.height = w, h
 
         # pre-processing for layout blocks and shapes based on parent page
-        self._preprocess_images(raw_layout, settings)
-        self._preprocess_shapes(raw_layout, settings)
+        self._preprocess_images(raw_layout, **settings)
+        self._preprocess_shapes(raw_layout, **settings)
        
         # Element is a base class processing coordinates, so set rotation matrix globally
         Element.set_rotation_matrix(self.fitz_page.rotationMatrix)
@@ -255,7 +255,7 @@ class RawPage(BasePage, Layout):
         return raw_layout
 
 
-    def _preprocess_images(self, raw, settings:dict):
+    def _preprocess_images(self, raw, **settings):
         '''Adjust image blocks. 
         
         Image block extracted by ``page.getText('rawdict')`` doesn't contain alpha channel data,
@@ -308,7 +308,7 @@ class RawPage(BasePage, Layout):
 
 
     @debug_plot('Source Paths')
-    def _preprocess_shapes(self, raw, settings:dict):
+    def _preprocess_shapes(self, raw, **settings):
         '''Identify iso-oriented paths and convert vector graphic paths to pixmap.'''
         # extract paths ed by `page.getDrawings()`
         raw_paths = self.fitz_page.getDrawings()

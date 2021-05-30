@@ -10,14 +10,14 @@ to distinguish these different layouts.
 
 ::
 
-{
-    'bbox': (x0,y0,x1,y1)
-    'cols': 1,
-    'space': 0,
-    'columns': [{
-        ... # column properties
-    }, ...]
-}
+    {
+        'bbox': (x0,y0,x1,y1)
+        'cols': 1,
+        'space': 0,
+        'columns': [{
+            ... # column properties
+        }, ...]
+    }
 '''
 
 from docx.enum.section import WD_SECTION
@@ -70,9 +70,9 @@ class Section(BaseCollection):
         return self
 
 
-    def parse(self, settings:dict):
+    def parse(self, **settings):
         '''Parse section layout.'''
-        for column in self: column.parse(settings)        
+        for column in self: column.parse(**settings)        
         return self
     
 

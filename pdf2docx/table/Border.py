@@ -40,10 +40,9 @@ class Border:
             border_type (str): ``h`` - horizontal border; ``v`` - vertical border.
             border_range (tuple): Valid range, e.g. ``(x0, x1)`` for vertical border.
             borders (tuple): Boundary borders in ``Border`` type, e.g. 
-        top and bottom horizontal borders for current vertical border; 
-        left and right vertical borders for current horizontal border. 
-            reference (bool): Reference Border is converted to table border when finalized; otherwise, it is ignored.
-            
+                * top and bottom horizontal borders for current vertical border; 
+                * left and right vertical borders for current horizontal border. 
+            reference (bool): Reference border will not convert to real table border.
         '''
         # border type
         self.is_horizontal = border_type.upper()=='H'

@@ -97,24 +97,24 @@ class Layout:
             if self.working_bbox & shape.bbox: self.shapes.append(shape)
 
 
-    def parse(self, settings:dict):
+    def parse(self, **settings):
         '''Parse layout.
 
         Args:
             settings (dict): Layout parsing parameters.
         '''
         # parse tables
-        self._parse_table_layout(settings)
+        self._parse_table_layout(**settings)
 
         # improve layout after table parsing
-        self._improve_layout(settings)
+        self._improve_layout(**settings)
 
         # parse text format in current layout
-        self._parse_text_format(settings)
+        self._parse_text_format(**settings)
 
         # parse sub-layout, i.e. cell layouts under table block
         for block in filter(lambda e: e.is_table_block(), self.blocks):
-            block.parse(settings)
+            block.parse(**settings)
 
 
     def _assign_block(self, block):
@@ -141,7 +141,7 @@ class Layout:
         self.blocks.append(split_block)
 
 
-    def _parse_table_layout(self, settings:dict):
+    def _parse_table_layout(self, **settings):
         '''Parse table layout: 
         
         * detect explicit tables first based on shapes, 
@@ -170,7 +170,7 @@ class Layout:
                             settings['line_separate_threshold'])
     
 
-    def _improve_layout(self, settings):
+    def _improve_layout(self, **settings):
         '''Adjust layout after table parsing:
 
         * split blocks in current level back to original layout if possible
@@ -195,7 +195,7 @@ class Layout:
         )
     
 
-    def _parse_text_format(self, settings:dict):
+    def _parse_text_format(self, **settings):
         '''Parse text format, e.g. text highlight, paragraph indentation. 
         '''
         # parse text format, e.g. highlight, underline

@@ -12,9 +12,7 @@ from docx.enum.text import WD_COLOR_INDEX
 from docx.image.exceptions import UnrecognizedImageError
 from docx.table import _Cell
 from docx.opc.constants import RELATIONSHIP_TYPE
-
 from .share import rgb_value
-from . import constants
 
 
 # ---------------------------------------------------------
@@ -42,6 +40,7 @@ def set_columns(section, width_list:list, space=0):
         space (int, optional): Space between adjacent columns. Unit: Pt. Defaults to 0.
     
     Scheme::
+
         <w:cols w:num="2" w:space="0" w:equalWidth="0">
             <w:col w:w="2600" w:space="0"/>
             <w:col w:w="7632"/>
@@ -353,6 +352,7 @@ def set_cell_margins(cell:_Cell, **kwargs):
     '''Set cell margins. Provided values are in twentieths of a point (1/1440 of an inch).
     
     Reference: 
+
         * https://blog.csdn.net/weixin_44312186/article/details/104944773
         * http://officeopenxml.com/WPtableCellMargins.php
     
