@@ -94,9 +94,9 @@ class Shapes(ElementCollection):
     def clean_up(self, max_border_width:float, shape_min_dimension:float):
         """Clean rectangles.
 
-        * Delete small shapes (either width or height).
         * Delete shapes out of page.
-        * Merge shapes with same filling color and significant overlap.
+        * Delete small shapes (either width or height).
+        * Merge shapes with same filling color.
         * Detect semantic type.
 
         Args:
@@ -105,20 +105,14 @@ class Shapes(ElementCollection):
         """
         if not self._instances: return
 
-        # clean up shapes:
-        # - remove shapes out of page
-        # - remove small shapes
+        # remove small shapes or shapes out of page
         page_bbox = self.parent.bbox
         f = lambda shape: shape.bbox.intersects(page_bbox) and \
-                        (shape.bbox.width>=shape_min_dimension or shape.bbox.height>=shape_min_dimension)
+                        max(shape.bbox.width, shape.bbox.height)>=shape_min_dimension
         cleaned_shapes = list(filter(f, self._instances)) # type: list[Shape]
 
         # merge normal shapes if same filling color
         merged_shapes = self._merge_shapes(cleaned_shapes)
-        
-        # add hyperlinks
-        hyperlinks = filter(lambda shape: shape.equal_to_type(RectType.HYPERLINK), cleaned_shapes)
-        merged_shapes.extend(hyperlinks)
                 
         # convert Fill instance to Stroke if looks like stroke
         shapes = []
@@ -130,24 +124,8 @@ class Shapes(ElementCollection):
                 shapes.append(shape)
         self.reset(shapes).sort_in_reading_order() # sort in reading order
 
-
-    def parse_semantic_type(self):
-        ''' Detect shape type based on the position to text blocks. 
-
-        .. note::
-            Stroke shapes are grouped on connectivity to each other, but in some cases, 
-            the gap between borders and underlines/strikes are very close, which leads
-            to an incorrect table structure. So, it's required to distinguish them in
-            advance, though we needn't to ensure 100% accuracy. They are finally determined 
-            when parsing table structure and text format.
-        '''
-        # blocks in page (the original blocks without any further processing)
-        blocks = self._parent.blocks
-        blocks.sort_in_reading_order()
-
-        # check positions between shapes and text blocks
-        for shape in self._instances:
-            shape.parse_semantic_type(blocks)
+        # detect semantic type
+        self._parse_semantic_type()
     
 
     def assign_to_tables(self, tables:list):
@@ -220,7 +198,7 @@ class Shapes(ElementCollection):
     def _merge_shapes(shapes):
         '''Merge shapes if same filling color. Note the merged bbox must match source shapes
         as more as possible.'''
-        # shapes except hyperlink
+        # shapes excluding hyperlink first
         normal_shapes = list(filter(
             lambda shape: not shape.is_determined, shapes))
         
@@ -237,5 +215,28 @@ class Shapes(ElementCollection):
             else:
                 merged_shapes.extend(group)
         
+        # add hyperlinks back
+        hyperlinks = filter(lambda shape: shape.equal_to_type(RectType.HYPERLINK), shapes)
+        merged_shapes.extend(hyperlinks)
+        
         return merged_shapes
+
+
+    def _parse_semantic_type(self):
+        ''' Detect shape type based on the position to text blocks. 
+
+        .. note::
+            Stroke shapes are grouped on connectivity to each other, but in some cases, 
+            the gap between borders and underlines/strikes are very close, which leads
+            to an incorrect table structure. So, it's required to distinguish them in
+            advance, though we needn't to ensure 100% accuracy. They are finally determined 
+            when parsing table structure and text format.
+        '''
+        # blocks in page (the original blocks without any further processing)
+        blocks = self._parent.blocks
+        blocks.sort_in_reading_order()
+
+        # check positions between shapes and text blocks
+        for shape in self._instances:
+            shape.parse_semantic_type(blocks)
 
