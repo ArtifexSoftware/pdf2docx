@@ -9,6 +9,7 @@ Subpackages
 
    pdf2docx.common
    pdf2docx.font
+   pdf2docx.gui
    pdf2docx.image
    pdf2docx.layout
    pdf2docx.page

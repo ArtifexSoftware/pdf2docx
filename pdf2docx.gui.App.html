@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.layout package &mdash; pdf2docx 0.5.2 documentation</title>
+  <title>pdf2docx.gui.App module &mdash; pdf2docx 0.5.2 documentation</title>
   
 
   
@@ -41,8 +41,8 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="pdf2docx.layout.Blocks module" href="pdf2docx.layout.Blocks.html" />
-    <link rel="prev" title="pdf2docx.image.ImagesExtractor module" href="pdf2docx.image.ImagesExtractor.html" /> 
+    <link rel="next" title="pdf2docx.gui.MainFrame module" href="pdf2docx.gui.MainFrame.html" />
+    <link rel="prev" title="pdf2docx.gui package" href="pdf2docx.gui.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -96,9 +96,9 @@
 <li class="toctree-l3 current"><a class="reference internal" href="pdf2docx.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.common.html">pdf2docx.common package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.font.html">pdf2docx.font package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="pdf2docx.gui.html">pdf2docx.gui package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="pdf2docx.gui.html">pdf2docx.gui package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">pdf2docx.layout package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.layout.html">pdf2docx.layout package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.shape.html">pdf2docx.shape package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.table.html">pdf2docx.table package</a></li>
@@ -163,13 +163,15 @@
         
           <li><a href="pdf2docx.html">pdf2docx package</a> &raquo;</li>
         
-      <li>pdf2docx.layout package</li>
+          <li><a href="pdf2docx.gui.html">pdf2docx.gui package</a> &raquo;</li>
+        
+      <li>pdf2docx.gui.App module</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="_sources/pdf2docx.layout.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/pdf2docx.gui.App.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -182,23 +184,15 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pdf2docx-layout-package">
-<h1>pdf2docx.layout package<a class="headerlink" href="#pdf2docx-layout-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="pdf2docx.layout.Blocks.html">pdf2docx.layout.Blocks module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pdf2docx.layout.Column.html">pdf2docx.layout.Column module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pdf2docx.layout.Layout.html">pdf2docx.layout.Layout module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pdf2docx.layout.Section.html">pdf2docx.layout.Section module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pdf2docx.layout.Sections.html">pdf2docx.layout.Sections module</a></li>
-</ul>
-</div>
-</div>
-<div class="section" id="module-pdf2docx.layout">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pdf2docx.layout" title="Permalink to this headline">¶</a></h2>
-</div>
+  <div class="section" id="module-pdf2docx.gui.App">
+<span id="pdf2docx-gui-app-module"></span><h1>pdf2docx.gui.App module<a class="headerlink" href="#module-pdf2docx.gui.App" title="Permalink to this headline">¶</a></h1>
+<p>Main window for <code class="docutils literal notranslate"><span class="pre">pdf2docx</span></code> graphic user interface.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pdf2docx.gui.App.App">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.gui.App.</span></span><span class="sig-name descname"><span class="pre">App</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'App'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.gui.App.App" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tkinter.Tk</span></code></p>
+</dd></dl>
+
 </div>
 
 
@@ -207,8 +201,8 @@
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="pdf2docx.layout.Blocks.html" class="btn btn-neutral float-right" title="pdf2docx.layout.Blocks module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="pdf2docx.image.ImagesExtractor.html" class="btn btn-neutral float-left" title="pdf2docx.image.ImagesExtractor module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pdf2docx.gui.MainFrame.html" class="btn btn-neutral float-right" title="pdf2docx.gui.MainFrame module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pdf2docx.gui.html" class="btn btn-neutral float-left" title="pdf2docx.gui package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

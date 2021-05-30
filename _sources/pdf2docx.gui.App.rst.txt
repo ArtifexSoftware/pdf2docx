@@ -1,0 +1,7 @@
+pdf2docx.gui.App module
+=======================
+
+.. automodule:: pdf2docx.gui.App
+   :members:
+   :undoc-members:
+   :show-inheritance:
