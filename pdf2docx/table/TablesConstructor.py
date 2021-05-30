@@ -272,13 +272,7 @@ class TablesConstructor:
 
     @staticmethod
     def _inner_borders(lines:Lines, outer_borders:tuple):
-        '''Calculate the surrounding borders of given ``lines``.
-        These borders construct table cells. 
-        
-        Considering the re-building of cell content in docx, 
-
-        * Only one bbox is allowed in a line; but
-        * multi-lines are allowed in a cell.
+        '''Calculate the surrounding borders of given ``lines``. These borders construct table cells. 
 
         Two purposes of stream table: 
 
@@ -337,6 +331,11 @@ class TablesConstructor:
             rows_lines = group_lines[i]
             row_num = len(rows_lines)
             if row_num == 1: continue
+
+            # a further chance to check reference border:
+            # not reference border if lines in this column come from different block
+            if is_reference:
+                is_reference = len(cols_lines[i].split_back())==1
 
             # collect bbox-es row by row
             bottom = None
