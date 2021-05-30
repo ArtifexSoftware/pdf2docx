@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Convert PDF &mdash; pdf2docx 0.5.1 documentation</title>
+  <title>Convert PDF &mdash; pdf2docx 0.5.2 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -88,9 +91,16 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="quickstart.html">Quickstart</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Convert PDF</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Convert PDF</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#example-1-convert-all-pages">Example 1: convert all pages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-2-convert-specified-pages">Example 2: convert specified pages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-3-multi-processing">Example 3: multi-Processing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-4-convert-encrypted-pdf">Example 4: convert encrypted pdf</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="quickstart.table.html">Extract table</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quickstart.cli.html">Command Line Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.gui.html">Graphic User Interface</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">API Documentation</a></li>
@@ -165,11 +175,12 @@
             
   <div class="section" id="convert-pdf">
 <h1>Convert PDF<a class="headerlink" href="#convert-pdf" title="Permalink to this headline">¶</a></h1>
-<p>We can use either the <a class="reference internal" href="pdf2docx.converter.html#pdf2docx.converter.Converter" title="pdf2docx.converter.Converter"><code class="xref py py-class docutils literal notranslate"><span class="pre">Converter</span></code></a> class
-or a wrapped method <a class="reference internal" href="pdf2docx.main.html#pdf2docx.main.parse" title="pdf2docx.main.parse"><code class="xref py py-meth docutils literal notranslate"><span class="pre">parse()</span></code></a>.</p>
-<ul class="simple">
-<li><p>Option 1</p></li>
-</ul>
+<p>We can use either the <a class="reference internal" href="pdf2docx.converter.html#pdf2docx.converter.Converter" title="pdf2docx.converter.Converter"><code class="xref py py-class docutils literal notranslate"><span class="pre">Converter</span></code></a> class, or
+a wrapped method <a class="reference internal" href="pdf2docx.main.html#pdf2docx.main.parse" title="pdf2docx.main.parse"><code class="xref py py-meth docutils literal notranslate"><span class="pre">parse()</span></code></a> to convert all/specified
+pdf pages to docx. Multi-processing is supported in case pdf file with a
+large number of pages.</p>
+<div class="section" id="example-1-convert-all-pages">
+<h2>Example 1: convert all pages<a class="headerlink" href="#example-1-convert-all-pages" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pdf2docx</span> <span class="kn">import</span> <span class="n">Converter</span>
 
 <span class="n">pdf_file</span> <span class="o">=</span> <span class="s1">&#39;/path/to/sample.pdf&#39;</span>
@@ -177,25 +188,73 @@ or a wrapped method <a class="reference internal" href="pdf2docx.main.html#pdf2d
 
 <span class="c1"># convert pdf to docx</span>
 <span class="n">cv</span> <span class="o">=</span> <span class="n">Converter</span><span class="p">(</span><span class="n">pdf_file</span><span class="p">)</span>
-<span class="n">cv</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">docx_file</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">cv</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">docx_file</span><span class="p">)</span>      <span class="c1"># all pages by default</span>
 <span class="n">cv</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 </div>
-<ul class="simple">
-<li><p>Option 2</p></li>
-</ul>
+<p>An alternative using <code class="docutils literal notranslate"><span class="pre">parse</span></code> method:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pdf2docx</span> <span class="kn">import</span> <span class="n">parse</span>
 
 <span class="n">pdf_file</span> <span class="o">=</span> <span class="s1">&#39;/path/to/sample.pdf&#39;</span>
 <span class="n">docx_file</span> <span class="o">=</span> <span class="s1">&#39;path/to/sample.docx&#39;</span>
 
 <span class="c1"># convert pdf to docx</span>
-<span class="n">parse</span><span class="p">(</span><span class="n">pdf_file</span><span class="p">,</span> <span class="n">docx_file</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">parse</span><span class="p">(</span><span class="n">pdf_file</span><span class="p">,</span> <span class="n">docx_file</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="example-2-convert-specified-pages">
+<h2>Example 2: convert specified pages<a class="headerlink" href="#example-2-convert-specified-pages" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p>Specify pages range by <code class="docutils literal notranslate"><span class="pre">start</span></code> (from the first page if omitted) and
+<code class="docutils literal notranslate"><span class="pre">end</span></code> (to the last page if omitted):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># convert from the second page to the end (by default)</span>
+<span class="n">cv</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">docx_file</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># convert from the first page (by default) to the third (end=3, excluded)</span>
+<span class="n">cv</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">docx_file</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># convert from the second page and the third</span>
+<span class="n">cv</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">docx_file</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Alternatively, set separate pages by <code class="docutils literal notranslate"><span class="pre">pages</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># convert the first, third and 5th pages</span>
+<span class="n">cv</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">docx_file</span><span class="p">,</span> <span class="n">pages</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Refer to <a class="reference internal" href="pdf2docx.converter.html#pdf2docx.converter.Converter.convert" title="pdf2docx.converter.Converter.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert()</span></code></a> for detailed description
+on the input arguments.</p>
+</div>
+</div>
+<div class="section" id="example-3-multi-processing">
+<h2>Example 3: multi-Processing<a class="headerlink" href="#example-3-multi-processing" title="Permalink to this headline">¶</a></h2>
+<p>Turn on multi-processing with default count of CPU:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cv</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">docx_file</span><span class="p">,</span> <span class="n">multi_processing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Specify the count of CPUs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cv</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">docx_file</span><span class="p">,</span> <span class="n">multi_processing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Refer to <a class="reference internal" href="pdf2docx.converter.html#pdf2docx.converter.Converter.convert" title="pdf2docx.converter.Converter.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert()</span></code></a> for detailed description on above arguments.</p>
+<p>Multi-processing works for continuous pages specified by <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code> only.</p>
+</div>
+</div>
+<div class="section" id="example-4-convert-encrypted-pdf">
+<h2>Example 4: convert encrypted pdf<a class="headerlink" href="#example-4-convert-encrypted-pdf" title="Permalink to this headline">¶</a></h2>
+<p>Provide <code class="docutils literal notranslate"><span class="pre">password</span></code> to open and convert password protected pdf:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cv</span> <span class="o">=</span> <span class="n">Converter</span><span class="p">(</span><span class="n">pdf_file</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+<span class="n">cv</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">docx_file</span><span class="p">)</span>
+<span class="n">cv</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
 </div>
 </div>
 

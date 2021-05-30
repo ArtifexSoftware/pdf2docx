@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.text.TextBlock module &mdash; pdf2docx 0.5.1 documentation</title>
+  <title>pdf2docx.text.TextBlock module &mdash; pdf2docx 0.5.2 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -92,7 +95,9 @@
 <li class="toctree-l2 current"><a class="reference internal" href="pdf2docx.html">pdf2docx package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="pdf2docx.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.common.html">pdf2docx.common package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.font.html">pdf2docx.font package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.layout.html">pdf2docx.layout package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.shape.html">pdf2docx.shape package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.table.html">pdf2docx.table package</a></li>
@@ -204,25 +209,31 @@
 </pre></div>
 </div>
 <dl class="py class">
-<dt id="pdf2docx.text.TextBlock.TextBlock">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.text.TextBlock.</code><code class="sig-name descname">TextBlock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.text.TextBlock.</span></span><span class="sig-name descname"><span class="pre">TextBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Block.html#pdf2docx.common.Block.Block" title="pdf2docx.common.Block.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Block.Block</span></code></a></p>
 <p>Text block.</p>
 <dl class="py method">
-<dt id="pdf2docx.text.TextBlock.TextBlock.add">
-<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">line_or_lines</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.add" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_or_lines</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add line or lines to TextBlock.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.average_row_gap">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">average_row_gap</span></span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.average_row_gap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Average distance between adjacent two physical rows.</p>
+</dd></dl>
+
 <dl class="py method">
-<dt id="pdf2docx.text.TextBlock.TextBlock.is_flow_layout">
-<code class="sig-name descname">is_flow_layout</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.is_flow_layout" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.is_flow_layout">
+<span class="sig-name descname"><span class="pre">is_flow_layout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.is_flow_layout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if flow layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.text.TextBlock.TextBlock.make_docx">
-<code class="sig-name descname">make_docx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.make_docx" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.make_docx">
+<span class="sig-name descname"><span class="pre">make_docx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.make_docx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create paragraph for a text block.</p>
 <p>Refer to <code class="docutils literal notranslate"><span class="pre">python-docx</span></code> doc for details on text format:</p>
 <ul class="simple">
@@ -241,8 +252,22 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.text.TextBlock.TextBlock.parse_horizontal_spacing">
-<code class="sig-name descname">parse_horizontal_spacing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bbox</span></em>, <em class="sig-param"><span class="n">line_separate_threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_free_space_ratio_threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">lines_left_aligned_threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">lines_right_aligned_threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">lines_center_aligned_threshold</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.parse_horizontal_spacing" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.parse_exact_line_spacing">
+<span class="sig-name descname"><span class="pre">parse_exact_line_spacing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.parse_exact_line_spacing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate exact line spacing, e.g. <cite>spacing = Pt(12)</cite>.</p>
+<p>The layout of pdf text block: line-space-line-space-line, excepting space before first line,
+i.e. space-line-space-line, when creating paragraph in docx. So, an average line height is
+<code class="docutils literal notranslate"><span class="pre">space+line</span></code>. Then, the height of first line can be adjusted by updating paragraph before-spacing.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Compared with the relative spacing mode, it has a more precise layout, but less flexible editing
+ability, especially changing the font size.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.parse_horizontal_spacing">
+<span class="sig-name descname"><span class="pre">parse_horizontal_spacing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_separate_threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_break_width_ratio</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_break_free_space_ratio</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_left_aligned_threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_right_aligned_threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_center_aligned_threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_condense_spacing</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.parse_horizontal_spacing" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set horizontal spacing based on lines layout and page bbox.</p>
 <ul class="simple">
 <li><p>The general spacing is determined by paragraph alignment and indentation.</p></li>
@@ -254,29 +279,31 @@ from <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.text.TextBlock.TextBlock.parse_line_spacing">
-<code class="sig-name descname">parse_line_spacing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.parse_line_spacing" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate average line spacing.</p>
-<p>The layout of pdf text block: line-space-line-space-line, excepting space before first line,
-i.e. space-line-space-line, when creating paragraph in docx. So, an average line height is
-<code class="docutils literal notranslate"><span class="pre">space+line</span></code>.</p>
-<p>Then, the height of first line can be adjusted by updating paragraph before-spacing.</p>
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.parse_relative_line_spacing">
+<span class="sig-name descname"><span class="pre">parse_relative_line_spacing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.parse_relative_line_spacing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate relative line spacing, e.g. <cite>spacing = 1.02</cite>.  Relative line spacing is based on standard
+single line height, which is font-related.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The line spacing could be updated automatically when changing the font size, while the layout might
+be broken in exact spacing mode, e.g. overlapping of lines.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.text.TextBlock.TextBlock.parse_text_format">
-<code class="sig-name descname">parse_text_format</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rects</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.parse_text_format" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.parse_text_format">
+<span class="sig-name descname"><span class="pre">parse_text_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.parse_text_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse text format with style represented by rectangles.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>rects</strong> (<a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes"><em>Shapes</em></a>) – Shapes representing potential styles applied on blocks.</p>
+<dd class="field-odd"><p><strong>shapes</strong> (<a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes"><em>Shapes</em></a>) – Shapes representing potential styles applied on blocks.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.text.TextBlock.TextBlock.plot">
-<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.plot" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot block/line/span area for debug purpose.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -285,29 +312,47 @@ i.e. space-line-space-line, when creating paragraph in docx. So, an average line
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.raw_text">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">raw_text</span></span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.raw_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raw text content in block without considering images.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.row_count">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">row_count</span></span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.row_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count of physical rows.</p>
+</dd></dl>
+
 <dl class="py method">
-<dt id="pdf2docx.text.TextBlock.TextBlock.store">
-<code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.store" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.store">
+<span class="sig-name descname"><span class="pre">store</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.store" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store attributes in json format.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.text.TextBlock.TextBlock.strip">
-<code class="sig-name descname">strip</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.strip" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.strip">
+<span class="sig-name descname"><span class="pre">strip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delete_end_line_hyphen</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.strip" title="Permalink to this definition">¶</a></dt>
 <dd><p>Strip each Line instance.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="pdf2docx.text.TextBlock.TextBlock.text">
-<em class="property">property </em><code class="sig-name descname">text</code><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.text" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get text content in block, joning each line with <code class="docutils literal notranslate"><span class="pre">\n</span></code>.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.text">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">text</span></span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Text content in block. Note image is counted as a placeholder <code class="docutils literal notranslate"><span class="pre">&lt;image&gt;</span></code>.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="pdf2docx.text.TextBlock.TextBlock.text_direction">
-<em class="property">property </em><code class="sig-name descname">text_direction</code><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.text_direction" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.text_direction">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">text_direction</span></span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.text_direction" title="Permalink to this definition">¶</a></dt>
 <dd><p>All lines contained in text block must have same text direction.
 Otherwise, set normal direction.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.white_space_only">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">white_space_only</span></span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.white_space_only" title="Permalink to this definition">¶</a></dt>
+<dd><p>If this block contains only white space or not. If True, this block is safe to be removed.</p>
 </dd></dl>
 
 </dd></dl>

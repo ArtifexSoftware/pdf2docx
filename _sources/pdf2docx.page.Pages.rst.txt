@@ -1,0 +1,7 @@
+pdf2docx.page.Pages module
+==========================
+
+.. automodule:: pdf2docx.page.Pages
+   :members:
+   :undoc-members:
+   :show-inheritance:

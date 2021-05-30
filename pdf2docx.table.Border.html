@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.table.Border module &mdash; pdf2docx 0.5.1 documentation</title>
+  <title>pdf2docx.table.Border module &mdash; pdf2docx 0.5.2 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -92,7 +95,9 @@
 <li class="toctree-l2 current"><a class="reference internal" href="pdf2docx.html">pdf2docx package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="pdf2docx.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.common.html">pdf2docx.common package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.font.html">pdf2docx.font package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.layout.html">pdf2docx.layout package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.shape.html">pdf2docx.shape package</a></li>
 <li class="toctree-l4 current"><a class="reference internal" href="pdf2docx.table.html">pdf2docx.table package</a></li>
@@ -200,19 +205,19 @@ determined.</p>
 <p>Consider horizontal and vertical borders only.</p>
 </div>
 <dl class="py class">
-<dt id="pdf2docx.table.Border.Border">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.table.Border.</code><code class="sig-name descname">Border</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">border_type</span><span class="o">=</span><span class="default_value">'h'</span></em>, <em class="sig-param"><span class="n">border_range</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tuple<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">borders</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tuple<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reference</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.table.Border.Border">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.table.Border.</span></span><span class="sig-name descname"><span class="pre">Border</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">border_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">border_range</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">borders</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Border for stream table.</p>
-<dl class="py method">
-<dt id="pdf2docx.table.Border.Border.centerline">
-<em class="property">property </em><code class="sig-name descname">centerline</code><a class="headerlink" href="#pdf2docx.table.Border.Border.centerline" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.table.Border.Border.centerline">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">centerline</span></span><a class="headerlink" href="#pdf2docx.table.Border.Border.centerline" title="Permalink to this definition">¶</a></dt>
 <dd><p>Center line of this border.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.table.Border.Border.finalize_by_stroke">
-<code class="sig-name descname">finalize_by_stroke</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stroke</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Stroke" title="pdf2docx.shape.Shape.Stroke">pdf2docx.shape.Shape.Stroke</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.finalize_by_stroke" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.table.Border.Border.finalize_by_stroke">
+<span class="sig-name descname"><span class="pre">finalize_by_stroke</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stroke</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Stroke" title="pdf2docx.shape.Shape.Stroke"><span class="pre">pdf2docx.shape.Shape.Stroke</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.finalize_by_stroke" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finalize border with specified stroke shape, which is generally a showing border-like shape.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -229,8 +234,8 @@ determined.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.table.Border.Border.finalize_by_value">
-<code class="sig-name descname">finalize_by_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.finalize_by_value" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.table.Border.Border.finalize_by_value">
+<span class="sig-name descname"><span class="pre">finalize_by_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.finalize_by_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finalize border with given position.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -240,8 +245,8 @@ determined.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.table.Border.Border.get_boundary_borders">
-<code class="sig-name descname">get_boundary_borders</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.get_boundary_borders" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.table.Border.Border.get_boundary_borders">
+<span class="sig-name descname"><span class="pre">get_boundary_borders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.get_boundary_borders" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get boundary borders.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -254,8 +259,8 @@ determined.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.table.Border.Border.is_valid">
-<code class="sig-name descname">is_valid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.is_valid" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.table.Border.Border.is_valid">
+<span class="sig-name descname"><span class="pre">is_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.is_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether the given position locates in the valid border range.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -271,8 +276,8 @@ determined.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.table.Border.Border.set_border_range">
-<code class="sig-name descname">set_border_range</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">border_range</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tuple<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.set_border_range" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.table.Border.Border.set_border_range">
+<span class="sig-name descname"><span class="pre">set_border_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">border_range</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.set_border_range" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set border valid ranges.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -288,8 +293,8 @@ determined.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.table.Border.Border.set_boundary_borders">
-<code class="sig-name descname">set_boundary_borders</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">borders</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tuple<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.set_boundary_borders" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.table.Border.Border.set_boundary_borders">
+<span class="sig-name descname"><span class="pre">set_boundary_borders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">borders</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.set_boundary_borders" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set boundary borders.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -305,14 +310,14 @@ determined.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.table.Border.Border.to_stroke">
-<code class="sig-name descname">to_stroke</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.to_stroke" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.table.Border.Border.to_stroke">
+<span class="sig-name descname"><span class="pre">to_stroke</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Border.to_stroke" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert to border stroke.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="pdf2docx.table.Border.Border.value">
-<em class="property">property </em><code class="sig-name descname">value</code><a class="headerlink" href="#pdf2docx.table.Border.Border.value" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.table.Border.Border.value">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">value</span></span><a class="headerlink" href="#pdf2docx.table.Border.Border.value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finalized position, e.g. y-coordinate of horizontal border.
 Average value if not finalized.</p>
 </dd></dl>
@@ -320,23 +325,13 @@ Average value if not finalized.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="pdf2docx.table.Border.Borders">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.table.Border.</code><code class="sig-name descname">Borders</code><a class="headerlink" href="#pdf2docx.table.Border.Borders" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dt class="sig sig-object py" id="pdf2docx.table.Border.Borders">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.table.Border.</span></span><span class="sig-name descname"><span class="pre">Borders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instances</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Borders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.BaseCollection" title="pdf2docx.common.Collection.BaseCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Collection.BaseCollection</span></code></a></p>
 <p>Collection of <code class="docutils literal notranslate"><span class="pre">Border</span></code> instances.</p>
 <dl class="py method">
-<dt id="pdf2docx.table.Border.Borders.add">
-<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">border</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#pdf2docx.table.Border.Border" title="pdf2docx.table.Border.Border">pdf2docx.table.Border.Border</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Borders.add" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.table.Border.Borders.extend">
-<code class="sig-name descname">extend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">borders</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Borders.extend" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.table.Border.Borders.finalize">
-<code class="sig-name descname">finalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">strokes</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes">pdf2docx.shape.Shapes.Shapes</a></span></em>, <em class="sig-param"><span class="n">fills</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes">pdf2docx.shape.Shapes.Shapes</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Borders.finalize" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.table.Border.Borders.finalize">
+<span class="sig-name descname"><span class="pre">finalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strokes</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes"><span class="pre">pdf2docx.shape.Shapes.Shapes</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">fills</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes"><span class="pre">pdf2docx.shape.Shapes.Shapes</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.Borders.finalize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finalize the position of all borders.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -360,14 +355,14 @@ Average value if not finalized.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="pdf2docx.table.Border.HBorder">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.table.Border.</code><code class="sig-name descname">HBorder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">border_range</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tuple<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">borders</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tuple<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reference</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.HBorder" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.table.Border.HBorder">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.table.Border.</span></span><span class="sig-name descname"><span class="pre">HBorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">border_range</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">borders</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.HBorder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pdf2docx.table.Border.Border" title="pdf2docx.table.Border.Border"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.table.Border.Border</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="pdf2docx.table.Border.VBorder">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.table.Border.</code><code class="sig-name descname">VBorder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">border_range</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tuple<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">borders</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tuple<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reference</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.VBorder" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.table.Border.VBorder">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.table.Border.</span></span><span class="sig-name descname"><span class="pre">VBorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">border_range</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">borders</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.Border.VBorder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pdf2docx.table.Border.Border" title="pdf2docx.table.Border.Border"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.table.Border.Border</span></code></a></p>
 </dd></dl>
 

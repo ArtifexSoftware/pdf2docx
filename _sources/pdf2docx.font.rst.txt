@@ -1,0 +1,18 @@
+pdf2docx.font package
+=====================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pdf2docx.font.Fonts
+
+Module contents
+---------------
+
+.. automodule:: pdf2docx.font
+   :members:
+   :undoc-members:
+   :show-inheritance:

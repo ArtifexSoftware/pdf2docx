@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.image.ImageBlock module &mdash; pdf2docx 0.5.1 documentation</title>
+  <title>pdf2docx.image.ImageBlock module &mdash; pdf2docx 0.5.2 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -92,7 +95,9 @@
 <li class="toctree-l2 current"><a class="reference internal" href="pdf2docx.html">pdf2docx package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="pdf2docx.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.common.html">pdf2docx.common package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.font.html">pdf2docx.font package</a></li>
 <li class="toctree-l4 current"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.layout.html">pdf2docx.layout package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.shape.html">pdf2docx.shape package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.table.html">pdf2docx.table package</a></li>
@@ -183,13 +188,13 @@
 <p>Definition of Image block objects.</p>
 <p><strong>The raw image block will be merged into TextBlock &gt; Line &gt; Span.</strong></p>
 <dl class="py class">
-<dt id="pdf2docx.image.ImageBlock.ImageBlock">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.image.ImageBlock.</code><code class="sig-name descname">ImageBlock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageBlock.ImageBlock" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.image.ImageBlock.ImageBlock">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.image.ImageBlock.</span></span><span class="sig-name descname"><span class="pre">ImageBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageBlock.ImageBlock" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="pdf2docx.image.Image.html#pdf2docx.image.Image.Image" title="pdf2docx.image.Image.Image"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.image.Image.Image</span></code></a>, <a class="reference internal" href="pdf2docx.common.Block.html#pdf2docx.common.Block.Block" title="pdf2docx.common.Block.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Block.Block</span></code></a></p>
 <p>Image block.</p>
 <dl class="py method">
-<dt id="pdf2docx.image.ImageBlock.ImageBlock.from_text_block">
-<code class="sig-name descname">from_text_block</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">block</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.text.TextBlock.html#pdf2docx.text.TextBlock.TextBlock" title="pdf2docx.text.TextBlock.TextBlock">pdf2docx.text.TextBlock.TextBlock</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageBlock.ImageBlock.from_text_block" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.image.ImageBlock.ImageBlock.from_text_block">
+<span class="sig-name descname"><span class="pre">from_text_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pdf2docx.text.TextBlock.html#pdf2docx.text.TextBlock.TextBlock" title="pdf2docx.text.TextBlock.TextBlock"><span class="pre">pdf2docx.text.TextBlock.TextBlock</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageBlock.ImageBlock.from_text_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize image block from image in TextBlock instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -205,8 +210,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.image.ImageBlock.ImageBlock.make_docx">
-<code class="sig-name descname">make_docx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageBlock.ImageBlock.make_docx" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.image.ImageBlock.ImageBlock.make_docx">
+<span class="sig-name descname"><span class="pre">make_docx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageBlock.ImageBlock.make_docx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create floating image behind text.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -220,8 +225,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.image.ImageBlock.ImageBlock.plot">
-<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageBlock.ImageBlock.plot" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.image.ImageBlock.ImageBlock.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageBlock.ImageBlock.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot image bbox with diagonal lines (for debug purpose).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -231,14 +236,14 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.image.ImageBlock.ImageBlock.store">
-<code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageBlock.ImageBlock.store" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.image.ImageBlock.ImageBlock.store">
+<span class="sig-name descname"><span class="pre">store</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageBlock.ImageBlock.store" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store ImageBlock instance in raw dict.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.image.ImageBlock.ImageBlock.to_text_block">
-<code class="sig-name descname">to_text_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageBlock.ImageBlock.to_text_block" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.image.ImageBlock.ImageBlock.to_text_block">
+<span class="sig-name descname"><span class="pre">to_text_block</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageBlock.ImageBlock.to_text_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert image block to a span under text block.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>

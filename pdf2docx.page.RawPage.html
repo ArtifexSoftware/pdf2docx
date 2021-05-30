@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.page.RawPage module &mdash; pdf2docx 0.5.1 documentation</title>
+  <title>pdf2docx.page.RawPage module &mdash; pdf2docx 0.5.2 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -39,7 +42,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="pdf2docx.shape package" href="pdf2docx.shape.html" />
-    <link rel="prev" title="pdf2docx.page.Page module" href="pdf2docx.page.Page.html" /> 
+    <link rel="prev" title="pdf2docx.page.Pages module" href="pdf2docx.page.Pages.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -92,7 +95,9 @@
 <li class="toctree-l2 current"><a class="reference internal" href="pdf2docx.html">pdf2docx package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="pdf2docx.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.common.html">pdf2docx.common package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.font.html">pdf2docx.font package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.layout.html">pdf2docx.layout package</a></li>
 <li class="toctree-l4 current"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.shape.html">pdf2docx.shape package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.table.html">pdf2docx.table package</a></li>
@@ -180,7 +185,13 @@
             
   <div class="section" id="module-pdf2docx.page.RawPage">
 <span id="pdf2docx-page-rawpage-module"></span><h1>pdf2docx.page.RawPage module<a class="headerlink" href="#module-pdf2docx.page.RawPage" title="Permalink to this headline">¶</a></h1>
-<p>A wrapper of <code class="docutils literal notranslate"><span class="pre">fitz.Page</span></code> to extract source contents.</p>
+<p>A wrapper of <code class="docutils literal notranslate"><span class="pre">fitz.Page</span></code> to do the following work:</p>
+<ul class="simple">
+<li><p>extract source contents</p></li>
+<li><p>clean up blocks/shapes, e.g. elements out of page</p></li>
+<li><p>calculate page margin</p></li>
+<li><p>parse page structure roughly, i.e. section and column</p></li>
+</ul>
 <p>The raw page content extracted with <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code> API <code class="docutils literal notranslate"><span class="pre">page.getText('rawdict')</span></code>
 is described per link <a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/textpage.html">https://pymupdf.readthedocs.io/en/latest/textpage.html</a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -198,14 +209,73 @@ is described per link <a class="reference external" href="https://pymupdf.readth
 </div>
 <p>In addition to the raw layout dict, rectangle shapes are also included.</p>
 <dl class="py class">
-<dt id="pdf2docx.page.RawPage.RawPage">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.page.RawPage.</code><code class="sig-name descname">RawPage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fitz_page</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.RawPage.RawPage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dt class="sig sig-object py" id="pdf2docx.page.RawPage.RawPage">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.page.RawPage.</span></span><span class="sig-name descname"><span class="pre">RawPage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fitz_page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.RawPage.RawPage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.page.BasePage.html#pdf2docx.page.BasePage.BasePage" title="pdf2docx.page.BasePage.BasePage"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.page.BasePage.BasePage</span></code></a>, <a class="reference internal" href="pdf2docx.layout.Layout.html#pdf2docx.layout.Layout.Layout" title="pdf2docx.layout.Layout.Layout"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.layout.Layout.Layout</span></code></a></p>
 <p>A wrapper of <code class="docutils literal notranslate"><span class="pre">fitz.Page</span></code> to extract source contents.</p>
 <dl class="py method">
-<dt id="pdf2docx.page.RawPage.RawPage.raw_dict">
-<em class="property">property </em><code class="sig-name descname">raw_dict</code><a class="headerlink" href="#pdf2docx.page.RawPage.RawPage.raw_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Source data extracted from page by <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code>.</p>
+<dt class="sig sig-object py" id="pdf2docx.page.RawPage.RawPage.calculate_margin">
+<span class="sig-name descname"><span class="pre">calculate_margin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.RawPage.RawPage.calculate_margin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate page margin.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ensure this method is run right after cleaning up the layout, so the page margin is
+calculated based on valid layout, and stay constant.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.page.RawPage.RawPage.clean_up">
+<span class="sig-name descname"><span class="pre">clean_up</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.RawPage.RawPage.clean_up" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.page.RawPage.RawPage.extract_raw_dict">
+<span class="sig-name descname"><span class="pre">extract_raw_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.RawPage.RawPage.extract_raw_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract source data from page by <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.page.RawPage.RawPage.parse_section">
+<span class="sig-name descname"><span class="pre">parse_section</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.RawPage.RawPage.parse_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect and create page sections.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>Only two-columns Sections are considered for now.</p></li>
+<li><p>Page margin must be parsed before this step.</p></li>
+</ul>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.page.RawPage.RawPage.process_font">
+<span class="sig-name descname"><span class="pre">process_font</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fonts</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pdf2docx.font.Fonts.html#pdf2docx.font.Fonts.Fonts" title="pdf2docx.font.Fonts.Fonts"><span class="pre">pdf2docx.font.Fonts.Fonts</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_font</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pdf2docx.font.Fonts.html#pdf2docx.font.Fonts.Font" title="pdf2docx.font.Fonts.Font"><span class="pre">pdf2docx.font.Fonts.Font</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.RawPage.RawPage.process_font" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update font properties, e.g. font name, font line height ratio, of <code class="docutils literal notranslate"><span class="pre">TextSpan</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fonts</strong> (<a class="reference internal" href="pdf2docx.font.Fonts.html#pdf2docx.font.Fonts.Fonts" title="pdf2docx.font.Fonts.Fonts"><em>Fonts</em></a>) – Fonts used in current document.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.page.RawPage.RawPage.raw_text">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">raw_text</span></span><a class="headerlink" href="#pdf2docx.page.RawPage.RawPage.raw_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracted raw text in current page. Should be run after <code class="docutils literal notranslate"><span class="pre">restore()</span></code> data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.page.RawPage.RawPage.restore">
+<span class="sig-name descname"><span class="pre">restore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.RawPage.RawPage.restore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restore Layout from parsed results.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.page.RawPage.RawPage.text">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">text</span></span><a class="headerlink" href="#pdf2docx.page.RawPage.RawPage.text" title="Permalink to this definition">¶</a></dt>
+<dd><p>All extracted text in this page, with images considered as <code class="docutils literal notranslate"><span class="pre">&lt;image&gt;</span></code>.
+Should be run after <code class="docutils literal notranslate"><span class="pre">restore()</span></code> data.</p>
 </dd></dl>
 
 </dd></dl>
@@ -219,7 +289,7 @@ is described per link <a class="reference external" href="https://pymupdf.readth
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="pdf2docx.shape.html" class="btn btn-neutral float-right" title="pdf2docx.shape package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="pdf2docx.page.Page.html" class="btn btn-neutral float-left" title="pdf2docx.page.Page module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pdf2docx.page.Pages.html" class="btn btn-neutral float-left" title="pdf2docx.page.Pages module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

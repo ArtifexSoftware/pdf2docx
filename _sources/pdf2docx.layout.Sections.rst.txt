@@ -1,0 +1,7 @@
+pdf2docx.layout.Sections module
+===============================
+
+.. automodule:: pdf2docx.layout.Sections
+   :members:
+   :undoc-members:
+   :show-inheritance:

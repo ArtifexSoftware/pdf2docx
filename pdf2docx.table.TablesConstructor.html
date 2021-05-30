@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.table.TablesConstructor module &mdash; pdf2docx 0.5.1 documentation</title>
+  <title>pdf2docx.table.TablesConstructor module &mdash; pdf2docx 0.5.2 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -92,7 +95,9 @@
 <li class="toctree-l2 current"><a class="reference internal" href="pdf2docx.html">pdf2docx package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="pdf2docx.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.common.html">pdf2docx.common package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.font.html">pdf2docx.font package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.layout.html">pdf2docx.layout package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.shape.html">pdf2docx.shape package</a></li>
 <li class="toctree-l4 current"><a class="reference internal" href="pdf2docx.table.html">pdf2docx.table package</a></li>
@@ -199,13 +204,13 @@ virtual border adaptive in a certain range, then converted to a stroke once fina
 and finally applied to detect table border.</p></li>
 </ul>
 <dl class="py class">
-<dt id="pdf2docx.table.TablesConstructor.TablesConstructor">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.table.TablesConstructor.</code><code class="sig-name descname">TablesConstructor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TablesConstructor.TablesConstructor" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.table.TablesConstructor.TablesConstructor">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.table.TablesConstructor.</span></span><span class="sig-name descname"><span class="pre">TablesConstructor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TablesConstructor.TablesConstructor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Object parsing <code class="docutils literal notranslate"><span class="pre">TableBlock</span></code> for specified <code class="docutils literal notranslate"><span class="pre">Layout</span></code>.</p>
 <dl class="py method">
-<dt id="pdf2docx.table.TablesConstructor.TablesConstructor.lattice_tables">
-<code class="sig-name descname">lattice_tables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">connected_border_tolerance</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">min_border_clearance</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">max_border_width</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TablesConstructor.TablesConstructor.lattice_tables" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.table.TablesConstructor.TablesConstructor.lattice_tables">
+<span class="sig-name descname"><span class="pre">lattice_tables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connected_border_tolerance</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_border_clearance</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_border_width</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TablesConstructor.TablesConstructor.lattice_tables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse table with explicit borders/shadings represented by rectangle shapes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -219,63 +224,8 @@ and finally applied to detect table border.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.table.TablesConstructor.TablesConstructor.page_layout_table">
-<code class="sig-name descname">page_layout_table</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TablesConstructor.TablesConstructor.page_layout_table" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set page layout if two-columns layout.</p>
-<dl>
-<dt>::</dt><dd><p>+————<a href="#id1"><span class="problematic" id="id2">|--------------+ span_elements
-+------------|</span></a>————–+</p>
-<blockquote>
-<div><div class="line-block">
-<div class="line"><br /></div>
-</div>
-</div></blockquote>
-<p>+———-+ | +————+ v0
-|  column  | | |  elements  |
-+———-+ | +————+ v1
-u0           |             u1
-+————<a href="#id3"><span class="problematic" id="id4">|--------------+
-+------------|</span></a>————–+ span_elements</p>
-<blockquote>
-<div><div class="line-block">
-<div class="line"><br /></div>
-</div>
-</div></blockquote>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Run this method in Page level only, right after cleaning blocks and shapes.</p>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.table.TablesConstructor.TablesConstructor.stream_strokes">
-<em class="property">static </em><code class="sig-name descname">stream_strokes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lines</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.text.Lines.html#pdf2docx.text.Lines.Lines" title="pdf2docx.text.Lines.Lines">pdf2docx.text.Lines.Lines</a></span></em>, <em class="sig-param"><span class="n">outer_borders</span><span class="p">:</span> <span class="n">tuple</span></em>, <em class="sig-param"><span class="n">explicit_strokes</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes">pdf2docx.shape.Shapes.Shapes</a></span></em>, <em class="sig-param"><span class="n">explicit_shadings</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes">pdf2docx.shape.Shapes.Shapes</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TablesConstructor.TablesConstructor.stream_strokes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parsing borders mainly based on content lines contained in cells,
-and update borders (position and style) with explicit borders represented
-by rectangle shapes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>lines</strong> (<a class="reference internal" href="pdf2docx.text.Lines.html#pdf2docx.text.Lines.Lines" title="pdf2docx.text.Lines.Lines"><em>Lines</em></a>) – lines contained in table cells.</p></li>
-<li><p><strong>outer_borders</strong> (<em>tuple</em>) – Boundary borders of table, <code class="docutils literal notranslate"><span class="pre">(top,</span> <span class="pre">bottom,</span> <span class="pre">left,</span> <span class="pre">right)</span></code>.</p></li>
-<li><p><strong>explicit_strokes</strong> (<a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes"><em>Shapes</em></a>) – Showing borders in a stream table; can be empty.</p></li>
-<li><p><strong>explicit_shadings</strong> (<a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes"><em>Shapes</em></a>) – Showing shadings in a stream table; can be empty.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Parsed strokes representing table borders.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="pdf2docx.shape.Shapes.html#pdf2docx.shape.Shapes.Shapes" title="pdf2docx.shape.Shapes.Shapes">Shapes</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.table.TablesConstructor.TablesConstructor.stream_tables">
-<code class="sig-name descname">stream_tables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">min_border_clearance</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">max_border_width</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">float_layout_tolerance</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_separate_threshold</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TablesConstructor.TablesConstructor.stream_tables" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.table.TablesConstructor.TablesConstructor.stream_tables">
+<span class="sig-name descname"><span class="pre">stream_tables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_border_clearance</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_border_width</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_layout_tolerance</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_separate_threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TablesConstructor.TablesConstructor.stream_tables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse table with layout of text/image blocks, and update borders with explicit borders
 represented by rectangle shapes.</p>
 <p>Refer to <code class="docutils literal notranslate"><span class="pre">lattice_tables</span></code> for arguments description.</p>

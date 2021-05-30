@@ -10,6 +10,7 @@ Submodules
    pdf2docx.image.Image
    pdf2docx.image.ImageBlock
    pdf2docx.image.ImageSpan
+   pdf2docx.image.ImagesExtractor
 
 Module contents
 ---------------

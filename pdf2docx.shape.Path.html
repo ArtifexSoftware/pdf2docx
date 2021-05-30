@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.shape.Path module &mdash; pdf2docx 0.5.1 documentation</title>
+  <title>pdf2docx.shape.Path module &mdash; pdf2docx 0.5.2 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -92,7 +95,9 @@
 <li class="toctree-l2 current"><a class="reference internal" href="pdf2docx.html">pdf2docx package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="pdf2docx.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.common.html">pdf2docx.common package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.font.html">pdf2docx.font package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.layout.html">pdf2docx.layout package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
 <li class="toctree-l4 current"><a class="reference internal" href="pdf2docx.shape.html">pdf2docx.shape package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.table.html">pdf2docx.table package</a></li>
@@ -197,27 +202,26 @@
 <span class="p">}</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The coordinates extracted by <code class="docutils literal notranslate"><span class="pre">page.getDrawings()</span></code> is based on <strong>real</strong> page CS, i.e. with rotation
+considered. This is different from <code class="docutils literal notranslate"><span class="pre">page.getText('rawdict')</span></code>.</p>
+</div>
 <dl class="py class">
-<dt id="pdf2docx.shape.Path.C">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.shape.Path.</code><code class="sig-name descname">C</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">item</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.C" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.C">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.shape.Path.</span></span><span class="sig-name descname"><span class="pre">C</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.C" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pdf2docx.shape.Path.Segment" title="pdf2docx.shape.Path.Segment"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.shape.Path.Segment</span></code></a></p>
 <p>Bezier curve path with source <code class="docutils literal notranslate"><span class="pre">(&quot;c&quot;,</span> <span class="pre">p1,</span> <span class="pre">p2,</span> <span class="pre">p3,</span> <span class="pre">p4)</span></code>.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="pdf2docx.shape.Path.L">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.shape.Path.</code><code class="sig-name descname">L</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">item</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.L" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.L">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.shape.Path.</span></span><span class="sig-name descname"><span class="pre">L</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.L" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pdf2docx.shape.Path.Segment" title="pdf2docx.shape.Path.Segment"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.shape.Path.Segment</span></code></a></p>
 <p>Line path with source <code class="docutils literal notranslate"><span class="pre">(&quot;l&quot;,</span> <span class="pre">p1,</span> <span class="pre">p2)</span></code>.</p>
 <dl class="py method">
-<dt id="pdf2docx.shape.Path.L.is_iso_oriented">
-<em class="property">property </em><code class="sig-name descname">is_iso_oriented</code><a class="headerlink" href="#pdf2docx.shape.Path.L.is_iso_oriented" title="Permalink to this definition">¶</a></dt>
-<dd><p>Whether horizontal or vertical line.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.shape.Path.L.to_strokes">
-<code class="sig-name descname">to_strokes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">width</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">color</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.L.to_strokes" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.L.to_strokes">
+<span class="sig-name descname"><span class="pre">to_strokes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.L.to_strokes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert to stroke dict.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -244,33 +248,29 @@ is always 1.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="pdf2docx.shape.Path.Path">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.shape.Path.</code><code class="sig-name descname">Path</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Path" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.Path">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.shape.Path.</span></span><span class="sig-name descname"><span class="pre">Path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Path extracted from PDF, consist of one or more <code class="docutils literal notranslate"><span class="pre">Segments</span></code>.</p>
-<dl class="py method">
-<dt id="pdf2docx.shape.Path.Path.is_fill">
-<em class="property">property </em><code class="sig-name descname">is_fill</code><a class="headerlink" href="#pdf2docx.shape.Path.Path.is_fill" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.Path.is_fill">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">is_fill</span></span><a class="headerlink" href="#pdf2docx.shape.Path.Path.is_fill" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
-<dt id="pdf2docx.shape.Path.Path.is_iso_oriented">
-<em class="property">property </em><code class="sig-name descname">is_iso_oriented</code><a class="headerlink" href="#pdf2docx.shape.Path.Path.is_iso_oriented" title="Permalink to this definition">¶</a></dt>
-<dd><p>It is iso-oriented on condition that:</p>
-<ul class="simple">
-<li><p>All Lines are iso-oriented, and</p></li>
-<li><p>the count of iso-oriented Lines is larger than Curves</p></li>
-</ul>
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.Path.is_iso_oriented">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">is_iso_oriented</span></span><a class="headerlink" href="#pdf2docx.shape.Path.Path.is_iso_oriented" title="Permalink to this definition">¶</a></dt>
+<dd><p>It is iso-oriented when all contained segments are iso-oriented.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="pdf2docx.shape.Path.Path.is_stroke">
-<em class="property">property </em><code class="sig-name descname">is_stroke</code><a class="headerlink" href="#pdf2docx.shape.Path.Path.is_stroke" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.Path.is_stroke">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">is_stroke</span></span><a class="headerlink" href="#pdf2docx.shape.Path.Path.is_stroke" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.shape.Path.Path.plot">
-<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">canvas</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Path.plot" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.Path.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">canvas</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Path.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot path for debug purpose.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -284,26 +284,8 @@ is always 1.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.shape.Path.Path.to_fills">
-<code class="sig-name descname">to_fills</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">color</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Path.to_fills" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert path to <code class="docutils literal notranslate"><span class="pre">Fill</span></code> raw dicts.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A list of <code class="docutils literal notranslate"><span class="pre">Fill</span></code> dict.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>list</p>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The real filling area of this path may be not a rectangle.</p>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.shape.Path.Path.to_shapes">
-<code class="sig-name descname">to_shapes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Path.to_shapes" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.Path.to_shapes">
+<span class="sig-name descname"><span class="pre">to_shapes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Path.to_shapes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert path to <code class="docutils literal notranslate"><span class="pre">Shape</span></code> raw dicts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -315,35 +297,16 @@ is always 1.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="pdf2docx.shape.Path.Path.to_strokes">
-<code class="sig-name descname">to_strokes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">width</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">color</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Path.to_strokes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert path to <code class="docutils literal notranslate"><span class="pre">Stroke</span></code> raw dicts.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A list of <code class="docutils literal notranslate"><span class="pre">Stroke</span></code> dict.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
-<dt id="pdf2docx.shape.Path.R">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.shape.Path.</code><code class="sig-name descname">R</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">item</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.R" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.R">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.shape.Path.</span></span><span class="sig-name descname"><span class="pre">R</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.R" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pdf2docx.shape.Path.Segment" title="pdf2docx.shape.Path.Segment"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.shape.Path.Segment</span></code></a></p>
 <p>Rect path with source <code class="docutils literal notranslate"><span class="pre">(&quot;re&quot;,</span> <span class="pre">rect)</span></code>.</p>
 <dl class="py method">
-<dt id="pdf2docx.shape.Path.R.is_iso_oriented">
-<em class="property">property </em><code class="sig-name descname">is_iso_oriented</code><a class="headerlink" href="#pdf2docx.shape.Path.R.is_iso_oriented" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.shape.Path.R.to_strokes">
-<code class="sig-name descname">to_strokes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">width</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">color</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.R.to_strokes" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.R.to_strokes">
+<span class="sig-name descname"><span class="pre">to_strokes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.R.to_strokes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert each edge to stroke dict.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -368,45 +331,36 @@ is always 1.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="pdf2docx.shape.Path.Segment">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.shape.Path.</code><code class="sig-name descname">Segment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">item</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Segment" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.Segment">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.shape.Path.</span></span><span class="sig-name descname"><span class="pre">Segment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Segment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A segment of path, e.g. a line or a rectangle or a curve.</p>
 <dl class="py method">
-<dt id="pdf2docx.shape.Path.Segment.is_iso_oriented">
-<em class="property">property </em><code class="sig-name descname">is_iso_oriented</code><a class="headerlink" href="#pdf2docx.shape.Path.Segment.is_iso_oriented" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.shape.Path.Segment.to_strokes">
-<code class="sig-name descname">to_strokes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">width</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">color</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Segment.to_strokes" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.Segment.to_strokes">
+<span class="sig-name descname"><span class="pre">to_strokes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Segment.to_strokes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="pdf2docx.shape.Path.Segments">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.shape.Path.</code><code class="sig-name descname">Segments</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">items</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">close_path</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Segments" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.Segments">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.shape.Path.</span></span><span class="sig-name descname"><span class="pre">Segments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">close_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Segments" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A sub-path composed of one or more segments.</p>
-<dl class="py method">
-<dt id="pdf2docx.shape.Path.Segments.cal_bbox">
-<code class="sig-name descname">cal_bbox</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Segments.cal_bbox" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bbox of Segments.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For iso-oriented segments, <code class="docutils literal notranslate"><span class="pre">bbox.getArea()==0</span></code>.</p>
-</div>
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.Segments.is_iso_oriented">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">is_iso_oriented</span></span><a class="headerlink" href="#pdf2docx.shape.Path.Segments.is_iso_oriented" title="Permalink to this definition">¶</a></dt>
+<dd><p>the ratio of real area to bbox exceeds 0.9.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ISO-oriented criterion</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.shape.Path.Segments.is_iso_oriented_line">
-<em class="property">property </em><code class="sig-name descname">is_iso_oriented_line</code><a class="headerlink" href="#pdf2docx.shape.Path.Segments.is_iso_oriented_line" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.shape.Path.Segments.to_fill">
-<code class="sig-name descname">to_fill</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">color</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Segments.to_fill" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.Segments.to_fill">
+<span class="sig-name descname"><span class="pre">to_fill</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Segments.to_fill" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert segment closed area to a <code class="docutils literal notranslate"><span class="pre">Fill</span></code> dict.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -422,8 +376,8 @@ is always 1.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.shape.Path.Segments.to_strokes">
-<code class="sig-name descname">to_strokes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">width</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">color</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Segments.to_strokes" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.shape.Path.Segments.to_strokes">
+<span class="sig-name descname"><span class="pre">to_strokes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Segments.to_strokes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert each segment to a <code class="docutils literal notranslate"><span class="pre">Stroke</span></code> dict.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.converter module &mdash; pdf2docx 0.5.1 documentation</title>
+  <title>pdf2docx.converter module &mdash; pdf2docx 0.5.2 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -174,26 +177,33 @@
             
   <div class="section" id="module-pdf2docx.converter">
 <span id="pdf2docx-converter-module"></span><h1>pdf2docx.converter module<a class="headerlink" href="#module-pdf2docx.converter" title="Permalink to this headline">¶</a></h1>
+<dl class="py exception">
+<dt class="sig sig-object py" id="pdf2docx.converter.ConversionException">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.converter.</span></span><span class="sig-name descname"><span class="pre">ConversionException</span></span><a class="headerlink" href="#pdf2docx.converter.ConversionException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
 <dl class="py class">
-<dt id="pdf2docx.converter.Converter">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.converter.</code><code class="sig-name descname">Converter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdf_file</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.converter.Converter">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.converter.</span></span><span class="sig-name descname"><span class="pre">Converter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf_file</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">PDF</span></code> to <code class="docutils literal notranslate"><span class="pre">docx</span></code> converter.</p>
 <ul class="simple">
 <li><p>Read PDF file with <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code> to get raw layout data page by page, including text,
 image, drawing and its properties, e.g. boundary box, font, size, image width, height.</p></li>
-<li><p>Then parse it to docx structure, e.g. paragraph and its properties like indentaton,
+<li><p>Analyze layout in document level, e.g. page header, footer and margin.</p></li>
+<li><p>Parse page layout to docx structure, e.g. paragraph and its properties like indentaton,
 spacing, text alignment; table and its properties like border, shading, merging.</p></li>
 <li><p>Finally, generate docx with <code class="docutils literal notranslate"><span class="pre">python-docx</span></code>.</p></li>
 </ul>
 <dl class="py method">
-<dt id="pdf2docx.converter.Converter.close">
-<code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.close" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.converter.Converter.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.close" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.converter.Converter.convert">
-<code class="sig-name descname">convert</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">docx_filename</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">start</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">end</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pages</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.convert" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.converter.Converter.convert">
+<span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">docx_filename</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pages</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.convert" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert specified PDF pages to docx file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -206,29 +216,8 @@ spacing, text alignment; table and its properties like border, shading, merging.
 </ul>
 </dd>
 </dl>
-<p>List of configuration parameters:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">zero_based_index</span>               <span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="n">page</span> <span class="n">index</span> <span class="kn">from</span> <span class="mi">0</span> <span class="k">if</span> <span class="kc">True</span> <span class="k">else</span> <span class="mi">1</span>
-<span class="n">multi_processing</span>               <span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="nb">set</span> <span class="n">multi</span><span class="o">-</span><span class="n">processes</span><span class="p">,</span> <span class="n">especially</span> <span class="k">for</span> <span class="n">PDF</span> <span class="k">with</span> <span class="n">large</span> <span class="n">pages</span>
-<span class="n">cpu_count</span>                      <span class="p">:</span> <span class="n">cpu_count</span><span class="p">(),</span> <span class="n">the</span> <span class="n">count</span> <span class="n">of</span> <span class="n">cpu</span> <span class="n">used</span> <span class="k">for</span> <span class="n">multi</span><span class="o">-</span><span class="n">processing</span>
-<span class="n">connected_border_tolerance</span>     <span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">two</span> <span class="n">borders</span> <span class="n">are</span> <span class="n">intersected</span> <span class="k">if</span> <span class="n">the</span> <span class="n">gap</span> <span class="n">lower</span> <span class="n">than</span> <span class="n">this</span> <span class="n">value</span>
-<span class="n">max_border_width</span>               <span class="p">:</span> <span class="mf">6.0</span><span class="p">,</span> <span class="nb">max</span> <span class="n">border</span> <span class="n">width</span>
-<span class="n">min_border_clearance</span>           <span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">the</span> <span class="n">minimum</span> <span class="n">allowable</span> <span class="n">clearance</span> <span class="n">of</span> <span class="n">two</span> <span class="n">borders</span>
-<span class="n">float_image_ignorable_gap</span>      <span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="nb">float</span> <span class="n">image</span> <span class="k">if</span> <span class="n">the</span> <span class="n">intersection</span> <span class="n">exceeds</span> <span class="n">this</span> <span class="n">value</span>
-<span class="n">float_layout_tolerance</span>         <span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="n">the</span> <span class="n">larger</span> <span class="n">of</span> <span class="n">this</span> <span class="n">value</span><span class="p">,</span> <span class="n">the</span> <span class="n">more</span> <span class="n">tolerable</span> <span class="n">of</span> <span class="nb">float</span> <span class="n">layout</span>
-<span class="n">page_margin_factor_top</span>         <span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="n">reduce</span> <span class="n">top</span> <span class="n">margin</span> <span class="n">by</span> <span class="n">factor</span>
-<span class="n">page_margin_factor_bottom</span>      <span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="n">reduce</span> <span class="n">bottom</span> <span class="n">margin</span> <span class="n">by</span> <span class="n">factor</span>
-<span class="n">shape_merging_threshold</span>        <span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="n">merge</span> <span class="n">shape</span> <span class="k">if</span> <span class="n">the</span> <span class="n">intersection</span> <span class="n">exceeds</span> <span class="n">this</span> <span class="n">value</span>
-<span class="n">shape_min_dimension</span>            <span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">ignore</span> <span class="n">shape</span> <span class="k">if</span> <span class="n">both</span> <span class="n">width</span> <span class="ow">and</span> <span class="n">height</span> <span class="ow">is</span> <span class="n">lower</span> <span class="n">than</span> <span class="n">this</span> <span class="n">value</span>
-<span class="n">line_overlap_threshold</span>         <span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="n">delete</span> <span class="n">line</span> <span class="k">if</span> <span class="n">the</span> <span class="n">intersection</span> <span class="n">to</span> <span class="n">other</span> <span class="n">lines</span> <span class="n">exceeds</span> <span class="n">this</span> <span class="n">value</span>
-<span class="n">line_merging_threshold</span>         <span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">combine</span> <span class="n">two</span> <span class="n">lines</span> <span class="k">if</span> <span class="n">the</span> <span class="n">x</span><span class="o">-</span><span class="n">distance</span> <span class="ow">is</span> <span class="n">lower</span> <span class="n">than</span> <span class="n">this</span> <span class="n">value</span>
-<span class="n">line_separate_threshold</span>        <span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="n">two</span> <span class="n">separate</span> <span class="n">lines</span> <span class="k">if</span> <span class="n">the</span> <span class="n">x</span><span class="o">-</span><span class="n">distance</span> <span class="n">exceeds</span> <span class="n">this</span> <span class="n">value</span>
-<span class="n">lines_left_aligned_threshold</span>   <span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">left</span> <span class="n">aligned</span> <span class="k">if</span> <span class="n">delta</span> <span class="n">left</span> <span class="n">edge</span> <span class="n">of</span> <span class="n">two</span> <span class="n">lines</span> <span class="ow">is</span> <span class="n">lower</span> <span class="n">than</span> <span class="n">this</span> <span class="n">value</span>
-<span class="n">lines_right_aligned_threshold</span>  <span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">right</span> <span class="n">aligned</span> <span class="k">if</span> <span class="n">delta</span> <span class="n">right</span> <span class="n">edge</span> <span class="n">of</span> <span class="n">two</span> <span class="n">lines</span> <span class="ow">is</span> <span class="n">lower</span> <span class="n">than</span> <span class="n">this</span> <span class="n">value</span>
-<span class="n">lines_center_aligned_threshold</span> <span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">center</span> <span class="n">aligned</span> <span class="k">if</span> <span class="n">delta</span> <span class="n">center</span> <span class="n">of</span> <span class="n">two</span> <span class="n">lines</span> <span class="ow">is</span> <span class="n">lower</span> <span class="n">than</span> <span class="n">this</span> <span class="n">value</span>
-<span class="n">clip_image_res_ratio</span>           <span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="n">resolution</span> <span class="n">ratio</span> <span class="p">(</span><span class="n">to</span> <span class="mi">72</span><span class="n">dpi</span><span class="p">)</span> <span class="n">when</span> <span class="n">cliping</span> <span class="n">page</span> <span class="n">image</span>
-<span class="n">curve_path_ratio</span>               <span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">clip</span> <span class="n">page</span> <span class="n">bitmap</span> <span class="k">if</span> <span class="n">the</span> <span class="n">component</span> <span class="n">of</span> <span class="n">curve</span> <span class="n">paths</span> <span class="n">exceeds</span> <span class="n">this</span> <span class="n">ratio</span>
-</pre></div>
-</div>
+<p>Refer to <a class="reference internal" href="#pdf2docx.converter.Converter.default_settings" title="pdf2docx.converter.Converter.default_settings"><code class="xref py py-meth docutils literal notranslate"><span class="pre">default_settings()</span></code></a> for detail of
+configuration parameters.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Change extension from <code class="docutils literal notranslate"><span class="pre">pdf</span></code> to <code class="docutils literal notranslate"><span class="pre">docx</span></code> if <code class="docutils literal notranslate"><span class="pre">docx_file</span></code> is None.</p>
@@ -246,11 +235,15 @@ spacing, text alignment; table and its properties like border, shading, merging.
 <p><code class="docutils literal notranslate"><span class="pre">pages</span></code> has a higher priority than <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code>. <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code> works only
 if <code class="docutils literal notranslate"><span class="pre">pages</span></code> is omitted.</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Multi-processing works only for continuous pages specified by <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code> only.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.converter.Converter.debug_page">
-<code class="sig-name descname">debug_page</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">docx_filename</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">debug_pdf</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">layout_file</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.debug_page" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.converter.Converter.debug_page">
+<span class="sig-name descname"><span class="pre">debug_page</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">docx_filename</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug_pdf</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout_file</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.debug_page" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse, create and plot single page for debug purpose.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -264,15 +257,21 @@ if <code class="docutils literal notranslate"><span class="pre">pages</span></co
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.converter.Converter.default_settings">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">default_settings</span></span><a class="headerlink" href="#pdf2docx.converter.Converter.default_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default parsing parameters.</p>
+</dd></dl>
+
 <dl class="py method">
-<dt id="pdf2docx.converter.Converter.deserialize">
-<code class="sig-name descname">deserialize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.deserialize" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.converter.Converter.deserialize">
+<span class="sig-name descname"><span class="pre">deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.deserialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load parsed pages from specified JSON file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.converter.Converter.extract_tables">
-<code class="sig-name descname">extract_tables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">end</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pages</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.extract_tables" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.converter.Converter.extract_tables">
+<span class="sig-name descname"><span class="pre">extract_tables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pages</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.extract_tables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract table contents from specified PDF pages.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -292,68 +291,71 @@ if <code class="docutils literal notranslate"><span class="pre">pages</span></co
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.converter.Converter.fitz_doc">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">fitz_doc</span></span><a class="headerlink" href="#pdf2docx.converter.Converter.fitz_doc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
-<dt id="pdf2docx.converter.Converter.fitz_doc">
-<em class="property">property </em><code class="sig-name descname">fitz_doc</code><a class="headerlink" href="#pdf2docx.converter.Converter.fitz_doc" title="Permalink to this definition">¶</a></dt>
-<dd><p>The fitz <code class="docutils literal notranslate"><span class="pre">Document</span></code>.</p>
+<dt class="sig sig-object py" id="pdf2docx.converter.Converter.load_pages">
+<span class="sig-name descname"><span class="pre">load_pages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pages</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.load_pages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Step 1 of converting process: open PDF file with <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code>,
+especially for password encrypted file.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>fitz.Document</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> (<em>int</em><em>, </em><em>optional</em>) – First page to process. Defaults to 0, the first page.</p></li>
+<li><p><strong>end</strong> (<em>int</em><em>, </em><em>optional</em>) – Last page to process. Defaults to None, the last page.</p></li>
+<li><p><strong>pages</strong> (<em>list</em><em>, </em><em>optional</em>) – Range of page indexes to parse. Defaults to None.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.converter.Converter.make_docx">
-<code class="sig-name descname">make_docx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">docx_filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.make_docx" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create docx file with converted pages.</p>
+<dt class="sig sig-object py" id="pdf2docx.converter.Converter.make_docx">
+<span class="sig-name descname"><span class="pre">make_docx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">docx_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.make_docx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Step 4 of converting process: create docx file with converted pages.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>docx_filename</strong> (<em>str</em>) – docx filename to write to.</p>
 </dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>It should be run after parsing page <code class="docutils literal notranslate"><span class="pre">parse()</span></code>. Otherwise, no parsed pages
-for creating docx file.</p>
-</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.converter.Converter.pages">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">pages</span></span><a class="headerlink" href="#pdf2docx.converter.Converter.pages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.converter.Converter.parse_document">
+<span class="sig-name descname"><span class="pre">parse_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.parse_document" title="Permalink to this definition">¶</a></dt>
+<dd><p>Step 2 of converting process: analyze whole document, e.g. page section,
+header/footer and margin.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.converter.Converter.parse">
-<code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">page_indexes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.parse" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse pages in specified <code class="docutils literal notranslate"><span class="pre">page_indexes</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>page_indexes</strong> (<em>list</em><em>, </em><em>optional</em>) – Pages to parse. Defaults to None, the entire pages.</p></li>
-<li><p><strong>kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Configuration parameters. Defaults to None.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>self</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#pdf2docx.converter.Converter" title="pdf2docx.converter.Converter">Converter</a></p>
-</dd>
-</dl>
+<dt class="sig sig-object py" id="pdf2docx.converter.Converter.parse_pages">
+<span class="sig-name descname"><span class="pre">parse_pages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.parse_pages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Step 3 of converting process: parse pages, e.g. paragraph, image and table.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.converter.Converter.restore">
-<code class="sig-name descname">restore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.restore" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.converter.Converter.restore">
+<span class="sig-name descname"><span class="pre">restore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.restore" title="Permalink to this definition">¶</a></dt>
 <dd><p>Restore pages from parsed results.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.converter.Converter.serialize">
-<code class="sig-name descname">serialize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.serialize" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.converter.Converter.serialize">
+<span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.serialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write parsed pages to specified JSON file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.converter.Converter.store">
-<code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.store" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.converter.Converter.store">
+<span class="sig-name descname"><span class="pre">store</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.converter.Converter.store" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store parsed pages in dict format.</p>
 </dd></dl>
 

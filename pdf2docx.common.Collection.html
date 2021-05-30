@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.common.Collection module &mdash; pdf2docx 0.5.1 documentation</title>
+  <title>pdf2docx.common.Collection module &mdash; pdf2docx 0.5.2 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -92,7 +95,9 @@
 <li class="toctree-l2 current"><a class="reference internal" href="pdf2docx.html">pdf2docx package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="pdf2docx.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4 current"><a class="reference internal" href="pdf2docx.common.html">pdf2docx.common package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.font.html">pdf2docx.font package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.layout.html">pdf2docx.layout package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.shape.html">pdf2docx.shape package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.table.html">pdf2docx.table package</a></li>
@@ -182,26 +187,77 @@
 <span id="pdf2docx-common-collection-module"></span><h1>pdf2docx.common.Collection module<a class="headerlink" href="#module-pdf2docx.common.Collection" title="Permalink to this headline">¶</a></h1>
 <p>A group of instances, e.g. Blocks, Lines, Spans, Shapes.</p>
 <dl class="py class">
-<dt id="pdf2docx.common.Collection.BaseCollection">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.Collection.</code><code class="sig-name descname">BaseCollection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.BaseCollection" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.BaseCollection">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.Collection.</span></span><span class="sig-name descname"><span class="pre">BaseCollection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instances</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.BaseCollection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Base collection of specific instances.</p>
+<p>Base collection representing a list of instances.</p>
 <dl class="py method">
-<dt id="pdf2docx.common.Collection.BaseCollection.bbox">
-<em class="property">property </em><code class="sig-name descname">bbox</code><a class="headerlink" href="#pdf2docx.common.Collection.BaseCollection.bbox" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.BaseCollection.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.BaseCollection.append" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.BaseCollection.bbox">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">bbox</span></span><a class="headerlink" href="#pdf2docx.common.Collection.BaseCollection.bbox" title="Permalink to this definition">¶</a></dt>
 <dd><p>bbox of combined collection.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Collection.BaseCollection.group">
-<code class="sig-name descname">group</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.BaseCollection.group" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.BaseCollection.extend">
+<span class="sig-name descname"><span class="pre">extend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instances</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.BaseCollection.extend" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.BaseCollection.parent">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">parent</span></span><a class="headerlink" href="#pdf2docx.common.Collection.BaseCollection.parent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.BaseCollection.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instances</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.BaseCollection.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset instances list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>instances</strong> (<em>list</em><em>, </em><em>optional</em>) – reset to target instances. Defaults to None.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pdf2docx.common.Collection.BaseCollection" title="pdf2docx.common.Collection.BaseCollection">BaseCollection</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.BaseCollection.restore">
+<span class="sig-name descname"><span class="pre">restore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.BaseCollection.restore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct Collection from a list of dict.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.BaseCollection.store">
+<span class="sig-name descname"><span class="pre">store</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.BaseCollection.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store attributes in json format.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.Collection">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.Collection.</span></span><span class="sig-name descname"><span class="pre">Collection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instances</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pdf2docx.common.Collection.BaseCollection" title="pdf2docx.common.Collection.BaseCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Collection.BaseCollection</span></code></a></p>
+<p>Collection of instance focusing on grouping sub-collection based on intersection/alignment.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.Collection.group">
+<span class="sig-name descname"><span class="pre">group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Group instances according to user defined criterion.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>fun</strong> (<em>function</em>) – with 2 arguments representing 2 instances (Element) and return bool.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>a list of grouped <code class="docutils literal notranslate"><span class="pre">BaseCollection</span></code> instances.</p>
+<dd class="field-even"><p>a list of grouped <code class="docutils literal notranslate"><span class="pre">Collection</span></code> instances.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>list</p>
@@ -225,8 +281,14 @@ to find all connected components.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Collection.BaseCollection.group_by_connectivity">
-<code class="sig-name descname">group_by_connectivity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dx</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">dy</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.BaseCollection.group_by_connectivity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.Collection.group_by_columns">
+<span class="sig-name descname"><span class="pre">group_by_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.group_by_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Group lines into columns.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.Collection.group_by_connectivity">
+<span class="sig-name descname"><span class="pre">group_by_connectivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.group_by_connectivity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Collect connected instances into same group.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -236,7 +298,7 @@ to find all connected components.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>a list of grouped <code class="docutils literal notranslate"><span class="pre">BaseCollection</span></code> instances.</p>
+<dd class="field-even"><p>a list of grouped <code class="docutils literal notranslate"><span class="pre">Collection</span></code> instances.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>list</p>
@@ -253,16 +315,28 @@ problem, studied already in many literatures.</p></li>
 </div>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.Collection.group_by_physical_rows">
+<span class="sig-name descname"><span class="pre">group_by_physical_rows</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.group_by_physical_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Group lines into physical rows.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.Collection.group_by_rows">
+<span class="sig-name descname"><span class="pre">group_by_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.group_by_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Group lines into rows.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
-<dt id="pdf2docx.common.Collection.Collection">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.Collection.</code><code class="sig-name descname">Collection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#pdf2docx.common.Collection.BaseCollection" title="pdf2docx.common.Collection.BaseCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Collection.BaseCollection</span></code></a>, <a class="reference internal" href="pdf2docx.common.share.html#pdf2docx.common.share.IText" title="pdf2docx.common.share.IText"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.share.IText</span></code></a></p>
-<p>Collection of specific instances.</p>
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.ElementCollection">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.Collection.</span></span><span class="sig-name descname"><span class="pre">ElementCollection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instances</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.ElementCollection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pdf2docx.common.Collection.Collection" title="pdf2docx.common.Collection.Collection"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Collection.Collection</span></code></a>, <a class="reference internal" href="pdf2docx.common.share.html#pdf2docx.common.share.IText" title="pdf2docx.common.share.IText"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.share.IText</span></code></a></p>
+<p>Collection of <code class="docutils literal notranslate"><span class="pre">Element</span></code> instances.</p>
 <dl class="py method">
-<dt id="pdf2docx.common.Collection.Collection.append">
-<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element">pdf2docx.common.Element.Element</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.append" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.ElementCollection.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><span class="pre">pdf2docx.common.Element.Element</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.ElementCollection.append" title="Permalink to this definition">¶</a></dt>
 <dd><p>Append an instance, update parent’s bbox accordingly and set the parent of the added instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -272,8 +346,8 @@ problem, studied already in many literatures.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Collection.Collection.contained_in_bbox">
-<code class="sig-name descname">contained_in_bbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bbox</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.contained_in_bbox" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.ElementCollection.contained_in_bbox">
+<span class="sig-name descname"><span class="pre">contained_in_bbox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.ElementCollection.contained_in_bbox" title="Permalink to this definition">¶</a></dt>
 <dd><p>Filter instances contained in target bbox.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -283,14 +357,8 @@ problem, studied already in many literatures.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Collection.Collection.extend">
-<code class="sig-name descname">extend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">elements</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.extend" title="Permalink to this definition">¶</a></dt>
-<dd><p>Append a list of instances.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.common.Collection.Collection.insert">
-<code class="sig-name descname">insert</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nth</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">e</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element">pdf2docx.common.Element.Element</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.insert" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.ElementCollection.insert">
+<span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nth</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><span class="pre">pdf2docx.common.Element.Element</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.ElementCollection.insert" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert a Element and update parent’s bbox accordingly.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -303,13 +371,8 @@ problem, studied already in many literatures.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Collection.Collection.parent">
-<em class="property">property </em><code class="sig-name descname">parent</code><a class="headerlink" href="#pdf2docx.common.Collection.Collection.parent" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.common.Collection.Collection.pop">
-<code class="sig-name descname">pop</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nth</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.pop" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.ElementCollection.pop">
+<span class="sig-name descname"><span class="pre">pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nth</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.ElementCollection.pop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete the <code class="docutils literal notranslate"><span class="pre">nth</span></code> instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -319,51 +382,28 @@ problem, studied already in many literatures.</p></li>
 <dd class="field-even"><p>the removed instance.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#pdf2docx.common.Collection.Collection" title="pdf2docx.common.Collection.Collection">Collection</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#pdf2docx.common.Collection.ElementCollection" title="pdf2docx.common.Collection.ElementCollection">ElementCollection</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Collection.Collection.reset">
-<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">elements</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reset instances list.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>elements</strong> (<em>list</em><em>, </em><em>optional</em>) – reset to target instances. Defaults to None.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>self</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#pdf2docx.common.Collection.Collection" title="pdf2docx.common.Collection.Collection">Collection</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.common.Collection.Collection.restore">
-<code class="sig-name descname">restore</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.restore" title="Permalink to this definition">¶</a></dt>
-<dd><p>Construct Collection from a list of dict.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.common.Collection.Collection.sort_in_line_order">
-<code class="sig-name descname">sort_in_line_order</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.sort_in_line_order" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.ElementCollection.sort_in_line_order">
+<span class="sig-name descname"><span class="pre">sort_in_line_order</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.ElementCollection.sort_in_line_order" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort collection instances in a physical with text direction considered, e.g.
 for normal reading direction: from left to right.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Collection.Collection.sort_in_reading_order">
-<code class="sig-name descname">sort_in_reading_order</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.sort_in_reading_order" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.ElementCollection.sort_in_reading_order">
+<span class="sig-name descname"><span class="pre">sort_in_reading_order</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.ElementCollection.sort_in_reading_order" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort collection instances in reading order (considering text direction), e.g.
 for normal reading direction: from top to bottom, from left to right.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Collection.Collection.split_with_intersection">
-<code class="sig-name descname">split_with_intersection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bbox</span><span class="p">:</span> <span class="n">fitz.fitz.Rect</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.split_with_intersection" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.ElementCollection.split_with_intersection">
+<span class="sig-name descname"><span class="pre">split_with_intersection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">fitz.fitz.Rect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.ElementCollection.split_with_intersection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Split instances into two groups: one intersects with <code class="docutils literal notranslate"><span class="pre">bbox</span></code>, the other not.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -381,15 +421,9 @@ for normal reading direction: from top to bottom, from left to right.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="pdf2docx.common.Collection.Collection.store">
-<code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Collection.Collection.store" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store attributes in json format.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.common.Collection.Collection.text_direction">
-<em class="property">property </em><code class="sig-name descname">text_direction</code><a class="headerlink" href="#pdf2docx.common.Collection.Collection.text_direction" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.common.Collection.ElementCollection.text_direction">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">text_direction</span></span><a class="headerlink" href="#pdf2docx.common.Collection.ElementCollection.text_direction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get text direction. All instances must have same text direction.</p>
 </dd></dl>
 

@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.page.Page module &mdash; pdf2docx 0.5.1 documentation</title>
+  <title>pdf2docx.page.Page module &mdash; pdf2docx 0.5.2 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -38,8 +41,8 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="pdf2docx.page.RawPage module" href="pdf2docx.page.RawPage.html" />
-    <link rel="prev" title="pdf2docx.page.Layout module" href="pdf2docx.page.Layout.html" /> 
+    <link rel="next" title="pdf2docx.page.Pages module" href="pdf2docx.page.Pages.html" />
+    <link rel="prev" title="pdf2docx.page.BasePage module" href="pdf2docx.page.BasePage.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -92,7 +95,9 @@
 <li class="toctree-l2 current"><a class="reference internal" href="pdf2docx.html">pdf2docx package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="pdf2docx.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.common.html">pdf2docx.common package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.font.html">pdf2docx.font package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.layout.html">pdf2docx.layout package</a></li>
 <li class="toctree-l4 current"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.shape.html">pdf2docx.shape package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.table.html">pdf2docx.table package</a></li>
@@ -182,39 +187,67 @@
 <span id="pdf2docx-page-page-module"></span><h1>pdf2docx.page.Page module<a class="headerlink" href="#module-pdf2docx.page.Page" title="Permalink to this headline">¶</a></h1>
 <p>Page object parsed with PDF raw dict.</p>
 <p>In addition to base structure described in <a class="reference internal" href="pdf2docx.page.RawPage.html#module-pdf2docx.page.RawPage" title="pdf2docx.page.RawPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">RawPage</span></code></a>,
-some new features are also included, e.g.</p>
-<ul class="simple">
-<li><p>page margin</p></li>
-<li><p>parsed table block and nested layout</p></li>
+some new features, e.g. sections, table block, are also included.
+Page elements structure:</p>
+<ul>
+<li><dl>
+<dt><a class="reference internal" href="#module-pdf2docx.page.Page" title="pdf2docx.page.Page"><code class="xref py py-class docutils literal notranslate"><span class="pre">Page</span></code></a> &gt;&gt; <a class="reference internal" href="pdf2docx.layout.Section.html#module-pdf2docx.layout.Section" title="pdf2docx.layout.Section"><code class="xref py py-class docutils literal notranslate"><span class="pre">Section</span></code></a> &gt;&gt; <a class="reference internal" href="pdf2docx.layout.Column.html#module-pdf2docx.layout.Column" title="pdf2docx.layout.Column"><code class="xref py py-class docutils literal notranslate"><span class="pre">Column</span></code></a></dt><dd><ul>
+<li><dl>
+<dt><a class="reference internal" href="pdf2docx.layout.Blocks.html#module-pdf2docx.layout.Blocks" title="pdf2docx.layout.Blocks"><code class="xref py py-class docutils literal notranslate"><span class="pre">Blocks</span></code></a></dt><dd><ul>
+<li><p><a class="reference internal" href="pdf2docx.text.TextBlock.html#module-pdf2docx.text.TextBlock" title="pdf2docx.text.TextBlock"><code class="xref py py-class docutils literal notranslate"><span class="pre">TextBlock</span></code></a> &gt;&gt;
+<a class="reference internal" href="pdf2docx.text.Line.html#module-pdf2docx.text.Line" title="pdf2docx.text.Line"><code class="xref py py-class docutils literal notranslate"><span class="pre">Line</span></code></a> &gt;&gt;
+<a class="reference internal" href="pdf2docx.text.TextSpan.html#module-pdf2docx.text.TextSpan" title="pdf2docx.text.TextSpan"><code class="xref py py-class docutils literal notranslate"><span class="pre">TextSpan</span></code></a> / <a class="reference internal" href="pdf2docx.image.ImageSpan.html#module-pdf2docx.image.ImageSpan" title="pdf2docx.image.ImageSpan"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageSpan</span></code></a> &gt;&gt;
+<a class="reference internal" href="pdf2docx.text.Char.html#module-pdf2docx.text.Char" title="pdf2docx.text.Char"><code class="xref py py-class docutils literal notranslate"><span class="pre">Char</span></code></a></p></li>
+<li><p><a class="reference internal" href="pdf2docx.table.TableBlock.html#module-pdf2docx.table.TableBlock" title="pdf2docx.table.TableBlock"><code class="xref py py-class docutils literal notranslate"><span class="pre">TableBlock</span></code></a> &gt;&gt;
+<a class="reference internal" href="pdf2docx.table.Row.html#module-pdf2docx.table.Row" title="pdf2docx.table.Row"><code class="xref py py-class docutils literal notranslate"><span class="pre">Row</span></code></a> &gt;&gt;
+<a class="reference internal" href="pdf2docx.table.Cell.html#module-pdf2docx.table.Cell" title="pdf2docx.table.Cell"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cell</span></code></a></p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="pdf2docx.layout.Blocks.html#module-pdf2docx.layout.Blocks" title="pdf2docx.layout.Blocks"><code class="xref py py-class docutils literal notranslate"><span class="pre">Blocks</span></code></a></p></li>
+<li><p><a class="reference internal" href="pdf2docx.shape.Shapes.html#module-pdf2docx.shape.Shapes" title="pdf2docx.shape.Shapes"><code class="xref py py-class docutils literal notranslate"><span class="pre">Shapes</span></code></a></p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="pdf2docx.shape.Shapes.html#module-pdf2docx.shape.Shapes" title="pdf2docx.shape.Shapes"><code class="xref py py-class docutils literal notranslate"><span class="pre">Shapes</span></code></a></dt><dd><ul class="simple">
+<li><p><a class="reference internal" href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Stroke" title="pdf2docx.shape.Shape.Stroke"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stroke</span></code></a></p></li>
+<li><p><a class="reference internal" href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Fill" title="pdf2docx.shape.Shape.Fill"><code class="xref py py-class docutils literal notranslate"><span class="pre">Fill</span></code></a></p></li>
+<li><p><a class="reference internal" href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Hyperlink" title="pdf2docx.shape.Shape.Hyperlink"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hyperlink</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="c1"># raw dict</span>
-    <span class="o">----------------------------</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="c1"># page index</span>
     <span class="s2">&quot;width&quot;</span> <span class="p">:</span> <span class="n">w</span><span class="p">,</span>
     <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="n">h</span><span class="p">,</span>
-    <span class="s2">&quot;blocks&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="o">...</span><span class="p">},</span> <span class="p">{</span><span class="o">...</span><span class="p">},</span> <span class="o">...</span><span class="p">],</span>
-
-    <span class="c1"># introduced dict</span>
-    <span class="o">----------------------------</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="c1"># page index</span>
     <span class="s2">&quot;margin&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">bottom</span><span class="p">],</span>
-    <span class="s2">&quot;shapes&quot;</span> <span class="p">:</span> <span class="p">[{</span><span class="o">...</span><span class="p">},</span> <span class="p">{</span><span class="o">...</span><span class="p">},</span> <span class="o">...</span><span class="p">]</span>
+    <span class="s2">&quot;sections&quot;</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="o">...</span> <span class="c1"># section properties</span>
+    <span class="p">},</span> <span class="o">...</span><span class="p">],</span>
+    <span class="s2">&quot;floats&quot;</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="o">...</span> <span class="c1"># floating picture</span>
+    <span class="p">},</span> <span class="o">...</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <dl class="py class">
-<dt id="pdf2docx.page.Page.Page">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.page.Page.</code><code class="sig-name descname">Page</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fitz_page</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="pdf2docx.page.RawPage.html#pdf2docx.page.RawPage.RawPage" title="pdf2docx.page.RawPage.RawPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.page.RawPage.RawPage</span></code></a></p>
-<p>Object representing the whole page, e.g. margins, blocks, shapes, spacing.</p>
+<dt class="sig sig-object py" id="pdf2docx.page.Page.Page">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.page.Page.</span></span><span class="sig-name descname"><span class="pre">Page</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_parsing</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">footer</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sections</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pdf2docx.layout.Sections.html#pdf2docx.layout.Sections.Sections" title="pdf2docx.layout.Sections.Sections"><span class="pre">pdf2docx.layout.Sections.Sections</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_images</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.BaseCollection" title="pdf2docx.common.Collection.BaseCollection"><span class="pre">pdf2docx.common.Collection.BaseCollection</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.page.BasePage.html#pdf2docx.page.BasePage.BasePage" title="pdf2docx.page.BasePage.BasePage"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.page.BasePage.BasePage</span></code></a></p>
+<p>Object representing the whole page, e.g. margins, sections.</p>
 <dl class="py method">
-<dt id="pdf2docx.page.Page.Page.bbox">
-<em class="property">property </em><code class="sig-name descname">bbox</code><a class="headerlink" href="#pdf2docx.page.Page.Page.bbox" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.page.Page.Page.extract_tables">
-<code class="sig-name descname">extract_tables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.extract_tables" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.page.Page.Page.extract_tables">
+<span class="sig-name descname"><span class="pre">extract_tables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.extract_tables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract content from tables (top layout only).</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -223,21 +256,15 @@ page or restored from parsed data.</p>
 </div>
 </dd></dl>
 
-<dl class="py method">
-<dt id="pdf2docx.page.Page.Page.finalized">
-<em class="property">property </em><code class="sig-name descname">finalized</code><a class="headerlink" href="#pdf2docx.page.Page.Page.finalized" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.page.Page.Page.finalized">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">finalized</span></span><a class="headerlink" href="#pdf2docx.page.Page.Page.finalized" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.page.Page.Page.init_settings">
-<em class="property">static </em><code class="sig-name descname">init_settings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.init_settings" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize and update parameters.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.page.Page.Page.make_docx">
-<code class="sig-name descname">make_docx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">doc</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.make_docx" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create page based on layout data.</p>
+<dt class="sig sig-object py" id="pdf2docx.page.Page.Page.make_docx">
+<span class="sig-name descname"><span class="pre">make_docx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.make_docx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set page size, margin, and create page.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Before running this method, the page layout must be either parsed from source
@@ -251,41 +278,20 @@ page or restored from parsed data.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.page.Page.Page.margin">
-<em class="property">property </em><code class="sig-name descname">margin</code><a class="headerlink" href="#pdf2docx.page.Page.Page.margin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get page margin.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">(left,</span> <span class="pre">right,</span> <span class="pre">top,</span> <span class="pre">bottom)</span></code>.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>tuple</p>
-</dd>
-</dl>
-</dd></dl>
+<dt class="sig sig-object py" id="pdf2docx.page.Page.Page.parse">
+<span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.parse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.page.Page.Page.parse">
-<code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.parse" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse page layout.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.page.Page.Page.restore">
-<code class="sig-name descname">restore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.restore" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.page.Page.Page.restore">
+<span class="sig-name descname"><span class="pre">restore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.restore" title="Permalink to this definition">¶</a></dt>
 <dd><p>Restore Layout from parsed results.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.page.Page.Page.store">
-<code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.store" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.page.Page.Page.store">
+<span class="sig-name descname"><span class="pre">store</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.Page.Page.store" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store parsed layout in dict format.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.page.Page.Page.working_bbox">
-<em class="property">property </em><code class="sig-name descname">working_bbox</code><a class="headerlink" href="#pdf2docx.page.Page.Page.working_bbox" title="Permalink to this definition">¶</a></dt>
-<dd><p>bbox with margin considered.</p>
 </dd></dl>
 
 </dd></dl>
@@ -298,8 +304,8 @@ page or restored from parsed data.</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="pdf2docx.page.RawPage.html" class="btn btn-neutral float-right" title="pdf2docx.page.RawPage module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="pdf2docx.page.Layout.html" class="btn btn-neutral float-left" title="pdf2docx.page.Layout module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pdf2docx.page.Pages.html" class="btn btn-neutral float-right" title="pdf2docx.page.Pages module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pdf2docx.page.BasePage.html" class="btn btn-neutral float-left" title="pdf2docx.page.BasePage module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

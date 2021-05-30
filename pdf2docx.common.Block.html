@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.common.Block module &mdash; pdf2docx 0.5.1 documentation</title>
+  <title>pdf2docx.common.Block module &mdash; pdf2docx 0.5.2 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -92,7 +95,9 @@
 <li class="toctree-l2 current"><a class="reference internal" href="pdf2docx.html">pdf2docx package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="pdf2docx.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4 current"><a class="reference internal" href="pdf2docx.common.html">pdf2docx.common package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.font.html">pdf2docx.font package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.layout.html">pdf2docx.layout package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.shape.html">pdf2docx.shape package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.table.html">pdf2docx.table package</a></li>
@@ -182,13 +187,13 @@
 <span id="pdf2docx-common-block-module"></span><h1>pdf2docx.common.Block module<a class="headerlink" href="#module-pdf2docx.common.Block" title="Permalink to this headline">¶</a></h1>
 <p>Base class for text/image/table blocks.</p>
 <dl class="py class">
-<dt id="pdf2docx.common.Block.Block">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.Block.</code><code class="sig-name descname">Block</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.Block.</span></span><span class="sig-name descname"><span class="pre">Block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Element.Element</span></code></a></p>
 <p>Base class for text/image/table blocks.</p>
 <dl class="py attribute">
-<dt id="pdf2docx.common.Block.Block.raw">
-<code class="sig-name descname">raw</code><a class="headerlink" href="#pdf2docx.common.Block.Block.raw" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.raw">
+<span class="sig-name descname"><span class="pre">raw</span></span><a class="headerlink" href="#pdf2docx.common.Block.Block.raw" title="Permalink to this definition">¶</a></dt>
 <dd><p>initialize object from raw properties.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -198,8 +203,8 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.Block.Block.parent">
-<code class="sig-name descname">parent</code><a class="headerlink" href="#pdf2docx.common.Block.Block.parent" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.parent">
+<span class="sig-name descname"><span class="pre">parent</span></span><a class="headerlink" href="#pdf2docx.common.Block.Block.parent" title="Permalink to this definition">¶</a></dt>
 <dd><p>parent object that this block belongs to.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -209,8 +214,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.compare">
-<code class="sig-name descname">compare</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">block</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.9</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.compare" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.compare">
+<span class="sig-name descname"><span class="pre">compare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.compare" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether has same bbox and vertical spacing with given block.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -233,62 +238,62 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.is_float_image_block">
-<code class="sig-name descname">is_float_image_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_float_image_block" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.is_float_image_block">
+<span class="sig-name descname"><span class="pre">is_float_image_block</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_float_image_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether float image block.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.is_flow_layout">
-<code class="sig-name descname">is_flow_layout</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_flow_layout" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.is_flow_layout">
+<span class="sig-name descname"><span class="pre">is_flow_layout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_flow_layout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check whether flow layout, True by default. Override in <a class="reference internal" href="pdf2docx.text.TextBlock.html#module-pdf2docx.text.TextBlock" title="pdf2docx.text.TextBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pdf2docx.text.TextBlock</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.is_image_block">
-<code class="sig-name descname">is_image_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_image_block" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.is_image_block">
+<span class="sig-name descname"><span class="pre">is_image_block</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_image_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether inline or float image block.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.is_inline_image_block">
-<code class="sig-name descname">is_inline_image_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_inline_image_block" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.is_inline_image_block">
+<span class="sig-name descname"><span class="pre">is_inline_image_block</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_inline_image_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether inline image block.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.is_lattice_table_block">
-<code class="sig-name descname">is_lattice_table_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_lattice_table_block" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.is_lattice_table_block">
+<span class="sig-name descname"><span class="pre">is_lattice_table_block</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_lattice_table_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether lattice table (explicit table borders) block.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.is_stream_table_block">
-<code class="sig-name descname">is_stream_table_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_stream_table_block" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.is_stream_table_block">
+<span class="sig-name descname"><span class="pre">is_stream_table_block</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_stream_table_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether stream table (implied by table content) block.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.is_table_block">
-<code class="sig-name descname">is_table_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_table_block" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.is_table_block">
+<span class="sig-name descname"><span class="pre">is_table_block</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_table_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether table (lattice or stream) block.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.is_text_block">
-<code class="sig-name descname">is_text_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_text_block" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.is_text_block">
+<span class="sig-name descname"><span class="pre">is_text_block</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_text_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether test block.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.is_text_image_block">
-<code class="sig-name descname">is_text_image_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_text_image_block" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.is_text_image_block">
+<span class="sig-name descname"><span class="pre">is_text_image_block</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.is_text_image_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether text block or inline image block.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.make_docx">
-<code class="sig-name descname">make_docx</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.make_docx" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.make_docx">
+<span class="sig-name descname"><span class="pre">make_docx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.make_docx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create associated docx element.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises</dt>
@@ -298,8 +303,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.parse_horizontal_spacing">
-<code class="sig-name descname">parse_horizontal_spacing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bbox</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.parse_horizontal_spacing" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.parse_horizontal_spacing">
+<span class="sig-name descname"><span class="pre">parse_horizontal_spacing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.parse_horizontal_spacing" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set left alignment, and calculate left space.</p>
 <p>Override by <a class="reference internal" href="pdf2docx.text.TextBlock.html#module-pdf2docx.text.TextBlock" title="pdf2docx.text.TextBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pdf2docx.text.TextBlock</span></code></a>.</p>
 <dl class="field-list simple">
@@ -310,38 +315,38 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.set_float_image_block">
-<code class="sig-name descname">set_float_image_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.set_float_image_block" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.set_float_image_block">
+<span class="sig-name descname"><span class="pre">set_float_image_block</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.set_float_image_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set block type.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.set_inline_image_block">
-<code class="sig-name descname">set_inline_image_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.set_inline_image_block" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.set_inline_image_block">
+<span class="sig-name descname"><span class="pre">set_inline_image_block</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.set_inline_image_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set block type.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.set_lattice_table_block">
-<code class="sig-name descname">set_lattice_table_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.set_lattice_table_block" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.set_lattice_table_block">
+<span class="sig-name descname"><span class="pre">set_lattice_table_block</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.set_lattice_table_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set block type.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.set_stream_table_block">
-<code class="sig-name descname">set_stream_table_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.set_stream_table_block" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.set_stream_table_block">
+<span class="sig-name descname"><span class="pre">set_stream_table_block</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.set_stream_table_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set block type.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.set_text_block">
-<code class="sig-name descname">set_text_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.set_text_block" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.set_text_block">
+<span class="sig-name descname"><span class="pre">set_text_block</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.set_text_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set block type.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.common.Block.Block.store">
-<code class="sig-name descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.store" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.Block.Block.store">
+<span class="sig-name descname"><span class="pre">store</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Block.Block.store" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store attributes in json format.</p>
 </dd></dl>
 

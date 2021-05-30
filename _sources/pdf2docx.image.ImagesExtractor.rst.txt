@@ -1,0 +1,7 @@
+pdf2docx.image.ImagesExtractor module
+=====================================
+
+.. automodule:: pdf2docx.image.ImagesExtractor
+   :members:
+   :undoc-members:
+   :show-inheritance:

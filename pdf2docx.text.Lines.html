@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.text.Lines module &mdash; pdf2docx 0.5.1 documentation</title>
+  <title>pdf2docx.text.Lines module &mdash; pdf2docx 0.5.2 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -92,7 +95,9 @@
 <li class="toctree-l2 current"><a class="reference internal" href="pdf2docx.html">pdf2docx package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="pdf2docx.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.common.html">pdf2docx.common package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.font.html">pdf2docx.font package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.layout.html">pdf2docx.layout package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.shape.html">pdf2docx.shape package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.table.html">pdf2docx.table package</a></li>
@@ -182,13 +187,13 @@
 <span id="pdf2docx-text-lines-module"></span><h1>pdf2docx.text.Lines module<a class="headerlink" href="#module-pdf2docx.text.Lines" title="Permalink to this headline">¶</a></h1>
 <p>A group of Line objects.</p>
 <dl class="py class">
-<dt id="pdf2docx.text.Lines.Lines">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.text.Lines.</code><code class="sig-name descname">Lines</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.Collection" title="pdf2docx.common.Collection.Collection"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Collection.Collection</span></code></a></p>
+<dt class="sig sig-object py" id="pdf2docx.text.Lines.Lines">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.text.Lines.</span></span><span class="sig-name descname"><span class="pre">Lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instances</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.ElementCollection" title="pdf2docx.common.Collection.ElementCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Collection.ElementCollection</span></code></a></p>
 <p>Collection of text lines.</p>
 <dl class="py method">
-<dt id="pdf2docx.text.Lines.Lines.append">
-<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">line</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pdf2docx.text.Line.html#pdf2docx.text.Line.Line" title="pdf2docx.text.Line.Line">pdf2docx.text.Line.Line</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.append" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.Lines.Lines.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pdf2docx.text.Line.html#pdf2docx.text.Line.Line" title="pdf2docx.text.Line.Line"><span class="pre">pdf2docx.text.Line.Line</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.append" title="Permalink to this definition">¶</a></dt>
 <dd><p>Override. Append a line and update line pid and parent bbox.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -197,27 +202,15 @@
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="pdf2docx.text.Lines.Lines.group_by_columns">
-<code class="sig-name descname">group_by_columns</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.group_by_columns" title="Permalink to this definition">¶</a></dt>
-<dd><p>Group lines into columns.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.text.Lines.Lines.group_by_rows">
-<code class="sig-name descname">group_by_rows</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.group_by_rows" title="Permalink to this definition">¶</a></dt>
-<dd><p>Group lines into rows.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.text.Lines.Lines.image_spans">
-<em class="property">property </em><code class="sig-name descname">image_spans</code><a class="headerlink" href="#pdf2docx.text.Lines.Lines.image_spans" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.text.Lines.Lines.image_spans">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">image_spans</span></span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.image_spans" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get all ImageSpan instances.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.text.Lines.Lines.is_flow_layout">
-<code class="sig-name descname">is_flow_layout</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">float_layout_tolerance</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_separate_threshold</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.is_flow_layout" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.Lines.Lines.is_flow_layout">
+<span class="sig-name descname"><span class="pre">is_flow_layout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">float_layout_tolerance</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_separate_threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.is_flow_layout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if flow layout.</p>
 <p>A flow layout satisfy condition that lines in each physical row have:</p>
 <ul class="simple">
@@ -228,35 +221,52 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.text.Lines.Lines.join">
-<code class="sig-name descname">join</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">line_overlap_threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">line_merging_threshold</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.join" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.Lines.Lines.join">
+<span class="sig-name descname"><span class="pre">join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_overlap_threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_merging_threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.join" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merge lines aligned horizontally, e.g. make inline image as a span in text line.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.text.Lines.Lines.make_docx">
-<code class="sig-name descname">make_docx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.make_docx" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create lines in paragraph.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pdf2docx.text.Lines.Lines.parse_line_break">
-<code class="sig-name descname">parse_line_break</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">line_free_space_ratio_threshold</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.parse_line_break" title="Permalink to this definition">¶</a></dt>
-<dd><p>Whether hard break each line.</p>
+<dt class="sig sig-object py" id="pdf2docx.text.Lines.Lines.parse_line_break">
+<span class="sig-name descname"><span class="pre">parse_line_break</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_break_width_ratio</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_break_free_space_ratio</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_condense_spacing</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.parse_line_break" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether hard break each line. In addition, condense charaters at end of line to avoid unexpected
+line break. PDF sets precisely width of each word, here just an approximation to set condense spacing
+for last two words.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bbox</strong> (<em>Rect</em>) – bbox of parent layout, e.g. page or cell.</p></li>
+<li><p><strong>line_break_width_ratio</strong> (<em>float</em>) – user defined threshold, break line if smaller than this value.</p></li>
+<li><p><strong>line_break_free_space_ratio</strong> (<em>float</em>) – user defined threshold, break line if exceeds this value.</p></li>
+<li><p><strong>line_condense_spacing</strong> (<em>float</em>) – user defined total condensed spacing to avoid unexpected line break.</p></li>
+</ul>
+</dd>
+</dl>
 <p>Hard line break helps ensure paragraph structure, but pdf-based layout calculation may
 change in docx due to different rendering mechanism like font, spacing. For instance, when
 one paragraph row can’t accommodate a Line, the hard break leads to an unnecessary empty row.
 Since we can’t 100% ensure a same structure, it’s better to focus on the content - add line
-break only when it’s necessary to, e.g. explicit free space exists.</p>
+break only when it’s necessary to, e.g. short lines.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.text.Lines.Lines.parse_text_format">
-<code class="sig-name descname">parse_text_format</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rect</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.parse_text_format" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.Lines.Lines.parse_tab_stop">
+<span class="sig-name descname"><span class="pre">parse_tab_stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_separate_threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.parse_tab_stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate tab stops for parent block and whether add TAB stop before each line.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>line_separate_threshold</strong> (<em>float</em>) – Don’t need a tab stop if the line gap less than this value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.text.Lines.Lines.parse_text_format">
+<span class="sig-name descname"><span class="pre">parse_text_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.parse_text_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse text format with style represented by rectangle shape.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>rect</strong> (<a class="reference internal" href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Shape" title="pdf2docx.shape.Shape.Shape"><em>Shape</em></a>) – Potential style shape applied on blocks.</p>
+<dd class="field-odd"><p><strong>shape</strong> (<a class="reference internal" href="pdf2docx.shape.Shape.html#pdf2docx.shape.Shape.Shape" title="pdf2docx.shape.Shape.Shape"><em>Shape</em></a>) – Potential style shape applied on blocks.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Whether a valid text style.</p>
@@ -268,14 +278,14 @@ break only when it’s necessary to, e.g. explicit free space exists.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.text.Lines.Lines.restore">
-<code class="sig-name descname">restore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raws</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.restore" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.Lines.Lines.restore">
+<span class="sig-name descname"><span class="pre">restore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raws</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.restore" title="Permalink to this definition">¶</a></dt>
 <dd><p>Construct lines from raw dicts list.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.text.Lines.Lines.sort">
-<code class="sig-name descname">sort</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.sort" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.Lines.Lines.sort">
+<span class="sig-name descname"><span class="pre">sort</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.sort" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort lines considering text direction.</p>
 <p>Taking natural reading direction for example: reading order for rows, from left to
 right for lines in row.</p>
@@ -297,8 +307,8 @@ right for lines in row.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.text.Lines.Lines.split_back">
-<code class="sig-name descname">split_back</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.split_back" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.Lines.Lines.split_back">
+<span class="sig-name descname"><span class="pre">split_back</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.split_back" title="Permalink to this definition">¶</a></dt>
 <dd><p>Split lines into groups, in which all lines are from same original text block.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -311,14 +321,26 @@ right for lines in row.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.text.Lines.Lines.strip">
-<code class="sig-name descname">strip</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.strip" title="Permalink to this definition">¶</a></dt>
-<dd><p>Remove redundant blanks of each line.</p>
+<dt class="sig sig-object py" id="pdf2docx.text.Lines.Lines.split_vertically_by_text">
+<span class="sig-name descname"><span class="pre">split_vertically_by_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_break_free_space_ratio</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_paragraph_free_space_ratio</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.split_vertically_by_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split lines into separate paragraph, because <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code> stores lines in <code class="docutils literal notranslate"><span class="pre">block</span></code>,
+rather than real paragraph.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Considered only normal reading direction, from left to right, from top
+to bottom.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pdf2docx.text.Lines.Lines.unique_parent">
-<em class="property">property </em><code class="sig-name descname">unique_parent</code><a class="headerlink" href="#pdf2docx.text.Lines.Lines.unique_parent" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.text.Lines.Lines.strip">
+<span class="sig-name descname"><span class="pre">strip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delete_end_line_hyphen</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.strip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove redundant blanks of each line and update bbox accordingly.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.text.Lines.Lines.unique_parent">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">unique_parent</span></span><a class="headerlink" href="#pdf2docx.text.Lines.Lines.unique_parent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether all contained lines have same parant.</p>
 </dd></dl>
 

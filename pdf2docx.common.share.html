@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>pdf2docx.common.share module &mdash; pdf2docx 0.5.1 documentation</title>
+  <title>pdf2docx.common.share module &mdash; pdf2docx 0.5.2 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -38,7 +41,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="pdf2docx.image package" href="pdf2docx.image.html" />
+    <link rel="next" title="pdf2docx.font package" href="pdf2docx.font.html" />
     <link rel="prev" title="pdf2docx.common.docx module" href="pdf2docx.common.docx.html" /> 
 </head>
 
@@ -92,7 +95,9 @@
 <li class="toctree-l2 current"><a class="reference internal" href="pdf2docx.html">pdf2docx package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="pdf2docx.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4 current"><a class="reference internal" href="pdf2docx.common.html">pdf2docx.common package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.font.html">pdf2docx.font package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.layout.html">pdf2docx.layout package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.shape.html">pdf2docx.shape package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.table.html">pdf2docx.table package</a></li>
@@ -181,117 +186,107 @@
   <div class="section" id="module-pdf2docx.common.share">
 <span id="pdf2docx-common-share-module"></span><h1>pdf2docx.common.share module<a class="headerlink" href="#module-pdf2docx.common.share" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="pdf2docx.common.share.BlockType">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">BlockType</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.BlockType" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.BlockType">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">BlockType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.BlockType" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
 <p>Block types.</p>
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.BlockType.FLOAT_IMAGE">
-<code class="sig-name descname">FLOAT_IMAGE</code><em class="property"> = 4</em><a class="headerlink" href="#pdf2docx.common.share.BlockType.FLOAT_IMAGE" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.BlockType.FLOAT_IMAGE">
+<span class="sig-name descname"><span class="pre">FLOAT_IMAGE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">4</span></em><a class="headerlink" href="#pdf2docx.common.share.BlockType.FLOAT_IMAGE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.BlockType.IMAGE">
-<code class="sig-name descname">IMAGE</code><em class="property"> = 1</em><a class="headerlink" href="#pdf2docx.common.share.BlockType.IMAGE" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.BlockType.IMAGE">
+<span class="sig-name descname"><span class="pre">IMAGE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#pdf2docx.common.share.BlockType.IMAGE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.BlockType.LATTICE_TABLE">
-<code class="sig-name descname">LATTICE_TABLE</code><em class="property"> = 2</em><a class="headerlink" href="#pdf2docx.common.share.BlockType.LATTICE_TABLE" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.BlockType.LATTICE_TABLE">
+<span class="sig-name descname"><span class="pre">LATTICE_TABLE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#pdf2docx.common.share.BlockType.LATTICE_TABLE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.BlockType.STREAM_TABLE">
-<code class="sig-name descname">STREAM_TABLE</code><em class="property"> = 3</em><a class="headerlink" href="#pdf2docx.common.share.BlockType.STREAM_TABLE" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.BlockType.STREAM_TABLE">
+<span class="sig-name descname"><span class="pre">STREAM_TABLE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">3</span></em><a class="headerlink" href="#pdf2docx.common.share.BlockType.STREAM_TABLE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.BlockType.TEXT">
-<code class="sig-name descname">TEXT</code><em class="property"> = 0</em><a class="headerlink" href="#pdf2docx.common.share.BlockType.TEXT" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.BlockType.TEXT">
+<span class="sig-name descname"><span class="pre">TEXT</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#pdf2docx.common.share.BlockType.TEXT" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.BlockType.UNDEFINED">
-<code class="sig-name descname">UNDEFINED</code><em class="property"> = -1</em><a class="headerlink" href="#pdf2docx.common.share.BlockType.UNDEFINED" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.BlockType.UNDEFINED">
+<span class="sig-name descname"><span class="pre">UNDEFINED</span></span><em class="property"> <span class="pre">=</span> <span class="pre">-1</span></em><a class="headerlink" href="#pdf2docx.common.share.BlockType.UNDEFINED" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="pdf2docx.common.share.IText">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">IText</code><a class="headerlink" href="#pdf2docx.common.share.IText" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.IText">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">IText</span></span><a class="headerlink" href="#pdf2docx.common.share.IText" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Text related interface considering text direction.</p>
-<dl class="py method">
-<dt id="pdf2docx.common.share.IText.is_horizontal_text">
-<em class="property">property </em><code class="sig-name descname">is_horizontal_text</code><a class="headerlink" href="#pdf2docx.common.share.IText.is_horizontal_text" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.common.share.IText.is_horizontal_text">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">is_horizontal_text</span></span><a class="headerlink" href="#pdf2docx.common.share.IText.is_horizontal_text" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check whether text direction is from left to right.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="pdf2docx.common.share.IText.is_vertical_text">
-<em class="property">property </em><code class="sig-name descname">is_vertical_text</code><a class="headerlink" href="#pdf2docx.common.share.IText.is_vertical_text" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.common.share.IText.is_vertical_text">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">is_vertical_text</span></span><a class="headerlink" href="#pdf2docx.common.share.IText.is_vertical_text" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check whether text direction is from bottom to top.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="pdf2docx.common.share.IText.text_direction">
-<em class="property">property </em><code class="sig-name descname">text_direction</code><a class="headerlink" href="#pdf2docx.common.share.IText.text_direction" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.common.share.IText.text_direction">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">text_direction</span></span><a class="headerlink" href="#pdf2docx.common.share.IText.text_direction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Text direction is from left to right by default.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="pdf2docx.common.share.RectType">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">RectType</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.RectType" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.RectType">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">RectType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.RectType" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
 <p>Shape type in context.</p>
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.RectType.BORDER">
-<code class="sig-name descname">BORDER</code><em class="property"> = 10</em><a class="headerlink" href="#pdf2docx.common.share.RectType.BORDER" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.RectType.BORDER">
+<span class="sig-name descname"><span class="pre">BORDER</span></span><em class="property"> <span class="pre">=</span> <span class="pre">16</span></em><a class="headerlink" href="#pdf2docx.common.share.RectType.BORDER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.RectType.HIGHLIGHT">
-<code class="sig-name descname">HIGHLIGHT</code><em class="property"> = 0</em><a class="headerlink" href="#pdf2docx.common.share.RectType.HIGHLIGHT" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.RectType.HIGHLIGHT">
+<span class="sig-name descname"><span class="pre">HIGHLIGHT</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#pdf2docx.common.share.RectType.HIGHLIGHT" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.RectType.HYPERLINK">
-<code class="sig-name descname">HYPERLINK</code><em class="property"> = 7</em><a class="headerlink" href="#pdf2docx.common.share.RectType.HYPERLINK" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.RectType.HYPERLINK">
+<span class="sig-name descname"><span class="pre">HYPERLINK</span></span><em class="property"> <span class="pre">=</span> <span class="pre">8</span></em><a class="headerlink" href="#pdf2docx.common.share.RectType.HYPERLINK" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.RectType.SHADING">
-<code class="sig-name descname">SHADING</code><em class="property"> = 11</em><a class="headerlink" href="#pdf2docx.common.share.RectType.SHADING" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.RectType.SHADING">
+<span class="sig-name descname"><span class="pre">SHADING</span></span><em class="property"> <span class="pre">=</span> <span class="pre">32</span></em><a class="headerlink" href="#pdf2docx.common.share.RectType.SHADING" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.RectType.STRIKE">
-<code class="sig-name descname">STRIKE</code><em class="property"> = 2</em><a class="headerlink" href="#pdf2docx.common.share.RectType.STRIKE" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.RectType.STRIKE">
+<span class="sig-name descname"><span class="pre">STRIKE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">4</span></em><a class="headerlink" href="#pdf2docx.common.share.RectType.STRIKE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.RectType.UNDEFINED">
-<code class="sig-name descname">UNDEFINED</code><em class="property"> = -1</em><a class="headerlink" href="#pdf2docx.common.share.RectType.UNDEFINED" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="pdf2docx.common.share.RectType.UNDERLINE">
-<code class="sig-name descname">UNDERLINE</code><em class="property"> = 1</em><a class="headerlink" href="#pdf2docx.common.share.RectType.UNDERLINE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="pdf2docx.common.share.RectType.UNDERLINE_OR_STRIKE">
-<code class="sig-name descname">UNDERLINE_OR_STRIKE</code><em class="property"> = 5</em><a class="headerlink" href="#pdf2docx.common.share.RectType.UNDERLINE_OR_STRIKE" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.RectType.UNDERLINE">
+<span class="sig-name descname"><span class="pre">UNDERLINE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#pdf2docx.common.share.RectType.UNDERLINE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="pdf2docx.common.share.TextAlignment">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">TextAlignment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.TextAlignment" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextAlignment">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">TextAlignment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.TextAlignment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
 <p>Text alignment.</p>
 <div class="admonition note">
@@ -303,40 +298,40 @@
 </ul>
 </div>
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.TextAlignment.CENTER">
-<code class="sig-name descname">CENTER</code><em class="property"> = 2</em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.CENTER" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextAlignment.CENTER">
+<span class="sig-name descname"><span class="pre">CENTER</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.CENTER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.TextAlignment.JUSTIFY">
-<code class="sig-name descname">JUSTIFY</code><em class="property"> = 4</em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.JUSTIFY" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextAlignment.JUSTIFY">
+<span class="sig-name descname"><span class="pre">JUSTIFY</span></span><em class="property"> <span class="pre">=</span> <span class="pre">4</span></em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.JUSTIFY" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.TextAlignment.LEFT">
-<code class="sig-name descname">LEFT</code><em class="property"> = 1</em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.LEFT" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextAlignment.LEFT">
+<span class="sig-name descname"><span class="pre">LEFT</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.LEFT" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.TextAlignment.NONE">
-<code class="sig-name descname">NONE</code><em class="property"> = -1</em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.NONE" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextAlignment.NONE">
+<span class="sig-name descname"><span class="pre">NONE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">-1</span></em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.NONE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.TextAlignment.RIGHT">
-<code class="sig-name descname">RIGHT</code><em class="property"> = 3</em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.RIGHT" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextAlignment.RIGHT">
+<span class="sig-name descname"><span class="pre">RIGHT</span></span><em class="property"> <span class="pre">=</span> <span class="pre">3</span></em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.RIGHT" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.TextAlignment.UNKNOWN">
-<code class="sig-name descname">UNKNOWN</code><em class="property"> = 0</em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.UNKNOWN" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextAlignment.UNKNOWN">
+<span class="sig-name descname"><span class="pre">UNKNOWN</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.UNKNOWN" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="pdf2docx.common.share.TextDirection">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">TextDirection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.TextDirection" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextDirection">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">TextDirection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.TextDirection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
 <p>Text direction.</p>
 <ul class="simple">
@@ -344,48 +339,61 @@
 <li><p>BOTTOM_TOP: from bottom to top within a line, and lines go from left to right</p></li>
 </ul>
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.TextDirection.BOTTOM_TOP">
-<code class="sig-name descname">BOTTOM_TOP</code><em class="property"> = 1</em><a class="headerlink" href="#pdf2docx.common.share.TextDirection.BOTTOM_TOP" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextDirection.BOTTOM_TOP">
+<span class="sig-name descname"><span class="pre">BOTTOM_TOP</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#pdf2docx.common.share.TextDirection.BOTTOM_TOP" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.TextDirection.IGNORE">
-<code class="sig-name descname">IGNORE</code><em class="property"> = -1</em><a class="headerlink" href="#pdf2docx.common.share.TextDirection.IGNORE" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextDirection.IGNORE">
+<span class="sig-name descname"><span class="pre">IGNORE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">-1</span></em><a class="headerlink" href="#pdf2docx.common.share.TextDirection.IGNORE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="pdf2docx.common.share.TextDirection.LEFT_RIGHT">
-<code class="sig-name descname">LEFT_RIGHT</code><em class="property"> = 0</em><a class="headerlink" href="#pdf2docx.common.share.TextDirection.LEFT_RIGHT" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextDirection.LEFT_RIGHT">
+<span class="sig-name descname"><span class="pre">LEFT_RIGHT</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#pdf2docx.common.share.TextDirection.LEFT_RIGHT" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
-<dt id="pdf2docx.common.share.cmyk_to_rgb">
-<code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">cmyk_to_rgb</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">c</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">m</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">y</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">k</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">cmyk_scale</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.cmyk_to_rgb" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.cmyk_to_rgb">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">cmyk_to_rgb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmyk_scale</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.cmyk_to_rgb" title="Permalink to this definition">¶</a></dt>
 <dd><p>CMYK components to GRB value.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="pdf2docx.common.share.debug_plot">
-<code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">debug_plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">title</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">show</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.debug_plot" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.debug_plot">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">debug_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.debug_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the returned objects of inner function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>title</strong> (<em>str</em>) – Page title.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>title</strong> (<em>str</em>) – Page title.</p></li>
+<li><p><strong>show</strong> (<em>bool</em><em>, </em><em>optional</em>) – Don’t plot if show==False. Default to True.</p></li>
+</ul>
 </dd>
 </dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<dl class="simple">
+<dt>Prerequisite of the inner function:</dt><dd><ul class="simple">
+<li><p>the first argument is a <a class="reference internal" href="pdf2docx.page.BasePage.html#module-pdf2docx.page.BasePage" title="pdf2docx.page.BasePage"><code class="xref py py-class docutils literal notranslate"><span class="pre">BasePage</span></code></a> instance.</p></li>
+<li><p>the last argument is configuration parameters in <code class="docutils literal notranslate"><span class="pre">dict</span></code> type.</p></li>
+</ul>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="py function">
-<dt id="pdf2docx.common.share.flatten">
-<code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">flatten</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">items</span></em>, <em class="sig-param"><span class="n">klass</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.flatten" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.flatten">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">klass</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.flatten" title="Permalink to this definition">¶</a></dt>
 <dd><p>Yield items from any nested iterable.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="pdf2docx.common.share.graph_bfs">
-<code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">graph_bfs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.graph_bfs" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.graph_bfs">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">graph_bfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.graph_bfs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Breadth First Search graph (may be disconnected graph).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -401,21 +409,21 @@
 </dd></dl>
 
 <dl class="py function">
-<dt id="pdf2docx.common.share.is_number">
-<code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">is_number</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">str_number</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.is_number" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.is_number">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">is_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.is_number" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether can be converted to a float.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="pdf2docx.common.share.lazyproperty">
-<em class="property">class </em><code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">lazyproperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.lazyproperty" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.lazyproperty">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">lazyproperty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.lazyproperty" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Calculate only once and cache property value.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="pdf2docx.common.share.new_page">
-<code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">new_page</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">doc</span></em>, <em class="sig-param"><span class="n">width</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">height</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">title</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.new_page" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.new_page">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">new_page</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.new_page" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert a new page with given title.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -430,8 +438,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt id="pdf2docx.common.share.rgb_component">
-<code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">rgb_component</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">srgb</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.rgb_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.rgb_component">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">rgb_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">srgb</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.rgb_component" title="Permalink to this definition">¶</a></dt>
 <dd><p>srgb value to R,G,B components, e.g. 16711680 -&gt; (255, 0, 0).</p>
 <p>Equal to PyMuPDF built-in method:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="mi">255</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">fitz</span><span class="o">.</span><span class="n">sRGB_to_pdf</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span>
@@ -440,26 +448,26 @@
 </dd></dl>
 
 <dl class="py function">
-<dt id="pdf2docx.common.share.rgb_component_from_name">
-<code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">rgb_component_from_name</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.rgb_component_from_name" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.rgb_component_from_name">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">rgb_component_from_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.rgb_component_from_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a named RGB color (or random color) from fitz predefined colors, e.g. ‘red’ -&gt; (1.0,0.0,0.0).</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="pdf2docx.common.share.rgb_to_value">
-<code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">rgb_to_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rgb</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.rgb_to_value" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.rgb_to_value">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">rgb_to_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rgb</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.rgb_to_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>RGB components to decimal value, e.g. (1,0,0) -&gt; 16711680.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="pdf2docx.common.share.rgb_value">
-<code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">rgb_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">components</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.rgb_value" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.rgb_value">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">rgb_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">components</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.rgb_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gray/RGB/CMYK mode components to color value.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="pdf2docx.common.share.solve_rects_intersection">
-<code class="sig-prename descclassname">pdf2docx.common.share.</code><code class="sig-name descname">solve_rects_intersection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">V</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">num</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">index_groups</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.solve_rects_intersection" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pdf2docx.common.share.solve_rects_intersection">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">solve_rects_intersection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_groups</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.solve_rects_intersection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implementation of solving Rectangle-Intersection Problem.</p>
 <p>Performance:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">O</span><span class="p">(</span><span class="n">nlog</span> <span class="n">n</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span> <span class="n">time</span> <span class="ow">and</span> <span class="n">O</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="n">space</span><span class="p">,</span> <span class="n">where</span> <span class="n">k</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">count</span> <span class="n">of</span> <span class="n">intersection</span> <span class="n">pairs</span><span class="o">.</span>
@@ -495,7 +503,7 @@
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="pdf2docx.image.html" class="btn btn-neutral float-right" title="pdf2docx.image package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pdf2docx.font.html" class="btn btn-neutral float-right" title="pdf2docx.font package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="pdf2docx.common.docx.html" class="btn btn-neutral float-left" title="pdf2docx.common.docx module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 

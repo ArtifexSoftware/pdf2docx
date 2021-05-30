@@ -8,7 +8,9 @@ Subpackages
    :maxdepth: 4
 
    pdf2docx.common
+   pdf2docx.font
    pdf2docx.image
+   pdf2docx.layout
    pdf2docx.page
    pdf2docx.shape
    pdf2docx.table
