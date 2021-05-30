@@ -50,14 +50,14 @@ class Utility:
         docx_file = os.path.join(self.output_dir, f'{filename}.docx')
         cv = Converter(pdf_file)        
         cv.convert(docx_file, pages=[0])
-        self.test = cv[0].sections
+        self.test = cv.pages[0].sections
         cv.close()
 
         # restore sample layout
         cv = Converter(pdf_file)
         layout_file = os.path.join(self.layout_dir, f'{filename}.json')
         cv.deserialize(layout_file)
-        self.sample = cv[0].sections
+        self.sample = cv.pages[0].sections
 
         return self
 
@@ -175,7 +175,7 @@ class Utility:
                     
                     # text
                     a, b = sample_span.text, test_span.text
-                    assert a==b, f"\nApplied text '{b}' is inconsistent with sample '{a}'"
+                    assert a==b, f"\nApplied text '{b}' is inconsistent with sample '{a}'.{sample_span.bbox},,{test_span.bbox}"
 
                     # style
                     m, n = len(sample_span.style), len(test_span.style)
@@ -306,6 +306,7 @@ class Test_Main(Utility):
         print(tables)
 
         # compare the last table
+        table = [[col.strip() if col else col for col in row] for row in tables[-1]]
         sample = [
             ['Input', None, None, None, None, None],
             ['Description A', 'mm', '30.34', '35.30', '19.30', '80.21'],
@@ -315,7 +316,7 @@ class Test_Main(Utility):
             ['Description E', '1.00', '0.15', None, None, None],
             ['Description F', '1.00', '0.86', '0.37', '0.78', '0.01']
         ]
-        assert tables[-1]==sample
+        assert table==sample
 
     
     # ------------------------------------------
