@@ -74,14 +74,14 @@ class Cell(Element, Layout):
 
     def store(self):
         if bool(self):
-            res = super().store()
+            res = super().store() # Element
             res.update({
                 'bg_color': self.bg_color,
                 'border_color': self.border_color,
                 'border_width': self.border_width,
-                'merged_cells': self.merged_cells,
-                'blocks': self.blocks.store()
+                'merged_cells': self.merged_cells
             })
+            res.update(Layout.store(self))
             return res
         else:
             return None
