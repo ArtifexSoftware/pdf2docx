@@ -59,6 +59,7 @@
     - [Extract table](https://dothinking.github.io/pdf2docx/quickstart.table.html)
     - [Command Line Interface](https://dothinking.github.io/pdf2docx/quickstart.cli.html)
     - [Graphic User Interface](https://dothinking.github.io/pdf2docx/quickstart.gui.html)
+- [Technical Documentation (In Chinese)](https://dothinking.github.io/pdf2docx/techdoc.html)
 - [API Documentation](https://dothinking.github.io/pdf2docx/modules.html)
 
 ## Sample
