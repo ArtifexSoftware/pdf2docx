@@ -92,6 +92,23 @@ class Converter:
     # Parsing process: load -> analyze document -> parse pages -> make docx
     # -----------------------------------------------------------------------
 
+    def parse(self, start:int=0, end:int=None, pages:list=None, **kwargs):
+        '''Parse pages in three steps:
+        * open PDF file with ``PyMuPDF``
+        * analyze whole document, e.g. page section, header/footer and margin
+        * parse specified pages, e.g. paragraph, image and table
+
+        Args:
+            start (int, optional): First page to process. Defaults to 0, the first page.
+            end (int, optional): Last page to process. Defaults to None, the last page.
+            pages (list, optional): Range of page indexes to parse. Defaults to None.
+            kwargs (dict, optional): Configuration parameters. 
+        '''
+        return self.load_pages(start, end, pages) \
+            .parse_document(**kwargs) \
+            .parse_pages(**kwargs)
+
+
     def load_pages(self, start:int=0, end:int=None, pages:list=None):
         '''Step 1 of converting process: open PDF file with ``PyMuPDF``, 
         especially for password encrypted file.
@@ -180,7 +197,7 @@ class Converter:
             try:
                 page.make_docx(docx_file)
             except Exception as e:
-                logging.warning('Ignore page due to error: %s', e)
+                logging.error('Ignore page due to error: %s', e)
 
         # save docx
         docx_file.save(filename)
@@ -299,10 +316,7 @@ class Converter:
         if settings['multi_processing']:
             self._convert_with_multi_processing(docx_filename, start, end, **settings)
         else:
-            self.load_pages(start, end, pages) \
-                .parse_document(**settings) \
-                .parse_pages(**settings) \
-                .make_docx(docx_filename)
+            self.parse(start, end, pages, **settings).make_docx(docx_filename)
 
         logging.info('Terminated in %.2fs.', perf_counter()-t0)        
 
@@ -319,13 +333,10 @@ class Converter:
         Returns:
             list: A list of parsed table content.
         '''
-        # open document
-        self.load_pages(start, end, pages)
-
-        # parsing
+        # parsing pages first
         settings = self.default_settings
         settings.update(kwargs)
-        self.parse_document(**settings).parse_pages(**settings)
+        self.parse(start, end, pages, **settings)
 
         # get parsed tables
         tables = []
