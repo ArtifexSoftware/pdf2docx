@@ -252,7 +252,10 @@ class Fonts(BaseCollection):
                     return True
 
         # defined CJK Unicode code point in cmap table checks
-        cmap = tt_font.getBestCmap()
+        try:
+            cmap = tt_font.getBestCmap()
+        except AssertionError:
+            return False
         if not cmap: return False
 
         for unicode_range in CJK_UNICODE_RANGES:
