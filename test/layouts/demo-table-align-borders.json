@@ -20,7 +20,7 @@
                         472.5,
                         38.2
                     ],
-                    "cols": 2,
+                    "num_cols": 2,
                     "space": 0,
                     "before_space": 15.0,
                     "columns": [
@@ -183,9 +183,9 @@
                         49.0,
                         42.2,
                         472.5,
-                        603.3
+                        694.0
                     ],
-                    "cols": 1,
+                    "num_cols": 1,
                     "space": 0,
                     "before_space": 4.0,
                     "columns": [
@@ -194,7 +194,7 @@
                                 49.0,
                                 42.2,
                                 472.5,
-                                603.3
+                                694.0
                             ],
                             "blocks": [
                                 {
@@ -300,7 +300,8 @@
                                                                 }
                                                             ]
                                                         }
-                                                    ]
+                                                    ],
+                                                    "shapes": []
                                                 },
                                                 {
                                                     "bbox": [
@@ -659,6 +660,160 @@
                                                                 }
                                                             ]
                                                         }
+                                                    ],
+                                                    "shapes": [
+                                                        {
+                                                            "bbox": [
+                                                                130.4,
+                                                                51.0,
+                                                                154.6,
+                                                                51.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                130.4,
+                                                                51.2
+                                                            ],
+                                                            "end": [
+                                                                154.6,
+                                                                51.2
+                                                            ],
+                                                            "width": 0.3999999999999986
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                166.4,
+                                                                51.0,
+                                                                190.6,
+                                                                51.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                166.4,
+                                                                51.2
+                                                            ],
+                                                            "end": [
+                                                                190.6,
+                                                                51.2
+                                                            ],
+                                                            "width": 0.3999999999999986
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                202.4,
+                                                                51.0,
+                                                                226.6,
+                                                                51.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                202.4,
+                                                                51.2
+                                                            ],
+                                                            "end": [
+                                                                226.6,
+                                                                51.2
+                                                            ],
+                                                            "width": 0.3999999999999986
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                238.4,
+                                                                51.0,
+                                                                262.6,
+                                                                51.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                238.4,
+                                                                51.2
+                                                            ],
+                                                            "end": [
+                                                                262.6,
+                                                                51.2
+                                                            ],
+                                                            "width": 0.3999999999999986
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                274.4,
+                                                                51.0,
+                                                                298.6,
+                                                                51.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                274.4,
+                                                                51.2
+                                                            ],
+                                                            "end": [
+                                                                298.6,
+                                                                51.2
+                                                            ],
+                                                            "width": 0.3999999999999986
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                310.4,
+                                                                51.0,
+                                                                346.6,
+                                                                51.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                310.4,
+                                                                51.2
+                                                            ],
+                                                            "end": [
+                                                                346.6,
+                                                                51.2
+                                                            ],
+                                                            "width": 0.3999999999999986
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                358.4,
+                                                                51.0,
+                                                                410.6,
+                                                                51.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                358.4,
+                                                                51.2
+                                                            ],
+                                                            "end": [
+                                                                410.6,
+                                                                51.2
+                                                            ],
+                                                            "width": 0.3999999999999986
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                422.4,
+                                                                51.0,
+                                                                438.6,
+                                                                51.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                422.4,
+                                                                51.2
+                                                            ],
+                                                            "end": [
+                                                                438.6,
+                                                                51.2
+                                                            ],
+                                                            "width": 0.3999999999999986
+                                                        }
                                                     ]
                                                 }
                                             ]
@@ -749,7 +904,8 @@
                                                                 }
                                                             ]
                                                         }
-                                                    ]
+                                                    ],
+                                                    "shapes": []
                                                 },
                                                 {
                                                     "bbox": [
@@ -922,6 +1078,98 @@
                                                                 }
                                                             ]
                                                         }
+                                                    ],
+                                                    "shapes": [
+                                                        {
+                                                            "bbox": [
+                                                                130.5,
+                                                                54.2,
+                                                                162.5,
+                                                                62.2
+                                                            ],
+                                                            "type": 8,
+                                                            "color": 0,
+                                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22PENG+Yinghong%22+DBID%3aWF_QK"
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                174.5,
+                                                                54.2,
+                                                                222.5,
+                                                                62.2
+                                                            ],
+                                                            "type": 8,
+                                                            "color": 0,
+                                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22LIU+Shourong%22+DBID%3aWF_QK"
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                234.5,
+                                                                54.2,
+                                                                274.5,
+                                                                62.2
+                                                            ],
+                                                            "type": 8,
+                                                            "color": 0,
+                                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22QIU+Suping%22+DBID%3aWF_QK"
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                130.4,
+                                                                63.0,
+                                                                162.6,
+                                                                63.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                130.4,
+                                                                63.2
+                                                            ],
+                                                            "end": [
+                                                                162.6,
+                                                                63.2
+                                                            ],
+                                                            "width": 0.3999999999999986
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                174.4,
+                                                                63.0,
+                                                                222.6,
+                                                                63.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                174.4,
+                                                                63.2
+                                                            ],
+                                                            "end": [
+                                                                222.6,
+                                                                63.2
+                                                            ],
+                                                            "width": 0.3999999999999986
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                234.4,
+                                                                63.0,
+                                                                274.6,
+                                                                63.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                234.4,
+                                                                63.2
+                                                            ],
+                                                            "end": [
+                                                                274.6,
+                                                                63.2
+                                                            ],
+                                                            "width": 0.3999999999999986
+                                                        }
                                                     ]
                                                 }
                                             ]
@@ -1039,6 +1287,38 @@
                                                                 }
                                                             ]
                                                         }
+                                                    ],
+                                                    "shapes": [
+                                                        {
+                                                            "bbox": [
+                                                                130.5,
+                                                                66.2,
+                                                                446.5,
+                                                                74.2
+                                                            ],
+                                                            "type": 8,
+                                                            "color": 0,
+                                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%8a%e6%b5%b7%e4%ba%a4%e9%80%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e4%b8%8e%e5%8a%a8%e5%8a%9b%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e4%b8%8a%e6%b5%b7%2c200030%22+DBID%3aWF_QK"
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                130.4,
+                                                                75.0,
+                                                                446.6,
+                                                                75.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                130.4,
+                                                                75.2
+                                                            ],
+                                                            "end": [
+                                                                446.6,
+                                                                75.2
+                                                            ],
+                                                            "width": 0.4000000000000057
+                                                        }
                                                     ]
                                                 }
                                             ]
@@ -1129,7 +1409,8 @@
                                                                 }
                                                             ]
                                                         }
-                                                    ]
+                                                    ],
+                                                    "shapes": []
                                                 },
                                                 {
                                                     "bbox": [
@@ -1203,13 +1484,13 @@
                                                                             "text": "\u6d77\u4ea4\u901a\u5927\u5b66\u673a\u68b0\u4e0e\u52a8\u529b\u5de5\u7a0b\u5b66\u9662,\u4e0a\u6d77,200030)",
                                                                             "style": [
                                                                                 {
-                                                                                    "type": 2,
-                                                                                    "color": 214145
-                                                                                },
-                                                                                {
                                                                                     "type": 8,
                                                                                     "color": 0,
                                                                                     "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%8a%e6%b5%b7%e4%ba%a4%e9%80%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e4%b8%8e%e5%8a%a8%e5%8a%9b%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e4%b8%8a%e6%b5%b7%2c200030%22+DBID%3aWF_QK"
+                                                                                },
+                                                                                {
+                                                                                    "type": 2,
+                                                                                    "color": 214145
                                                                                 }
                                                                             ],
                                                                             "condense_spacing": 0.0
@@ -1245,13 +1526,13 @@
                                                                             "text": "\u5218\u5b88\u8363,LIU Shourong(\u4e2d\u56fd\u519c\u4e1a\u5927\u5b66\u673a\u68b0 ",
                                                                             "style": [
                                                                                 {
-                                                                                    "type": 2,
-                                                                                    "color": 214145
-                                                                                },
-                                                                                {
                                                                                     "type": 8,
                                                                                     "color": 0,
                                                                                     "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%ad%e5%9b%bd%e5%86%9c%e4%b8%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e5%8c%97%e4%ba%ac%2c100083%22+DBID%3aWF_QK"
+                                                                                },
+                                                                                {
+                                                                                    "type": 2,
+                                                                                    "color": 214145
                                                                                 }
                                                                             ],
                                                                             "condense_spacing": 0.0
@@ -1259,6 +1540,68 @@
                                                                     ]
                                                                 }
                                                             ]
+                                                        }
+                                                    ],
+                                                    "shapes": [
+                                                        {
+                                                            "bbox": [
+                                                                130.5,
+                                                                78.2,
+                                                                294.5,
+                                                                86.2
+                                                            ],
+                                                            "type": 8,
+                                                            "color": 0,
+                                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%8a%e6%b5%b7%e4%ba%a4%e9%80%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e4%b8%8e%e5%8a%a8%e5%8a%9b%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e4%b8%8a%e6%b5%b7%2c200030%22+DBID%3aWF_QK"
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                306.5,
+                                                                78.2,
+                                                                450.5,
+                                                                86.2
+                                                            ],
+                                                            "type": 8,
+                                                            "color": 0,
+                                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%ad%e5%9b%bd%e5%86%9c%e4%b8%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e5%8c%97%e4%ba%ac%2c100083%22+DBID%3aWF_QK"
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                130.4,
+                                                                87.0,
+                                                                294.6,
+                                                                87.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                130.4,
+                                                                87.2
+                                                            ],
+                                                            "end": [
+                                                                294.6,
+                                                                87.2
+                                                            ],
+                                                            "width": 0.4000000000000057
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                306.4,
+                                                                87.0,
+                                                                450.6,
+                                                                87.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                306.4,
+                                                                87.2
+                                                            ],
+                                                            "end": [
+                                                                450.6,
+                                                                87.2
+                                                            ],
+                                                            "width": 0.4000000000000057
                                                         }
                                                     ]
                                                 }
@@ -1361,6 +1704,38 @@
                                                                 }
                                                             ]
                                                         }
+                                                    ],
+                                                    "shapes": [
+                                                        {
+                                                            "bbox": [
+                                                                130.5,
+                                                                90.2,
+                                                                214.5,
+                                                                98.2
+                                                            ],
+                                                            "type": 8,
+                                                            "color": 0,
+                                                            "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Organization%3a%22%e4%b8%ad%e5%9b%bd%e5%86%9c%e4%b8%9a%e5%a4%a7%e5%ad%a6%e6%9c%ba%e6%a2%b0%e5%b7%a5%e7%a8%8b%e5%ad%a6%e9%99%a2%2c%e5%8c%97%e4%ba%ac%2c100083%22+DBID%3aWF_QK"
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                130.4,
+                                                                99.0,
+                                                                214.6,
+                                                                99.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                130.4,
+                                                                99.2
+                                                            ],
+                                                            "end": [
+                                                                214.6,
+                                                                99.2
+                                                            ],
+                                                            "width": 0.4000000000000057
+                                                        }
                                                     ]
                                                 }
                                             ]
@@ -1447,13 +1822,13 @@
                                                                             "text": "\u673a\u68b0\u5de5\u7a0b\u5b66\u62a5",
                                                                             "style": [
                                                                                 {
+                                                                                    "type": 2,
+                                                                                    "color": 214145
+                                                                                },
+                                                                                {
                                                                                     "type": 8,
                                                                                     "color": 0,
                                                                                     "uri": "http://c.wanfangdata.com.cn/periodical-jxgcxb.aspx"
-                                                                                },
-                                                                                {
-                                                                                    "type": 2,
-                                                                                    "color": 214145
                                                                                 }
                                                                             ],
                                                                             "condense_spacing": 0.0
@@ -1497,6 +1872,38 @@
                                                                     ]
                                                                 }
                                                             ]
+                                                        }
+                                                    ],
+                                                    "shapes": [
+                                                        {
+                                                            "bbox": [
+                                                                130.5,
+                                                                106.2,
+                                                                178.5,
+                                                                114.2
+                                                            ],
+                                                            "type": 8,
+                                                            "color": 0,
+                                                            "uri": "http://c.wanfangdata.com.cn/periodical-jxgcxb.aspx"
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                130.4,
+                                                                115.0,
+                                                                178.6,
+                                                                115.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                130.4,
+                                                                115.2
+                                                            ],
+                                                            "end": [
+                                                                178.6,
+                                                                115.2
+                                                            ],
+                                                            "width": 0.4000000000000057
                                                         }
                                                     ]
                                                 }
@@ -1588,7 +1995,8 @@
                                                                 }
                                                             ]
                                                         }
-                                                    ]
+                                                    ],
+                                                    "shapes": []
                                                 },
                                                 {
                                                     "bbox": [
@@ -1676,6 +2084,38 @@
                                                                     ]
                                                                 }
                                                             ]
+                                                        }
+                                                    ],
+                                                    "shapes": [
+                                                        {
+                                                            "bbox": [
+                                                                130.5,
+                                                                118.2,
+                                                                294.5,
+                                                                126.2
+                                                            ],
+                                                            "type": 8,
+                                                            "color": 0,
+                                                            "uri": "http://c.wanfangdata.com.cn/periodical-jxgcxb.aspx"
+                                                        },
+                                                        {
+                                                            "bbox": [
+                                                                130.4,
+                                                                127.0,
+                                                                294.6,
+                                                                127.4
+                                                            ],
+                                                            "type": 2,
+                                                            "color": 214145,
+                                                            "start": [
+                                                                130.4,
+                                                                127.2
+                                                            ],
+                                                            "end": [
+                                                                294.6,
+                                                                127.2
+                                                            ],
+                                                            "width": 0.4000000000000057
                                                         }
                                                     ]
                                                 }
@@ -1767,7 +2207,8 @@
                                                                 }
                                                             ]
                                                         }
-                                                    ]
+                                                    ],
+                                                    "shapes": []
                                                 },
                                                 {
                                                     "bbox": [
@@ -1846,7 +2287,8 @@
                                                                 }
                                                             ]
                                                         }
-                                                    ]
+                                                    ],
+                                                    "shapes": []
                                                 }
                                             ]
                                         },
@@ -1936,7 +2378,8 @@
                                                                 }
                                                             ]
                                                         }
-                                                    ]
+                                                    ],
+                                                    "shapes": []
                                                 },
                                                 {
                                                     "bbox": [
@@ -2015,7 +2458,8 @@
                                                                 }
                                                             ]
                                                         }
-                                                    ]
+                                                    ],
+                                                    "shapes": []
                                                 }
                                             ]
                                         },
@@ -2105,7 +2549,8 @@
                                                                 }
                                                             ]
                                                         }
-                                                    ]
+                                                    ],
+                                                    "shapes": []
                                                 },
                                                 {
                                                     "bbox": [
@@ -2131,7 +2576,8 @@
                                                         1,
                                                         1
                                                     ],
-                                                    "blocks": []
+                                                    "blocks": [],
+                                                    "shapes": []
                                                 }
                                             ]
                                         }
@@ -2466,13 +2912,13 @@
                                                     "text": "NAKAMACHI E",
                                                     "style": [
                                                         {
-                                                            "type": 2,
-                                                            "color": 214145
-                                                        },
-                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22NAKAMACHI+E%22+DBID%3aWF_QK"
+                                                        },
+                                                        {
+                                                            "type": 2,
+                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -2508,13 +2954,13 @@
                                                     "text": "DONG X",
                                                     "style": [
                                                         {
-                                                            "type": 2,
-                                                            "color": 214145
-                                                        },
-                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22DONG+X%22+DBID%3aWF_QK"
+                                                        },
+                                                        {
+                                                            "type": 2,
+                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -2534,13 +2980,13 @@
                                                     "text": "Study of texture effect on sheet failure in a limit dome height test by using",
                                                     "style": [
                                                         {
-                                                            "type": 2,
-                                                            "color": 214145
-                                                        },
-                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e2.aspx"
+                                                        },
+                                                        {
+                                                            "type": 2,
+                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -2732,13 +3178,13 @@
                                                     "text": "MOTOHASHI H",
                                                     "style": [
                                                         {
+                                                            "type": 2,
+                                                            "color": 214145
+                                                        },
+                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22MOTOHASHI+H%22+DBID%3aWF_QK"
-                                                        },
-                                                        {
-                                                            "type": 2,
-                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -2774,13 +3220,13 @@
                                                     "text": "TSUCHIDA S",
                                                     "style": [
                                                         {
+                                                            "type": 2,
+                                                            "color": 214145
+                                                        },
+                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22TSUCHIDA+S%22+DBID%3aWF_QK"
-                                                        },
-                                                        {
-                                                            "type": 2,
-                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -2800,13 +3246,13 @@
                                                     "text": "Development of plastic anisotropy in rolled aluminum sheets",
                                                     "style": [
                                                         {
+                                                            "type": 2,
+                                                            "color": 214145
+                                                        },
+                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e3.aspx"
-                                                        },
-                                                        {
-                                                            "type": 2,
-                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -2930,13 +3376,13 @@
                                                     "text": "ANAND L",
                                                     "style": [
                                                         {
+                                                            "type": 2,
+                                                            "color": 214145
+                                                        },
+                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22ANAND+L%22+DBID%3aWF_QK"
-                                                        },
-                                                        {
-                                                            "type": 2,
-                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -2972,13 +3418,13 @@
                                                     "text": "BALASUBRAMANIAN S",
                                                     "style": [
                                                         {
+                                                            "type": 2,
+                                                            "color": 214145
+                                                        },
+                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22BALASUBRAMANIAN+S%22+DBID%3aWF_QK"
-                                                        },
-                                                        {
-                                                            "type": 2,
-                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -2998,13 +3444,13 @@
                                                     "text": "Polycrystal plasticity:application to earing in cup drawing",
                                                     "style": [
                                                         {
+                                                            "type": 2,
+                                                            "color": 214145
+                                                        },
+                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e4.aspx"
-                                                        },
-                                                        {
-                                                            "type": 2,
-                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -3458,13 +3904,13 @@
                                                     "text": "\u5bcc\u7530\u4f73\u5b8f",
                                                     "style": [
                                                         {
+                                                            "type": 2,
+                                                            "color": 214145
+                                                        },
+                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%af%8c%e7%94%b0%e4%bd%b3%e5%ae%8f%22+DBID%3aWF_QK"
-                                                        },
-                                                        {
-                                                            "type": 2,
-                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -3500,13 +3946,13 @@
                                                     "text": "\u80e1\u5e73",
                                                     "style": [
                                                         {
+                                                            "type": 2,
+                                                            "color": 214145
+                                                        },
+                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e8%83%a1%e5%b9%b3%22+DBID%3aWF_QK"
-                                                        },
-                                                        {
-                                                            "type": 2,
-                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -3526,13 +3972,13 @@
                                                     "text": "\u6570\u503c\u5f39\u5851\u6027\u529b\u5b66",
                                                     "style": [
                                                         {
+                                                            "type": 2,
+                                                            "color": 214145
+                                                        },
+                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e7.aspx"
-                                                        },
-                                                        {
-                                                            "type": 2,
-                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -3620,13 +4066,13 @@
                                                     "text": "BUNGE H J",
                                                     "style": [
                                                         {
+                                                            "type": 2,
+                                                            "color": 214145
+                                                        },
+                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22BUNGE+H+J%22+DBID%3aWF_QK"
-                                                        },
-                                                        {
-                                                            "type": 2,
-                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -3646,13 +4092,13 @@
                                                     "text": "Texture analysis in material science",
                                                     "style": [
                                                         {
+                                                            "type": 2,
+                                                            "color": 214145
+                                                        },
+                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e8.aspx"
-                                                        },
-                                                        {
-                                                            "type": 2,
-                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -3740,13 +4186,13 @@
                                                     "text": "PIERCE D",
                                                     "style": [
                                                         {
+                                                            "type": 2,
+                                                            "color": 214145
+                                                        },
+                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22PIERCE+D%22+DBID%3aWF_QK"
-                                                        },
-                                                        {
-                                                            "type": 2,
-                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -3782,13 +4228,13 @@
                                                     "text": "ASARO R J",
                                                     "style": [
                                                         {
+                                                            "type": 2,
+                                                            "color": 214145
+                                                        },
+                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22ASARO+R+J%22+DBID%3aWF_QK"
-                                                        },
-                                                        {
-                                                            "type": 2,
-                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -4048,13 +4494,13 @@
                                                     "text": "SHIH C F",
                                                     "style": [
                                                         {
-                                                            "type": 2,
-                                                            "color": 214145
-                                                        },
-                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22SHIH+C+F%22+DBID%3aWF_QK"
+                                                        },
+                                                        {
+                                                            "type": 2,
+                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -4090,13 +4536,13 @@
                                                     "text": "NEEDLEMAN A",
                                                     "style": [
                                                         {
-                                                            "type": 2,
-                                                            "color": 214145
-                                                        },
-                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22NEEDLEMAN+A%22+DBID%3aWF_QK"
+                                                        },
+                                                        {
+                                                            "type": 2,
+                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -4116,13 +4562,13 @@
                                                     "text": "A tangent modulus method for rate dependent solids",
                                                     "style": [
                                                         {
-                                                            "type": 2,
-                                                            "color": 214145
-                                                        },
-                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e10.aspx"
+                                                        },
+                                                        {
+                                                            "type": 2,
+                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -4210,13 +4656,13 @@
                                                     "text": "\u6bdb\u536b\u6c11",
                                                     "style": [
                                                         {
-                                                            "type": 2,
-                                                            "color": 214145
-                                                        },
-                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e6%af%9b%e5%8d%ab%e6%b0%91%22+DBID%3aWF_QK"
+                                                        },
+                                                        {
+                                                            "type": 2,
+                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -4236,13 +4682,13 @@
                                                     "text": "\u91d1\u5c5e\u6750\u6599\u7684\u6676\u4f53\u5b66\u7ec7\u6784\u4e0e\u5404\u5411\u5f02\u6027",
                                                     "style": [
                                                         {
-                                                            "type": 2,
-                                                            "color": 214145
-                                                        },
-                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://d.wanfangdata.com.cn/ExternalResource-jxgcxb200801033%5e11.aspx"
+                                                        },
+                                                        {
+                                                            "type": 2,
+                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -4311,13 +4757,13 @@
                                                     "text": "\u5f20\u5c11\u777f",
                                                     "style": [
                                                         {
-                                                            "type": 2,
-                                                            "color": 214145
-                                                        },
-                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bc%a0%e5%b0%91%e7%9d%bf%22+DBID%3aWF_QK"
+                                                        },
+                                                        {
+                                                            "type": 2,
+                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -4353,13 +4799,13 @@
                                                     "text": "\u674e\u5927\u6c38",
                                                     "style": [
                                                         {
-                                                            "type": 2,
-                                                            "color": 214145
-                                                        },
-                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e6%9d%8e%e5%a4%a7%e6%b0%b8%22+DBID%3aWF_QK"
+                                                        },
+                                                        {
+                                                            "type": 2,
+                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -4395,13 +4841,13 @@
                                                     "text": "\u5f6d\u9896\u7ea2",
                                                     "style": [
                                                         {
-                                                            "type": 2,
-                                                            "color": 214145
-                                                        },
-                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bd%ad%e9%a2%96%e7%ba%a2%22+DBID%3aWF_QK"
+                                                        },
+                                                        {
+                                                            "type": 2,
+                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -4421,13 +4867,13 @@
                                                     "text": "FCC\u91d1\u5c5e\u677f\u6750\u6210\u5f62\u7387\u65e0\u5173\u6676\u4f53\u5851\u6027\u6a21\u62df",
                                                     "style": [
                                                         {
-                                                            "type": 2,
-                                                            "color": 214145
-                                                        },
-                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://d.wanfangdata.com.cn/Periodical_clkxygy200404010.aspx"
+                                                        },
+                                                        {
+                                                            "type": 2,
+                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -4479,13 +4925,13 @@
                                                     "text": "\u6750\u6599\u79d1\u5b66\u4e0e\u5de5\u827a",
                                                     "style": [
                                                         {
-                                                            "type": 2,
-                                                            "color": 214145
-                                                        },
-                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://c.wanfangdata.com.cn/periodical-clkxygy.aspx"
+                                                        },
+                                                        {
+                                                            "type": 2,
+                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -4613,7 +5059,8 @@
                                                                 }
                                                             ]
                                                         }
-                                                    ]
+                                                    ],
+                                                    "shapes": []
                                                 }
                                             ]
                                         }
@@ -4684,13 +5131,13 @@
                                                     "text": "\u5f20\u5c11\u777f",
                                                     "style": [
                                                         {
-                                                            "type": 2,
-                                                            "color": 214145
-                                                        },
-                                                        {
                                                             "type": 8,
                                                             "color": 0,
                                                             "uri": "http://s.wanfangdata.com.cn/Paper.aspx?q=Creator%3a%22%e5%bc%a0%e5%b0%91%e7%9d%bf%22+DBID%3aWF_QK"
+                                                        },
+                                                        {
+                                                            "type": 2,
+                                                            "color": 214145
                                                         }
                                                     ],
                                                     "condense_spacing": 0.0
@@ -5426,6 +5873,142 @@
                                                     "line_height": 7.800000000000001,
                                                     "flags": 4,
                                                     "text": "\u679c\u8868\u660e,\u6676\u4f53\u5851\u6027\u7406\u8bba\u80fd\u8f83\u597d\u5730\u9884\u6d4b\u91d1\u5c5e\u677f\u576f\u7684\u6210\u5f62\u6781\u9650\u66f2\u7ebf,\u540c\u65f6\u901a\u8fc7\u521d\u59cb\u7ec7\u6784\u53ca\u5176\u6f14\u5316\u7684\u6a21\u62df\u80fd\u6210\u529f\u5730\u5206\u6790\u6750\u6599\u5404\u5411\u5f02\u6027\u5bf9FLD\u7684\u5f71\u54cd.",
+                                                    "style": [],
+                                                    "condense_spacing": 0.0
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "bbox": [
+                                        49.0,
+                                        662.0,
+                                        450.6,
+                                        694.0
+                                    ],
+                                    "type": 0,
+                                    "alignment": 1,
+                                    "left_space": 0.0,
+                                    "right_space": 21.9,
+                                    "first_line_space": 0.0,
+                                    "before_space": 58.700000000000045,
+                                    "after_space": 0.0,
+                                    "line_space": 1.0256410256410255,
+                                    "tab_stops": [
+                                        305.6
+                                    ],
+                                    "lines": [
+                                        {
+                                            "bbox": [
+                                                49.0,
+                                                662.0,
+                                                325.0,
+                                                670.0
+                                            ],
+                                            "wmode": 0,
+                                            "dir": [
+                                                1.0,
+                                                0.0
+                                            ],
+                                            "line_break": 1,
+                                            "tab_stop": 0,
+                                            "spans": [
+                                                {
+                                                    "bbox": [
+                                                        49.0,
+                                                        662.0,
+                                                        89.0,
+                                                        670.0
+                                                    ],
+                                                    "color": 0,
+                                                    "font": "SimSun",
+                                                    "size": 8.0,
+                                                    "line_height": 10.4,
+                                                    "flags": 4,
+                                                    "text": "\u672c\u6587\u94fe\u63a5\uff1a",
+                                                    "style": [],
+                                                    "condense_spacing": 0.0
+                                                },
+                                                {
+                                                    "bbox": [
+                                                        89.0,
+                                                        662.0,
+                                                        325.0,
+                                                        670.0
+                                                    ],
+                                                    "color": 214145,
+                                                    "font": "SimSun",
+                                                    "size": 8.0,
+                                                    "line_height": 10.4,
+                                                    "flags": 4,
+                                                    "text": "http://d.wanfangdata.com.cn/Periodical_jxgcxb200801033.aspx ",
+                                                    "style": [],
+                                                    "condense_spacing": 0.0
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "bbox": [
+                                                49.0,
+                                                674.0,
+                                                361.0,
+                                                682.0
+                                            ],
+                                            "wmode": 0,
+                                            "dir": [
+                                                1.0,
+                                                0.0
+                                            ],
+                                            "line_break": 1,
+                                            "tab_stop": 0,
+                                            "spans": [
+                                                {
+                                                    "bbox": [
+                                                        49.0,
+                                                        674.0,
+                                                        361.0,
+                                                        682.0
+                                                    ],
+                                                    "color": 0,
+                                                    "font": "SimSun",
+                                                    "size": 8.0,
+                                                    "line_height": 10.4,
+                                                    "flags": 4,
+                                                    "text": "\u6388\u6743\u4f7f\u7528\uff1a\u4e0a\u6d77\u4ea4\u901a\u5927\u5b66(shjtdxip)\uff0c\u6388\u6743\u53f7\uff1ac6878cc7-4c8c-4893-98bd-9e4900cbd4b3 ",
+                                                    "style": [],
+                                                    "condense_spacing": 0.0
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "bbox": [
+                                                354.6,
+                                                686.0,
+                                                450.6,
+                                                694.0
+                                            ],
+                                            "wmode": 0,
+                                            "dir": [
+                                                1.0,
+                                                0.0
+                                            ],
+                                            "line_break": 0,
+                                            "tab_stop": 1,
+                                            "spans": [
+                                                {
+                                                    "bbox": [
+                                                        354.6,
+                                                        686.0,
+                                                        450.6,
+                                                        694.0
+                                                    ],
+                                                    "color": 0,
+                                                    "font": "SimSun",
+                                                    "size": 8.0,
+                                                    "line_height": 10.4,
+                                                    "flags": 4,
+                                                    "text": "\u4e0b\u8f7d\u65f6\u95f4\uff1a2010\u5e7412\u670811\u65e5",
                                                     "style": [],
                                                     "condense_spacing": 0.0
                                                 }
@@ -7222,168 +7805,7 @@
                                         569.4000000000001
                                     ],
                                     "width": 0.39999999999997726
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "bbox": [
-                        49.0,
-                        610.4,
-                        472.5,
-                        694.0
-                    ],
-                    "cols": 1,
-                    "space": 0,
-                    "before_space": 7.1,
-                    "columns": [
-                        {
-                            "bbox": [
-                                49.0,
-                                610.4,
-                                472.5,
-                                694.0
-                            ],
-                            "blocks": [
-                                {
-                                    "bbox": [
-                                        49.0,
-                                        662.0,
-                                        450.6,
-                                        694.0
-                                    ],
-                                    "type": 0,
-                                    "alignment": 1,
-                                    "left_space": 0.0,
-                                    "right_space": 21.9,
-                                    "first_line_space": 0.0,
-                                    "before_space": 51.60000000000002,
-                                    "after_space": 0.0,
-                                    "line_space": 1.0256410256410255,
-                                    "tab_stops": [
-                                        305.6
-                                    ],
-                                    "lines": [
-                                        {
-                                            "bbox": [
-                                                49.0,
-                                                662.0,
-                                                325.0,
-                                                670.0
-                                            ],
-                                            "wmode": 0,
-                                            "dir": [
-                                                1.0,
-                                                0.0
-                                            ],
-                                            "line_break": 1,
-                                            "tab_stop": 0,
-                                            "spans": [
-                                                {
-                                                    "bbox": [
-                                                        49.0,
-                                                        662.0,
-                                                        89.0,
-                                                        670.0
-                                                    ],
-                                                    "color": 0,
-                                                    "font": "SimSun",
-                                                    "size": 8.0,
-                                                    "line_height": 10.4,
-                                                    "flags": 4,
-                                                    "text": "\u672c\u6587\u94fe\u63a5\uff1a",
-                                                    "style": [],
-                                                    "condense_spacing": 0.0
-                                                },
-                                                {
-                                                    "bbox": [
-                                                        89.0,
-                                                        662.0,
-                                                        325.0,
-                                                        670.0
-                                                    ],
-                                                    "color": 214145,
-                                                    "font": "SimSun",
-                                                    "size": 8.0,
-                                                    "line_height": 10.4,
-                                                    "flags": 4,
-                                                    "text": "http://d.wanfangdata.com.cn/Periodical_jxgcxb200801033.aspx ",
-                                                    "style": [],
-                                                    "condense_spacing": 0.0
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            "bbox": [
-                                                49.0,
-                                                674.0,
-                                                361.0,
-                                                682.0
-                                            ],
-                                            "wmode": 0,
-                                            "dir": [
-                                                1.0,
-                                                0.0
-                                            ],
-                                            "line_break": 1,
-                                            "tab_stop": 0,
-                                            "spans": [
-                                                {
-                                                    "bbox": [
-                                                        49.0,
-                                                        674.0,
-                                                        361.0,
-                                                        682.0
-                                                    ],
-                                                    "color": 0,
-                                                    "font": "SimSun",
-                                                    "size": 8.0,
-                                                    "line_height": 10.4,
-                                                    "flags": 4,
-                                                    "text": "\u6388\u6743\u4f7f\u7528\uff1a\u4e0a\u6d77\u4ea4\u901a\u5927\u5b66(shjtdxip)\uff0c\u6388\u6743\u53f7\uff1ac6878cc7-4c8c-4893-98bd-9e4900cbd4b3 ",
-                                                    "style": [],
-                                                    "condense_spacing": 0.0
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            "bbox": [
-                                                354.6,
-                                                686.0,
-                                                450.6,
-                                                694.0
-                                            ],
-                                            "wmode": 0,
-                                            "dir": [
-                                                1.0,
-                                                0.0
-                                            ],
-                                            "line_break": 0,
-                                            "tab_stop": 1,
-                                            "spans": [
-                                                {
-                                                    "bbox": [
-                                                        354.6,
-                                                        686.0,
-                                                        450.6,
-                                                        694.0
-                                                    ],
-                                                    "color": 0,
-                                                    "font": "SimSun",
-                                                    "size": 8.0,
-                                                    "line_height": 10.4,
-                                                    "flags": 4,
-                                                    "text": "\u4e0b\u8f7d\u65f6\u95f4\uff1a2010\u5e7412\u670811\u65e5",
-                                                    "style": [],
-                                                    "condense_spacing": 0.0
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ],
-                            "shapes": [
+                                },
                                 {
                                     "bbox": [
                                         93.5,

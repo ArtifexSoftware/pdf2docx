@@ -211,6 +211,10 @@ class Test_Main(Utility):
         '''test text alignment.'''
         self.init_test('demo-text-alignment').verify_layout(threshold=0.95)
     
+    def test_text_section(self):
+        '''test page layout: section and column.'''
+        self.init_test('demo-text-section').verify_layout(threshold=0.95)
+    
     def test_unnamed_fonts(self):
         '''test unnamed fonts which destroys span bbox, and accordingly line/block layout.'''
         self.init_test('demo-text-unnamed-fonts').verify_layout(threshold=0.95)

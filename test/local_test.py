@@ -174,6 +174,7 @@ if __name__ == '__main__':
         'demo-text', 
         'demo-text-scaling', 
         'demo-text-alignment',
+        'demo-text-section',
         'demo-text-unnamed-fonts', 
         'demo-path-transformation', 
         'demo-table', 
