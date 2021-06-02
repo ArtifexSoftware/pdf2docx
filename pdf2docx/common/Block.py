@@ -36,37 +36,45 @@ class Block(Element):
         super().__init__(raw, parent)
 
 
+    @property
     def is_text_block(self):
         '''Whether test block.'''        
         return self._type==BlockType.TEXT    
     
+    @property
     def is_inline_image_block(self):
         '''Whether inline image block.'''
         return self._type==BlockType.IMAGE
     
+    @property
     def is_float_image_block(self):
         '''Whether float image block.'''
         return self._type==BlockType.FLOAT_IMAGE
     
+    @property
     def is_image_block(self):
         '''Whether inline or float image block.'''
-        return self.is_inline_image_block() or self.is_float_image_block()
+        return self.is_inline_image_block or self.is_float_image_block
 
+    @property
     def is_text_image_block(self):
         '''Whether text block or inline image block.'''
-        return self.is_text_block() or self.is_inline_image_block()
+        return self.is_text_block or self.is_inline_image_block
 
+    @property
     def is_lattice_table_block(self):
         '''Whether lattice table (explicit table borders) block.'''
         return self._type==BlockType.LATTICE_TABLE
 
+    @property
     def is_stream_table_block(self):
         '''Whether stream table (implied by table content) block.'''
         return self._type==BlockType.STREAM_TABLE
 
+    @property
     def is_table_block(self):
         '''Whether table (lattice or stream) block.'''
-        return self.is_lattice_table_block() or self.is_stream_table_block()
+        return self.is_lattice_table_block or self.is_stream_table_block
 
     def set_text_block(self):
         '''Set block type.'''

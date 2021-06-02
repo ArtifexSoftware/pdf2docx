@@ -112,7 +112,7 @@ class Layout:
         self._parse_text_format(**settings)
 
         # parse sub-layout, i.e. cell layouts under table block
-        for block in filter(lambda e: e.is_table_block(), self.blocks):
+        for block in filter(lambda e: e.is_table_block, self.blocks):
             block.parse(**settings)
 
 
@@ -131,7 +131,7 @@ class Layout:
         if not self.bbox & block.bbox: return
 
         # otherwise, further check lines in text block
-        if not block.is_text_image_block():  return
+        if not block.is_text_image_block:  return
         
         # NOTE: add each line as a single text block to avoid overlap between table block and combined lines
         split_block = TextBlock()

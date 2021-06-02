@@ -29,7 +29,7 @@ class Cell(Element, Layout):
         '''Text contained in this cell.'''
         if not self: return None
         # NOTE: sub-table may exists in 
-        return '\n'.join([block.text if block.is_text_block() else '<NEST TABLE>'
+        return '\n'.join([block.text if block.is_text_block else '<NEST TABLE>'
                                  for block in self.blocks])
 
 

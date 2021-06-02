@@ -111,7 +111,7 @@ class Shape(Element):
             blocks (list): A list of ``TextBlock`` instance, sorted in reading order in advance.
         """
         for block in blocks:
-            if not block.is_text_block(): continue
+            if not block.is_text_block: continue
 
             # not intersect yet
             if block.bbox.y1 < self.bbox.y0: continue

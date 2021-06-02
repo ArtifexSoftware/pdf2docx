@@ -42,35 +42,35 @@ class Blocks(ElementCollection):
     def lattice_table_blocks(self):
         '''Get lattice table blocks contained in this Collection.'''
         return list(filter(
-            lambda block: block.is_lattice_table_block(), self._instances))
+            lambda block: block.is_lattice_table_block, self._instances))
 
 
     @property
     def stream_table_blocks(self):
         '''Get stream table blocks contained in this Collection.'''
         return list(filter(
-            lambda block: block.is_stream_table_block(), self._instances))
+            lambda block: block.is_stream_table_block, self._instances))
 
 
     @property
     def table_blocks(self):
         '''Get table blocks contained in this Collection.'''
         return list(filter(
-            lambda block: block.is_table_block(), self._instances))
+            lambda block: block.is_table_block, self._instances))
 
 
     @property
     def inline_image_blocks(self):
         '''Get inline image blocks contained in this Collection.'''
         return list(filter(
-            lambda block: block.is_inline_image_block(), self._instances))
+            lambda block: block.is_inline_image_block, self._instances))
 
 
     @property
     def text_blocks(self):
         '''Get text/image blocks contained in this Collection.'''
         return list(filter(
-            lambda block: block.is_text_image_block(), self._instances))
+            lambda block: block.is_text_image_block, self._instances))
 
 
     def restore(self, raws:list):
@@ -161,7 +161,7 @@ class Blocks(ElementCollection):
             for line in group:
                 block = line.parent
                 # consider image block only (converted to text block)
-                if not block.is_inline_image_block(): continue
+                if not block.is_inline_image_block: continue
 
                 float_image = ImageBlock().from_text_block(block)
                 float_image.set_float_image_block()
@@ -224,9 +224,9 @@ class Blocks(ElementCollection):
         '''
         # get sub-lines from block
         def sub_lines(block):
-            if block.is_text_image_block():
+            if block.is_text_image_block:
                 return block.lines
-            elif block.is_table_block():
+            elif block.is_table_block:
                 return [Line().update_bbox(block.outer_bbox)]
             else:
                 return [Line().update_bbox(block.bbox)]
@@ -335,7 +335,7 @@ class Blocks(ElementCollection):
             # combine all lines into a TextBlock
             final_block = TextBlock()
             for block in blocks_collection:
-                if not block.is_text_image_block(): continue
+                if not block.is_text_image_block: continue
                 final_block.add(block.lines) # keep empty line, may help to identify cell shading
 
             # merge lines/spans contained in this text block
@@ -378,11 +378,11 @@ class Blocks(ElementCollection):
             merged = False
 
             # add block if previous isn't a text block
-            if ref is None or not ref.is_text_image_block():
+            if ref is None or not ref.is_text_image_block:
                 blocks.append(block)
             
             # add block if this isn't a text block
-            elif not block.is_text_image_block():
+            elif not block.is_text_image_block:
                 blocks.append(block)
             
             # check two adjacent text blocks
@@ -432,7 +432,7 @@ class Blocks(ElementCollection):
         lines = Lines()
         # collect lines for further step, or table block directly
         for block in self._instances:
-            if block.is_text_image_block() and block.is_flow_layout(*args):
+            if block.is_text_image_block and block.is_flow_layout(*args):
                 lines.extend([line for line in block.lines if not line.white_space_only]) # filter empty line
             else:
                 blocks.append(block)
@@ -457,7 +457,7 @@ class Blocks(ElementCollection):
         for block in self._instances:
 
             # add block if this isn't a text block
-            if not block.is_text_block(): 
+            if not block.is_text_block: 
                 blocks.append(block)
                 continue
             
@@ -482,7 +482,7 @@ class Blocks(ElementCollection):
             rects (Shapes): Potential styles applied on blocks.
         '''
         # parse text block style one by one
-        for block in filter(lambda e: e.is_text_block(), self._instances): 
+        for block in filter(lambda e: e.is_text_block, self._instances): 
             block.parse_text_format(rects)
 
 
@@ -511,7 +511,7 @@ class Blocks(ElementCollection):
         cell_layout = isinstance(self.parent, Cell)
         for block in self._instances:
             # make paragraphs
-            if block.is_text_image_block():                
+            if block.is_text_image_block:                
                 # new paragraph
                 p = doc.add_paragraph()
                 block.make_docx(p)
@@ -519,7 +519,7 @@ class Blocks(ElementCollection):
                 pre_table = False # mark block type
             
             # make table
-            elif block.is_table_block():
+            elif block.is_table_block:
                 make_table(block, pre_table)
                 pre_table = True # mark block type
 
@@ -536,10 +536,10 @@ class Blocks(ElementCollection):
         # is created.
         for block in self._instances[::-1]:
             # ignore float image block
-            if block.is_float_image_block(): continue
+            if block.is_float_image_block: continue
 
             # nothing to do if not end with table block
-            if not block.is_table_block(): break
+            if not block.is_table_block: break
 
             # otherwise, add a small paragraph
             p = doc.add_paragraph()
@@ -555,7 +555,7 @@ class Blocks(ElementCollection):
     def _assign_block_to_tables(block:Block, tables:list, blocks_in_tables:list, blocks:list):
         '''Collect blocks contained in table region ``blocks_in_tables`` and rest text blocks in ``blocks``.'''
         # lines in block for further check if necessary
-        lines = block.lines if block.is_text_image_block() else Lines()
+        lines = block.lines if block.is_text_image_block else Lines()
 
         # collect blocks contained in table region
         # NOTE: there is a probability that only a part of a text block is contained in table region, 
@@ -571,7 +571,7 @@ class Blocks(ElementCollection):
             elif not table.bbox.intersects(block.bbox): continue
             
             # deep into line level for text block
-            elif block.is_text_image_block():
+            elif block.is_text_image_block:
                 table_lines, not_table_lines = lines.split_with_intersection(table.bbox, constants.FACTOR_MOST)
 
                 # add lines to table
@@ -587,7 +587,7 @@ class Blocks(ElementCollection):
         
         # Now, this block (or part of it) belongs to previous layout
         else:
-            if block.is_table_block():
+            if block.is_table_block:
                 blocks.append(block)
             else:
                 text_block = TextBlock()
@@ -639,7 +639,7 @@ class Blocks(ElementCollection):
 
             # NOTE: the table bbox is counted on center-line of outer borders, so a half of top border
             # size should be excluded from the calculated vertical spacing
-            if block.is_table_block():
+            if block.is_table_block:
                 dw = block[0][0].border_width[0] / 2.0 # use top border of the first cell
             
             else:
@@ -654,16 +654,16 @@ class Blocks(ElementCollection):
             para_space = max(para_space, 0.0) # ignore negative value
 
             # ref to current (paragraph): set before-space for paragraph
-            if block.is_text_block():
+            if block.is_text_block:
                 # spacing before this paragraph
                 block.before_space = para_space
 
             # if ref to current (image): set before-space for paragraph
-            elif block.is_inline_image_block():
+            elif block.is_inline_image_block:
                 block.before_space = para_space
 
             # ref (paragraph/image) to current: set after-space for ref paragraph        
-            elif ref_block.is_text_block() or ref_block.is_inline_image_block():
+            elif ref_block.is_text_block or ref_block.is_inline_image_block:
                 ref_block.after_space = para_space
 
             # situation with very low probability, e.g. ref (table) to current (table)
@@ -682,7 +682,7 @@ class Blocks(ElementCollection):
         # must be remove in other place, especially the page space is run out.
         # Here, reduce the last row of table.
         block = self._instances[-1]
-        if block.is_table_block(): block[-1].height -= constants.MINOR_DIST
+        if block.is_table_block: block[-1].height -= constants.MINOR_DIST
 
 
     def _parse_line_spacing(self):
@@ -692,5 +692,5 @@ class Blocks(ElementCollection):
             Run parsing block vertical spacing in advance.
         '''
         for block in self._instances:
-            if block.is_text_block():
+            if block.is_text_block:
                 block.parse_relative_line_spacing()

@@ -84,7 +84,7 @@ class Utility:
         test_text_image_blocks = test_blocks.text_blocks
         
         # text blocks
-        f = lambda block: block.is_text_block()
+        f = lambda block: block.is_text_block
         sample_text_blocks = list(filter(f, sample_text_image_blocks))
         test_text_blocks   = list(filter(f, test_text_image_blocks))
         Utility._check_text_layout(sample_text_blocks, test_text_blocks, threshold)
@@ -95,7 +95,7 @@ class Utility:
         Utility._check_inline_image_layout(sample_inline_images, test_inline_images, threshold)
 
         # floating images
-        f = lambda block: block.is_float_image_block()
+        f = lambda block: block.is_float_image_block
         sample_float_images = list(filter(f, sample_text_image_blocks))
         test_float_images = list(filter(f, test_text_image_blocks))
         Utility._check_float_image_layout(sample_float_images, test_float_images, threshold)        
