@@ -12,7 +12,7 @@ to distinguish these different layouts.
 
     {
         'bbox': (x0,y0,x1,y1)
-        'cols': 1,
+        'num_cols': 1,
         'space': 0,
         'columns': [{
             ... # column properties
@@ -42,14 +42,14 @@ class Section(BaseCollection):
     
 
     @property
-    def cols(self): return len(self)
+    def num_cols(self): return len(self)
 
 
     def store(self):
         '''Store parsed section layout in dict format.'''
         return {
             'bbox'   : tuple([x for x in self.bbox]),
-            'cols'   : self.cols,
+            'num_cols'   : self.num_cols,
             'space'  : self.space,
             'before_space'  : self.before_space,
             'columns': super().store()

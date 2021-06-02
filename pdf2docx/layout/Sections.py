@@ -40,7 +40,7 @@ class Sections(BaseCollection):
         line_height = min(self[0].before_space, 11)
         pf = reset_paragraph_format(p, line_spacing=Pt(line_height))
         pf.space_after = Pt(self[0].before_space-line_height)
-        if self[0].cols==2: 
+        if self[0].num_cols==2: 
             doc.add_section(WD_SECTION.CONTINUOUS)
         
         # create first section
@@ -73,4 +73,5 @@ class Sections(BaseCollection):
         '''Plot all section blocks for debug purpose.'''
         for section in self: 
             for column in section:
-                column.blocks.plot(page)
+                column.plot(page, stroke=(1,1,0), width=1.5) # column bbox
+                column.blocks.plot(page) # blocks

@@ -19,13 +19,14 @@ class PDF2DOCX:
             password (str): Password for encrypted pdf. Default to None if not encrypted.
             start (int, optional): First page to process. Defaults to 0.
             end (int, optional): Last page to process. Defaults to None.
-            pages (list, optional): Range of pages. Defaults to None.
+            pages (list, optional): Range of pages, e.g. --pages=1,3,5. Defaults to None.
             kwargs (dict) : Configuration parameters.
         
         .. note::
             Refer to :py:meth:`~pdf2docx.converter.Converter.convert` for detailed description on above arguments.
         '''
         # index starts from zero or one
+        if isinstance(pages, int): pages = [pages] # in case --pages=1
         if not kwargs.get('zero_based_index', True):
             start = max(start-1, 0)
             if end: end -= 1
@@ -41,13 +42,13 @@ class PDF2DOCX:
     
 
     @staticmethod
-    def debug(pdf_file:str, password:str=None, page_index:int=0, docx_file:str=None, debug_pdf:str=None, layout_file:str='layout.json', **kwargs):
+    def debug(pdf_file:str, password:str=None, page:int=0, docx_file:str=None, debug_pdf:str=None, layout_file:str='layout.json', **kwargs):
         '''Convert one PDF page and plot layout information for debugging.
         
         Args:
             pdf_file (str) : PDF filename to read from.
             password (str): Password for encrypted pdf. Default to None if not encrypted.
-            page_index (int, optional): Page index to convert.
+            page (int, optional): Page index to convert.
             docx_file (str, optional): docx filename to write to.
             debug_pdf (str, optional): Filename for new pdf storing layout information. Defaults to same name with pdf file.
             layout_file (str, optional): Filename for new json file storing parsed layout data. Defaults to ``layout.json``.
@@ -55,11 +56,11 @@ class PDF2DOCX:
         '''
         # index starts from zero or one
         if not kwargs.get('zero_based_index', True):
-            page_index = max(page_index-1, 0)
+            page = max(page-1, 0)
 
         # explode exception directly if debug mode
         cv = Converter(pdf_file, password)
-        cv.debug_page(page_index, docx_file, debug_pdf, layout_file, **kwargs)
+        cv.debug_page(page, docx_file, debug_pdf, layout_file, **kwargs)
         cv.close()
             
 
@@ -73,9 +74,10 @@ class PDF2DOCX:
             password (str): Password for encrypted pdf. Default to None if not encrypted.
             start (int, optional): First page to process. Defaults to 0.
             end (int, optional): Last page to process. Defaults to None.
-            pages (list, optional): Range of pages. Defaults to None.
+            pages (list, optional): Range of pages, e.g. --pages=1,3,5. Defaults to None.
         '''
         # index starts from zero or one
+        if isinstance(pages, int): pages = [pages] # in case --pages=1
         if not kwargs.get('zero_based_index', True):
             start = max(start-1, 0)
             if end: end -= 1

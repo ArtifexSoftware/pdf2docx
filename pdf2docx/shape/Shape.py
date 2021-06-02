@@ -111,7 +111,7 @@ class Shape(Element):
             blocks (list): A list of ``TextBlock`` instance, sorted in reading order in advance.
         """
         for block in blocks:
-            if not block.is_text_block(): continue
+            if not block.is_text_block: continue
 
             # not intersect yet
             if block.bbox.y1 < self.bbox.y0: continue
@@ -244,6 +244,8 @@ class Stroke(Shape):
             w_line = line.bbox.width if h_line else line.bbox.height
             if w_shape <= w_line + 2*constants.MINOR_DIST: # 1 pt tolerance at both sides
                 return RectType.STRIKE.value | RectType.UNDERLINE.value
+            else:
+                return RectType.BORDER.value
 
         return self.default_type
 

@@ -83,7 +83,15 @@ class TableBlock(Block):
         '''
         return [ [cell.text for cell in row] for row in self._rows ]
 
-    
+    @property
+    def outer_bbox(self):
+        '''Outer bbox with border considered.'''
+        x0, y0, x1, y1 = self.bbox
+        w0_top, w0_right, w0_bottom, w0_left = self[0][0].border_width
+        w1_top, w1_right, w1_bottom, w1_left = self[-1][-1].border_width
+        return (x0-w0_left/2.0, y0-w0_top/2.0, x1+w1_right/2.0, y1+w1_bottom/2.0)
+
+
     def append(self, row:Row):
         '''Append row to table and update bbox accordingly.
 

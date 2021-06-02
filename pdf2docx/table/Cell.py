@@ -29,13 +29,13 @@ class Cell(Element, Layout):
         '''Text contained in this cell.'''
         if not self: return None
         # NOTE: sub-table may exists in 
-        return '\n'.join([block.text if block.is_text_block() else '<NEST TABLE>'
+        return '\n'.join([block.text if block.is_text_block else '<NEST TABLE>'
                                  for block in self.blocks])
 
 
     @property
     def working_bbox(self):
-        '''Bbox with border considered.'''
+        '''Inner bbox with border excluded.'''
         x0, y0, x1, y1 = self.bbox
         w_top, w_right, w_bottom, w_left = self.border_width
         bbox = (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
@@ -74,14 +74,14 @@ class Cell(Element, Layout):
 
     def store(self):
         if bool(self):
-            res = super().store()
+            res = super().store() # Element
             res.update({
                 'bg_color': self.bg_color,
                 'border_color': self.border_color,
                 'border_width': self.border_width,
-                'merged_cells': self.merged_cells,
-                'blocks': self.blocks.store()
+                'merged_cells': self.merged_cells
             })
+            res.update(Layout.store(self))
             return res
         else:
             return None
