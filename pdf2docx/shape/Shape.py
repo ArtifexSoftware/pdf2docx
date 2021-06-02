@@ -244,6 +244,8 @@ class Stroke(Shape):
             w_line = line.bbox.width if h_line else line.bbox.height
             if w_shape <= w_line + 2*constants.MINOR_DIST: # 1 pt tolerance at both sides
                 return RectType.STRIKE.value | RectType.UNDERLINE.value
+            else:
+                return RectType.BORDER.value
 
         return self.default_type
 

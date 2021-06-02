@@ -224,11 +224,16 @@ class Blocks(ElementCollection):
         '''
         # get sub-lines from block
         def sub_lines(block):
-            return block.lines if block.is_text_image_block() else [Line().update_bbox(block.bbox)]
+            if block.is_text_image_block():
+                return block.lines
+            elif block.is_table_block():
+                return [Line().update_bbox(block.outer_bbox)]
+            else:
+                return [Line().update_bbox(block.bbox)]
         
         # exclude potential shading in white bg-color
         shadings_exclude_white = list(filter(
-            lambda shape: shape.color != rgb_value((1,1,1)), potential_shadings
+            lambda shape: shape.color != rgb_value([1,1,1]), potential_shadings
         ))
         
         # check block by block
