@@ -21,8 +21,11 @@ to distinguish these different layouts.
     }
 '''
 
+from ..common.Block import Block
+from ..common.Collection import Collection
 from ..common.Element import Element
 from ..layout.Layout import Layout
+from ..shape.Shape import Shape
 
 
 class Column(Element, Layout):
@@ -37,6 +40,14 @@ class Column(Element, Layout):
 
     @property
     def working_bbox(self): return self.bbox
+
+
+    def add_elements(self, elements:Collection):
+        '''Add candidate elements, i.e. blocks or shapes, to current column.'''
+        blocks = [e for e in elements if isinstance(e, Block)]
+        shapes = [e for e in elements if isinstance(e, Shape)]
+        self.assign_blocks(blocks)
+        self.assign_shapes(shapes)
 
 
     def store(self):

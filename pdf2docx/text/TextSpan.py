@@ -309,12 +309,8 @@ class TextSpan(Element):
         elif 0.35*h_span < d < 0.75*h_span:
             rect.type = RectType.STRIKE
 
-        # unknown style
-        else:
-            rect.type = rect.default_type
-
         # check rect type again
-        if rect.type==rect.default_type: return False
+        if not rect.is_determined: return False
 
         style =  {
             'type': rect.type,

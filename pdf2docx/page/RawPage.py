@@ -30,14 +30,13 @@ from .BasePage import BasePage
 from ..layout.Layout import Layout
 from ..layout.Section import Section
 from ..layout.Column import Column
-from ..shape.Shape import Hyperlink, Shape
+from ..shape.Shape import Hyperlink
 from ..shape.Shapes import Shapes
 from ..image.ImagesExtractor import ImagesExtractor
 from ..shape.Paths import Paths
 from ..font.Fonts import Font, Fonts
 from ..text.TextSpan import TextSpan
 from ..common.Element import Element
-from ..common.Block import Block
 from ..common.share import RectType, debug_plot
 from ..common import constants
 from ..common.Collection import Collection
@@ -169,11 +168,23 @@ class RawPage(BasePage, Layout):
         elements.extend(self.shapes)
         if not elements: return
         
-        # check section row by row
         pre_section = Collection()
         pre_num_col = 1
         y_ref = Y0 # to calculate v-distance between sections
         sections = []
+
+        def create_pre_section(num_col, elements, y_ref):
+            # append to pre-pre-section if both single column
+            if sections and sections[-1].num_cols==num_col==1:
+                column = sections[-1][0] # type: Column
+                column.union_bbox(elements)
+                column.add_elements(elements)
+            # otherwise, create new section
+            else:
+                section = self._create_section(num_col, elements, (X0, X1), y_ref)
+                if section: sections.append(section)
+
+        # check section row by row
         for row in elements.group_by_rows():
             # check column col by col
             cols = row.group_by_columns()
@@ -197,7 +208,7 @@ class RawPage(BasePage, Layout):
                 
                 # further check 2-cols -> the height
                 elif y1-y0<settings['min_section_height']:
-                    pre_num_col = 1                
+                    pre_num_col = 1
 
             elif pre_num_col==2 and current_num_col==2:
                 # current 2-cols not align with pre-section ?
@@ -208,13 +219,11 @@ class RawPage(BasePage, Layout):
 
             # finalize pre-section if different to current section
             if current_num_col!=pre_num_col:
-                # create pre-section
-                section = self._create_section(pre_num_col, pre_section, (X0, X1), y_ref)
-                if section:
-                    sections.append(section)
-                    y_ref = section[-1].bbox[3]
+                # process pre-section
+                create_pre_section(pre_num_col, pre_section, y_ref)
+                if sections: y_ref = sections[-1][-1].bbox[3]
 
-                # start new section                
+                # start potential new section                
                 pre_section = Collection(row)
                 pre_num_col = current_num_col
 
@@ -223,8 +232,7 @@ class RawPage(BasePage, Layout):
                 pre_section.extend(row)
 
         # the final section
-        section = self._create_section(current_num_col, pre_section, (X0, X1), y_ref)
-        sections.append(section)
+        create_pre_section(current_num_col, pre_section, y_ref)
 
         return sections
 
@@ -353,18 +361,6 @@ class RawPage(BasePage, Layout):
             })
 
         return hyperlinks
-    
-
-    @staticmethod
-    def _create_column(bbox, elements:Collection):
-        '''Create column based on bbox and candidate elements: blocks and shapes.'''
-        if not bbox: return None
-        column = Column().update_bbox(bbox)
-        blocks = [e for e in elements if isinstance(e, Block)]
-        shapes = [e for e in elements if isinstance(e, Shape)]
-        column.assign_blocks(blocks)
-        column.assign_shapes(shapes)
-        return column
 
 
     @staticmethod
@@ -375,7 +371,8 @@ class RawPage(BasePage, Layout):
 
         if num_col==1:
             x0, y0, x1, y1 = elements.bbox
-            column = RawPage._create_column((X0, y0, X1, y1), elements)
+            column = Column().update_bbox((X0, y0, X1, y1))
+            column.add_elements(elements)
             section = Section(space=0, columns=[column])
             before_space = y0 - y_ref
         else:
@@ -383,8 +380,13 @@ class RawPage(BasePage, Layout):
             u0, v0, u1, v1 = cols[0].bbox
             m0, n0, m1, n1 = cols[1].bbox
             u = (u1+m0)/2.0
-            column_1 = RawPage._create_column((X0, v0, u, v1), elements)
-            column_2 = RawPage._create_column((u, n0, X1, n1), elements)
+
+            column_1 = Column().update_bbox((X0, v0, u, v1))
+            column_1.add_elements(elements)
+
+            column_2 = Column().update_bbox((u, n0, X1, n1))
+            column_2.add_elements(elements)
+
             section = Section(space=0, columns=[column_1, column_2])
             before_space = v0 - y_ref
 

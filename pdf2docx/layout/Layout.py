@@ -25,7 +25,6 @@ The page layout parsing idea:
 '''
 
 from ..common import constants
-from ..common.share import RectType
 from ..text.TextBlock import TextBlock
 from ..shape.Shapes import Shapes
 

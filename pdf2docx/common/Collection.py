@@ -161,7 +161,7 @@ class Collection(BaseCollection):
     
     
     def group_by_columns(self, factor:float=0.0):
-        '''Group lines into columns.'''
+        '''Group elements into columns based on the bbox (ignore text direction).'''
         # split in columns
         fun = lambda a,b: a.vertically_align_with(b, factor=factor, text_direction=False)
         groups = self.group(fun)
@@ -172,9 +172,9 @@ class Collection(BaseCollection):
 
 
     def group_by_rows(self, factor:float=0.0):
-        '''Group lines into rows.'''
+        '''Group elements into rows based on the bbox (ignore text direction).'''
         # split in rows, with original text block considered
-        fun = lambda a,b: a.horizontally_align_with(b, factor=factor)
+        fun = lambda a,b: a.horizontally_align_with(b, factor=factor, text_direction=False)
         groups = self.group(fun)
 
         # NOTE: increasing in y-direction is required!
