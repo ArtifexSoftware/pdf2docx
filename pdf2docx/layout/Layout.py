@@ -123,7 +123,7 @@ class Layout:
             block (TextBlock, TableBlock): Text/table block to add. 
         '''
         # add block directly if fully contained in cell
-        if self.contains(block, constants.FACTOR_ALMOST):
+        if self.contains(block, threshold=constants.FACTOR_SAME):
             self.blocks.append(block)
             return
         
