@@ -26,7 +26,7 @@ from ..layout.Blocks import Blocks
 from ..shape.Shapes import Shapes
 from ..text.Lines import Lines
 from .TableStructure import TableStructure
-from .Border import HBorder, VBorder, Borders
+from .Border import Border, Borders
 
 
 class TablesConstructor:
@@ -209,7 +209,7 @@ class TablesConstructor:
         
         Args:
             lines (Lines): lines contained in table cells.
-            outer_borders (tuple): Boundary borders of table, ``(top, bottom, left, right)``. 
+            outer_borders (tuple): Boundary borders of table, ``(top, bottom, left, right)``.
             explicit_strokes (Shapes): Showing borders in a stream table; can be empty.
             explicit_shadings (Shapes): Showing shadings in a stream table; can be empty.
         
@@ -256,10 +256,10 @@ class TablesConstructor:
         '''
         x0, y0, x1, y1 = inner_bbox
         X0, Y0, X1, Y1 = outer_bbox
-        top    = HBorder(border_range=(Y0, y0), reference=False)
-        bottom = HBorder(border_range=(y1, Y1), reference=False)
-        left   = VBorder(border_range=(X0, x0), reference=False)
-        right  = VBorder(border_range=(x1, X1), reference=False)
+        top    = Border('HT', border_range=(Y0, y0), reference=False)
+        bottom = Border('HB', border_range=(y1, Y1), reference=False)
+        left   = Border('VL', border_range=(X0, x0), reference=False)
+        right  = Border('VR', border_range=(x1, X1), reference=False)
 
         # boundary borders of each border
         top.set_boundary_borders((left, right))
@@ -321,7 +321,7 @@ class TablesConstructor:
             else:                
                 x0 = cols_lines[i].bbox.x1
                 x1 = cols_lines[i+1].bbox.x0
-                right = VBorder(
+                right = Border(border_type='VI',
                     border_range=(x0, x1), 
                     borders=(TOP, BOTTOM), 
                     reference=False) # vertical border always valuable
@@ -353,7 +353,7 @@ class TablesConstructor:
                     # bottom border of current row
                     # NOTE: for now, this horizontal border is just for reference; 
                     # it'll becomes real border when used as an outer border
-                    bottom = HBorder(
+                    bottom = Border(border_type='HI',
                         border_range=(y0, y1), 
                         borders=(left, right), 
                         reference=is_reference)

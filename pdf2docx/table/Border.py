@@ -33,11 +33,13 @@ from ..common.Collection import BaseCollection
 class Border:
     '''Border for stream table.'''
 
-    def __init__(self, border_type='h', border_range:tuple=None, borders:tuple=None, reference:bool=False):
+    def __init__(self, border_type='hi', border_range:tuple=None, borders:tuple=None, reference:bool=False):
         '''Border for stream table.
         
         Args:
-            border_type (str): ``h`` - horizontal border; ``v`` - vertical border.
+            border_type (str): border orientation/position, e.g. 'hi' represents horizontal inner border.
+                * ``h/v``       - horizontal/vertical border;
+                * ``t/b/l/r/i`` - outer border (top/bottom/left/right), or inner border
             border_range (tuple): Valid range, e.g. ``(x0, x1)`` for vertical border.
             borders (tuple): Boundary borders in ``Border`` type, e.g. 
                 * top and bottom horizontal borders for current vertical border; 
@@ -45,11 +47,11 @@ class Border:
             reference (bool): Reference border will not convert to real table border.
         '''
         # border type
-        self.is_horizontal = border_type.upper()=='H'
+        self.border_type = border_type.upper()
 
         # Whether the MAIN dimension (e.g. the vertical position for H-border) is determined.
-        # NOTE: the other dimension (e.g. the left/right position for H-border) is determined by boundary borders, 
-        # so a border is fully determined on condition that:
+        # NOTE: the other dimension (e.g. the left/right position for H-border) is determined 
+        # by boundary borders, so a border is fully determined on condition that:
         # - it is finalized, 
         # - AND the boundary borders are also finalized. 
         self.finalized = False
@@ -70,14 +72,36 @@ class Border:
         self.width = constants.HIDDEN_W_BORDER
         self.color = 0 # black by default
         
-    
+
+    @property
+    def is_horizontal(self): return 'H' in self.border_type
+
+    @property
+    def is_vertical(self): return 'V' in self.border_type
+
+    @property
+    def is_top(self): return 'T' in self.border_type
+
+    @property
+    def is_bottom(self): return 'B' in self.border_type
+
     @property
     def value(self):
         '''Finalized position, e.g. y-coordinate of horizontal border. 
-        Average value if not finalized.
-        '''
-        return self._value if self.finalized else (self.LRange+self.URange)/2.0
 
+        Average value if not finalized, but close to the table side for top and bottom 
+        boundary borders.
+        '''
+        if self.finalized:
+            return self._value
+        else:
+            avg = (self.LRange+self.URange)/2.0
+            if self.is_top:
+                return max(self.URange-3, avg)
+            elif self.is_bottom:
+                return min(self.LRange+3, avg)
+            else:
+                return avg
 
     @property
     def centerline(self):
@@ -213,18 +237,6 @@ class Border:
         return stroke
 
 
-class HBorder(Border):
-    def __init__(self, border_range:tuple=None, borders:tuple=None, reference:bool=False):
-        '''Horizontal border.'''
-        super().__init__('h', border_range, borders, reference)
-
-
-class VBorder(Border):
-    def __init__(self, border_range:tuple=None, borders:tuple=None, reference:bool=False):
-        '''Vertical border.'''
-        super().__init__('v', border_range, borders, reference)
-
-
 class Borders(BaseCollection):
     '''Collection of ``Border`` instances.'''
 
@@ -263,17 +275,21 @@ class Borders(BaseCollection):
             ])
         self._finalize_by_strokes(tmp_strokes)
 
-        # finalize borders by their layout finally:
+        # finalize borders by their layout finally (use an average position):
         # - un-finalized, and
         # - not reference-only borders        
         borders = list(filter(lambda border: not (border.finalized or border.is_reference), self._instances))
 
-        #  h-borders
-        h_borders = list(filter(lambda border: border.is_horizontal, borders))
+        # h-borders
+        # NOTE: exclude the top and bottom boundary borders, since they'll be adjusted by
+        # principle that minimizing the table region.
+        h_borders = list(filter(
+            lambda border: border.is_horizontal and 
+                    not (border.is_top or border.is_bottom), borders))
         self._finalize_by_layout(h_borders)
 
         # v-borders
-        v_borders = list(filter(lambda border: not border.is_horizontal, borders))
+        v_borders = list(filter(lambda border: border.is_vertical, borders))
         self._finalize_by_layout(v_borders)
 
     
@@ -304,7 +320,7 @@ class Borders(BaseCollection):
         * terminate the process when all borders are finalized
         
         Args:
-            borders (list): A list of ``HBorder`` or ``VBorder`` instances.
+            borders (list): A list of ``Border`` instances.
         '''
         # collect interval points and sort in x-increasing order
         x_points = set()
@@ -319,8 +335,7 @@ class Borders(BaseCollection):
         x_status = [] # [(x, status), ...]
         for i in range(len(x_points)-1):
             x = (x_points[i]+x_points[i+1])/2.0 # cenper point
-            s = list(map(
-                    lambda border: int(border.is_valid(x)), borders))
+            s = [int(border.is_valid(x)) for border in borders]
             x_status.append((x,s))
             
         # sort per count since preferring passing through more borders
@@ -344,7 +359,7 @@ class Borders(BaseCollection):
 
             # now, finalize borders
             for border, border_status in zip(borders, status):
-                if border_status: border.finalize_by_value(x)
+                if border_status: border.finalize_by_value(int(x))
 
 
     def _add_full_dummy_borders(self):
@@ -352,10 +367,22 @@ class Borders(BaseCollection):
         
         The original borders extracted from contents may be not able to represent the real 
         structure. Then, the reference borders has a chance to be finalized by explicit stroke 
-        or fillings.
+        or fillings::
+
+           +-------+---------+----------+
+           +-------+---------+          +  <- shading in the first row, but not represented
+           +-------+---------+          +  <- empty in these cells, so no borders extracted
+           +-------+---------+----------+
+
+        Add two dummy borders to form full lattices::
+
+           +-------+---------+----------+
+           +-------+---------+~~~~~~~~~~+  <- dummy borders
+           +-------+---------+~~~~~~~~~~+
+           +-------+---------+----------+
         '''
         h_borders = list(filter(lambda border: border.is_horizontal, self._instances))
-        v_borders = list(filter(lambda border: not border.is_horizontal, self._instances))
+        v_borders = list(filter(lambda border: border.is_vertical, self._instances))
 
         # group h-borders
         raw_borders_map = defaultdict(list)
@@ -388,5 +415,5 @@ class Borders(BaseCollection):
                 # dummy border must in valid range
                 if h_range[0]>upper_bound or h_range[1]<lower_bound: continue
 
-                h_border = HBorder(h_range, (left, right), reference=True)
+                h_border = Border('HI', h_range, (left, right), reference=True)
                 self._instances.append(h_border)
