@@ -5,7 +5,8 @@
 
 import fitz
 from .Element import Element
-from .share import IText, TextDirection, solve_rects_intersection, graph_bfs
+from .share import (IText, TextDirection)
+from .algorithm import (solve_rects_intersection, graph_bfs)
 
 
 class BaseCollection:

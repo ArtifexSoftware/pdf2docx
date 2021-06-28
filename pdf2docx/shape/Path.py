@@ -28,16 +28,26 @@ import fitz
 from ..common.share import rgb_value
 from ..common import constants
 
+
 class Segment:
     '''A segment of path, e.g. a line or a rectangle or a curve.'''
     def __init__(self, item):
         self.points = item[1:]
+    
+    @property
+    def is_iso_oriented(self): return True
 
     def to_strokes(self, width:float, color:list): return []
 
 
 class L(Segment):
     '''Line path with source ``("l", p1, p2)``.'''
+    @property
+    def is_iso_oriented(self):
+        x0, y0 = self.points[0]
+        x1, y1 = self.points[1]
+        return abs(x0-x1)<1e-3 or abs(y0-y1)<1e-3
+
     def to_strokes(self, width:float, color:list):
         """Convert to stroke dict.
 
@@ -101,7 +111,8 @@ class R(Segment):
 
 class C(Segment):
     '''Bezier curve path with source ``("c", p1, p2, p3, p4)``.'''
-    pass
+    @property
+    def is_iso_oriented(self): return False
 
 
 class Segments:
@@ -118,31 +129,24 @@ class Segments:
             item = ('l', items[-1][-1], items[0][1])
             self._instances.append(L(item))
 
-        # calculate bbox
-        self.bbox, self.area = self._cal_bbox_and_area()
-
     
     def __iter__(self): return (instance for instance in self._instances)
 
 
     @property
     def is_iso_oriented(self):
-        '''ISO-oriented criterion: the ratio of real area to bbox exceeds 0.9.'''
-        bbox_area = self.bbox.getArea()
-        return bbox_area==0 or self.area/bbox_area>=constants.FACTOR_MOST
+        '''Whether all segments are ISO-oriented or not.'''
+        for instance in self._instances:
+            if not instance.is_iso_oriented: return False
+        return True
 
 
-    def _cal_bbox_and_area(self):
-        '''Calculate bbox and area of Segments. 
-        
-        .. note::
-            * For iso-oriented segments, ``bbox.getArea()==0``.
-            * The real area is calculated with Green formulas. Nut the boundary of Bezier curve 
-              is simplified with its control points.
-        '''
+    @property
+    def bbox(self):
+        '''Calculate bbox. '''
         # rectangle area
         if len(self._instances)==1 and isinstance(self._instances[0], R):
-            return self._instances[0].rect, self._instances[0].rect.getArea()
+            return self._instances[0].rect
         
         # Now segments composed of connected points
         points = []
@@ -154,21 +158,8 @@ class Segments:
         y0 = min(points, key=lambda point: point[1])[1]
         x1 = max(points, key=lambda point: point[0])[0]
         y1 = max(points, key=lambda point: point[1])[1]
-        rect = fitz.Rect(
+        return fitz.Rect(
             round(x0, 2), round(y0, 2), round(x1, 2), round(y1, 2))
-
-        # real area
-        # https://en.wikipedia.org/wiki/Shoelace_formula
-        area = 0.0
-        start, end = points[0], points[-1]
-        if abs(start[0]-end[0])+abs(start[1]-end[1])<1e-3: # closed curve        
-            for i in range(len(points)-1):
-                x0, y0 = points[i]
-                x1, y1 = points[i+1]
-                area += x0*y1 - x1*y0
-            area = abs(area/2.0)
-
-        return rect, area
 
 
     def to_strokes(self, width:float, color:list):

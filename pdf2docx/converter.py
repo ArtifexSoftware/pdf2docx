@@ -57,6 +57,7 @@ class Converter:
         '''Default parsing parameters.'''
         return {
             'debug'                          : False,  # plot layout if True
+            'ignore_page_error'              : True,   # not break the conversion process due to failure of a certain page if True
             'multi_processing'               : False,  # convert pages with multi-processing if True
             'cpu_count'                      : 0,      # working cpu count when convert pages with multi-processing
             'min_section_height'             : 20.0,   # The minimum height of a valid section.
@@ -80,7 +81,8 @@ class Converter:
             'lines_right_aligned_threshold'  : 1.0,    # right aligned if d_x1 of two lines is lower than this value (Pt)
             'lines_center_aligned_threshold' : 2.0,    # center aligned if delta center of two lines is lower than this value
             'clip_image_res_ratio'           : 3.0,    # resolution ratio (to 72dpi) when cliping page image
-            'curve_path_ratio'               : 0.2,    # clip page bitmap if the component of curve paths exceeds this ratio
+            'min_svg_gap_dx'                 : 15.0,   # merge adjacent vector graphics if the horizontal gap is less than this value
+            'min_svg_gap_dy'                 : 15.0,   # merge adjacent vector graphics if the vertical gap is less than this value
             'extract_stream_table'           : False,  # don't consider stream table when extracting tables
             'parse_lattice_table'            : True,   # whether parse lattice table or not; may destroy the layout if set False
             'parse_stream_table'             : True,   # whether parse stream table or not; may destroy the layout if set False
@@ -157,23 +159,23 @@ class Converter:
         num_pages = len(pages)
         for i, page in enumerate(pages, start=1):
             logging.info('(%d/%d) Page %d', i, num_pages, page.id+1)
-
-            if kwargs['debug']:
+            try:
                 page.parse(**kwargs)
-            else:
-                try:
-                    page.parse(**kwargs)
-                except Exception as e:
-                    logging.warning('Ignore page due to error: %s', e)
+            except Exception as e:
+                if not kwargs['debug'] and kwargs['ignore_page_error']:
+                    logging.error('Ignore page %d due to parsing page error: %s', page.id, e)
+                else:
+                    raise ConversionException(f'Error when parsing page {page.id}: {e}')
 
         return self
 
 
-    def make_docx(self, docx_filename=None):
+    def make_docx(self, docx_filename=None, **kwargs):
         '''Step 4 of converting process: create docx file with converted pages.
         
         Args:
             docx_filename (str): docx filename to write to.
+            kwargs (dict, optional): Configuration parameters. 
         '''
         logging.info(self._color_output('[4/4] Creating pages...'))
 
@@ -197,7 +199,10 @@ class Converter:
             try:
                 page.make_docx(docx_file)
             except Exception as e:
-                logging.error('Ignore page due to error: %s', e)
+                if not kwargs['debug'] and kwargs['ignore_page_error']:
+                    logging.error('Ignore page %d due to making page error: %s', page.id, e)
+                else:
+                    raise MakedocxException(f'Error when make page {page.id}: {e}')
 
         # save docx
         docx_file.save(filename)
@@ -316,7 +321,7 @@ class Converter:
         if settings['multi_processing']:
             self._convert_with_multi_processing(docx_filename, start, end, **settings)
         else:
-            self.parse(start, end, pages, **settings).make_docx(docx_filename)
+            self.parse(start, end, pages, **settings).make_docx(docx_filename, **settings)
 
         logging.info('Terminated in %.2fs.', perf_counter()-t0)        
 
@@ -371,7 +376,7 @@ class Converter:
             os.remove(filename)
         
         # create docx file
-        self.make_docx(docx_filename)
+        self.make_docx(docx_filename, **kwargs)
 
 
     @staticmethod
@@ -439,4 +444,7 @@ class Converter:
 
 
 class ConversionException(Exception): 
+    pass
+
+class MakedocxException(ConversionException): 
     pass
