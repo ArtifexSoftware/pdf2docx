@@ -82,7 +82,9 @@ class Converter:
             'lines_center_aligned_threshold' : 2.0,    # center aligned if delta center of two lines is lower than this value
             'clip_image_res_ratio'           : 3.0,    # resolution ratio (to 72dpi) when cliping page image
             'min_svg_gap_dx'                 : 15.0,   # merge adjacent vector graphics if the horizontal gap is less than this value
-            'min_svg_gap_dy'                 : 15.0,   # merge adjacent vector graphics if the vertical gap is less than this value
+            'min_svg_gap_dy'                 : 2.0,    # merge adjacent vector graphics if the vertical gap is less than this value
+            'min_svg_w'                      : 2.0,    # ignore vector graphics if the bbox width is less than this value
+            'min_svg_h'                      : 2.0,    # ignore vector graphics if the bbox height is less than this value
             'extract_stream_table'           : False,  # don't consider stream table when extracting tables
             'parse_lattice_table'            : True,   # whether parse lattice table or not; may destroy the layout if set False
             'parse_stream_table'             : True,   # whether parse stream table or not; may destroy the layout if set False

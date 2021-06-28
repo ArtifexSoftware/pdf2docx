@@ -85,12 +85,14 @@ class ImagesExtractor:
         return self._to_raw_dict(pix, bbox)
 
 
-    def detect_svg_contours(self, min_svg_gap_dx:float, min_svg_gap_dy:float):
+    def detect_svg_contours(self, min_svg_gap_dx:float, min_svg_gap_dy:float, min_w:float, min_h:float):
         '''Find contour of potential vector graphics.
 
         Args:
             min_svg_gap_dx (float): Merge svg if the horizontal gap is less than this value.
             min_svg_gap_dy (float): Merge svg if the vertical gap is less than this value.
+            min_w (float): Ignore contours if the bbox width is less than this value.
+            min_h (float): Ignore contours if the bbox height is less than this value.
 
         Returns:
             list: A list of potential svg region: (external_bbox, inner_bboxes:list).
@@ -110,14 +112,15 @@ class ImagesExtractor:
         external_bboxes = recursive_xy_cut(binary, min_dx=min_svg_gap_dx, min_dy=min_svg_gap_dy)        
         
         # inner contours
-        grouped_inner_bboxes = [inner_contours(binary, bbox) for bbox in external_bboxes]
+        grouped_inner_bboxes = [inner_contours(binary, bbox, min_w, min_h) for bbox in external_bboxes]
 
         # combined external and inner contours
         groups = list(zip(external_bboxes, grouped_inner_bboxes))
             
         
         # plot detected images for debug
-        def plot():
+        debug = False
+        if debug:
             for bbox, inner_bboxes in groups:
                 # plot external bbox
                 x0, y0, x1, y1 = bbox
@@ -129,7 +132,6 @@ class ImagesExtractor:
 
             cv.imshow("img", src)
             cv.waitKey(0)
-        # plot()
 
         return groups
 

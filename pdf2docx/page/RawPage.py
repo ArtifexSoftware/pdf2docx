@@ -326,6 +326,8 @@ class RawPage(BasePage, Layout):
         shapes, images =  paths.to_shapes_and_images(
             settings['min_svg_gap_dx'], 
             settings['min_svg_gap_dy'], 
+            settings['min_svg_w'], 
+            settings['min_svg_h'], 
             settings['clip_image_res_ratio'])
         raw['shapes'] = shapes
         raw['blocks'].extend(images)

@@ -268,28 +268,68 @@ def _split_projection_profile(arr_values:np.array, min_value:float, min_gap:floa
     return arr_start, arr_end
 
 
-def inner_contours(img_binary:np.array, bbox:tuple):
-    '''Inner contours of current region, especially level 2 contours of the default opencv tree hirerachy.'''
+def inner_contours(img_binary:np.array, bbox:tuple, min_w:float, min_h:float):
+    '''Inner contours of current region, especially level 2 contours of the default opencv tree hirerachy.
+
+    Args:
+        img_binary (np.array): Binarized image with intresting region (255) and empty region (0).
+        bbox (tuple): The external bbox.
+        min_w (float): Ignore contours if the bbox width is less than this value.
+        min_h (float): Ignore contours if the bbox height is less than this value.
+
+    Returns:
+        list: A list of bbox-es of inner contours.
+    '''
+    
     # find both external and inner contours of current region
     x0, y0, x1, y1 = bbox
     arr = np.zeros(img_binary.shape, dtype=np.uint8)
     arr[y0:y1, x0:x1] = img_binary[y0:y1, x0:x1]
     contours, hierarchy = cv.findContours(arr, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-    
-    # top level contour, i.e. table bbox
+
+    # check first three level contours:    
+    # * level-0, i.e. table bbox
+    # * level-1, i.e. cell bbox
+    # * level-2, i.e. region within cell
     # NOTE: only one dimension, i.e. the second, to be decided, so the
     # return value of np.where is a len==1 tuple
-    top = np.where(hierarchy[0,:,3]==-1)[0]
+    level_0 = np.where(hierarchy[0,:,3]==-1)[0]    
+    level_1 = np.where(np.isin(hierarchy[0,:,3], level_0))[0]    
+    level_2 = np.where(np.isin(hierarchy[0,:,3], level_1))[0]
 
-    # second level contours, i.e. cell bbox
-    second = np.where(np.isin(hierarchy[0,:,3], top))[0]
-    
-    # third level contours, region within cell
-    third = np.where(np.isin(hierarchy[0,:,3], second))[0]
-    res = []
-    for i in third:
+    # In general, we focus on only level 2, but considering edge case: level 2 contours 
+    # might be counted as level 1 incorrectly, e.g. test/samples/demo-table-close-underline.pdf. 
+    # So, get first the concerned level 1 contours, i.e. those contained by other level 1 contour.
+    def contains(bbox1, bbox2):
+        x0, y0, x1, y1 = bbox1
+        u0, v0, u1, v1 = bbox2
+        return u0>=x0 and v0>=y0 and u1<=x1 and v1<=y1
+
+    level_1_bbox_list, res_level_1, res = [], [], []
+    for i in level_1:
         x, y, w, h = cv.boundingRect(contours[i])
-        res.append((x, y, x+w, y+h))
+        if w<min_w or h<min_h: continue
+        level_1_bbox_list.append((x, y, x+w, y+h))
+
+    for bbox1 in level_1_bbox_list:
+        for bbox2 in level_1_bbox_list:
+            if bbox1==bbox2: continue # skip itself
+            if contains(bbox1, bbox2):
+                res_level_1.append(bbox2)
+                res.append(bbox2)
+
+    # now level 2: with contours contained in `res_level_1` excluded
+    def contained_in_concerned_level_1(bbox):
+        for level_1_bbox in res_level_1:
+            if contains(level_1_bbox, bbox): return True
+        return False
+
+    for i in level_2:
+        x, y, w, h = cv.boundingRect(contours[i])
+        level_2_bbox = (x, y, x+w, y+h)
+        if w<min_w or h<min_h: continue
+        if contained_in_concerned_level_1(level_2_bbox): continue
+        res.append(level_2_bbox)
     
     return res
 

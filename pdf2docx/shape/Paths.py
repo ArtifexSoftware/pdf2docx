@@ -73,7 +73,8 @@ class Paths(Collection):
         return shapes
 
 
-    def to_shapes_and_images(self, min_svg_gap_dx:float=15, min_svg_gap_dy:float=15, clip_image_res_ratio:float=3.0):
+    def to_shapes_and_images(self, min_svg_gap_dx:float=15, min_svg_gap_dy:float=15, 
+                                min_w:float=2, min_h:float=2, clip_image_res_ratio:float=3.0):
         '''Convert paths to iso-oriented shapes or images. The sementic type of path is either table/text style or 
         vector graphic. This method is to:
         * detect svg regions -> exist at least one non-iso-oriented path
@@ -83,6 +84,8 @@ class Paths(Collection):
         Args:
             min_svg_gap_dx (float): Merge svg if the horizontal gap is less than this value.
             min_svg_gap_dy (float): Merge svg if the vertical gap is less than this value.
+            min_w (float): Ignore contours if the bbox width is less than this value.
+            min_h (float): Ignore contours if the bbox height is less than this value.
             clip_image_res_ratio (float, optional): Resolution ratio of clipped bitmap. Defaults to 3.0.
 
         Returns:
@@ -97,7 +100,7 @@ class Paths(Collection):
         # detect svg with python opencv
         images = []
         ie = ImagesExtractor(self.parent.fitz_page)
-        groups = ie.detect_svg_contours(min_svg_gap_dx, min_svg_gap_dy)
+        groups = ie.detect_svg_contours(min_svg_gap_dx, min_svg_gap_dy, min_w, min_h)
 
         # `bbox` is the external bbox of current region, while `inner_bboxes` are the inner contours
         # of level-2 hierarchy, i.e. contours under table cell.
