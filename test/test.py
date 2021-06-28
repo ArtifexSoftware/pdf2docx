@@ -195,6 +195,18 @@ class Test_Main(Utility):
         # create output path if not exist
         if not os.path.exists(self.output_dir):
             os.mkdir(self.output_dir)
+    
+
+    # ------------------------------------------
+    # layout: section
+    # ------------------------------------------
+    def test_section(self):
+        '''test page layout: section and column.'''
+        self.init_test('demo-section').verify_layout(threshold=0.95)    
+
+    def test_section_spacing(self):
+        '''test page layout: section vertical position.'''
+        self.init_test('demo-section-spacing').verify_layout(threshold=0.95)
 
     # ------------------------------------------
     # text styles
@@ -209,11 +221,7 @@ class Test_Main(Utility):
 
     def test_text_alignment(self):
         '''test text alignment.'''
-        self.init_test('demo-text-alignment').verify_layout(threshold=0.95)
-    
-    def test_text_section(self):
-        '''test page layout: section and column.'''
-        self.init_test('demo-text-section').verify_layout(threshold=0.95)
+        self.init_test('demo-text-alignment').verify_layout(threshold=0.95)    
     
     def test_unnamed_fonts(self):
         '''test unnamed fonts which destroys span bbox, and accordingly line/block layout.'''

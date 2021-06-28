@@ -32,19 +32,24 @@ class Sections(BaseCollection):
         '''Create sections in docx.'''        
         if not self: return
 
+        def create_dummy_paragraph_for_section(section):
+            p = doc.add_paragraph()
+            line_height = min(section.before_space, 11)
+            pf = reset_paragraph_format(p, line_spacing=Pt(line_height))
+            pf.space_after = Pt(section.before_space-line_height)
+            return p
+
         # ---------------------------------------------------
         # first section
         # ---------------------------------------------------
         # vertical position
-        p = doc.add_paragraph()
-        line_height = min(self[0].before_space, 11)
-        pf = reset_paragraph_format(p, line_spacing=Pt(line_height))
-        pf.space_after = Pt(self[0].before_space-line_height)
-        if self[0].num_cols==2: 
-            doc.add_section(WD_SECTION.CONTINUOUS)
+        section = self[0]
+        p0 = create_dummy_paragraph_for_section(section)
         
         # create first section
-        self[0].make_docx(doc)        
+        if section.num_cols==2: 
+            doc.add_section(WD_SECTION.CONTINUOUS)
+        section.make_docx(doc)
 
         # ---------------------------------------------------
         # more sections
@@ -55,7 +60,12 @@ class Sections(BaseCollection):
 
             # set after space of last paragraph to define the vertical
             # position of current section
+            # NOTE: the after space doesn't work if last paragraph is 
+            # image only (without any text). In this case, set after
+            # space for the section break.
             p = doc.paragraphs[-2] # -1 is the section break
+            if not p.text.strip() and 'graphicData' in p._p.xml:
+                p = doc.paragraphs[-1]
             pf = p.paragraph_format
             pf.space_after = Pt(section.before_space)
             
@@ -65,8 +75,9 @@ class Sections(BaseCollection):
         # ---------------------------------------------------
         # create floating images
         # ---------------------------------------------------
+        # lazy: assign all float images to the first paragraph
         for image in self.parent.float_images:
-            image.make_docx(p)
+            image.make_docx(p0)
 
 
     def plot(self, page):

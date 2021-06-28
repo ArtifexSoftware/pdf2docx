@@ -240,7 +240,7 @@ class Blocks(ElementCollection):
         res = [] # type: list[Lines]
         j = 0
         table_lines = Lines() # potential text lines in a table
-        new_line = True
+        start_new_row = True
         num_blocks, num_shadings = len(self._instances), len(shadings_exclude_white)
         for i in range(num_blocks):
 
@@ -254,38 +254,51 @@ class Blocks(ElementCollection):
                 shading = shadings_exclude_white[j]
                 if not shading.is_determined and shading.contains(block, threshold=constants.FACTOR_MOST):
                     table_lines.extend(sub_lines(block))
-                    new_line = False
+                    start_new_row = False
                 
                 # move to next shading
                 elif next_block.bbox.y0 > shading.bbox.y1:
                     j += 1
             
             # (b) add lines when current block is not flow layout
-            if new_line and not block.is_flow_layout(float_layout_tolerance, line_separate_threshold): 
+            if start_new_row and not block.is_flow_layout(float_layout_tolerance, line_separate_threshold): 
                 table_lines.extend(sub_lines(block))  # deep into line level
                 
                 # update line status
-                new_line = False            
+                start_new_row = False            
 
             # (c) multi-blocks are in a same row: check layout with next block?
             # yes, add both current and next blocks
             if block.horizontally_align_with(next_block, factor=0):
                 # if it's start of new table row: add the first block
-                if new_line: table_lines.extend(sub_lines(block))
+                if start_new_row: table_lines.extend(sub_lines(block))
                 
                 # add next block
                 table_lines.extend(sub_lines(next_block))
 
                 # update line status
-                new_line = False
+                start_new_row = False
 
             # no, consider to start a new row
             else:
-                # table end if it's a text line, i.e. no more than one block in a same line
-                if new_line: table_end = True
+                # current block is flow layout, and starts in a new row => 
+                # close the table before this block
+                # ===   ===   ===  <- pre-table
+                # ===current block=== <- new row start
+                # ===next-block===
+                if start_new_row: 
+                    table_end = True
+
+                # if the vertical distance is large enough => 
+                # close the table before next block
+                # ===   ===  ===current-block===
+                # significant vertical distance here
+                # ===next-block=== ==== <- no matter next block is flow layout or not
+                if next_block.bbox.y0-block.bbox.y1>=50:
+                    table_end = True
 
                 # update line status            
-                new_line = True
+                start_new_row = True
 
             # NOTE: close table detecting manually if last block
             if i==num_blocks-1: table_end = True

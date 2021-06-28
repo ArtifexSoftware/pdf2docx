@@ -173,7 +173,7 @@ class Collection(BaseCollection):
 
     def group_by_rows(self, factor:float=0.0):
         '''Group elements into rows based on the bbox (ignore text direction).'''
-        # split in rows, with original text block considered
+        # split in rows
         fun = lambda a,b: a.horizontally_align_with(b, factor=factor, text_direction=False)
         groups = self.group(fun)
 
@@ -282,7 +282,7 @@ class ElementCollection(Collection, IText):
         return self.__class__(instances)
 
 
-    def split_with_intersection(self, bbox:fitz.Rect, threshold:float=0.0):
+    def split_with_intersection(self, bbox:fitz.Rect, threshold:float=1e-3):
         """Split instances into two groups: one intersects with ``bbox``, the other not.
 
         Args:
