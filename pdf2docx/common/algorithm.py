@@ -181,7 +181,7 @@ def recursive_xy_cut(img_binary:np.array,
     '''Split image with recursive xy-cut algorithm.
     
     Args:
-        img_binary (np.array): Binarized image with intresting region (255) and empty region (0).
+        img_binary (np.array): Binarized image with interesting region (255) and empty region (0).
         min_w (float): Ignore bbox if the width is less than this value.
         min_h (float): Ignore bbox if the height is less than this value.
         min_dx (float): Merge two bbox-es if the x-gap is less than this value.

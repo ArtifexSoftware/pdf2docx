@@ -12,7 +12,7 @@ Both raster images and vector graphics are considered:
 
 import fitz
 from ..common.share import BlockType
-from ..common.algorithm import (recursive_xy_cut, inner_contours)
+from ..common.algorithm import (recursive_xy_cut, inner_contours, xy_project_profile)
 
 
 class ImagesExtractor:
@@ -102,7 +102,7 @@ class ImagesExtractor:
 
         # clip page and convert to opencv image
         img_byte = self._clip_page(zoom=1.0).getPNGData()
-        src = cv.imdecode(np.frombuffer(img_byte, np.uint8), cv.IMREAD_COLOR)        
+        src = cv.imdecode(np.frombuffer(img_byte, np.uint8), cv.IMREAD_COLOR)
 
         # gray and binary
         gray = cv.cvtColor(src, cv.COLOR_BGR2GRAY)
@@ -121,6 +121,11 @@ class ImagesExtractor:
         # plot detected images for debug
         debug = False
         if debug:
+            # plot projection profile for each sub-image
+            for i, (x0, y0, x1, y1) in enumerate(external_bboxes):
+                arr = xy_project_profile(src[y0:y1, x0:x1, :], binary[y0:y1, x0:x1])
+                cv.imshow(f'sub-image-{i}', arr)
+
             for bbox, inner_bboxes in groups:
                 # plot external bbox
                 x0, y0, x1, y1 = bbox
