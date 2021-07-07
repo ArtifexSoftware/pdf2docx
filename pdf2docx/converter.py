@@ -74,7 +74,7 @@ class Converter:
             'line_break_width_ratio'         : 0.5,    # break line if the ratio of line width to entire layout bbox is lower than this value
             'line_break_free_space_ratio'    : 0.1,    # break line if the ratio of free space to entire line exceeds this value
             'line_condense_spacing'          : 4.0,    # total condense spacing (in Pt) at end of line to avoid unexpected line break
-            'line_merging_threshold'         : 2.0,    # combine two lines if the x-distance is lower than this value
+            # 'line_merging_threshold'         : 2.0,    # combine two lines if the x-distance is lower than this value
             'line_separate_threshold'        : 5.0,    # two separate lines if the x-distance exceeds this value
             'new_paragraph_free_space_ratio' : 0.85,   # new paragraph if the ratio of free space to line height exceeds this value
             'lines_left_aligned_threshold'   : 1.0,    # left aligned if d_x0 of two lines is lower than this value (Pt)

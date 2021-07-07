@@ -3,7 +3,7 @@
 '''A group of Line objects.
 '''
 
-import logging
+
 import string
 from .Line import Line
 from .TextSpan import TextSpan
@@ -53,78 +53,6 @@ class Lines(ElementCollection):
         for line in self._instances:
             spans.extend(line.image_spans)
         return spans
-
-    
-    def join(self, line_overlap_threshold:float, line_merging_threshold:float):
-        '''Merge lines aligned horizontally, e.g. make inline image as a span in text line.'''
-        # skip if empty
-        if not self._instances: return self
-
-        # valid to merge lines on condition that every tow lines are in same row
-        def valid_joining_lines(line, candidates):
-            return all(line.in_same_row(_line) for _line in candidates)
-        
-        # merge lines
-        def get_merged_line(candidates):
-            line = candidates[0]
-            for c_line in candidates[1:]:
-                line.add(c_line.spans)
-            return line
-
-        # sort lines
-        self.sort()
-
-        # check each line
-        lines = Lines()
-        candidates = [self._instances[0]] # first line
-        for i in range(1, len(self._instances)):
-            pre_line, line = self._instances[i-1], self._instances[i]
-           
-            # ignore this line if overlap with previous line
-            if line.get_main_bbox(pre_line, threshold=line_overlap_threshold):
-                logging.warning('Ignore Line "%s" due to overlap', line.text)
-                continue
-
-            # add line directly if not aligned horizontally with previous line
-            if not line.in_same_row(pre_line):
-                to_join_line = False
-
-            # if it exists x-distance obviously to previous line,
-            # take it as a separate line as it is
-            elif abs(line.bbox.x0-pre_line.bbox.x1) > line_merging_threshold:
-                to_join_line = False 
-
-            # now, this line will be append to previous line as a span
-            else:
-                to_join_line = True
-
-            # add line directly
-            if not to_join_line:
-                # merge candidate lines (if any)
-                if candidates: lines.append(get_merged_line(candidates))
-                candidates = []
-
-                # add this line
-                lines.append(line)
-            
-            # prepare for merging lines: valid
-            elif valid_joining_lines(line, candidates):
-                candidates.append(line)
-            
-            # prepare for merging lines: invalid -> add each line directly
-            else:
-                # release candidate lines
-                for c_line in candidates: lines.append(c_line)
-                candidates = []
-
-                # add this line
-                lines.append(line)
-
-        # NOTE: in case last group
-        if candidates: lines.append(get_merged_line(candidates))
-
-        # update lines in block
-        self.reset(lines)
 
 
     def split_back(self):
@@ -200,20 +128,12 @@ class Lines(ElementCollection):
         return res
 
 
-    def strip(self, delete_end_line_hyphen:bool):
-        '''Remove redundant blanks of each line and update bbox accordingly.'''
-        # strip each line and update bbox: 
-        # keep at least one blank at both sides in case extra blanks existed
-        strip_status = []
-        strip_status.extend([line.strip() for line in self._instances])
-        stripped = any(strip_status)
-        if stripped: self._parent.update_bbox(self.bbox) # update bbox        
-
-        # word process:
+    def adjust_last_word(self, delete_end_line_hyphen:bool):
+        '''Adjust word at the end of line:
         # - it might miss blank between words from adjacent lines
-        # - it's optional to delete hyphen since it might not at the line end
-        #   after conversion
-
+        # - it's optional to delete hyphen since it might not at the the end 
+           of line after conversion
+        '''
         punc_ex_hyphen = ''.join(c for c in string.punctuation if c!='-')
         def is_end_of_english_word(c):
             return c.isalnum() or (c and c in punc_ex_hyphen)
@@ -243,8 +163,6 @@ class Lines(ElementCollection):
             # number, or English punctuation (excepting hyphen)
             if is_end_of_english_word(end_char.c) and is_end_of_english_word(next_start_char.c):
                 end_char.c += ' ' # add blank in a tricky way
-            
-        return stripped
 
 
     def sort(self):

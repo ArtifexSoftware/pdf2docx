@@ -82,13 +82,12 @@ class RawPage(BasePage, Layout):
         '''Clean up raw blocks and shapes, e.g. 
         
         * remove negative or duplicated instances,
-        * merge text blocks horizontally (preparing for layout parsing)
         * detect semantic type of shapes
         '''
         # clean up blocks first
         self.blocks.clean_up(
-            settings['delete_end_line_hyphen'],
-            settings['float_image_ignorable_gap'])
+            settings['float_image_ignorable_gap'],
+            settings['line_overlap_threshold'])
 
         # clean up shapes        
         self.shapes.clean_up(
@@ -106,9 +105,8 @@ class RawPage(BasePage, Layout):
         '''
         # get all text span
         spans = []
-        for block in self.blocks:
-            for line in block.lines:
-                spans.extend([span for span in line.spans if isinstance(span, TextSpan)])
+        for line in self.blocks:
+            spans.extend([span for span in line.spans if isinstance(span, TextSpan)])
 
         # check and update font name, line height
         for span in spans:
