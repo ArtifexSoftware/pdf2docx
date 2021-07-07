@@ -318,23 +318,21 @@ class RawPage(BasePage, Layout):
     @debug_plot('Source Paths')
     def _preprocess_shapes(self, raw, **settings):
         '''Identify iso-oriented paths and convert vector graphic paths to pixmap.'''
-        # extract paths ed by `page.getDrawings()`
+        # extract paths by `page.getDrawings()`
         raw_paths = self.fitz_page.getDrawings()
 
-        # iso-oriented paths to shapes
+        # extract iso-oriented paths, while clip image for curved paths
         paths = Paths(parent=self).restore(raw_paths)
-        shapes, iso_areas, exist_svg = paths.to_shapes(settings['curve_path_ratio'])
+        shapes, images =  paths.to_shapes_and_images(
+            settings['min_svg_gap_dx'], 
+            settings['min_svg_gap_dy'], 
+            settings['min_svg_w'], 
+            settings['min_svg_h'], 
+            settings['clip_image_res_ratio'])
         raw['shapes'] = shapes
+        raw['blocks'].extend(images)
 
-        # vector graphics (curved paths in general) to images
-        if exist_svg:
-            excluding_areas = iso_areas
-            excluding_areas.extend([block['bbox'] for block in raw['blocks'] if block['type']==1]) # normal images
-            images = ImagesExtractor(self.fitz_page) \
-                .extract_vector_graphics(excluding_areas, settings['clip_image_res_ratio'])
-            raw['blocks'].extend(images)
-
-        # Hyperlink is considered as a Shape
+        # Hyperlink is considered as a Shape as well
         hyperlinks = self._preprocess_hyperlinks(self.fitz_page)
         raw['shapes'].extend(hyperlinks)
 

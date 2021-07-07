@@ -12,8 +12,7 @@ Both raster images and vector graphics are considered:
 
 import fitz
 from ..common.share import BlockType
-from ..common.Collection import Collection
-from ..common.Element import Element
+from ..common.algorithm import (recursive_xy_cut, inner_contours, xy_project_profile)
 
 
 class ImagesExtractor:
@@ -72,77 +71,74 @@ class ImagesExtractor:
         return images
     
 
-    def extract_vector_graphics(self, exclude_areas:list, clip_image_res_ratio:float=3.0):
-        '''Detect and extract vector graphics by clipping associated page area.
+    def extract_image(self, bbox:fitz.Rect=None, clip_image_res_ratio:float=3.0):
+        '''Clip page pixmap (without text) according to ``bbox`` and convert to source image.
 
         Args:
-            exclude_areas (list): A list of bbox-like ``(x0, y0, x1, y1)`` area to exclude, 
-                e.g. raster image area, table area.
+            bbox (fitz.Rect, optional): Target area to clip. Defaults to None, i.e. entire page.
             clip_image_res_ratio (float, optional): Resolution ratio of clipped bitmap. Defaults to 3.0.
 
         Returns:
-            list: A list of extracted and recovered image raw dict.
-        
-        .. note::
-            Contours for vector graphics are detected first with ``opencv-python``.
+            list: A list of image raw dict.
         '''
-        # find contours
-        contours = self._detect_svg_contours(exclude_areas)
-
-        # filter contours
-        fun = lambda a,b: a.bbox & b.bbox
-        groups = contours.group(fun)
-
-        # clip images
-        images = []
-        for i,group in enumerate(groups):
-            bbox = group.bbox
-            pix = self._page.getPixmap(clip=bbox, matrix=fitz.Matrix(clip_image_res_ratio, clip_image_res_ratio))
-            # pix.save(f'{i}.png')
-            raw_dict = self._to_raw_dict(pix, bbox)
-            images.append(raw_dict)
-        
-        return images
+        pix = self._page.getPixmap(clip=bbox, matrix=fitz.Matrix(clip_image_res_ratio, clip_image_res_ratio))
+        return self._to_raw_dict(pix, bbox)
 
 
-    def _detect_svg_contours(self, exclude_areas:list):
-        '''Find contour of potential vector graphics.'''
+    def detect_svg_contours(self, min_svg_gap_dx:float, min_svg_gap_dy:float, min_w:float, min_h:float):
+        '''Find contour of potential vector graphics.
+
+        Args:
+            min_svg_gap_dx (float): Merge svg if the horizontal gap is less than this value.
+            min_svg_gap_dy (float): Merge svg if the vertical gap is less than this value.
+            min_w (float): Ignore contours if the bbox width is less than this value.
+            min_h (float): Ignore contours if the bbox height is less than this value.
+
+        Returns:
+            list: A list of potential svg region: (external_bbox, inner_bboxes:list).
+        '''
         import cv2 as cv
         import numpy as np
 
         # clip page and convert to opencv image
         img_byte = self._clip_page(zoom=1.0).getPNGData()
-        src = cv.imdecode(np.frombuffer(img_byte, np.uint8), cv.IMREAD_COLOR)        
+        src = cv.imdecode(np.frombuffer(img_byte, np.uint8), cv.IMREAD_COLOR)
 
-        # gray and exclude areas      
+        # gray and binary
         gray = cv.cvtColor(src, cv.COLOR_BGR2GRAY)
-        for bbox in exclude_areas:
-            x0, y0, x1, y1 = map(int, bbox)
-            gray[y0-2:y1+2, x0-2:x1+2] = 255
-            # cv.rectangle(src, (x0,y0), (x1,y1), (0,255,0), 1) # plot excluded areas
+        _, binary = cv.threshold(gray, 253, 255, cv.THRESH_BINARY_INV)
+        
+        # external bbox: split images with recursive xy cut
+        external_bboxes = recursive_xy_cut(binary, min_dx=min_svg_gap_dx, min_dy=min_svg_gap_dy)        
+        
+        # inner contours
+        grouped_inner_bboxes = [inner_contours(binary, bbox, min_w, min_h) for bbox in external_bboxes]
 
-        # Gauss blur and binary        
-        gauss = cv.GaussianBlur(gray, (9,9), 0)
-        _, binary = cv.threshold(gauss, 250, 255, cv.THRESH_BINARY_INV)        
-        
-        # detect contour with opencv
-        rows, cols = binary.shape[0:2]
-        kernel = cv.getStructuringElement(cv.MORPH_RECT, (cols//50, rows//50))
-        dst = cv.morphologyEx(binary, cv.MORPH_CLOSE, kernel) # close
-        contours, hierarchy = cv.findContours(dst,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE)
-        
-        collection = Collection()
-        for contour in contours:  
-            x, y, w, h = cv.boundingRect(contour)
-            e = Element().update_bbox((x,y,x+w,y+h))
-            collection.append(e)
-            # cv.rectangle(src, (x,y), (x+w,y+h), (255,0,0), 1)  # detected svg bbox
+        # combined external and inner contours
+        groups = list(zip(external_bboxes, grouped_inner_bboxes))
+            
         
         # plot detected images for debug
-        # cv.imshow("img", src)
-        # cv.waitKey(0)
+        debug = False
+        if debug:
+            # plot projection profile for each sub-image
+            for i, (x0, y0, x1, y1) in enumerate(external_bboxes):
+                arr = xy_project_profile(src[y0:y1, x0:x1, :], binary[y0:y1, x0:x1])
+                cv.imshow(f'sub-image-{i}', arr)
 
-        return collection
+            for bbox, inner_bboxes in groups:
+                # plot external bbox
+                x0, y0, x1, y1 = bbox
+                cv.rectangle(src, (x0, y0), (x1, y1), (255,0,0), 1)
+
+                # plot inner bbox
+                for u0, v0, u1, v1 in inner_bboxes:
+                    cv.rectangle(src, (u0, v0), (u1, v1), (0,0,255), 1)
+
+            cv.imshow("img", src)
+            cv.waitKey(0)
+
+        return groups
 
 
     @staticmethod
@@ -168,22 +164,19 @@ class ImagesExtractor:
 
     def _hide_page_text(self):
         '''Hide page text before clipping page.'''
+        # NOTE: text might exist in both content stream and form object stream
+        # - content stream, i.e. direct page content
+        # - form object, i.e. contents referenced by this page
+        xref_list = [xref for (xref, name, invoker, bbox) in self._page.get_xobjects()]
+        xref_list.extend(self._page.get_contents())        
+
         # render Tr: set the text rendering mode
         # - 3: neither fill nor stroke the text -> invisible
         # read more:
         # - https://github.com/pymupdf/PyMuPDF/issues/257
         # - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/pdf_reference_archives/PDFReference.pdf
         doc = self._page.parent # type: fitz.Document
-
-        # NOTE: contents referenced in this page
-        for (xref, name, invoker, bbox) in self._page.get_xobjects():
-            stream = doc.xref_stream(xref).replace(b'BT', b'BT 3 Tr') \
-                                             .replace(b'Tm', b'Tm 3 Tr') \
-                                             .replace(b'Td', b'Td 3 Tr')
-            doc.update_stream(xref, stream)
-
-        # direct page content
-        for xref in self._page.get_contents():
+        for xref in xref_list:
             stream = doc.xref_stream(xref).replace(b'BT', b'BT 3 Tr') \
                                              .replace(b'Tm', b'Tm 3 Tr') \
                                              .replace(b'Td', b'Td 3 Tr')

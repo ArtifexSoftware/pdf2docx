@@ -28,6 +28,7 @@ import fitz
 from ..common.share import rgb_value
 from ..common import constants
 
+
 class Segment:
     '''A segment of path, e.g. a line or a rectangle or a curve.'''
     def __init__(self, item):
@@ -38,6 +39,7 @@ class Segment:
 
 class L(Segment):
     '''Line path with source ``("l", p1, p2)``.'''
+
     def to_strokes(self, width:float, color:list):
         """Convert to stroke dict.
 
@@ -66,7 +68,13 @@ class L(Segment):
 class R(Segment):
     '''Rect path with source ``("re", rect)``.'''
     def __init__(self, item):
-        self.rect = item[1]
+        # corner points
+        # NOTE: center line of path without stroke width considered
+        x0, y0, x1, y1 = item[1]
+        self.points = [
+            (x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)
+            ]
+
 
     def to_strokes(self, width:float, color:list):
         """Convert each edge to stroke dict.
@@ -81,18 +89,11 @@ class R(Segment):
         .. note::
             One Rect path is converted to a list of 4 stroke dicts.
         """
-        # corner points
-        # NOTE: center line of path without stroke width considered
-        x0, y0, x1, y1 = self.rect
-        points = [
-            (x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)
-            ]
-        # connect each line
         strokes = []
-        for i in range(len(points)-1):
+        for i in range(len(self.points)-1):
             strokes.append({
-                    'start': points[i],
-                    'end'  : points[i+1],
+                    'start': self.points[i],
+                    'end'  : self.points[i+1],
                     'width': width * 2.0, # seems need adjustment by * 2.0
                     'color': rgb_value(color)
                 })
@@ -118,11 +119,17 @@ class Segments:
             item = ('l', items[-1][-1], items[0][1])
             self._instances.append(L(item))
 
-        # calculate bbox
-        self.bbox, self.area = self._cal_bbox_and_area()
-
     
     def __iter__(self): return (instance for instance in self._instances)
+
+
+    @property
+    def points(self):
+        '''Connected points of segments.'''
+        points = []
+        for segment in self._instances:
+            points.extend(segment.points)
+        return points
 
 
     @property
@@ -132,43 +139,40 @@ class Segments:
         return bbox_area==0 or self.area/bbox_area>=constants.FACTOR_MOST
 
 
-    def _cal_bbox_and_area(self):
-        '''Calculate bbox and area of Segments. 
+    @property
+    def area(self):
+        '''Calculate segments area with Green formulas. Note the boundary of Bezier curve 
+        is simplified with its control points.
         
-        .. note::
-            * For iso-oriented segments, ``bbox.getArea()==0``.
-            * The real area is calculated with Green formulas. Nut the boundary of Bezier curve 
-              is simplified with its control points.
-        '''
-        # rectangle area
-        if len(self._instances)==1 and isinstance(self._instances[0], R):
-            return self._instances[0].rect, self._instances[0].rect.getArea()
-        
-        # Now segments composed of connected points
-        points = []
-        for segment in self._instances:
-            points.extend(segment.points)
-        
-        # bbox: `round()` is required to avoid float error
+        * https://en.wikipedia.org/wiki/Shoelace_formula
+        '''        
+        points = self.points
+        start, end = points[0], points[-1]
+        if abs(start[0]-end[0])+abs(start[1]-end[1])>1e-3: 
+            return 0.0 # open curve
+            
+        # closed curve 
+        area = 0.0       
+        for i in range(len(points)-1):
+            x0, y0 = points[i]
+            x1, y1 = points[i+1]
+            area += x0*y1 - x1*y0
+
+        return abs(area/2.0)
+
+
+    @property
+    def bbox(self):
+        '''Calculate segments bbox. '''
+        points = self.points
         x0 = min(points, key=lambda point: point[0])[0]
         y0 = min(points, key=lambda point: point[1])[1]
         x1 = max(points, key=lambda point: point[0])[0]
         y1 = max(points, key=lambda point: point[1])[1]
-        rect = fitz.Rect(
+        
+        # bbox: `round()` is required to avoid float error
+        return fitz.Rect(
             round(x0, 2), round(y0, 2), round(x1, 2), round(y1, 2))
-
-        # real area
-        # https://en.wikipedia.org/wiki/Shoelace_formula
-        area = 0.0
-        start, end = points[0], points[-1]
-        if abs(start[0]-end[0])+abs(start[1]-end[1])<1e-3: # closed curve        
-            for i in range(len(points)-1):
-                x0, y0 = points[i]
-                x1, y1 = points[i+1]
-                area += x0*y1 - x1*y0
-            area = abs(area/2.0)
-
-        return rect, area
 
 
     def to_strokes(self, width:float, color:list):
