@@ -164,23 +164,19 @@ class ImagesExtractor:
 
     def _hide_page_text(self):
         '''Hide page text before clipping page.'''
+        # NOTE: text might exist in both content stream and form object stream
+        # - content stream, i.e. direct page content
+        # - form object, i.e. contents referenced by this page
+        xref_list = [xref for (xref, name, invoker, bbox) in self._page.get_xobjects()]
+        xref_list.extend(self._page.get_contents())        
+
         # render Tr: set the text rendering mode
         # - 3: neither fill nor stroke the text -> invisible
         # read more:
         # - https://github.com/pymupdf/PyMuPDF/issues/257
         # - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/pdf_reference_archives/PDFReference.pdf
         doc = self._page.parent # type: fitz.Document
-
-        # NOTE: text might exist in both content stream and form object stream
-        # - form object, i.e. contents referenced by this page
-        for (xref, name, invoker, bbox) in self._page.get_xobjects():
-            stream = doc.xref_stream(xref).replace(b'BT', b'BT 3 Tr') \
-                                             .replace(b'Tm', b'Tm 3 Tr') \
-                                             .replace(b'Td', b'Td 3 Tr')
-            doc.update_stream(xref, stream)
-
-        # - content stream, i.e. direct page content
-        for xref in self._page.get_contents():
+        for xref in xref_list:
             stream = doc.xref_stream(xref).replace(b'BT', b'BT 3 Tr') \
                                              .replace(b'Tm', b'Tm 3 Tr') \
                                              .replace(b'Td', b'Td 3 Tr')
