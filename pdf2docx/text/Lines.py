@@ -41,25 +41,12 @@ class Lines(ElementCollection):
             spans.extend(line.image_spans)
         return spans
 
-
-    def split_back(self):
-        '''Split lines into groups, in which all lines are from same original text block.
-
-        Returns:
-            list: A list of Lines contained in same original text block.
-        '''
-        fun = lambda a,b: a.same_source_parent(b)
-        groups = self.group(fun)
-
-        # NOTE: group() may destroy the order of lines, so sort in line level
-        for group in groups: group.sort()
-
-        return groups
-
     
     def split_vertically_by_text(self, line_break_free_space_ratio:float, new_paragraph_free_space_ratio:float):
-        '''Split lines into separate paragraph, because ``PyMuPDF`` stores lines in ``block``,
-        rather than real paragraph.
+        '''Split lines into separate paragraph by checking text. The parent text block consists of 
+        lines with similar line spacing, while lines in other paragraph might be counted when the
+        paragraph spacing is relatively small. So, it's necessary to split those lines by checking
+        the text contents.
 
         .. note::
             Considered only normal reading direction, from left to right, from top

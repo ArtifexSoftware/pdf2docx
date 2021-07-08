@@ -113,9 +113,6 @@ class Layout:
         # parse paragraphs
         self._parse_paragraph(**settings)
 
-        # improve layout after table parsing
-        # self._improve_layout(**settings)
-
         # parse sub-layout, i.e. cell layouts under table block
         for block in filter(lambda e: e.is_table_block, self.blocks):
             block.parse(**settings)
@@ -142,59 +139,37 @@ class Layout:
         # parse table structure/format recognized from explicit shapes
         if settings['parse_lattice_table']:
             self._table_parser.lattice_tables(
-                            settings['connected_border_tolerance'],
-                            settings['min_border_clearance'],
-                            settings['max_border_width'])
+                settings['connected_border_tolerance'],
+                settings['min_border_clearance'],
+                settings['max_border_width'])
         
         # parse table structure based on implicit layout of text blocks
         if settings['parse_stream_table']:
             self._table_parser.stream_tables(
-                            settings['min_border_clearance'],
-                            settings['max_border_width'],
-                            settings['float_layout_tolerance'],
-                            settings['line_separate_threshold'])
+                settings['min_border_clearance'],
+                settings['max_border_width'],
+                settings['float_layout_tolerance'],
+                settings['line_separate_threshold'])
     
 
     def _parse_paragraph(self, **settings):
         '''Create text block based on lines, and parse text format, e.g. text highlight, 
         paragraph indentation '''
         # group lines to text block
-        self.blocks.parse_block()
+        self.blocks.parse_block(
+            settings['max_line_spacing_ratio'],
+            settings['line_break_free_space_ratio'],
+            settings['new_paragraph_free_space_ratio'])
 
         # parse text format, e.g. highlight, underline
         self.blocks.parse_text_format(self.shapes.text_style_shapes)
         
         # paragraph / line spacing
         self.blocks.parse_spacing(
-                        settings['line_separate_threshold'],
-                        settings['line_break_width_ratio'],
-                        settings['line_break_free_space_ratio'],
-                        settings['lines_left_aligned_threshold'],
-                        settings['lines_right_aligned_threshold'],
-                        settings['lines_center_aligned_threshold'],
-                        settings['line_condense_spacing'])
-
-
-    def _improve_layout(self, **settings):
-        '''Adjust layout after table parsing:
-
-        * split blocks in current level back to original layout if possible
-        * merge adjacent and similar blocks in vertical direction
-        '''
-        # blocks are joined horizontally in table parsing stage, now change back to original layout
-        self.blocks.split_back(
-            settings['float_layout_tolerance'], 
-            settings['line_separate_threshold'])
-        
-        # one paragraph may be split in multiple blocks by `PyMuPDF`, now merge them together
-        # by checking vertical distance
-        self.blocks.join_vertically_by_space(
-            settings['block_merging_threshold']
-        )
-
-        # one block may consist of multiple real paragraphs by `PyMuPDF`, now split them back
-        # by checking text
-        self.blocks.split_vertically_by_text(
+            settings['line_separate_threshold'],
+            settings['line_break_width_ratio'],
             settings['line_break_free_space_ratio'],
-            settings['new_paragraph_free_space_ratio']
-        )
+            settings['lines_left_aligned_threshold'],
+            settings['lines_right_aligned_threshold'],
+            settings['lines_center_aligned_threshold'],
+            settings['line_condense_spacing'])

@@ -1,7 +1,7 @@
 '''
 A group of text elements, distinguished to ``Shape`` elements. For instance, ``TextBlock``, 
 ``ImageBlock`` or ``TableBlock`` after parsing, while ``Line`` instances at the beginning, 
-and a combination during parsing process.
+and a combination of ``Line`` and ``TableBlock`` during parsing process.
 '''
 
 import logging
@@ -151,41 +151,6 @@ class Blocks(ElementCollection):
             ._remove_overlapped_lines(line_overlap_threshold)
 
 
-    def _remove_overlapped_lines(self, line_overlap_threshold:float):
-        '''Delete overlapped lines. Don't run this method until floating images are excluded.'''
-        # group lines by overlap
-        fun = lambda a, b: a.get_main_bbox(b, threshold=line_overlap_threshold)
-        groups = self.group(fun)
-        
-        # delete overlapped lines
-        for group in filter(lambda group: len(group)>1, groups):
-            # keep only the line with largest area
-            sorted_lines = sorted(group, key=lambda line: line.bbox.getArea())
-            for line in sorted_lines[:-1]:
-                logging.warning('Ignore Line "%s" due to overlap', line.text)
-                line.update_bbox((0,0,0,0))
-
-        return self
-
-
-    def _identify_floating_images(self, float_image_ignorable_gap:float):
-        '''Identify floating image lines and convert to ImageBlock.'''
-        # group lines by connectivity
-        groups = self.group_by_connectivity(dx=-float_image_ignorable_gap, dy=-float_image_ignorable_gap)
-        
-        # identify floating images
-        for group in filter(lambda group: len(group)>1, groups):
-            for line in filter(lambda line: line.image_spans, group):
-                float_image = ImageBlock().from_image(line.spans[0])
-                float_image.set_float_image_block()
-                self._floating_image_blocks.append(float_image)
-
-                # remove the original image line from flow layout by setting empty bbox
-                line.update_bbox((0,0,0,0))
-
-        return self
-
-
     def assign_to_tables(self, tables:list):
         '''Add blocks (line or sub-table) to associated cells of given tables.
 
@@ -297,146 +262,19 @@ class Blocks(ElementCollection):
         return res
 
 
-    def parse_spacing(self, *args):
-        '''Calculate external and internal space for text blocks:
-
-        - vertical distance between blocks, i.e. paragraph before/after spacing
-        - horizontal distance to left/right border, i.e. paragraph left/right indent
-        - vertical distance between lines, i.e. paragraph line spacing
-        '''
-        if not self._instances: return
-        self._parse_block_horizontal_spacing(*args)
-        self._parse_block_vertical_spacing()
-        self._parse_line_spacing()
-
-
-    def join_vertically_by_space(self, block_merging_threshold):
-        '''Merge adjacent blocks in vertical direction because blocks belonging to 
-        same paragraph might be split by ``PyMuPDF`` unreasonably.
-        
-        The splitting criterion is that when the distance between blocks:
-        
-        * is smaller than average line distance when multi-lines; or
-        * is smaller than a threshold * block height when single line.
-
-        .. note::
-            Considered only normal reading direction, from left to right, from top
-            to bottom.
-        '''
-        blocks = [] # type: list[TextBlock]
-        ref = None # type: TextBlock
-
-        # check adjacent two text blocks
-        for block in self._instances:
-            merged = False
-
-            # add block if previous isn't a text block
-            if ref is None or not ref.is_text_image_block:
-                blocks.append(block)
-            
-            # add block if this isn't a text block
-            elif not block.is_text_image_block:
-                blocks.append(block)
-            
-            # check two adjacent text blocks
-            else:
-                # block gap
-                idx = 1 if ref.is_horizontal_text else 0                
-                gap_block = block.bbox[idx] - ref.bbox[idx+2]
-
-                # lines gap
-                gap_line1, gap_line2 = ref.average_row_gap, block.average_row_gap
-
-                # single line blocks
-                if gap_line1==gap_line2==None:
-                    # block height
-                    h1 = ref.bbox[idx+2]-ref.bbox[idx]
-                    h2 = block.bbox[idx+2]-block.bbox[idx]
-                    merged = abs(gap_block-block_merging_threshold*min(h1, h2))<=constants.TINY_DIST
-                
-                # multi-lines block
-                else:                    
-                    gap_line = gap_line1 if not gap_line1 is None else gap_line2
-                    merged = abs(gap_block-gap_line) <= constants.TINY_DIST
-                
-                if merged:
-                    ref.add(block.lines)
-                else:
-                    blocks.append(block)
-
-            # NOTE: update ref block only no merging happens
-            if not merged: ref = block
-       
-        self.reset(blocks)
-
-
-    def split_back(self, *args):
-        '''Split the joined lines back to original text block if possible.
-
-        With preceding joining step, current text block may contain lines coming from various original blocks.
-        Considering that different text block may have different line properties, e.g. height, spacing, 
-        this function is to split them back to original text block. 
-
-        .. note::
-            Don't split block if the splitting breaks flow layout, e.g. two blocks (i.e. two paragraphs in docx) 
-            in same row.
-        '''
-        blocks = [] # type: list[TextBlock]
-        lines = Lines()
-        # collect lines for further step, or table block directly
-        for block in self._instances:
-            if block.is_text_image_block and block.is_flow_layout(*args):
-                lines.extend([line for line in block.lines if not line.white_space_only]) # filter empty line
-            else:
-                blocks.append(block)
-        
-        # regroup lines
-        for group_lines in lines.split_back():
-            text_block = TextBlock()
-            text_block.lines.reset(group_lines)
-            blocks.append(text_block)
-
-
-    def split_vertically_by_text(self, line_break_free_space_ratio:float, new_paragraph_free_space_ratio:float):
-        '''Split text block into separate paragraph based on punctuation of sentense.
-
-        .. note::
-            Considered only normal reading direction, from left to right, from top
-            to bottom.
-        '''
-        blocks = [] # type: list[TextBlock]
-        for block in self._instances:
-
-            # add block if this isn't a text block
-            if not block.is_text_block: 
-                blocks.append(block)
-                continue
-            
-            # add split blocks if necessary
-            lines_list = block.lines.split_vertically_by_text(line_break_free_space_ratio, 
-                                                                new_paragraph_free_space_ratio)
-            if len(lines_list)==1:
-                blocks.append(block)
-            else:
-                for lines in lines_list:
-                    text_block = TextBlock()
-                    text_block.add(lines)
-                    blocks.append(text_block)
-
-        self.reset(blocks)
-
-
-    def parse_block(self):
+    def parse_block(self, max_line_spacing_ratio:float, line_break_free_space_ratio:float, new_paragraph_free_space_ratio:float):
         '''Group lines into text block.'''
-        blocks = []
+        # sort in normal reading order
         self.sort_in_reading_order_plus()
-        for block in self._instances:
-            if isinstance(block, TableBlock):
-                blocks.append(block)
-            else:
-                text_block = TextBlock()
-                text_block.add(block)
-                blocks.append(text_block)
+
+        # join lines with similar properties, e.g. spacing, together into text block
+        blocks = self._join_lines_vertically(self._instances, max_line_spacing_ratio)
+
+        # split text block by checking text
+        blocks = self._split_text_block_vertically(blocks,
+            line_break_free_space_ratio, 
+            new_paragraph_free_space_ratio)
+        
         self.reset(blocks)
 
 
@@ -449,6 +287,19 @@ class Blocks(ElementCollection):
         # parse text block style one by one
         for block in filter(lambda e: e.is_text_block, self._instances): 
             block.parse_text_format(rects)
+
+    
+    def parse_spacing(self, *args):
+        '''Calculate external and internal space for text blocks:
+
+        - vertical distance between blocks, i.e. paragraph before/after spacing
+        - horizontal distance to left/right border, i.e. paragraph left/right indent
+        - vertical distance between lines, i.e. paragraph line spacing
+        '''
+        if not self._instances: return
+        self._parse_block_horizontal_spacing(*args)
+        self._parse_block_vertical_spacing()
+        self._parse_line_spacing()
 
 
     def make_docx(self, doc):
@@ -516,6 +367,45 @@ class Blocks(ElementCollection):
         for block in self._instances: block.plot(page)                
 
 
+    # ----------------------------------------------------------------------------------
+    # internal methods
+    # ----------------------------------------------------------------------------------
+
+    def _remove_overlapped_lines(self, line_overlap_threshold:float):
+        '''Delete overlapped lines. Don't run this method until floating images are excluded.'''
+        # group lines by overlap
+        fun = lambda a, b: a.get_main_bbox(b, threshold=line_overlap_threshold)
+        groups = self.group(fun)
+        
+        # delete overlapped lines
+        for group in filter(lambda group: len(group)>1, groups):
+            # keep only the line with largest area
+            sorted_lines = sorted(group, key=lambda line: line.bbox.getArea())
+            for line in sorted_lines[:-1]:
+                logging.warning('Ignore Line "%s" due to overlap', line.text)
+                line.update_bbox((0,0,0,0))
+
+        return self
+
+
+    def _identify_floating_images(self, float_image_ignorable_gap:float):
+        '''Identify floating image lines and convert to ImageBlock.'''
+        # group lines by connectivity
+        groups = self.group_by_connectivity(dx=-float_image_ignorable_gap, dy=-float_image_ignorable_gap)
+        
+        # identify floating images
+        for group in filter(lambda group: len(group)>1, groups):
+            for line in filter(lambda line: line.image_spans, group):
+                float_image = ImageBlock().from_image(line.spans[0])
+                float_image.set_float_image_block()
+                self._floating_image_blocks.append(float_image)
+
+                # remove the original image line from flow layout by setting empty bbox
+                line.update_bbox((0,0,0,0))
+
+        return self
+
+
     @staticmethod
     def _assign_block_to_tables(block, tables:list, blocks_in_tables:list, blocks:list):
         '''Assign block (line or table block) to contained table region ``blocks_in_tables``,
@@ -533,6 +423,117 @@ class Blocks(ElementCollection):
         # Now, this block is out of all table regions
         else:
             blocks.append(block)
+
+
+    def _join_lines_vertically(self, max_line_spacing_ratio:float):
+        '''Create text blocks by merge lines with same properties (spacing, font, size) in 
+        vertical direction. At this moment, the block instance is either Line or TableBlock.
+        '''
+        idx0, idx1 = (1, 3) if self.is_horizontal_text else (0, 2)
+        def get_v_bdy(block):
+            '''Coordinates of block top and bottom boundaries.'''
+            bbox = block.bbox
+            return bbox[idx0], bbox[idx1]
+
+        def vertical_distance(block1, block2):
+            u0, u1 = get_v_bdy(block1)
+            v0, v1 = get_v_bdy(block2)
+            return round(v0-u1, 2)
+        
+        def line_height(line:Line):
+            '''The height of line span with most characters.'''
+            span = max(line.spans, key=lambda s: len(s.text))
+            h = span.bbox.height if line.is_horizontal_text else span.bbox.width
+            return round(h, 2)
+
+        def common_vertical_spacing():
+            '''Vertical distance with most frequency: a reference of line spacing.'''        
+            ref0, ref1 = get_v_bdy(self._instances[0])
+            distances = []
+            for block in self._instances[1:]:
+                y0, y1 = get_v_bdy(block)
+                distances.append(round(y0-ref1, 2))
+                ref0, ref1 = y0, y1        
+            return max(distances, key=distances.count) if distances else 0.0
+
+        # create text block based on lines
+        blocks = [] # type: list[TextBlock]
+        lines = []  # type: list[Line]
+        def close_text_block():
+            if not lines: return
+            block = TextBlock()
+            block.add(lines)
+            blocks.append(block)
+            lines.clear()
+
+        # check line by line
+        ref_dis = common_vertical_spacing()
+        for block in self._instances:
+            
+            # if current is a table block:
+            # - finish previous text block; and
+            # - add this table block directly 
+            if isinstance(block, TableBlock):
+                close_text_block()
+                blocks.append(block)
+            
+            # check two adjacent text lines
+            else:
+                ref_line = lines[-1] if lines else None
+
+                # first line or in same row with previous line: needn't to create new text block
+                if not ref_line or ref_line.in_same_row(block):
+                    merge = False
+                
+                # image line: create new text block
+                elif block.image_spans or ref_line.image_spans:
+                    merge = True
+                
+                # lower than common line spacing: needn't to create new text block
+                elif abs(vertical_distance(ref_line, block)-ref_dis)<=1.0 and \
+                    ref_dis<=max_line_spacing_ratio*line_height(ref_line):
+                    merge = False
+                
+                else:
+                    merge = True
+                
+                if merge: close_text_block()
+                lines.append(block)
+
+        # don't forget last group
+        close_text_block()
+       
+        return blocks
+
+
+    @staticmethod
+    def _split_text_block_vertically(instances:list, line_break_free_space_ratio:float, new_paragraph_free_space_ratio:float):
+        '''Split text block into separate paragraph based on punctuation of sentense.
+
+        .. note::
+            Considered only normal reading direction, from left to right, from top
+            to bottom.
+        '''
+        blocks = [] # type: list[TextBlock]
+        for block in instances:
+
+            # add block if this isn't a text block
+            if not block.is_text_block: 
+                blocks.append(block)
+                continue
+            
+            # add split blocks if necessary
+            lines_list = block.lines.split_vertically_by_text(line_break_free_space_ratio, 
+                                                                new_paragraph_free_space_ratio)
+            if len(lines_list)==1:
+                blocks.append(block)
+            else:
+                for lines in lines_list:
+                    text_block = TextBlock()
+                    text_block.add(lines)
+                    blocks.append(text_block)
+
+        return blocks
 
 
     def _parse_block_horizontal_spacing(self, *args):
