@@ -105,18 +105,16 @@ class Layout:
         Args:
             settings (dict): Layout parsing parameters.
         '''
+        if not self.blocks: return
+
         # parse tables
-        self._parse_table_layout(**settings)
+        self._parse_table(**settings)
 
         # parse paragraphs
-        # self._parse_paragraph(**settings)
-
+        self._parse_paragraph(**settings)
 
         # improve layout after table parsing
-        self._improve_layout(**settings)
-
-        # parse text format in current layout
-        self._parse_text_format(**settings)
+        # self._improve_layout(**settings)
 
         # parse sub-layout, i.e. cell layouts under table block
         for block in filter(lambda e: e.is_table_block, self.blocks):
@@ -126,7 +124,7 @@ class Layout:
     def _assign_block(self, block):
         '''Add block (line or table block) to this layout.'''
         # add block directly if fully contained in cell
-        if self.contains(block, threshold=constants.FACTOR_SAME):
+        if self.contains(block, threshold=constants.FACTOR_MAJOR):
             self.blocks.append(block)
         
         # deep into line span if any intersection
@@ -134,7 +132,7 @@ class Layout:
             self.blocks.append(block.intersects(self.bbox))
 
 
-    def _parse_table_layout(self, **settings):
+    def _parse_table(self, **settings):
         '''Parse table layout: 
         
         * detect explicit tables first based on shapes, 
@@ -156,6 +154,26 @@ class Layout:
                             settings['float_layout_tolerance'],
                             settings['line_separate_threshold'])
     
+
+    def _parse_paragraph(self, **settings):
+        '''Create text block based on lines, and parse text format, e.g. text highlight, 
+        paragraph indentation '''
+        # group lines to text block
+        self.blocks.parse_block()
+
+        # parse text format, e.g. highlight, underline
+        self.blocks.parse_text_format(self.shapes.text_style_shapes)
+        
+        # paragraph / line spacing
+        self.blocks.parse_spacing(
+                        settings['line_separate_threshold'],
+                        settings['line_break_width_ratio'],
+                        settings['line_break_free_space_ratio'],
+                        settings['lines_left_aligned_threshold'],
+                        settings['lines_right_aligned_threshold'],
+                        settings['lines_center_aligned_threshold'],
+                        settings['line_condense_spacing'])
+
 
     def _improve_layout(self, **settings):
         '''Adjust layout after table parsing:
@@ -180,20 +198,3 @@ class Layout:
             settings['line_break_free_space_ratio'],
             settings['new_paragraph_free_space_ratio']
         )
-    
-
-    def _parse_text_format(self, **settings):
-        '''Parse text format, e.g. text highlight, paragraph indentation. 
-        '''
-        # parse text format, e.g. highlight, underline
-        self.blocks.parse_text_format(self.shapes.text_style_shapes)
-        
-        # paragraph / line spacing
-        self.blocks.parse_spacing(
-                        settings['line_separate_threshold'],
-                        settings['line_break_width_ratio'],
-                        settings['line_break_free_space_ratio'],
-                        settings['lines_left_aligned_threshold'],
-                        settings['lines_right_aligned_threshold'],
-                        settings['lines_center_aligned_threshold'],
-                        settings['line_condense_spacing'])

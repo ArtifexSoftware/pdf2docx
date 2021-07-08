@@ -160,6 +160,7 @@ class TablesConstructor:
             'min_border_clearance': min_border_clearance,
             'max_border_width': max_border_width
         }
+
         for table_lines in tables_lines:
             if not table_lines: continue
             # bounding box
@@ -301,7 +302,7 @@ class TablesConstructor:
             lines (Lines): Lines in table cells.
             outer_borders (tuple): Boundary borders of table region.
         '''
-        # trying: deep into cells        
+        # trying: deep into cells
         cols_lines = lines.group_by_columns()
         group_lines = [col_lines.group_by_rows(factor=constants.FACTOR_A_FEW) for col_lines in cols_lines]
 
@@ -340,11 +341,6 @@ class TablesConstructor:
             rows_lines = group_lines[i]
             row_num = len(rows_lines)
             if row_num == 1: continue
-
-            # a further chance to check reference border:
-            # not reference border if lines in this column come from different block
-            if is_reference:
-                is_reference = len(cols_lines[i].split_back())==1
 
             # collect bbox-es row by row
             bottom = None

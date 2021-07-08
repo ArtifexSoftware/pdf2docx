@@ -25,19 +25,6 @@ class Lines(ElementCollection):
         return all(line.same_source_parent(first_line) for line in self._instances)
 
 
-    def append(self, line:Line):
-        """Override. Append a line and update line pid and parent bbox.
-
-        Args:
-            line (Line): Target line to add.
-        """
-        super().append(line)
-
-        # update original parent id
-        if not self._parent is None:
-            line.pid = id(self._parent)
-
-
     def restore(self, raws:list):
         '''Construct lines from raw dicts list.'''
         for raw in raws:
@@ -163,87 +150,6 @@ class Lines(ElementCollection):
             # number, or English punctuation (excepting hyphen)
             if is_end_of_english_word(end_char.c) and is_end_of_english_word(next_start_char.c):
                 end_char.c += ' ' # add blank in a tricky way
-
-
-    def sort(self):
-        '''Sort lines considering text direction.
-
-        Taking natural reading direction for example: reading order for rows, from left to 
-        right for lines in row.
-
-        In the following example, A should come before B.
-
-        ::
-
-                         +-----------+
-            +---------+  |           |
-            |   A     |  |     B     |
-            +---------+  +-----------+
-        
-        Steps:
-
-            * Sort lines in reading order, i.e. from top to bottom, from left to right.
-            * Group lines in row.
-            * Sort lines in row: from left to right.
-        '''
-        # sort in reading order
-        self.sort_in_reading_order()
-
-        # split lines in separate row
-        lines_in_rows = [] # type: list[list[Line]]
-
-        for line in self._instances:
-
-            # add lines to a row group if not in same row with previous line
-            if not lines_in_rows or not line.in_same_row(lines_in_rows[-1][-1]):
-                lines_in_rows.append([line])
-            
-            # otherwise, append current row group
-            else:
-                lines_in_rows[-1].append(line)
-        
-        # sort lines in each row: consider text direction
-        idx = 0 if self.is_horizontal_text else 3
-        self._instances = []
-        for row in lines_in_rows:
-            row.sort(key=lambda line: line.bbox[idx])
-            self._instances.extend(row)
-
-
-    def is_flow_layout(self, float_layout_tolerance:float, line_separate_threshold:float):
-        '''Check if flow layout. 
-        
-        A flow layout satisfy condition that lines in each physical row have:
-        
-        * same original text block
-        * enough overlap in vertical direction.
-        * no significant gap between adjacent two lines.
-        '''
-        # group lines in same row
-        fun = lambda a, b: a.horizontally_align_with(b, factor=float_layout_tolerance) and \
-                            not a.vertically_align_with(b, factor=constants.FACTOR_ALMOST) 
-        groups = self.group(fun)        
-        
-        # check each row
-        idx0, idx1 = (0, 2) if self.is_horizontal_text else (3, 1)
-        for lines in groups:
-            num = len(lines)
-            if num==1: continue
-
-            # same original parent
-            if not all(line.same_source_parent(lines[0]) for line in lines):
-                return False
-
-            # check vertical overlap
-            if not all(line.in_same_row(lines[0]) for line in lines):
-                return False
-
-            # check distance between lines
-            for i in range(1, num):
-                dis = abs(lines[i].bbox[idx0]-lines[i-1].bbox[idx1])
-                if dis >= line_separate_threshold: return False
-
-        return True
 
 
     def parse_text_format(self, shape):

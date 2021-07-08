@@ -7,6 +7,7 @@ import fitz
 from .Element import Element
 from .share import (IText, TextDirection)
 from .algorithm import (solve_rects_intersection, graph_bfs)
+from ..common import constants
 
 
 class BaseCollection:
@@ -161,33 +162,45 @@ class Collection(BaseCollection):
         return groups
     
     
-    def group_by_columns(self, factor:float=0.0):
-        '''Group elements into columns based on the bbox (ignore text direction).'''
+    def group_by_columns(self, factor:float=0.0, sorted:bool=True, text_direction:bool=False):
+        '''Group elements into columns based on the bbox.'''
         # split in columns
-        fun = lambda a,b: a.vertically_align_with(b, factor=factor, text_direction=False)
+        fun = lambda a,b: a.vertically_align_with(b, factor=factor, text_direction=text_direction)
         groups = self.group(fun)
         
-        # NOTE: increasing in x-direction is required!
-        groups.sort(key=lambda group: group.bbox.x0)
+        # increase in x-direction if sort
+        if sorted: 
+            idx = 3 if text_direction and not self.is_horizontal_text else 0
+            groups.sort(key=lambda group: group.bbox[idx])
+
         return groups
 
 
-    def group_by_rows(self, factor:float=0.0):
-        '''Group elements into rows based on the bbox (ignore text direction).'''
+    def group_by_rows(self, factor:float=0.0, sorted:bool=True, text_direction:bool=False):
+        '''Group elements into rows based on the bbox.'''
         # split in rows
         fun = lambda a,b: a.horizontally_align_with(b, factor=factor, text_direction=False)
         groups = self.group(fun)
 
-        # NOTE: increasing in y-direction is required!
-        groups.sort(key=lambda group: group.bbox.y0)
+        # increase in y-direction if sort
+        if sorted: 
+            idx = 0 if text_direction and not self.is_horizontal_text else 1
+            groups.sort(key=lambda group: group.bbox[idx])
 
         return groups
 
 
-    def group_by_physical_rows(self):
+    def group_by_physical_rows(self, sorted:bool=False, text_direction:bool=False):
         '''Group lines into physical rows.'''
         fun = lambda a,b: a.in_same_row(b)
-        return self.group(fun)
+        groups = self.group(fun)
+
+        # increase in y-direction if sort
+        if sorted: 
+            idx = 0 if text_direction and not self.is_horizontal_text else 1
+            groups.sort(key=lambda group: group.bbox[idx])
+
+        return groups
 
 
 
@@ -271,6 +284,29 @@ class ElementCollection(Collection, IText):
             self._instances.sort(key=lambda e: (e.bbox.y1, e.bbox.x0, e.bbox.y0))
         return self
 
+
+    def sort_in_reading_order_plus(self):
+        '''Sort instances in reading order, especially for instances in same row. Taking 
+        natural reading direction for example: reading order for rows, from left to right 
+        for instances in row. In the following example, A comes before B::
+
+                         +-----------+
+            +---------+  |           |
+            |   A     |  |     B     |
+            +---------+  +-----------+
+        
+        Steps:
+
+            * Sort elements in reading order, i.e. from top to bottom, from left to right.
+            * Group elements in row.
+            * Sort elements in row: from left to right.
+        '''
+        instances = []
+        for row in self.group_by_physical_rows(sorted=True, text_direction=True):
+            row.sort_in_line_order()
+            instances.extend(row)        
+        self.reset(instances)
+
    
     def contained_in_bbox(self, bbox):
         '''Filter instances contained in target bbox.
@@ -304,3 +340,38 @@ class ElementCollection(Collection, IText):
             else:
                 no_intersections.append(instance)
         return self.__class__(intersections), self.__class__(no_intersections)
+    
+
+    def is_flow_layout(self, float_layout_tolerance:float, line_separate_threshold:float):
+        '''Check if collected elements are flow layout or not. A flow layout requires that 
+        lines in each physical row must have:
+
+        * enough overlap in vertical direction.
+        * no significant gap between adjacent two lines.
+        '''
+        # group lines in same row, with text direction considered.
+        # When set a small ``float_layout_tolerance``, two elements with even tiny vertical 
+        # intersection are counted in a same group, where the vertical intersection will be
+        # checked strictly again. On the contrary, a larger ``float_layout_tolerance`` makes
+        # elements into separate groups, avoiding vertical intersection check. Thus, the larger 
+        # of this value, the more tolerable of float layout.
+        fun = lambda a, b: a.horizontally_align_with(b, factor=float_layout_tolerance) and \
+                            not a.vertically_align_with(b, factor=constants.FACTOR_ALMOST) 
+        groups = self.group(fun)
+        
+        # check each row
+        idx0, idx1 = (0, 2) if self.is_horizontal_text else (3, 1)
+        for lines in groups:
+            num = len(lines)
+            if num==1: continue
+
+            # check vertical overlap
+            if not all(line.in_same_row(lines[0]) for line in lines):
+                return False
+
+            # check distance between lines
+            for i in range(1, num):
+                dis = abs(lines[i].bbox[idx0]-lines[i-1].bbox[idx1])
+                if dis >= line_separate_threshold: return False
+
+        return True

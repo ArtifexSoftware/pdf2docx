@@ -148,8 +148,7 @@ class Blocks(ElementCollection):
         # detect floating images
         self.reset(instances) \
             ._identify_floating_images(float_image_ignorable_gap) \
-            ._remove_overlapped_lines(line_overlap_threshold) \
-            .sort_in_reading_order()
+            ._remove_overlapped_lines(line_overlap_threshold)
 
 
     def _remove_overlapped_lines(self, line_overlap_threshold:float):
@@ -161,7 +160,7 @@ class Blocks(ElementCollection):
         # delete overlapped lines
         for group in filter(lambda group: len(group)>1, groups):
             # keep only the line with largest area
-            sorted_lines = sorted(group, key=lambda line: line.bbox.getArae())
+            sorted_lines = sorted(group, key=lambda line: line.bbox.getArea())
             for line in sorted_lines[:-1]:
                 logging.warning('Ignore Line "%s" due to overlap', line.text)
                 line.update_bbox((0,0,0,0))
@@ -209,7 +208,7 @@ class Blocks(ElementCollection):
 
         # sort in natural reading order and update layout blocks
         blocks.extend(tables)
-        self.reset(blocks).sort_in_reading_order()        
+        self.reset(blocks)
 
 
     def collect_stream_lines(self, potential_shadings:list, 
@@ -219,12 +218,13 @@ class Blocks(ElementCollection):
         
         Table may exist on the following conditions:
 
-        * (a) contained in potential shading -> determined by shapes
-        * (b) lines in blocks are not connected sequently -> determined by current block only
-        * (c) multi-blocks are in a same row (horizontally aligned) -> determined by two adjacent blocks
+        * blocks in a row don't follow flow layout; or
+        * block is contained in potential shading
         
         Args:
             potential_shadings (list): a group of shapes representing potential cell shading
+            float_layout_tolerance (float): the larger of this value, the more tolerable of float layout
+            line_separate_threshold (float): two separate lines if the x-distance exceeds this value
         
         Returns:
             list: A list of Lines. Each group of Lines represents a potential table.
@@ -233,86 +233,66 @@ class Blocks(ElementCollection):
             ``PyMuPDF`` may group multi-lines in a row as a text block while each line belongs to different
             cell. So, it's required to deep into line level.
         '''
+        # group lines in same row, with text direction considered.
+        # When set a small ``float_layout_tolerance``, two elements with even tiny vertical 
+        # intersection are counted in a same group, where the vertical intersection will be
+        # checked strictly again. On the contrary, a larger ``float_layout_tolerance`` makes
+        # elements into separate groups, avoiding vertical intersection check. Thus, the larger 
+        # of this value, the more tolerable of float layout.
+        fun = lambda a, b: a.horizontally_align_with(
+                                b, factor=float_layout_tolerance,
+                                text_direction=False) and \
+                            not a.vertically_align_with(
+                                b, factor=constants.FACTOR_ALMOST,
+                                text_direction=False) 
+        rows = self.group(fun)
+        rows.sort(key=lambda group: group.bbox.y0)
+
         # get sub-lines from block: line or table block
         def sub_line(block):
-            return self if isinstance(block, Line) else Line().update_bbox(block.outer_bbox)
+            return block if isinstance(block, Line) else Line().update_bbox(block.outer_bbox)
         
         # exclude potential shading in white bg-color
         shadings_exclude_white = list(filter(
-            lambda shape: shape.color != rgb_value([1,1,1]), potential_shadings
-        ))
+            lambda shape: not shape.is_determined and shape.color!=rgb_value([1,1,1]), 
+            potential_shadings))
+        def contained_in_shadings(block):
+            for shading in shadings_exclude_white:
+                if shading.contains(block, threshold=constants.FACTOR_MOST): return True
+            return False
+
+        # store text lines in a potential table
+        res = []           # type: list[Lines]
+        table_lines = []   # type: list[Line]
+        def close_table():
+            if not table_lines: return
+            res.append(Lines(table_lines))
+            table_lines.clear()
         
-        # check block by block
-        res = [] # type: list[Lines]
-        j = 0
-        table_lines = Lines() # potential text lines in a table
-        start_new_row = True
-        num_blocks, num_shadings = len(self._instances), len(shadings_exclude_white)
-        for i in range(num_blocks):
+        # check row by row 
+        ref_pos = rows[0].bbox.y1
+        for row in rows:
 
-            block = self._instances[i]
-            next_block = self._instances[i+1] if i<num_blocks-1 else Block()
+            bbox = row.bbox
 
-            table_end = False
-
-            # (a) block in potential shading?
-            if j < num_shadings:
-                shading = shadings_exclude_white[j]
-                if not shading.is_determined and shading.contains(block, threshold=constants.FACTOR_MOST):
-                    table_lines.append(sub_line(block))
-                    start_new_row = False
-                
-                # move to next shading
-                elif next_block.bbox.y0 > shading.bbox.y1:
-                    j += 1
-            
-            # (b) add lines when current block is not flow layout
-            if start_new_row and not block.is_flow_layout(float_layout_tolerance, line_separate_threshold): 
-                table_lines.append(sub_line(block))  # deep into line level
-                
-                # update line status
-                start_new_row = False            
-
-            # (c) multi-blocks are in a same row: check layout with next block?
-            # yes, add both current and next blocks
-            if block.horizontally_align_with(next_block, factor=0):
-                # if it's start of new table row: add the first block
-                if start_new_row: table_lines.append(sub_line(block))
-                
-                # add next block
-                table_lines.append(sub_line(next_block))
-
-                # update line status
-                start_new_row = False
-
-            # no, consider to start a new row
+            # flow layout or not?
+            if not row.is_flow_layout(float_layout_tolerance, line_separate_threshold): 
+                table_lines.extend([sub_line(block) for block in row])            
             else:
-                # current block is flow layout, and starts in a new row => 
-                # close the table before this block
-                # ===   ===   ===  <- pre-table
-                # ===current block=== <- new row start
-                # ===next-block===
-                if start_new_row: 
-                    table_end = True
+                close_table()
 
-                # if the vertical distance is large enough => 
-                # close the table before next block
-                # ===   ===  ===current-block===
-                # significant vertical distance here
-                # ===next-block=== ==== <- no matter next block is flow layout or not
-                if next_block.bbox.y0-block.bbox.y1>=50:
-                    table_end = True
+            # contained in shading or not?
+            for block in row:
+                if contained_in_shadings(block): table_lines.append(sub_line(block))
+            
+            # close table if significant vertical distance 
+            if bbox.y0-ref_pos>=50: close_table()
+            
+            # update reference pos
+            ref_pos = bbox.y1
 
-                # update line status            
-                start_new_row = True
-
-            # NOTE: close table detecting manually if last block
-            if i==num_blocks-1: table_end = True
-
-            # end of current table
-            if table_lines and table_end: 
-                res.append(table_lines)                
-                table_lines = Lines() # reset table_blocks
+        # don't forget last table
+        close_table()
 
         return res
 
@@ -415,8 +395,6 @@ class Blocks(ElementCollection):
             text_block = TextBlock()
             text_block.lines.reset(group_lines)
             blocks.append(text_block)
-       
-        self.reset(blocks).sort_in_reading_order()
 
 
     def split_vertically_by_text(self, line_break_free_space_ratio:float, new_paragraph_free_space_ratio:float):
@@ -445,6 +423,20 @@ class Blocks(ElementCollection):
                     text_block.add(lines)
                     blocks.append(text_block)
 
+        self.reset(blocks)
+
+
+    def parse_block(self):
+        '''Group lines into text block.'''
+        blocks = []
+        self.sort_in_reading_order_plus()
+        for block in self._instances:
+            if isinstance(block, TableBlock):
+                blocks.append(block)
+            else:
+                text_block = TextBlock()
+                text_block.add(block)
+                blocks.append(text_block)
         self.reset(blocks)
 
 
@@ -529,8 +521,8 @@ class Blocks(ElementCollection):
         '''Assign block (line or table block) to contained table region ``blocks_in_tables``,
         or out-of-table ``blocks``.'''
         for table, blocks_in_table in zip(tables, blocks_in_tables):
-            # fully contained in a certain table
-            if table.bbox.contains(block.bbox):
+            # fully contained in a certain table with margin
+            if table.contains(block, threshold=constants.FACTOR_MAJOR):
                 blocks_in_table.append(block)
                 break
             

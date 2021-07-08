@@ -165,11 +165,6 @@ class Block(Element):
         return res
 
 
-    def is_flow_layout(self, *args):
-        ''' Check whether flow layout, True by default. Override in :obj:`pdf2docx.text.TextBlock`.'''
-        return True
-
-
     def make_docx(self, *args, **kwargs):
         """Create associated docx element.
 
