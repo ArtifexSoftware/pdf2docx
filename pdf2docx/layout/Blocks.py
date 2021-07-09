@@ -268,7 +268,7 @@ class Blocks(ElementCollection):
         self.sort_in_reading_order_plus()
 
         # join lines with similar properties, e.g. spacing, together into text block
-        blocks = self._join_lines_vertically(self._instances, max_line_spacing_ratio)
+        blocks = self._join_lines_vertically(max_line_spacing_ratio)
 
         # split text block by checking text
         blocks = self._split_text_block_vertically(blocks,
