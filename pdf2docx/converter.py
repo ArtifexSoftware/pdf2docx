@@ -65,7 +65,6 @@ class Converter:
             'max_border_width'               : 6.0,    # max border width
             'min_border_clearance'           : 2.0,    # the minimum allowable clearance of two borders
             'float_image_ignorable_gap'      : 5.0,    # float image if the intersection exceeds this value
-            'float_layout_tolerance'         : 0.1,    # [0,1] the larger of this value, the more tolerable of float layout
             'page_margin_factor_top'         : 0.5,    # [0,1] reduce top margin by factor
             'page_margin_factor_bottom'      : 0.5,    # [0,1] reduce bottom margin by factor
             'shape_min_dimension'            : 2.0,    # ignore shape if both width and height is lower than this value

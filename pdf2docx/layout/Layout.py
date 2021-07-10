@@ -148,7 +148,6 @@ class Layout:
             self._table_parser.stream_tables(
                 settings['min_border_clearance'],
                 settings['max_border_width'],
-                settings['float_layout_tolerance'],
                 settings['line_separate_threshold'])
     
 

@@ -176,9 +176,7 @@ class Blocks(ElementCollection):
         self.reset(blocks)
 
 
-    def collect_stream_lines(self, potential_shadings:list, 
-            float_layout_tolerance:float, 
-            line_separate_threshold:float):
+    def collect_stream_lines(self, potential_shadings:list, line_separate_threshold:float):
         '''Collect elements in Line level (line or table bbox), which may contained in a stream table region.
         
         Table may exist on the following conditions:
@@ -188,7 +186,6 @@ class Blocks(ElementCollection):
         
         Args:
             potential_shadings (list): a group of shapes representing potential cell shading
-            float_layout_tolerance (float): the larger of this value, the more tolerable of float layout
             line_separate_threshold (float): two separate lines if the x-distance exceeds this value
         
         Returns:
@@ -198,20 +195,12 @@ class Blocks(ElementCollection):
             ``PyMuPDF`` may group multi-lines in a row as a text block while each line belongs to different
             cell. So, it's required to deep into line level.
         '''
-        # group lines in same row, with text direction considered.
-        # When set a small ``float_layout_tolerance``, two elements with even tiny vertical 
-        # intersection are counted in a same group, where the vertical intersection will be
-        # checked strictly again. On the contrary, a larger ``float_layout_tolerance`` makes
-        # elements into separate groups, avoiding vertical intersection check. Thus, the larger 
-        # of this value, the more tolerable of float layout.
-        fun = lambda a, b: a.horizontally_align_with(
-                                b, factor=float_layout_tolerance,
-                                text_direction=False) and \
-                            not a.vertically_align_with(
-                                b, factor=constants.FACTOR_ALMOST,
-                                text_direction=False) 
-        rows = self.group(fun)
-        rows.sort(key=lambda group: group.bbox.y0)
+        # group lines by row
+        # NOTE: consider real text direction when all lines have same orientation, i.e. either horizontal or 
+        # vertical; otherwise, consider the default direction, i.e. horizontal.
+        blocks_direction = set(line.text_direction for line in self._instances)
+        text_direction = len(blocks_direction)==1
+        rows = self.group_by_rows(text_direction=text_direction)
 
         # get sub-lines from block: line or table block
         def sub_line(block):
@@ -234,6 +223,26 @@ class Blocks(ElementCollection):
             res.append(Lines(table_lines))
             table_lines.clear()
         
+
+        # A flow layout requires that lines in each physical row must have:
+        # * enough overlap in vertical direction.
+        # * no significant gap between adjacent two lines.
+        def is_flow_layout(lines):
+            num = len(lines)
+            if num==1: return True
+
+            # check vertical overlap
+            if not all(line.in_same_row(lines[0]) for line in lines):
+                return False
+
+            # check distance between lines
+            idx0, idx1 = (0, 2) if lines.is_horizontal_text else (3, 1)
+            for i in range(1, num):
+                dis = abs(lines[i].bbox[idx0]-lines[i-1].bbox[idx1])
+                if dis >= line_separate_threshold: return False
+
+            return True
+        
         # check row by row 
         ref_pos = rows[0].bbox.y1
         for row in rows:
@@ -241,7 +250,7 @@ class Blocks(ElementCollection):
             bbox = row.bbox
 
             # flow layout or not?
-            if not row.is_flow_layout(float_layout_tolerance, line_separate_threshold): 
+            if not is_flow_layout(row): 
                 table_lines.extend([sub_line(block) for block in row])            
             else:
                 close_table()

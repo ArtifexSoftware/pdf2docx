@@ -179,7 +179,7 @@ class Collection(BaseCollection):
     def group_by_rows(self, factor:float=0.0, sorted:bool=True, text_direction:bool=False):
         '''Group elements into rows based on the bbox.'''
         # split in rows
-        fun = lambda a,b: a.horizontally_align_with(b, factor=factor, text_direction=False)
+        fun = lambda a,b: a.horizontally_align_with(b, factor=factor, text_direction=text_direction)
         groups = self.group(fun)
 
         # increase in y-direction if sort
@@ -340,38 +340,3 @@ class ElementCollection(Collection, IText):
             else:
                 no_intersections.append(instance)
         return self.__class__(intersections), self.__class__(no_intersections)
-    
-
-    def is_flow_layout(self, float_layout_tolerance:float, line_separate_threshold:float):
-        '''Check if collected elements are flow layout or not. A flow layout requires that 
-        lines in each physical row must have:
-
-        * enough overlap in vertical direction.
-        * no significant gap between adjacent two lines.
-        '''
-        # group lines in same row, with text direction considered.
-        # When set a small ``float_layout_tolerance``, two elements with even tiny vertical 
-        # intersection are counted in a same group, where the vertical intersection will be
-        # checked strictly again. On the contrary, a larger ``float_layout_tolerance`` makes
-        # elements into separate groups, avoiding vertical intersection check. Thus, the larger 
-        # of this value, the more tolerable of float layout.
-        fun = lambda a, b: a.horizontally_align_with(b, factor=float_layout_tolerance) and \
-                            not a.vertically_align_with(b, factor=constants.FACTOR_ALMOST) 
-        groups = self.group(fun)
-        
-        # check each row
-        idx0, idx1 = (0, 2) if self.is_horizontal_text else (3, 1)
-        for lines in groups:
-            num = len(lines)
-            if num==1: continue
-
-            # check vertical overlap
-            if not all(line.in_same_row(lines[0]) for line in lines):
-                return False
-
-            # check distance between lines
-            for i in range(1, num):
-                dis = abs(lines[i].bbox[idx0]-lines[i-1].bbox[idx1])
-                if dis >= line_separate_threshold: return False
-
-        return True
