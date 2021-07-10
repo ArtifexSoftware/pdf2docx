@@ -161,7 +161,9 @@ class Layout:
             settings['new_paragraph_free_space_ratio'])
 
         # parse text format, e.g. highlight, underline
-        self.blocks.parse_text_format(self.shapes.text_style_shapes)
+        self.blocks.parse_text_format(
+            self.shapes.text_style_shapes,
+            settings['delete_end_line_hyphen'])
         
         # paragraph / line spacing
         self.blocks.parse_spacing(

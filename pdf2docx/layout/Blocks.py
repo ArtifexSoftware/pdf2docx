@@ -287,15 +287,19 @@ class Blocks(ElementCollection):
         self.reset(blocks)
 
 
-    def parse_text_format(self, rects):
+    def parse_text_format(self, rects, delete_end_line_hyphen:bool):
         '''Parse text format with style represented by stroke/fill shapes.
         
         Args:
             rects (Shapes): Potential styles applied on blocks.
+            delete_end_line_hyphen (bool): delete hyphen at the end of a line if True.
         '''
         # parse text block style one by one
         for block in filter(lambda e: e.is_text_block, self._instances): 
             block.parse_text_format(rects)
+
+            # adjust word at the end of each line
+            block.lines.adjust_last_word(delete_end_line_hyphen)
 
     
     def parse_spacing(self, *args):
