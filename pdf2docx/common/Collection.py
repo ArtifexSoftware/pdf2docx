@@ -7,7 +7,6 @@ import fitz
 from .Element import Element
 from .share import (IText, TextDirection)
 from .algorithm import (solve_rects_intersection, graph_bfs)
-from ..common import constants
 
 
 class BaseCollection:
@@ -307,7 +306,27 @@ class ElementCollection(Collection, IText):
             instances.extend(row)        
         self.reset(instances)
 
-   
+
+    def is_flow_layout(self, line_separate_threshold:float):
+        '''Whether contained elements are in flow layout or not. Flow layout satisfies:
+        * single column only; and
+        * no significant gap between adjacent two lines
+        '''
+        if len(self)<=1: return True
+
+        # check column
+        if len(self.group_by_columns())>1: return False
+
+        # group in physical row and check distance between lines
+        idx0, idx1 = (0, 2) if self.is_horizontal_text else (3, 1)
+        for row in self.group_by_physical_rows(text_direction=True):
+            for i in range(1, len(row)):
+                dis = abs(row[i].bbox[idx0]-row[i-1].bbox[idx1])
+                if dis >= line_separate_threshold: return False
+
+        return True
+
+
     def contained_in_bbox(self, bbox):
         '''Filter instances contained in target bbox.
 

@@ -200,7 +200,7 @@ class Blocks(ElementCollection):
         # vertical; otherwise, consider the default direction, i.e. horizontal.
         blocks_direction = set(line.text_direction for line in self._instances)
         text_direction = len(blocks_direction)==1
-        rows = self.group_by_rows(text_direction=text_direction)
+        rows = self.group_by_rows(text_direction=text_direction) # any intersection would be counted as same group
 
         # get sub-lines from block: line or table block
         def sub_line(block):
@@ -223,25 +223,6 @@ class Blocks(ElementCollection):
             res.append(Lines(table_lines))
             table_lines.clear()
         
-
-        # A flow layout requires that lines in each physical row must have:
-        # * enough overlap in vertical direction.
-        # * no significant gap between adjacent two lines.
-        def is_flow_layout(lines):
-            num = len(lines)
-            if num==1: return True
-
-            # check vertical overlap
-            if not all(line.in_same_row(lines[0]) for line in lines):
-                return False
-
-            # check distance between lines
-            idx0, idx1 = (0, 2) if lines.is_horizontal_text else (3, 1)
-            for i in range(1, num):
-                dis = abs(lines[i].bbox[idx0]-lines[i-1].bbox[idx1])
-                if dis >= line_separate_threshold: return False
-
-            return True
         
         # check row by row 
         ref_pos = rows[0].bbox.y1
@@ -250,7 +231,7 @@ class Blocks(ElementCollection):
             bbox = row.bbox
 
             # flow layout or not?
-            if not is_flow_layout(row): 
+            if not row.is_flow_layout(line_separate_threshold): 
                 table_lines.extend([sub_line(block) for block in row])            
             else:
                 close_table()
@@ -496,21 +477,21 @@ class Blocks(ElementCollection):
 
                 # first line or in same row with previous line: needn't to create new text block
                 if not ref_line or ref_line.in_same_row(block):
-                    merge = False
+                    start_new_block = False
                 
                 # image line: create new text block
                 elif block.image_spans or ref_line.image_spans:
-                    merge = True
+                    start_new_block = True
                 
                 # lower than common line spacing: needn't to create new text block
-                elif abs(vertical_distance(ref_line, block)-ref_dis)<=1.0 and \
+                elif vertical_distance(ref_line, block)<=ref_dis+1.0 and \
                     ref_dis<=max_line_spacing_ratio*line_height(ref_line):
-                    merge = False
+                    start_new_block = False
                 
                 else:
-                    merge = True
+                    start_new_block = True
                 
-                if merge: close_text_block()
+                if start_new_block: close_text_block()
                 lines.append(block)
 
         # don't forget last group

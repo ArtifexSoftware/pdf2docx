@@ -254,7 +254,7 @@ class Fonts(BaseCollection):
         # defined CJK Unicode code point in cmap table checks
         try:
             cmap = tt_font.getBestCmap()
-        except AssertionError:
+        except:
             return False
         if not cmap: return False
 
