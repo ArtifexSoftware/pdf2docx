@@ -46,23 +46,6 @@ class ImageBlock(Image, Block):
         return block
  
 
-    def from_text_block(self, block:TextBlock):
-        """Initialize image block from image in TextBlock instance.
-
-        Args:
-            block (TextBlock): Target text block.
-
-        Returns:
-            ImageBlock: New ImageBlock extracted from TextBlock.
-        """        
-        if not block.lines or not block.lines[0].spans: return self
-
-        image_span = block.lines[0].spans[0]
-        if not isinstance(image_span, ImageSpan): return self
-
-        return self.from_image(image_span)
-
-
     def store(self):
         '''Store ImageBlock instance in raw dict.'''
         res = Block.store(self)

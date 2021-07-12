@@ -40,11 +40,6 @@ class Line(Element):
         # line break
         self.line_break = raw.get('line_break', 0) # don't break line by default
         self.tab_stop = raw.get('tab_stop', 0) # no TAB stop before the line by default
-
-        # Lines contained in text block may be re-grouped, so use an ID to track the parent block.
-        # This ID can't be changed once set -> record the original parent extracted from PDF, 
-        # so that we can determin whether two lines belong to a same original text block.
-        self._pid = None
         
         # remove key 'bbox' since it is calculated from contained spans
         if 'bbox' in raw: raw.pop('bbox') 
@@ -99,42 +94,11 @@ class Line(Element):
         else:
             return TextDirection.IGNORE
 
-    
-    @property
-    def pid(self):
-        '''Get the original parent ID.
-
-        .. note::
-            Lines contained in text block may be re-grouped, so use an ID to track 
-            the original parent block extracted from PDF. Note the difference to the
-            real parent block.
-        '''
-        return self._pid
-
-
-    @pid.setter
-    def pid(self, pid):
-        '''Set the original parent ID.'''
-        if self._pid is None: # only if not set before
-            self._pid = int(pid)
-
 
     def strip(self):
         '''Remove redundant blanks at the begin/end span.'''
         return self.spans.strip()
 
-
-    def same_source_parent(self, line):
-        '''Check if has same original parent ID.
-
-        .. note::
-            Two lines in same original block may be regrouped to different
-            block finally.
-        '''
-        if self.pid is None:
-            return False
-        else:
-            return self.pid == line.pid
 
 
     def store(self):
@@ -183,10 +147,9 @@ class Line(Element):
         if rect.contains(self.bbox):
             return self.copy()
         
-        # new line with same text attributes and pid
+        # new line with same text attributes
         line = Line({'wmode': self.wmode})
         line.dir = self.dir # update line direction relative to final CS
-        line.pid = self.pid
 
         # further check spans in line        
         for span in self.spans:

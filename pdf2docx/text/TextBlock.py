@@ -107,11 +107,6 @@ class TextBlock(Block):
         return len(self.lines.group_by_physical_rows())
 
 
-    def is_flow_layout(self, *args):
-        '''Check if flow layout'''
-        return self.lines.is_flow_layout(*args)
-
-
     def store(self):
         res = super().store()
         res.update({
@@ -127,11 +122,6 @@ class TextBlock(Block):
                 self.lines.append(line)
         else:
             self.lines.append(line_or_lines)
-
-
-    def strip(self, delete_end_line_hyphen:bool):
-        '''Strip each Line instance.'''
-        self.lines.strip(delete_end_line_hyphen)
 
 
     def plot(self, page):

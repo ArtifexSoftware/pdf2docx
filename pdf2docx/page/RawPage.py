@@ -82,13 +82,12 @@ class RawPage(BasePage, Layout):
         '''Clean up raw blocks and shapes, e.g. 
         
         * remove negative or duplicated instances,
-        * merge text blocks horizontally (preparing for layout parsing)
         * detect semantic type of shapes
         '''
         # clean up blocks first
         self.blocks.clean_up(
-            settings['delete_end_line_hyphen'],
-            settings['float_image_ignorable_gap'])
+            settings['float_image_ignorable_gap'],
+            settings['line_overlap_threshold'])
 
         # clean up shapes        
         self.shapes.clean_up(
@@ -106,9 +105,8 @@ class RawPage(BasePage, Layout):
         '''
         # get all text span
         spans = []
-        for block in self.blocks:
-            for line in block.lines:
-                spans.extend([span for span in line.spans if isinstance(span, TextSpan)])
+        for line in self.blocks:
+            spans.extend([span for span in line.spans if isinstance(span, TextSpan)])
 
         # check and update font name, line height
         for span in spans:
@@ -162,19 +160,17 @@ class RawPage(BasePage, Layout):
         # bbox
         X0, Y0, X1, _ = self.working_bbox        
     
-        # collect all blocks and shapes
+        # collect all blocks (line level) and shapes
         elements = Collection()
         elements.extend(self.blocks)
         elements.extend(self.shapes)
         if not elements: return
-        
-        pre_section = Collection()
-        pre_num_col = 1
-        y_ref = Y0 # to calculate v-distance between sections
-        sections = []
 
-        def create_pre_section(num_col, elements, y_ref):
-            # append to pre-pre-section if both single column
+        # to create section with collected lines        
+        lines = Collection()        
+        sections = []
+        def close_section(num_col, elements, y_ref):
+            # append to last section if both single column
             if sections and sections[-1].num_cols==num_col==1:
                 column = sections[-1][0] # type: Column
                 column.union_bbox(elements)
@@ -182,9 +178,13 @@ class RawPage(BasePage, Layout):
             # otherwise, create new section
             else:
                 section = self._create_section(num_col, elements, (X0, X1), y_ref)
-                if section: sections.append(section)
+                if section: 
+                    sections.append(section)
+
 
         # check section row by row
+        pre_num_col = 1
+        y_ref = Y0 # to calculate v-distance between sections
         for row in elements.group_by_rows():
             # check column col by col
             cols = row.group_by_columns()
@@ -193,46 +193,56 @@ class RawPage(BasePage, Layout):
             # column check:
             # - consider 2-cols only
             # - ignore tiny-width column
-            if current_num_col>2 or (
-                current_num_col==2 and \
-                    min(cols[0].bbox.width, cols[1].bbox.width)<=constants.MAJOR_DIST):
+            # - the width of two columns shouldn't have significant difference
+            if current_num_col>2:
                 current_num_col = 1
-
-            # process exception
-            x0, y0, x1, y1 = pre_section.bbox
-            if pre_num_col==2 and current_num_col==1:
-                # current row belongs to left column?
-                cols = pre_section.group_by_columns()
-                if row.bbox[2] <= cols[0].bbox[2]:
-                    current_num_col = 2
-                
-                # further check 2-cols -> the height
-                elif y1-y0<settings['min_section_height']:
-                    pre_num_col = 1
-
-            elif pre_num_col==2 and current_num_col==2:
-                # current 2-cols not align with pre-section ?
-                combine = Collection(pre_section)
-                combine.extend(row)
-                if len(combine.group_by_columns())==1:
+            
+            elif current_num_col==2:
+                w1, w2 = cols[0].bbox.width, cols[1].bbox.width
+                f = 2.0
+                if min(w1, w2)<=constants.MAJOR_DIST or not 1/f<=w1/w2<=f:
                     current_num_col = 1
 
-            # finalize pre-section if different to current section
+            # process exceptions
+            if pre_num_col==2 and current_num_col==1:
+                # pre_num_col!=current_num_col => to close section with collected lines,
+                # before that, further check the height of collected lines
+                x0, y0, x1, y1 = lines.bbox
+                if y1-y0<settings['min_section_height']:
+                    pre_num_col = 1
+                
+                else:
+                    # though current row has one single column, it might have another virtual 
+                    # and empty column. If so, it should be counted as 2-cols
+                    cols = lines.group_by_columns()
+                    pos = cols[0].bbox[2]
+                    if row.bbox[2]<=pos or row.bbox[0]>pos:
+                        current_num_col = 2
+
+            elif pre_num_col==2 and current_num_col==2:
+                # though both 2-cols, they don't align with each other
+                combine = Collection(lines)
+                combine.extend(row)
+                if len(combine.group_by_columns())==1: current_num_col = 1
+
+
+            # finalize pre-section if different from the column count of previous section
             if current_num_col!=pre_num_col:
                 # process pre-section
-                create_pre_section(pre_num_col, pre_section, y_ref)
-                if sections: y_ref = sections[-1][-1].bbox[3]
+                close_section(pre_num_col, lines, y_ref)
+                if sections: 
+                    y_ref = sections[-1][-1].bbox[3]
 
                 # start potential new section                
-                pre_section = Collection(row)
+                lines = Collection(row)
                 pre_num_col = current_num_col
 
-            # otherwise, append to pre-section
+            # otherwise, collect current lines for further processing
             else:
-                pre_section.extend(row)
+                lines.extend(row)
 
-        # the final section
-        create_pre_section(current_num_col, pre_section, y_ref)
+        # don't forget the final section
+        close_section(current_num_col, lines, y_ref)
 
         return sections
 

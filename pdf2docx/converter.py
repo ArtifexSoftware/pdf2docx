@@ -65,16 +65,14 @@ class Converter:
             'max_border_width'               : 6.0,    # max border width
             'min_border_clearance'           : 2.0,    # the minimum allowable clearance of two borders
             'float_image_ignorable_gap'      : 5.0,    # float image if the intersection exceeds this value
-            'float_layout_tolerance'         : 0.1,    # [0,1] the larger of this value, the more tolerable of float layout
             'page_margin_factor_top'         : 0.5,    # [0,1] reduce top margin by factor
             'page_margin_factor_bottom'      : 0.5,    # [0,1] reduce bottom margin by factor
             'shape_min_dimension'            : 2.0,    # ignore shape if both width and height is lower than this value
-            'block_merging_threshold'        : 0.5,    # merge single line blocks when vertical distance is smaller than this value * block height
+            'max_line_spacing_ratio'         : 1.5,    # maximum line spacing ratio: line spacing / line height
             'line_overlap_threshold'         : 0.9,    # [0,1] delete line if the intersection to other lines exceeds this value
             'line_break_width_ratio'         : 0.5,    # break line if the ratio of line width to entire layout bbox is lower than this value
             'line_break_free_space_ratio'    : 0.1,    # break line if the ratio of free space to entire line exceeds this value
             'line_condense_spacing'          : 4.0,    # total condense spacing (in Pt) at end of line to avoid unexpected line break
-            'line_merging_threshold'         : 2.0,    # combine two lines if the x-distance is lower than this value
             'line_separate_threshold'        : 5.0,    # two separate lines if the x-distance exceeds this value
             'new_paragraph_free_space_ratio' : 0.85,   # new paragraph if the ratio of free space to line height exceeds this value
             'lines_left_aligned_threshold'   : 1.0,    # left aligned if d_x0 of two lines is lower than this value (Pt)

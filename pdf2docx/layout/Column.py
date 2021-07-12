@@ -21,11 +21,11 @@ to distinguish these different layouts.
     }
 '''
 
-from ..common.Block import Block
 from ..common.Collection import Collection
 from ..common.Element import Element
 from ..layout.Layout import Layout
 from ..shape.Shape import Shape
+from ..text.Line import Line
 
 
 class Column(Element, Layout):
@@ -43,8 +43,8 @@ class Column(Element, Layout):
 
 
     def add_elements(self, elements:Collection):
-        '''Add candidate elements, i.e. blocks or shapes, to current column.'''
-        blocks = [e for e in elements if isinstance(e, Block)]
+        '''Add candidate elements, i.e. lines or shapes, to current column.'''
+        blocks = [e for e in elements if isinstance(e, Line)]
         shapes = [e for e in elements if isinstance(e, Shape)]
         self.assign_blocks(blocks)
         self.assign_shapes(shapes)

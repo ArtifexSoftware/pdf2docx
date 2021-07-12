@@ -122,7 +122,7 @@ class Shapes(ElementCollection):
                 shapes.append(stroke if stroke else shape)
             else:
                 shapes.append(shape)
-        self.reset(shapes).sort_in_reading_order() # sort in reading order
+        self.reset(shapes)
 
         # detect semantic type
         self._parse_semantic_type()
@@ -165,7 +165,7 @@ class Shapes(ElementCollection):
             if not shapes_in_table: continue
             table.assign_shapes(shapes_in_table)
 
-        self.reset(shapes).sort_in_reading_order()
+        self.reset(shapes)
 
 
     def plot(self, page):
