@@ -77,9 +77,15 @@ class BaseCollection:
         raise NotImplementedError
 
 
+class Collection(BaseCollection, IText):
+    '''Collection of instance focusing on grouping and sorting elements.'''
+    
+    @property
+    def text_direction(self):
+        '''Get text direction. All instances must have same text direction.''' 
+        res = set(instance.text_direction for instance in self._instances)
+        return list(res)[0] if len(res)==1 else TextDirection.MIX 
 
-class Collection(BaseCollection):
-    '''Collection of instance focusing on grouping sub-collection based on intersection/alignment.'''
 
     def group(self, fun):
         """Group instances according to user defined criterion.
@@ -169,7 +175,7 @@ class Collection(BaseCollection):
         
         # increase in x-direction if sort
         if sorted: 
-            idx = 3 if text_direction and not self.is_horizontal_text else 0
+            idx = 3 if text_direction and self.is_vertical_text else 0
             groups.sort(key=lambda group: group.bbox[idx])
 
         return groups
@@ -183,7 +189,7 @@ class Collection(BaseCollection):
 
         # increase in y-direction if sort
         if sorted: 
-            idx = 0 if text_direction and not self.is_horizontal_text else 1
+            idx = 0 if text_direction and self.is_vertical_text else 1
             groups.sort(key=lambda group: group.bbox[idx])
 
         return groups
@@ -196,26 +202,60 @@ class Collection(BaseCollection):
 
         # increase in y-direction if sort
         if sorted: 
-            idx = 0 if text_direction and not self.is_horizontal_text else 1
+            idx = 0 if text_direction and self.is_vertical_text else 1
             groups.sort(key=lambda group: group.bbox[idx])
 
         return groups
 
 
+    def sort_in_reading_order(self):
+        '''Sort collection instances in reading order (considering text direction), e.g.
+            for normal reading direction: from top to bottom, from left to right.
+        '''
+        if self.is_horizontal_text:
+            self._instances.sort(key=lambda e: (e.bbox.y0, e.bbox.x0, e.bbox.x1))
+        else:
+            self._instances.sort(key=lambda e: (e.bbox.x0, e.bbox.y1, e.bbox.y0))
+        return self
 
-class ElementCollection(Collection, IText):
+
+    def sort_in_line_order(self):
+        '''Sort collection instances in a physical with text direction considered, e.g.
+            for normal reading direction: from left to right.
+        '''
+        if not self.is_vertical_text:
+            self._instances.sort(key=lambda e: (e.bbox.x0, e.bbox.y0, e.bbox.x1))
+        else:
+            self._instances.sort(key=lambda e: (e.bbox.y1, e.bbox.x0, e.bbox.y0))
+        return self
+
+
+    def sort_in_reading_order_plus(self):
+        '''Sort instances in reading order, especially for instances in same row. Taking 
+        natural reading direction for example: reading order for rows, from left to right 
+        for instances in row. In the following example, A comes before B::
+
+                         +-----------+
+            +---------+  |           |
+            |   A     |  |     B     |
+            +---------+  +-----------+
+        
+        Steps:
+
+            * Sort elements in reading order, i.e. from top to bottom, from left to right.
+            * Group elements in row.
+            * Sort elements in row: from left to right.
+        '''
+        instances = []
+        for row in self.group_by_physical_rows(sorted=True, text_direction=True):
+            row.sort_in_line_order()
+            instances.extend(row)        
+        self.reset(instances)
+
+
+
+class ElementCollection(Collection):
     '''Collection of ``Element`` instances.'''
-    @property
-    def text_direction(self):
-        '''Get text direction. All instances must have same text direction.''' 
-        if self._instances and hasattr(self._instances[0], 'text_direction'):
-            res = set(instance.text_direction for instance in self._instances)
-            if len(res)==1:
-                return list(res)[0]
-
-        # normal direction by default
-        return TextDirection.LEFT_RIGHT 
-
 
     def _update_bbox(self, e:Element):
         '''Update parent bbox.'''
@@ -257,54 +297,9 @@ class ElementCollection(Collection, IText):
             nth (int): the position to remove.
 
         Returns:
-            ElementCollection: the removed instance.
+            Collection: the removed instance.
         """        
         return self._instances.pop(nth)
-
-
-    def sort_in_reading_order(self):
-        '''Sort collection instances in reading order (considering text direction), e.g.
-            for normal reading direction: from top to bottom, from left to right.
-        '''
-        if self.is_horizontal_text:
-            self._instances.sort(key=lambda e: (e.bbox.y0, e.bbox.x0, e.bbox.x1))
-        else:
-            self._instances.sort(key=lambda e: (e.bbox.x0, e.bbox.y1, e.bbox.y0))
-        return self
-
-
-    def sort_in_line_order(self):
-        '''Sort collection instances in a physical with text direction considered, e.g.
-            for normal reading direction: from left to right.
-        '''
-        if self.is_horizontal_text:
-            self._instances.sort(key=lambda e: (e.bbox.x0, e.bbox.y0, e.bbox.x1))
-        else:
-            self._instances.sort(key=lambda e: (e.bbox.y1, e.bbox.x0, e.bbox.y0))
-        return self
-
-
-    def sort_in_reading_order_plus(self):
-        '''Sort instances in reading order, especially for instances in same row. Taking 
-        natural reading direction for example: reading order for rows, from left to right 
-        for instances in row. In the following example, A comes before B::
-
-                         +-----------+
-            +---------+  |           |
-            |   A     |  |     B     |
-            +---------+  +-----------+
-        
-        Steps:
-
-            * Sort elements in reading order, i.e. from top to bottom, from left to right.
-            * Group elements in row.
-            * Sort elements in row: from left to right.
-        '''
-        instances = []
-        for row in self.group_by_physical_rows(sorted=True, text_direction=True):
-            row.sort_in_line_order()
-            instances.extend(row)        
-        self.reset(instances)
 
 
     def is_flow_layout(self, line_separate_threshold:float):

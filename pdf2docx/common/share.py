@@ -26,14 +26,16 @@ class RectType(Enum):
 
 
 class TextDirection(Enum):
-    '''Text direction.
-
+    '''Text direction.    
     * LEFT_RIGHT: from left to right within a line, and lines go from top to bottom
     * BOTTOM_TOP: from bottom to top within a line, and lines go from left to right
+    * MIX       : a mixture if LEFT_RIGHT and BOTTOM_TOP
+    * IGNORE    : neither LEFT_RIGHT nor BOTTOM_TOP
     '''
     IGNORE     = -1
     LEFT_RIGHT = 0
     BOTTOM_TOP = 1
+    MIX        = 2
 
 
 class TextAlignment(Enum):
@@ -63,12 +65,19 @@ class IText:
     @property
     def is_horizontal_text(self):
         '''Check whether text direction is from left to right.'''
-        return self.text_direction == TextDirection.LEFT_RIGHT
+        return self.text_direction == TextDirection.LEFT_RIGHT or \
+                self.text_direction == TextDirection.MIX
 
     @property
     def is_vertical_text(self):
         '''Check whether text direction is from bottom to top.'''
         return self.text_direction == TextDirection.BOTTOM_TOP
+
+    @property
+    def is_mix_text(self):
+        '''Check whether text direction is either from left to 
+        right or from bottom to top.'''
+        return self.text_direction == TextDirection.MIX
 
 
 class lazyproperty:
