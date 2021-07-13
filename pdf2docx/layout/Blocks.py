@@ -224,13 +224,19 @@ class Blocks(ElementCollection):
         
         # check row by row 
         ref_pos = rows[0].bbox.y1
+        cell_layout = isinstance(self.parent, Cell)
         for row in rows:
 
             bbox = row.bbox
 
             # flow layout or not?
             if not row.is_flow_layout(line_separate_threshold): 
-                table_lines.extend([sub_line(block) for block in row])            
+                table_lines.extend([sub_line(block) for block in row])
+
+            # treated as float layout if vertical text and not cell layout
+            elif not cell_layout and row.is_vertical_text:
+                table_lines.extend([sub_line(block) for block in row])
+
             else:
                 close_table()
 

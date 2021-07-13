@@ -191,39 +191,43 @@ class RawPage(BasePage, Layout):
             current_num_col = len(cols)
 
             # column check:
-            # - consider 2-cols only
-            # - ignore tiny-width column
-            # - the width of two columns shouldn't have significant difference
+            # consider 2-cols only
             if current_num_col>2:
                 current_num_col = 1
             
+            # the width of two columns shouldn't have significant difference
             elif current_num_col==2:
-                w1, w2 = cols[0].bbox.width, cols[1].bbox.width
+                u0, v0, u1, v1 = cols[0].bbox
+                m0, n0, m1, n1 = cols[1].bbox
+                x0 = (u1+m0)/2.0
+                c1, c2 = x0-X0, X1-x0 # column width
+                w1, w2 = u1-u0, m1-m0 # line width
                 f = 2.0
-                if min(w1, w2)<=constants.MAJOR_DIST or not 1/f<=w1/w2<=f:
+                if not 1/f<=c1/c2<=f or w1/c1<0.33 or w2/c2<0.33: 
                     current_num_col = 1
 
             # process exceptions
             if pre_num_col==2 and current_num_col==1:
+                # though current row has one single column, it might have another virtual 
+                # and empty column. If so, it should be counted as 2-cols
+                cols = lines.group_by_columns()
+                pos = cols[0].bbox[2]
+                if row.bbox[2]<=pos or row.bbox[0]>pos:
+                    current_num_col = 2
+                
                 # pre_num_col!=current_num_col => to close section with collected lines,
                 # before that, further check the height of collected lines
-                x0, y0, x1, y1 = lines.bbox
-                if y1-y0<settings['min_section_height']:
-                    pre_num_col = 1
-                
                 else:
-                    # though current row has one single column, it might have another virtual 
-                    # and empty column. If so, it should be counted as 2-cols
-                    cols = lines.group_by_columns()
-                    pos = cols[0].bbox[2]
-                    if row.bbox[2]<=pos or row.bbox[0]>pos:
-                        current_num_col = 2
+                    x0, y0, x1, y1 = lines.bbox
+                    if y1-y0<settings['min_section_height']:
+                        pre_num_col = 1
+                
 
             elif pre_num_col==2 and current_num_col==2:
                 # though both 2-cols, they don't align with each other
                 combine = Collection(lines)
                 combine.extend(row)
-                if len(combine.group_by_columns())==1: current_num_col = 1
+                if len(combine.group_by_columns(sorted=False))==1: current_num_col = 1
 
 
             # finalize pre-section if different from the column count of previous section
