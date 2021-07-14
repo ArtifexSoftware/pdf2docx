@@ -74,15 +74,7 @@ class TextBlock(Block):
         '''All lines contained in text block must have same text direction. 
         Otherwise, set normal direction.
         '''            
-        res = set(line.text_direction for line in self.lines)
-        # consider two text direction only:  left-right, bottom-top
-        if TextDirection.IGNORE in res:
-            return TextDirection.IGNORE
-        elif len(res)==1:
-            return list(res)[0]
-        else:
-            return TextDirection.LEFT_RIGHT
-
+        return self.lines.text_direction
 
     @property
     def average_row_gap(self):

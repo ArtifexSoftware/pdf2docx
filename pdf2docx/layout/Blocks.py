@@ -195,12 +195,10 @@ class Blocks(ElementCollection):
             ``PyMuPDF`` may group multi-lines in a row as a text block while each line belongs to different
             cell. So, it's required to deep into line level.
         '''
-        # group lines by row
+        # group lines by row: any intersection would be counted as same group
         # NOTE: consider real text direction when all lines have same orientation, i.e. either horizontal or 
         # vertical; otherwise, consider the default direction, i.e. horizontal.
-        blocks_direction = set(line.text_direction for line in self._instances)
-        text_direction = len(blocks_direction)==1
-        rows = self.group_by_rows(text_direction=text_direction) # any intersection would be counted as same group
+        rows = self.group_by_rows(text_direction=not self.is_mix_text)
 
         # get sub-lines from block: line or table block
         def sub_line(block):
@@ -226,13 +224,15 @@ class Blocks(ElementCollection):
         
         # check row by row 
         ref_pos = rows[0].bbox.y1
+        cell_layout = isinstance(self.parent, Cell)
         for row in rows:
 
             bbox = row.bbox
 
             # flow layout or not?
-            if not row.is_flow_layout(line_separate_threshold): 
-                table_lines.extend([sub_line(block) for block in row])            
+            if not row.is_flow_layout(line_separate_threshold, cell_layout=cell_layout): 
+                table_lines.extend([sub_line(block) for block in row])
+
             else:
                 close_table()
 

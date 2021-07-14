@@ -214,8 +214,7 @@ class Element(IText):
         if not e or not bool(self): return False
 
         # text direction
-        is_horizontal_text = self.is_horizontal_text if text_direction else True
-        idx = 0 if is_horizontal_text else 1
+        idx = 1 if text_direction and self.is_vertical_text else 0
 
         L1 = self.bbox[idx+2]-self.bbox[idx]
         L2 = e.bbox[idx+2]-e.bbox[idx]
@@ -247,8 +246,7 @@ class Element(IText):
         if not e or not bool(self): return False
 
         # text direction
-        is_horizontal_text = self.is_horizontal_text if text_direction else True
-        idx = 1 if is_horizontal_text else 0
+        idx = 0 if text_direction and self.is_vertical_text else 1
         
         L1 = self.bbox[idx+2]-self.bbox[idx]
         L2 = e.bbox[idx+2]-e.bbox[idx]
@@ -276,7 +274,7 @@ class Element(IText):
             The difference to method ``horizontally_align_with``: they may not in same line, though 
             aligned horizontally.
         """
-        if not e or self.text_direction != e.text_direction:
+        if not e or self.is_horizontal_text != e.is_horizontal_text:
             return False
 
         # normal reading direction by default
