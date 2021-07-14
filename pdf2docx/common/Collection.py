@@ -302,14 +302,15 @@ class ElementCollection(Collection):
         return self._instances.pop(nth)
 
 
-    def is_flow_layout(self, line_separate_threshold:float):
-        '''Whether contained elements are in flow layout or not. Flow layout satisfies:
-        * single column only; and
-        * no significant gap between adjacent two lines
-        '''
-        if len(self)<=1: return True
+    def is_flow_layout(self, line_separate_threshold:float, cell_layout=False):
+        '''Whether contained elements are in flow layout or not.'''
+        # float layout if vertical text but not cell layout, since vertical text 
+        # will be simulated with stream table
+        if not cell_layout and self.is_vertical_text:
+            return False
 
-        # check column
+        # flow layout if single column only
+        if len(self)<=1: return True
         if len(self.group_by_columns())>1: return False
 
         # group in physical row and check distance between lines
