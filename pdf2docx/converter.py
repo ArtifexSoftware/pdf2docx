@@ -86,8 +86,7 @@ class Converter:
             'extract_stream_table'           : False,  # don't consider stream table when extracting tables
             'parse_lattice_table'            : True,   # whether parse lattice table or not; may destroy the layout if set False
             'parse_stream_table'             : True,   # whether parse stream table or not; may destroy the layout if set False
-            'delete_end_line_hyphen'         : True,   # delete hyphen at the end of a line
-            'default_font_name'              : 'Times New Roman' # default font name in case valid font are extracted
+            'delete_end_line_hyphen'         : True    # delete hyphen at the end of a line
         }
 
     # -----------------------------------------------------------------------

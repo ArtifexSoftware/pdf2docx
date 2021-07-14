@@ -34,7 +34,7 @@ from ..shape.Shape import Hyperlink
 from ..shape.Shapes import Shapes
 from ..image.ImagesExtractor import ImagesExtractor
 from ..shape.Paths import Paths
-from ..font.Fonts import Font, Fonts
+from ..font.Fonts import Fonts
 from ..text.TextSpan import TextSpan
 from ..common.Element import Element
 from ..common.share import RectType, debug_plot
@@ -97,11 +97,11 @@ class RawPage(BasePage, Layout):
         return self.shapes
 
 
-    def process_font(self, fonts:Fonts, default_font:Font):      
+    def process_font(self, fonts:Fonts):      
         '''Update font properties, e.g. font name, font line height ratio, of ``TextSpan``.
         
         Args:
-            fonts (Fonts): Fonts used in current document.
+            fonts (Fonts): Fonts parsed by ``fonttools``.
         '''
         # get all text span
         spans = []
@@ -110,9 +110,14 @@ class RawPage(BasePage, Layout):
 
         # check and update font name, line height
         for span in spans:
-            font = fonts.get(span.font, default_font)
-            span.font = font.name
-            span.line_height = font.line_height * span.size
+            font = fonts.get(span.font)
+            # update font properties with font parsed by fonttools
+            if font:
+                span.font = font.name
+                span.line_height = font.line_height * span.size
+            # otherwise, use the default properties
+            else:
+                span.line_height = (span.ascender-span.descender) * span.size
 
 
     def calculate_margin(self, **settings):

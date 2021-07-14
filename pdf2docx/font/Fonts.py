@@ -3,23 +3,28 @@
 Font properties like font name, size are covered in :py:class:`~pdf2docx.text.TextSpan`, 
 but more generic properties are required further:
 
-* Font family name. The font name extracted and set in `TextSpan` might not valid when 
+* Font family name. The font name extracted and set in ``TextSpan`` might not valid when 
   directly used in MS Word, e.g. "ArialMT" should be "Arial". So, we need to get font
   family name, which should be accepted by MS Word, based on the font file itself.
 
 * Font line height ratio. As line height = font_size * line_height_ratio, it's used to 
   calculate relative line spacing. In general, 1.12 is an approximate value to this ratio,
-  but it's in fact a font-related value, especially for CJK font.
+  but it's in fact a font-related value, especially for CJK font. 
+
+    * So, extract font metrics, e.g. ascender and descender, with third party library ``fontTools``
+      in first priority. This can obtain an accurate line height ratio, but sometimes the 
+      embedded font data might crash.
+  
+    * Then, we have to use the default properties, i.e. ascender and descender, extracted by
+      ``PyMuPDF`` directly, but this value isn't so accurate.    
 '''
 
 import os
-import logging
 from io import BytesIO
 from collections import namedtuple 
-from fontTools.ttLib import TTFont, TTLibError
+from fontTools.ttLib import TTFont
 from ..common.Collection import BaseCollection
-from ..common.constants import (CJK_CODEPAGE_BITS, CJK_UNICODE_RANGE_BITS, 
-                                    CJK_UNICODE_RANGES, DICT_FONT_LINE_HEIGHT)
+from ..common.constants import (CJK_CODEPAGE_BITS, CJK_UNICODE_RANGE_BITS, CJK_UNICODE_RANGES)
 
 
 Font = namedtuple('Font', [ 'descriptor',     # font descriptor
@@ -30,8 +35,8 @@ Font = namedtuple('Font', [ 'descriptor',     # font descriptor
 class Fonts(BaseCollection):
     '''Extracted fonts properties from PDF.'''
 
-    def get(self, font_name:str, default:Font=None):
-        '''Get matched font by font name, or return default font.'''
+    def get(self, font_name:str):
+        '''Get matched font by font name, or return None.'''
         target = self._to_descriptor(font_name)
 
         # 1st priority: check right the name
@@ -46,18 +51,14 @@ class Fonts(BaseCollection):
         for font in self:
             if font.descriptor in target: return font
         
-        # show warning msg if not found
-        if default:
-            logging.warning('Replace font "%s" with "%s" due to lack of data.', font_name, default.name)
-        return Font(descriptor=target, name=default.name, line_height=default.line_height)
+        return None
 
 
     @classmethod
-    def extract(cls, fitz_doc, default_font:Font):
+    def extract(cls, fitz_doc):
         '''Extract fonts from PDF and get properties.
         * Only embedded fonts (v.s. the base 14 fonts) can be extracted.
         * The extracted fonts may be invalid due to reason from PDF file itself.
-        * Check a default font table for those failed cases.
         '''        
         # get unique font references
         xrefs = set()
@@ -65,60 +66,33 @@ class Fonts(BaseCollection):
             for f in page.get_fonts(): xrefs.add(f[0])
 
         # process xref one by one
-        default_fonts = cls.get_defult_fonts()
         fonts = []
         for xref in xrefs:
-            valid = False
             basename, ext, _, buffer = fitz_doc.extract_font(xref)
             name = cls._normalized_font_name(basename)
-            if ext not in ('n/a', 'ccf'): # embedded fonts, or not supported fonts
-                try:
-                    tt = TTFont(BytesIO(buffer))
-                except TTLibError:
-                    tt = None
 
-                # valid true type font, no matter installed in the system or not
-                if cls._is_valid(tt):
-                    name = cls.get_font_family_name(tt)
-                    fonts.append(Font(
-                        descriptor=cls._to_descriptor(name),
-                        name=name,
-                        line_height=cls.get_line_height_factor(tt)))
-                    valid = True
-                
-            # check default font if not valid
-            if not valid:
-                font = default_fonts.get(name, default_font)
-                if font: fonts.append(font)
-        
+            # process embedded and supported fonts (true type) only
+            if ext in ('n/a', 'ccf'): continue
+            try:
+                tt = TTFont(BytesIO(buffer))
+            except:
+                tt = None
+
+            # valid true type font, no matter installed in the system or not
+            if not cls._is_valid(tt): continue
+            name = cls.get_font_family_name(tt)
+            fonts.append(Font(
+                descriptor=cls._to_descriptor(name),
+                name=name,
+                line_height=cls.get_line_height_factor(tt)))
+
         return cls(fonts)
-
-
-
-    @classmethod
-    def get_defult_fonts(cls):
-        '''Default fonts, e.g. base 14 font and pre-defined fonts.'''
-        fonts = [Font(descriptor=cls._to_descriptor(name), 
-                        name=name, 
-                        line_height=f) for name, f in DICT_FONT_LINE_HEIGHT.items()]
-        return cls(fonts)
-
-    
-    @classmethod
-    def get_defult_font(cls, default_name:str):
-        '''Get default font by name.'''
-        font = cls.get_defult_fonts().get(default_name, None)
-        if not font:
-            font = Font(descriptor=cls._to_descriptor(default_name),
-                        name=default_name, 
-                        line_height=1.20) # an approximate value
-        return font
 
     
     @staticmethod
     def _is_valid(tt_font:TTFont):
         if not tt_font: return False
-        for key in ('name', 'hhea', 'head', 'OS/2', 'cmap'):
+        for key in ('name', 'hhea', 'head', 'OS/2'):
             if not tt_font.has_key(key): return False
         return True
 
