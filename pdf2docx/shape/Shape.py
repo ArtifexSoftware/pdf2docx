@@ -40,7 +40,7 @@ Data structure::
     }
 
 .. note::
-    These coordinates are relative to real page CS since they're extracted from ``page.getDrawings()``,
+    These coordinates are relative to real page CS since they're extracted from ``page.get_drawings()``,
     which is based on real page CS. So, needn't to multiply Element.ROTATION_MATRIX when initializing
     from source dict.
 '''
@@ -192,7 +192,7 @@ class Stroke(Shape):
         rect = fitz.Rect(rect)
 
         # an empty area line
-        if rect.getArea()==0.0:
+        if rect.get_area()==0.0:
             self._start = fitz.Point(rect[0:2])
             self._end = fitz.Point(rect[2:])
             super().update_bbox(self._to_rect())

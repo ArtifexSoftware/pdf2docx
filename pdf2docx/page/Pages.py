@@ -4,7 +4,6 @@
 
 import logging
 from ..common.Collection import BaseCollection
-from ..common import constants
 from .RawPage import RawPage
 from ..font.Fonts import Fonts
 
@@ -20,9 +19,9 @@ class Pages(BaseCollection):
             settings (dict): Parsing parameters.
         '''
         # ---------------------------------------------
-        # 0. extract fonts properties
+        # 0. extract fonts properties, especially line height ratio
         # ---------------------------------------------
-        fonts, default_font = Pages._extract_fonts(fitz_doc, **settings)
+        fonts = Fonts.extract(fitz_doc)
 
         # ---------------------------------------------
         # 1. extract and then clean up raw page
@@ -44,7 +43,7 @@ class Pages(BaseCollection):
             raw_page.clean_up(**settings)
 
             # process font properties
-            raw_page.process_font(fonts, default_font)            
+            raw_page.process_font(fonts)            
 
             # after this step, we can get some basic properties
             # NOTE: floating images are detected when cleaning up blocks, so collect them here
@@ -82,23 +81,6 @@ class Pages(BaseCollection):
             sections = raw_page.parse_section(**settings)
             page.sections.extend(sections)
     
-
-    @staticmethod
-    def _extract_fonts(fitz_doc, **settings):
-        '''Extract font properties, e.g. font family name and line height ratio.'''
-        # default font specified by user
-        default_name = settings['default_font_name']
-        default_font = Fonts.get_defult_font(default_name)
-
-        # extract fonts from pdf
-        fonts = Fonts.extract(fitz_doc, default_font)
-
-        # always add a program defined defult font -> in case unnamed font in TextSpan
-        font = Fonts.get_defult_font(constants.DEFAULT_FONT_NAME)
-        fonts.append(font)
-
-        return fonts, default_font
-
 
     @staticmethod
     def _parse_document(raw_pages:list):

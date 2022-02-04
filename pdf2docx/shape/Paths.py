@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 '''
-Objects representing PDF path (stroke and filling) extracted by ``page.getDrawings()``.
+Objects representing PDF path (stroke and filling) extracted by ``page.get_drawings()``.
 
 This method is new since ``PyMuPDF`` 1.18.0, with both pdf raw path and annotations like Line, 
 Square and Highlight considered.
 
-* https://pymupdf.readthedocs.io/en/latest/page.html#Page.getDrawings
+* https://pymupdf.readthedocs.io/en/latest/page.html#Page.get_drawings
 * https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
 '''
 
@@ -21,7 +21,7 @@ class Paths(Collection):
     '''A collection of paths.'''
 
     def restore(self, raws:list):
-        '''Initialize paths from raw data get by ``page.getDrawings()``.'''
+        '''Initialize paths from raw data get by ``page.get_drawings()``.'''
         rect = (0, 0, self.parent.width, self.parent.height)
         for raw in raws:
             path = Path(raw)

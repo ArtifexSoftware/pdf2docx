@@ -3,7 +3,6 @@
 
 import logging
 from .converter import Converter
-from .gui.App import App
 
 
 class PDF2DOCX:
@@ -98,6 +97,9 @@ class PDF2DOCX:
     @staticmethod
     def gui():
         '''Simple user interface.'''
+        # import App containing tkinter internally, in case GUI is not supported by some platdorm,
+        # e.g. Amazon Linux 2
+        from .gui.App import App
         app = App(title='PDF_2_Docx Converter', width=500, height=600)
         app.mainloop()
 

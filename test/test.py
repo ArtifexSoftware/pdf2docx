@@ -1,261 +1,171 @@
 # -*- coding: utf-8 -*-
 
 '''
-Testing the layouts between sample pdf and the converted docx.
+To leverage the Github Action, it's divided into three parts to test the conversion and also
+quality between sample pdf and the converted docx. This is part Three.
 
-NOTE: pdf2docx should be installed in advance.
+  1. Convert sample pdf to docx with this module.
+  2. Convert docx back to pdf. 
+     Considering the converting quality, a Windows-based command line tool `OfficeToPDF` is used,
+     and an installation of Microsoft Word is required.
+  3. Convert page to image and compare similarity with python-opencv.
 
-The docx is created from parsed layout, so an equivalent but efficient way is to 
-compare parsed layout with banchmark one.
-
-The benchmark layout is also created from parsed layout, but proved to be able to
-create docx with good enough quality.
-
-Obsoleted method (real-time testing method):
-  - convert sample pdf to docx with this module
-  - convert docx back to pdf (`OfficeToPDF` or online `pylovepdf`, see more link)
-  - compare layouts between sample pdf and comparing pdf
-
-more link:
+Links on MS Word to PDF conversion:
   - https://github.com/cognidox/OfficeToPDF/releases
   - https://github.com/AndyCyberSec/pylovepdf
 '''
 
 import os
+import numpy as np
+import cv2 as cv
+import fitz
 from pdf2docx import Converter, parse
-from pdf2docx.text.TextSpan import TextSpan
 
 
 script_path = os.path.abspath(__file__) # current script path
-
-class Utility:
-    '''utilities related directly to the test case'''
-
-    @property
-    def test_dir(self): return os.path.dirname(script_path)
-
-    @property
-    def layout_dir(self): return os.path.join(self.test_dir, 'layouts')
-
-    @property
-    def sample_dir(self): return os.path.join(self.test_dir, 'samples')
-
-    @property
-    def output_dir(self): return os.path.join(self.test_dir, 'outputs')
-
-    def init_test(self, filename):
-        ''' Initialize parsed layout and benchmark layout.'''
-        # parsed layout: first page only
-        pdf_file = os.path.join(self.sample_dir, f'{filename}.pdf')
-        docx_file = os.path.join(self.output_dir, f'{filename}.docx')
-        cv = Converter(pdf_file)        
-        cv.convert(docx_file, pages=[0])
-        self.test = cv.pages[0].sections
-        cv.close()
-
-        # restore sample layout
-        cv = Converter(pdf_file)
-        layout_file = os.path.join(self.layout_dir, f'{filename}.json')
-        cv.deserialize(layout_file)
-        self.sample = cv.pages[0].sections
-
-        return self
+test_dir = os.path.dirname(script_path)
+sample_path = os.path.join(test_dir, 'samples')
+output_path = os.path.join(test_dir, 'outputs')
 
 
-    def verify_layout(self, threshold=0.95):
-        ''' Check layout between benchmark and parsed one.'''
-        # count of sections
-        m, n = len(self.sample), len(self.test)
-        assert m==n, f"\nThe count of parsed sections '{n}' is inconsistent with sample '{m}'"
+def get_page_similarity(page_a, page_b, diff_img_filename='diff.png'):
+    '''Calculate page similarity index: [0, 1].'''
+    # page to opencv image
+    image_a = get_page_image(page_a)
+    image_b = get_page_image(page_b)
 
-        for s_section, t_section in zip(self.sample, self.test):
-            # count of columns
-            m, n = len(s_section), len(t_section)
-            assert m==n, f"\nThe count of parsed columns '{n}' is inconsistent with sample '{m}'"
-
-            for s_col, t_col in zip(s_section, t_section):
-                Utility._verify_layout(s_col.blocks, t_col.blocks, threshold)
+    # resize if different shape
+    if image_a.shape != image_b.shape:
+        rows, cols = image_a.shape[:2]
+        image_b = cv.resize(image_b, (cols, rows))
     
-
-    @staticmethod
-    def _verify_layout(sample_blocks, test_blocks, threshold):
-        ''' Check layout between benchmark and parsed one.'''
-        sample_text_image_blocks = sample_blocks.text_blocks
-        test_text_image_blocks = test_blocks.text_blocks
-        
-        # text blocks
-        f = lambda block: block.is_text_block
-        sample_text_blocks = list(filter(f, sample_text_image_blocks))
-        test_text_blocks   = list(filter(f, test_text_image_blocks))
-        Utility._check_text_layout(sample_text_blocks, test_text_blocks, threshold)
-
-        # inline images
-        sample_inline_images = sample_blocks.inline_image_blocks
-        test_inline_images = test_blocks.inline_image_blocks
-        Utility._check_inline_image_layout(sample_inline_images, test_inline_images, threshold)
-
-        # floating images
-        f = lambda block: block.is_float_image_block
-        sample_float_images = list(filter(f, sample_text_image_blocks))
-        test_float_images = list(filter(f, test_text_image_blocks))
-        Utility._check_float_image_layout(sample_float_images, test_float_images, threshold)        
-
-        # table blocks
-        sample_tables = sample_blocks.table_blocks
-        test_tables = test_blocks.table_blocks        
-        Utility._check_table_layout(sample_tables, test_tables, threshold)
-
-
-    @staticmethod
-    def _check_table_layout(sample_tables, test_tables, threshold):
-        '''Check table layout.
-             - table contents are covered by text layout checking
-             - check table structure
-        '''
-        # count of tables
-        m, n = len(sample_tables), len(test_tables)
-        assert m==n, f"\nThe count of parsed tables '{n}' is inconsistent with sample '{m}'"
-
-        # check structures table by table
-        for sample_table, test_table in zip(sample_tables, test_tables):
-            for sample_row, test_row in zip(sample_table, test_table):
-                for sample_cell, test_cell in zip(sample_row, test_row):
-                    if not sample_cell: continue
-                    matched, msg = test_cell.compare(sample_cell, threshold)
-                    assert matched, f'\n{msg}'
-
-
-    @staticmethod
-    def _check_inline_image_layout(sample_inline_images, test_inline_images, threshold):
-        '''Check image layout: bbox and vertical spacing.'''
-        # count of images
-        m, n = len(sample_inline_images), len(test_inline_images)
-        assert m==n, f"\nThe count of image blocks {n} is inconsistent with sample {m}"
-
-        # check each image
-        for sample, test in zip(sample_inline_images, test_inline_images):
-            matched, msg = test.compare(sample, threshold)
-            assert matched, f'\n{msg}'
+    # write different image
+    if diff_img_filename:
+        diff = cv.subtract(image_a, image_b)
+        cv.imwrite(diff_img_filename, diff)
     
-
-    @staticmethod
-    def _check_float_image_layout(sample_float_images, test_float_images, threshold):
-        '''Check image layout: bbox and vertical spacing.'''
-        # count of images
-        m, n = len(sample_float_images), len(test_float_images)
-        assert m==n, f"\nThe count of image blocks {n} is inconsistent with sample {m}"
-
-        # check each image
-        for sample, test in zip(sample_float_images, test_float_images):
-            matched, msg = test.compare(sample, threshold)
-            assert matched, f'\n{msg}'
+    return get_mssism(image_a, image_b)
 
 
-    @staticmethod
-    def _check_text_layout(sample_text_blocks, test_text_blocks, threshold):
-        ''' Compare text layout and format. 
-             - text layout is determined by vertical spacing
-             - text format is defined in style attribute of TextSpan
-        '''
-        # count of blocks
-        m, n = len(sample_text_blocks), len(test_text_blocks)
-        assert m==n, f"\nThe count of text blocks {n} is inconsistent with sample {m}"
-        
-        # check layout of each block
-        for sample, test in zip(sample_text_blocks, test_text_blocks):
-
-            # text bbox and vertical spacing
-            matched, msg = test.compare(sample, threshold)
-            assert matched, f'\n{msg}'
-
-            # text style
-            for sample_line, test_line in zip(sample.lines, test.lines):
-                for sample_span, test_span in zip(sample_line.spans, test_line.spans):
-                    if not isinstance(sample_span, TextSpan): continue
-                    
-                    # text
-                    a, b = sample_span.text, test_span.text
-                    assert a==b, f"\nApplied text '{b}' is inconsistent with sample '{a}'.{sample_span.bbox},,{test_span.bbox}"
-
-                    # style
-                    m, n = len(sample_span.style), len(test_span.style)
-                    assert m==n, f"\nThe count of applied text style {n} is inconsistent with sample {m}"
-
-                    sample_span.style.sort(key=lambda item: item['type'])
-                    test_span.style.sort(key=lambda item: item['type'])
-                    for sample_dict, test_dict in zip(sample_span.style, test_span.style):
-                        a, b = sample_dict['type'], test_dict['type']
-                        assert a==b, f"\nApplied text style '{b}' is inconsistent with sample '{a}'"
+def get_page_image(pdf_page):
+    '''Convert fitz page to opencv image.'''
+    img_byte = pdf_page.get_pixmap(clip=pdf_page.rect).tobytes()
+    img = np.frombuffer(img_byte, np.uint8)
+    return cv.imdecode(img, cv.IMREAD_COLOR)
 
 
-class Test_Main(Utility):
-    '''Main text class.'''
+def get_mssism(i1, i2, kernel=(15,15)):
+    '''Calculate mean Structural Similarity Index (SSIM).
+    https://docs.opencv.org/4.x/d5/dc4/tutorial_video_input_psnr_ssim.html
+    '''
+    C1 = 6.5025
+    C2 = 58.5225
+    # INITS
+    I1 = np.float32(i1) # cannot calculate on one byte large values
+    I2 = np.float32(i2)
+    I2_2 = I2 * I2 # I2^2
+    I1_2 = I1 * I1 # I1^2
+    I1_I2 = I1 * I2 # I1 * I2
+    # END INITS
+    # PRELIMINARY COMPUTING
+    mu1 = cv.GaussianBlur(I1, kernel, 1.5)
+    mu2 = cv.GaussianBlur(I2, kernel, 1.5)
+    mu1_2 = mu1 * mu1
+    mu2_2 = mu2 * mu2
+    mu1_mu2 = mu1 * mu2
+    sigma1_2 = cv.GaussianBlur(I1_2, kernel, 1.5)
+    sigma1_2 -= mu1_2
+    sigma2_2 = cv.GaussianBlur(I2_2, kernel, 1.5)
+    sigma2_2 -= mu2_2
+    sigma12 = cv.GaussianBlur(I1_I2, kernel, 1.5)
+    sigma12 -= mu1_mu2
+    t1 = 2 * mu1_mu2 + C1
+    t2 = 2 * sigma12 + C2
+    t3 = t1 * t2                    # t3 = ((2*mu1_mu2 + C1).*(2*sigma12 + C2))
+    t1 = mu1_2 + mu2_2 + C1
+    t2 = sigma1_2 + sigma2_2 + C2
+    t1 = t1 * t2                    # t1 =((mu1_2 + mu2_2 + C1).*(sigma1_2 + sigma2_2 + C2))
+    ssim_map = cv.divide(t3, t1)    # ssim_map =  t3./t1;
+    mssim = cv.mean(ssim_map)       # mssim = average of ssim map
+    return np.mean(mssim[0:3])
+
+
+
+class TestConversion:
+    '''Test the converting process.'''
 
     def setup(self):
-        # create output path if not exist
-        if not os.path.exists(self.output_dir):
-            os.mkdir(self.output_dir)
+        '''create output path if not exist.'''
+        if not os.path.exists(output_path): os.mkdir(output_path)
     
+
+    def convert(self, filename):
+        '''Convert PDF file from sample path to output path.'''
+        source_pdf_file = os.path.join(sample_path, f'{filename}.pdf')
+        docx_file = os.path.join(output_path, f'{filename}.docx')
+        cv = Converter(source_pdf_file)        
+        cv.convert(docx_file)
+        cv.close()    
 
     # ------------------------------------------
     # layout: section
     # ------------------------------------------
     def test_section(self):
         '''test page layout: section and column.'''
-        self.init_test('demo-section').verify_layout(threshold=0.95)    
+        self.convert('demo-section')    
 
     def test_section_spacing(self):
         '''test page layout: section vertical position.'''
-        self.init_test('demo-section-spacing').verify_layout(threshold=0.95)
+        self.convert('demo-section-spacing')
 
     # ------------------------------------------
     # text styles
     # ------------------------------------------
     def test_blank_file(self):
         '''test blank file without any texts or images.'''
-        self.init_test('demo-blank').verify_layout(threshold=0.95)
+        self.convert('demo-blank')
 
     def test_text_format(self):
         '''test text format, e.g. highlight, underline, strike-through.'''
-        self.init_test('demo-text').verify_layout(threshold=0.95)
+        self.convert('demo-text')
 
     def test_text_alignment(self):
         '''test text alignment.'''
-        self.init_test('demo-text-alignment').verify_layout(threshold=0.95)    
+        self.convert('demo-text-alignment')    
     
     def test_unnamed_fonts(self):
         '''test unnamed fonts which destroys span bbox, and accordingly line/block layout.'''
-        self.init_test('demo-text-unnamed-fonts').verify_layout(threshold=0.95)
+        self.convert('demo-text-unnamed-fonts')
 
     def test_text_scaling(self):
         '''test font size. In this case, the font size is set precisely with character scaling.'''
-        self.init_test('demo-text-scaling').verify_layout(threshold=0.95)
+        self.convert('demo-text-scaling')
 
     # ------------------------------------------
     # image styles
     # ------------------------------------------
     def test_image(self):
         '''test inline-image.'''
-        self.init_test('demo-image').verify_layout(threshold=0.95)
+        self.convert('demo-image')
 
     def test_vector_graphic(self):
         '''test vector graphic.'''
-        self.init_test('demo-image-vector-graphic').verify_layout(threshold=0.95)
+        self.convert('demo-image-vector-graphic')
 
     def test_image_cmyk(self):
         '''test image in CMYK color-space.'''
-        self.init_test('demo-image-cmyk').verify_layout(threshold=0.95)
+        self.convert('demo-image-cmyk')
 
     def test_image_transparent(self):
         '''test transparent images.'''
-        self.init_test('demo-image-transparent').verify_layout(threshold=0.95)
+        self.convert('demo-image-transparent')
 
     # ------------------------------------------
     # table styles
     # ------------------------------------------
     def test_table_bottom(self):
         '''page break due to table at the end of page.'''
-        self.init_test('demo-table-bottom').verify_layout(threshold=0.95)
+        self.convert('demo-table-bottom')
 
     def test_table_format(self):
         '''test table format, e.g. 
@@ -264,47 +174,47 @@ class Test_Main(Utility):
             - merged cell
             - text format in cell
         '''
-        self.init_test('demo-table').verify_layout(threshold=0.95)
+        self.convert('demo-table')
 
     def test_stream_table(self):
         '''test stream structure and shading.'''
-        self.init_test('demo-table-stream').verify_layout(threshold=0.95)
+        self.convert('demo-table-stream')
 
     def test_table_shading(self):
         '''test simulating shape with shading cell.'''
-        self.init_test('demo-table-shading').verify_layout(threshold=0.95)
+        self.convert('demo-table-shading')
     
     def test_table_shading_highlight(self):
         '''test distinguishing table shading and highlight.'''
-        self.init_test('demo-table-shading-highlight').verify_layout(threshold=0.95)
+        self.convert('demo-table-shading-highlight')
 
     def test_lattice_table(self):
         '''test lattice table with very close text underlines to table borders.'''
-        self.init_test('demo-table-close-underline').verify_layout(threshold=0.95)
+        self.convert('demo-table-close-underline')
 
     def test_lattice_table_invoice(self):
         '''test invoice sample file with lattice table, vector graphic.'''
-        self.init_test('demo-table-lattice').verify_layout(threshold=0.95)
+        self.convert('demo-table-lattice')
 
     def test_lattice_cell(self):
         '''test generating stream borders for lattice table cell.'''
-        self.init_test('demo-table-lattice-one-cell').verify_layout(threshold=0.95)
+        self.convert('demo-table-lattice-one-cell')
 
     def test_table_border_style(self):
         '''test border style, e.g. width, color.'''
-        self.init_test('demo-table-border-style').verify_layout(threshold=0.95)
+        self.convert('demo-table-border-style')
 
     def test_table_align_borders(self):
         '''aligning stream table borders to simplify table structure.'''
-        self.init_test('demo-table-align-borders').verify_layout(threshold=0.95)
+        self.convert('demo-table-align-borders')
 
     def test_nested_table(self):
         '''test nested tables.'''
-        self.init_test('demo-table-nested').verify_layout(threshold=0.95)
+        self.convert('demo-table-nested')
 
     def test_path_transformation(self):
         '''test path transformation. In this case, the (0,0) origin is out of the page.'''
-        self.init_test('demo-path-transformation').verify_layout(threshold=0.95)
+        self.convert('demo-path-transformation')
 
 
     # ------------------------------------------
@@ -313,7 +223,7 @@ class Test_Main(Utility):
     def test_extracting_table(self):
         '''test extracting contents from table.'''
         filename = 'demo-table'
-        pdf_file = os.path.join(self.sample_dir, f'{filename}.pdf')
+        pdf_file = os.path.join(sample_path, f'{filename}.pdf')
         tables = Converter(pdf_file).extract_tables(end=1)
         print(tables)
 
@@ -337,9 +247,43 @@ class Test_Main(Utility):
     def test_multi_pages(self):
         '''test converting pdf with multi-pages.'''
         filename = 'demo'
-        pdf_file = os.path.join(self.sample_dir, f'{filename}.pdf')
-        docx_file = os.path.join(self.output_dir, f'{filename}.docx')    
+        pdf_file = os.path.join(sample_path, f'{filename}.pdf')
+        docx_file = os.path.join(output_path, f'{filename}.docx')    
         parse(pdf_file, docx_file, start=1, end=5)
 
         # check file        
         assert os.path.isfile(docx_file)
+    
+
+
+class TestQuality:
+    '''Check the quality of converted docx. 
+    Note the docx files must be converted to PDF files in advance.
+    '''
+
+    def setup(self):
+        '''create output path if not exist.'''
+        if not os.path.exists(output_path): os.mkdir(output_path)
+
+
+    def test_quality(self):
+        '''Convert page to image and compare similarity.'''
+        threshold = 0.65
+        for filename in os.listdir(output_path):
+            if not filename.endswith('pdf'): continue
+
+            source_pdf_file = os.path.join(sample_path, filename)
+            target_pdf_file = os.path.join(output_path, filename)
+
+            # open pdf    
+            source_pdf = fitz.open(source_pdf_file)
+            target_pdf = fitz.open(target_pdf_file)
+
+            # compare page count
+            m, n = len(target_pdf), len(source_pdf)
+            assert m==n, f"\nThe page count of {filename} is inconsistent: {n} v.s. {m}."
+
+            # compare each page
+            for i, (page_source, page_target) in enumerate(zip(source_pdf, target_pdf), start=1):
+                sidx = get_page_similarity(page_target, page_source)
+                assert sidx>=threshold, f'Page {i} might have significant difference since similarity index = {sidx}.'

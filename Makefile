@@ -23,14 +23,18 @@ doc:
 	fi
 
 test:
-	@pytest -v "$(TEST)/test.py" --cov="$(SRC)" --cov-report=xml
+	@if [ -f "$(TEST)/Makefile" ] ; then \
+	    ( cd "$(TEST)" && make test SOURCEDIR="$(SRC)" ) || exit 1 ; \
+	fi
 
 clean:
 	@if [ -e "$(DOCSRC)/Makefile" ] ; then \
-	    ( cd "$(DOCSRC)" && make $@ BUILDDIR="$(BUILD)" ) || exit 1 ; \
+	    ( cd "$(DOCSRC)" && make $@ BUILDDIR="$(BUILD)" ) || exit 0 ; \
 	fi
 	@for p in $(CLEANDIRS) ; do \
 	    if [ -d "$(TOPDIR)/$$p" ];  then rm -rf "$(TOPDIR)/$$p" ; fi ; \
 	done
 	@if [ -d "$(BUILD)" ];  then rm -rf "$(BUILD)" ; fi
-	@if [ -d "$(DOCTARGET)" ];  then rm -rf "$(DOCTARGET)" ; fi
+	@if [ -e "$(TEST)/Makefile" ] ; then \
+	    ( cd "$(TEST)" && make $@ ) || exit 0 ; \
+	fi
