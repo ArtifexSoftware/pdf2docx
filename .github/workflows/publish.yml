@@ -52,7 +52,7 @@ jobs:
         run: |
           pip install ./dist/*.whl
           cd test
-          pytest -v test.py
+          pytest -v test.py::TestConversion
 
       # upload the artifacts for further jobs
       # - app-tag.tar.gz

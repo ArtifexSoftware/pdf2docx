@@ -11,8 +11,11 @@ layout.json
 !demo*.pdf
 *coverage*
 
-issue-*/
-feature-*/
+test/issues/
+test/features/
+test/outputs/
+
+diff.png
 
 # building dir
 build/
