@@ -85,7 +85,8 @@ jobs:
       - name: Convert to PDF
         run: |
           cd test\outputs
-          for /r %i in (*) do @OfficeToPDF %i
+          $files = Get-ChildItem "."
+          for ($i=0; $i -lt $files.Count; $i++) { OfficeToPDF $files[$i] }
           del *.docx
       
       # upload pdf for further job
