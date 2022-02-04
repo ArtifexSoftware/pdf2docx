@@ -9,6 +9,10 @@ from docx import Document
 from .page.Page import Page
 from .page.Pages import Pages
 
+# check PyMuPDF>=1.19.x
+if list(map(int, fitz.VersionBind.split("."))) < [1, 19, 0]:
+    raise SystemExit("PyMuPDF>=1.19.0 is required for pdf2docx.")
+
 # logging
 logging.basicConfig(
     level=logging.INFO, 
@@ -86,7 +90,7 @@ class Converter:
             'extract_stream_table'           : False,  # don't consider stream table when extracting tables
             'parse_lattice_table'            : True,   # whether parse lattice table or not; may destroy the layout if set False
             'parse_stream_table'             : True,   # whether parse stream table or not; may destroy the layout if set False
-            'delete_end_line_hyphen'         : True    # delete hyphen at the end of a line
+            'delete_end_line_hyphen'         : False   # delete hyphen at the end of a line
         }
 
     # -----------------------------------------------------------------------
@@ -157,14 +161,15 @@ class Converter:
         pages = [page for page in self._pages if not page.skip_parsing]
         num_pages = len(pages)
         for i, page in enumerate(pages, start=1):
-            logging.info('(%d/%d) Page %d', i, num_pages, page.id+1)
+            pid = page.id + 1
+            logging.info('(%d/%d) Page %d', i, num_pages, pid)
             try:
                 page.parse(**kwargs)
             except Exception as e:
                 if not kwargs['debug'] and kwargs['ignore_page_error']:
-                    logging.error('Ignore page %d due to parsing page error: %s', page.id, e)
+                    logging.error('Ignore page %d due to parsing page error: %s', pid, e)
                 else:
-                    raise ConversionException(f'Error when parsing page {page.id}: {e}')
+                    raise ConversionException(f'Error when parsing page {pid}: {e}')
 
         return self
 

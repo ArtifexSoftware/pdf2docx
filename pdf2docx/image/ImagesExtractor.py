@@ -4,8 +4,8 @@
 
 Both raster images and vector graphics are considered:
 
-* Normal images like jpeg or png could be extracted with method ``page.getText('rawdict')`` 
-  and ``Page.getImageList()``. Note the process for png images with alpha channel.
+* Normal images like jpeg or png could be extracted with method ``page.get_text('rawdict')`` 
+  and ``Page.get_images()``. Note the process for png images with alpha channel.
 * Vector graphics are actually composed of a group of paths, represented by operators like
   ``re``, ``m``, ``l`` and ``c``. They're detected by finding the contours with ``opencv``.
 '''
@@ -26,7 +26,7 @@ class ImagesExtractor:
 
 
     def extract_images(self, clip_image_res_ratio:float=3.0):
-        '''Extract normal images with ``Page.getImageList()``.
+        '''Extract normal images with ``Page.get_images()``.
 
         Args:
             clip_image_res_ratio (float, optional): Resolution ratio of clipped bitmap. Defaults to 3.0.
@@ -35,7 +35,7 @@ class ImagesExtractor:
             list: A list of extracted and recovered image raw dict.
         
         .. note::
-            ``Page.getImageList()`` contains each image only once, which may less than the real count of images in a page.
+            ``Page.get_images()`` contains each image only once, which may less than the real count of images in a page.
         '''
         # pdf document
         doc = self._page.parent
@@ -43,13 +43,13 @@ class ImagesExtractor:
         # check each image item:
         # (xref, smask, width, height, bpc, colorspace, ...)
         images = []
-        for item in self._page.getImageList(full=True):
-            # should always wrap getImageBbox in a try-except clause, per
+        for item in self._page.get_images(full=True):
+            # should always wrap get_image_bbox in a try-except clause, per
             # https://github.com/pymupdf/PyMuPDF/issues/487
             try:
                 item = list(item)
                 item[-1] = 0
-                bbox = self._page.getImageBbox(item) # item[7]: name entry of such an item
+                bbox = self._page.get_image_bbox(item) # item[7]: name entry of such an item
             except ValueError:
                 continue
 
@@ -81,7 +81,7 @@ class ImagesExtractor:
         Returns:
             list: A list of image raw dict.
         '''
-        pix = self._page.getPixmap(clip=bbox, matrix=fitz.Matrix(clip_image_res_ratio, clip_image_res_ratio))
+        pix = self._page.get_pixmap(clip=bbox, matrix=fitz.Matrix(clip_image_res_ratio, clip_image_res_ratio))
         return self._to_raw_dict(pix, bbox)
 
 
@@ -101,7 +101,7 @@ class ImagesExtractor:
         import numpy as np
 
         # clip page and convert to opencv image
-        img_byte = self._clip_page(zoom=1.0).getPNGData()
+        img_byte = self._clip_page(zoom=1.0).tobytes()
         src = cv.imdecode(np.frombuffer(img_byte, np.uint8), cv.IMREAD_COLOR)
 
         # gray and binary
@@ -158,7 +158,7 @@ class ImagesExtractor:
             'ext': 'png',
             'width': image.width,
             'height': image.height,
-            'image': image.getPNGData()
+            'image': image.tobytes()
         }
 
 
@@ -201,7 +201,7 @@ class ImagesExtractor:
         # - https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-increase-image-resolution
         # - https://github.com/pymupdf/PyMuPDF/issues/181
         bbox = self._page.rect if bbox is None else bbox & self._page.rect
-        return self._page.getPixmap(clip=bbox, matrix=fitz.Matrix(zoom, zoom)) # type: fitz.Pixmap
+        return self._page.get_pixmap(clip=bbox, matrix=fitz.Matrix(zoom, zoom)) # type: fitz.Pixmap
 
    
     @staticmethod
@@ -216,7 +216,7 @@ class ImagesExtractor:
 
         Args:
             doc (fitz.Document): pdf document.
-            item (list): image instance of ``page.getImageList()``.
+            item (list): image instance of ``page.get_images()``.
 
         Returns:
             fitz.Pixmap: Recovered pixmap with soft mask considered.
@@ -238,7 +238,7 @@ class ImagesExtractor:
             ba = bytearray(fitz.Pixmap(doc, s).samples)
             for i in range(len(ba)):
                 if ba[i] > 0: ba[i] = 255
-            pix.setAlpha(ba)
+            pix.set_alpha(ba)
 
         # we may need to adjust something for CMYK pixmaps here -> 
         # recreate pixmap in RGB color space if necessary

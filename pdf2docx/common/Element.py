@@ -2,7 +2,7 @@
 
 '''Object with a bounding box, e.g. Block, Line, Span.
 
-Based on ``PyMuPDF``, the coordinates (e.g. bbox of ``page.getText('rawdict')``) are generally 
+Based on ``PyMuPDF``, the coordinates (e.g. bbox of ``page.get_text('rawdict')``) are generally 
 provided relative to the un-rotated page; while this ``pdf2docx`` library works under real page 
 coordinate system, i.e. with rotation considered. So, any instances created by this Class are 
 always applied a rotation matrix automatically.
@@ -13,7 +13,7 @@ CS. If final coordinates are provided, should update it after creating an empty 
     Element().update_bbox(final_bbox)
 
 .. note::
-    An exception is ``page.getDrawings()``, the coordinates are converted to real page CS already.
+    An exception is ``page.get_drawings()``, the coordinates are converted to real page CS already.
 '''
 
 import copy
@@ -140,8 +140,8 @@ class Element(IText):
         Returns:
             bool: [description]
         """
-        # NOTE the case bool(e)=True but e.bbox.getArea()=0
-        S = e.bbox.getArea()
+        # NOTE the case bool(e)=True but e.bbox.get_area()=0
+        S = e.bbox.get_area()
         if not S: return False 
         
         # it's not practical to set a general threshold to consider the margin, so two steps:
@@ -150,7 +150,7 @@ class Element(IText):
 
         # A contains B => A & B = B
         intersection = self.bbox & e.bbox
-        factor = round(intersection.getArea()/e.bbox.getArea(), 2)
+        factor = round(intersection.get_area()/e.bbox.get_area(), 2)
         if factor<threshold: return False
 
         # check length
@@ -177,9 +177,9 @@ class Element(IText):
         b = bbox_1 & bbox_2
         if not b: return None # no intersection
 
-        a1, a2, a = bbox_1.getArea(), bbox_2.getArea(), b.getArea()        
+        a1, a2, a = bbox_1.get_area(), bbox_2.get_area(), b.get_area()        
 
-        # Note: if bbox_1 and bbox_2 intersects with only an edge, b is not empty but b.getArea()=0
+        # Note: if bbox_1 and bbox_2 intersects with only an edge, b is not empty but b.get_area()=0
         # so give a small value when they're intersected but the area is zero
         factor = a/min(a1,a2) if a else 1e-6
         return bbox_1 | bbox_2 if factor >= threshold else None

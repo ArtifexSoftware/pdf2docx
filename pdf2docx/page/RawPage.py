@@ -7,7 +7,7 @@
 * calculate page margin
 * parse page structure roughly, i.e. section and column
 
-The raw page content extracted with ``PyMuPDF`` API ``page.getText('rawdict')`` 
+The raw page content extracted with ``PyMuPDF`` API ``page.get_text('rawdict')`` 
 is described per link https://pymupdf.readthedocs.io/en/latest/textpage.html:: 
 
     {
@@ -263,7 +263,7 @@ class RawPage(BasePage, Layout):
         # source blocks
         # NOTE: all these coordinates are relative to un-rotated page
         # https://pymupdf.readthedocs.io/en/latest/page.html#modifying-pages
-        raw_layout = self.fitz_page.getText('rawdict')
+        raw_layout = self.fitz_page.get_text('rawdict')
 
         # page size: though 'width', 'height' are contained in `raw_dict`, 
         # they are based on un-rotated page. So, update page width/height 
@@ -285,9 +285,9 @@ class RawPage(BasePage, Layout):
     def _preprocess_images(self, raw, **settings):
         '''Adjust image blocks. 
         
-        Image block extracted by ``page.getText('rawdict')`` doesn't contain alpha channel data,
-        so it needs to get page images by ``page.getImageList()`` and then recover them. However, 
-        ``Page.getImageList()`` contains each image only once, while ``page.getText('rawdict')`` 
+        Image block extracted by ``page.get_text('rawdict')`` doesn't contain alpha channel data,
+        so it needs to get page images by ``page.get_images()`` and then recover them. However, 
+        ``Page.get_images()`` contains each image only once, while ``page.get_text('rawdict')`` 
         generates image blocks for every image location, whether or not there are any duplicates. 
         See PyMuPDF doc:
 
@@ -295,8 +295,8 @@ class RawPage(BasePage, Layout):
             
         Above all, a compromise:
 
-        * Get image contents with ``page.getImageList()`` -> ensure correct images
-        * Get image location with ``page.getText('rawdict')`` -> ensure correct locations
+        * Get image contents with ``page.get_images()`` -> ensure correct images
+        * Get image location with ``page.get_text('rawdict')`` -> ensure correct locations
         '''
         # recover image blocks
         recovered_images = ImagesExtractor(self.fitz_page). \
@@ -316,8 +316,8 @@ class RawPage(BasePage, Layout):
             return False
 
         # An example to show complicated things here:
-        # - images in `page.getImageList`: [a, b, c]
-        # - images in `page.getText`     : [a1, a2, b, d]
+        # - images in `page.get_images`: [a, b, c]
+        # - images in `page.get_text`     : [a1, a2, b, d]
         # (1) a -> a1, a2: an image in page maps to multi-instances in raw dict
         # (2) c: an image in page may not exist in raw dict -> so, add it
         # (3) d: an image in raw dict may not exist in page -> so, delete it
@@ -329,7 +329,7 @@ class RawPage(BasePage, Layout):
                     image_block['image'] = image['image']
                 break
 
-            # an image outside the page is not counted in page.getText(), so let's add it here
+            # an image outside the page is not counted in page.get_text(), so let's add it here
             else:
                 raw['blocks'].append(image)
 
@@ -337,8 +337,8 @@ class RawPage(BasePage, Layout):
     @debug_plot('Source Paths')
     def _preprocess_shapes(self, raw, **settings):
         '''Identify iso-oriented paths and convert vector graphic paths to pixmap.'''
-        # extract paths by `page.getDrawings()`
-        raw_paths = self.fitz_page.getDrawings()
+        # extract paths by `page.get_drawings()`
+        raw_paths = self.fitz_page.get_drawings()
 
         # extract iso-oriented paths, while clip image for curved paths
         paths = Paths(parent=self).restore(raw_paths)
@@ -369,7 +369,7 @@ class RawPage(BasePage, Layout):
             list: A list of source hyperlink dict.
         """
         hyperlinks = []
-        for link in page.getLinks():
+        for link in page.get_links():
             if link['kind']!=2: continue # consider internet address only
             hyperlinks.append({
                 'type': RectType.HYPERLINK.value,

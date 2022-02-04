@@ -348,7 +348,7 @@ class ElementCollection(Collection):
         for instance in self._instances:
             # A contains B => A & B = B
             intersection = instance.bbox & bbox
-            factor = round(intersection.getArea()/instance.bbox.getArea(), 2)
+            factor = round(intersection.get_area()/instance.bbox.get_area(), 2)
 
             if factor >= threshold:
                 intersections.append(instance)

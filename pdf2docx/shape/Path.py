@@ -3,7 +3,7 @@
 '''
 Objects representing PDF path (stroke and filling) extracted from pdf drawings and annotations.
 
-Data structure based on results of ``page.getDrawings()``::
+Data structure based on results of ``page.get_drawings()``::
 
     {
         'color': (x,x,x) or None,  # stroke color
@@ -20,8 +20,8 @@ Data structure based on results of ``page.getDrawings()``::
     }
 
 .. note::
-    The coordinates extracted by ``page.getDrawings()`` is based on **real** page CS, i.e. with rotation 
-    considered. This is different from ``page.getText('rawdict')``.
+    The coordinates extracted by ``page.get_drawings()`` is based on **real** page CS, i.e. with rotation 
+    considered. This is different from ``page.get_text('rawdict')``.
 '''
 
 import fitz
@@ -135,7 +135,7 @@ class Segments:
     @property
     def is_iso_oriented(self):
         '''ISO-oriented criterion: the ratio of real area to bbox exceeds 0.9.'''
-        bbox_area = self.bbox.getArea()
+        bbox_area = self.bbox.get_area()
         return bbox_area==0 or self.area/bbox_area>=constants.FACTOR_MOST
 
 
@@ -221,9 +221,9 @@ class Path:
             S = Segments(segments, close_path)
             self.items.append(S)
 
-            # update bbox: note iso-oriented line segments -> S.bbox.getArea()==0
+            # update bbox: note iso-oriented line segments -> S.bbox.get_area()==0
             rect = S.bbox
-            if rect.getArea()==0: rect += (-w, -w, w, w)
+            if rect.get_area()==0: rect += (-w, -w, w, w)
             self.bbox |= rect
 
 
@@ -232,7 +232,7 @@ class Path:
         """Group connected segments.
 
         Args:
-            items (dict): Raw dict extracted from ``page.getDrawings()``.
+            items (dict): Raw dict extracted from ``page.get_drawings()``.
 
         Returns:
             list: A list of segments list.
