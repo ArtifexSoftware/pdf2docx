@@ -1,18 +1,26 @@
 # -*- coding: utf-8 -*-
 
 '''
-To leverage the Github Action, it's divided into three parts to test the conversion and also
-quality between sample pdf and the converted docx. This is part Three.
+To test the pdf conversion and converting quality, the idea is to convert generated docx to pdf,
+then check the image similarity between source pdf page and converted pdf page. Considering the 
+converting quality from docx to pdf, a Windows-based command line tool `OfficeToPDF` is used, in
+addition, an installation of Microsoft Word is required.
 
+To leverage the benefit of Github Action, the testing process is divided into three parts:
   1. Convert sample pdf to docx with this module.
-  2. Convert docx back to pdf. 
-     Considering the converting quality, a Windows-based command line tool `OfficeToPDF` is used,
-     and an installation of Microsoft Word is required.
+  2. Convert generated docx to pdf for comparing. 
   3. Convert page to image and compare similarity with python-opencv.
+
+Test scripts on Part One and Three are applied with two test class respectively in this module,
+so they could be run seperately with pytest command, e.g.
+
+- pytest -v test.py::TestConversion for Part One
+- pytest -v test.py::TestQuality for Part Three
 
 Links on MS Word to PDF conversion:
   - https://github.com/cognidox/OfficeToPDF/releases
   - https://github.com/AndyCyberSec/pylovepdf
+  - https://www.e-iceblue.com/Tutorials/Java/Spire.Doc-for-Java/Program-Guide/Conversion/Convert-Word-to-PDF-in-Java.html
 '''
 
 import os
