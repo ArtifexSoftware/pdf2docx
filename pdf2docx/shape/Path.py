@@ -340,7 +340,7 @@ class Path:
         ''' Plot path for debug purpose.
 
         Args:
-            canvas: ``PyMuPDF`` drawing canvas by ``page.newShape()``.
+            canvas: ``PyMuPDF`` drawing canvas by ``page.new_shape()``.
 
         Reference:
         
@@ -349,11 +349,11 @@ class Path:
         # draw each entry of the 'items' list
         for item in self.raw.get('items', []):
             if item[0] == "l":  # line
-                canvas.drawLine(item[1], item[2])
+                canvas.draw_line(item[1], item[2])
             elif item[0] == "re":  # rectangle
-                canvas.drawRect(item[1])
+                canvas.draw_rect(item[1])
             elif item[0] == "c":  # curve
-                canvas.drawBezier(item[1], item[2], item[3], item[4])
+                canvas.draw_bezier(item[1], item[2], item[3], item[4])
 
         # now apply the common properties to finish the path
         canvas.finish(
