@@ -294,4 +294,4 @@ class TestQuality:
             # compare each page
             for i, (page_source, page_target) in enumerate(zip(source_pdf, target_pdf), start=1):
                 sidx = get_page_similarity(page_target, page_source)
-                assert sidx>=threshold, f'Page {i} might have significant difference since similarity index = {sidx}.'
+                assert sidx>=threshold, f'Page {i} of {filename} might have significant difference since similarity index = {sidx}.'

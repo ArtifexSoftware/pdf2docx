@@ -8,9 +8,19 @@ OUTPUTDIR	:=$(CURDIR)/outputs
 
 test: pdf2docx docx2pdf check
 
+test: 
+	@if [ -n "$(TESTCASE)" ] ; then \
+		echo $(TESTCASE) ; \
+	else \
+		echo all ; \
+	fi
 
 pdf2docx: 
-	@pytest -v test.py::TestConversion --cov="$(SOURCEDIR)" --cov-report=xml
+	@if [ -n "$(TESTCASE)" ] ; then \
+		pytest -v test.py::TestConversion::$(TESTCASE) --cov="$(SOURCEDIR)" --cov-report=xml ; \
+	else \
+		pytest -v test.py::TestConversion --cov="$(SOURCEDIR)" --cov-report=xml ; \
+	fi
 
 
 docx2pdf:

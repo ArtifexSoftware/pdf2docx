@@ -115,38 +115,7 @@ class Block(Element):
         idx, f = (0, 1.0) if self.is_horizontal_text else (3, -1.0)
         self.alignment = TextAlignment.LEFT
         self.left_space = (self.bbox[idx] - bbox[idx]) * f
-
-
-    def compare(self, block, threshold:float=0.9):
-        """Whether has same bbox and vertical spacing with given block.
-
-        Args:
-            block (Block): instance to compare
-            threshold (float, optional): two blocks are considered same if the overlap exceeds this value. Defaults to 0.9.
-
-        Returns:
-            tuple: (True/False, message)
-        
-        .. note::
-            The vertical spacing has most important impacts on the layout of converted docx.
-        """
-        # bbox
-        res, msg = super().compare(block, threshold)
-        if not res: return res, msg
-
-        # check text alignment
-        if self.alignment != block.alignment:
-            return False, f'Inconsistent text alignment @ {self.bbox}:\n{self.alignment} v.s. {block.alignment} (expected)'
-
-        # check spacing
-        for key, value in self.__dict__.items():
-            if not 'space' in key: continue
-            target_value = getattr(block, key)
-            if abs(value-target_value)>constants.TINY_DIST:
-                return False, f'Inconsistent {" ".join(key.split("_"))} @ {self.bbox}:\n{value} v.s. {target_value} (expected)'
-
-        return True, ''
-        
+       
 
     def store(self):
         '''Store attributes in json format.'''
