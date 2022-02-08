@@ -111,13 +111,11 @@ class RawPage(BasePage, Layout):
         # check and update font name, line height
         for span in spans:
             font = fonts.get(span.font)
+            if not font: continue
+
             # update font properties with font parsed by fonttools
-            if font:
-                span.font = font.name
-                span.line_height = font.line_height * span.size
-            # otherwise, use the default properties
-            else:
-                span.line_height = (span.ascender-span.descender) * span.size
+            span.font = font.name
+            span.line_height = font.line_height * span.size
 
 
     def calculate_margin(self, **settings):

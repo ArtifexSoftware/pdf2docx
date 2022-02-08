@@ -5,7 +5,6 @@
 
 from .share import BlockType, TextAlignment
 from .Element import Element
-from . import constants
 
 
 class Block(Element):
@@ -32,6 +31,7 @@ class Block(Element):
         self.before_space = raw.get('before_space', 0.0)
         self.after_space = raw.get('after_space', 0.0)        
         self.line_space = raw.get('line_space', 0.0)
+        self.line_space_type = raw.get('line_space_type', 1) # 0-exactly, 1-relatively
 
         super().__init__(raw, parent)
 
@@ -129,6 +129,7 @@ class Block(Element):
             'before_space'     : self.before_space,
             'after_space'      : self.after_space,
             'line_space'       : self.line_space,
+            'line_space_type'  : self.line_space_type,
             'tab_stops'        : self.tab_stops
             })
         return res

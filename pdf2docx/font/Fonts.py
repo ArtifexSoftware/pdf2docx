@@ -73,29 +73,22 @@ class Fonts(BaseCollection):
 
             # process embedded and supported fonts (true type) only
             if ext in ('n/a', 'ccf'): continue
-            try:
-                tt = TTFont(BytesIO(buffer))
-            except:
-                tt = None
 
             # valid true type font, no matter installed in the system or not
-            if not cls._is_valid(tt): continue
-            name = cls.get_font_family_name(tt)
+            try:
+                tt = TTFont(BytesIO(buffer))
+                name = cls.get_font_family_name(tt)
+                line_height = cls.get_line_height_factor(tt)
+            except Exception:
+                continue
+
             fonts.append(Font(
                 descriptor=cls._to_descriptor(name),
                 name=name,
-                line_height=cls.get_line_height_factor(tt)))
+                line_height=line_height))
 
         return cls(fonts)
-
     
-    @staticmethod
-    def _is_valid(tt_font:TTFont):
-        if not tt_font: return False
-        for key in ('name', 'hhea', 'head', 'OS/2'):
-            if not tt_font.has_key(key): return False
-        return True
-
 
     @staticmethod
     def _normalized_font_name(name):
