@@ -14,10 +14,13 @@ Data structure based on results of ``page.get_drawings()``::
         'items': [                 # list of draw commands: lines, rectangle or curves.
             ("l", p1, p2),         # a line from p1 to p2
             ("c", p1, p2, p3, p4), # cubic Bézier curve from p1 to p4, p2 and p3 are the control points
-            ("re", rect),          # a rect
+            ("re", rect),          # a rect represented with two diagonal points
+            ("qu", quad)           # a quad represented with four corner points
         ],
         ...
     }
+
+References: https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
 
 .. note::
     The coordinates extracted by ``page.get_drawings()`` is based on **real** page CS, i.e. with rotation 
@@ -100,6 +103,38 @@ class R(Segment):
         return strokes
 
 
+class Q(Segment):
+    '''Quad path with source ``("qu", quad)``.'''
+    def __init__(self, item):
+        # four corner points
+        # NOTE: center line of path without stroke width considered
+        self.points = list(item[1])
+        self.points.append(item[1][0])  # close
+
+    def to_strokes(self, width:float, color:list):
+        """Convert each edge to stroke dict.
+
+        Args:
+            width (float): Specify width for the stroke.
+            color (list): Specify color for the stroke.
+
+        Returns:
+            list: A list of ``Stroke`` dicts. 
+        
+        .. note::
+            One Rect path is converted to a list of 4 stroke dicts.
+        """
+        strokes = []
+        for i in range(len(self.points)-1):
+            strokes.append({
+                    'start': tuple(self.points[i]),
+                    'end'  : tuple(self.points[i+1]),
+                    'width': width * 2.0, # seems need adjustment by * 2.0
+                    'color': rgb_value(color)
+                })
+        return strokes
+
+
 class C(Segment):
     '''Bezier curve path with source ``("c", p1, p2, p3, p4)``.'''
     pass
@@ -113,6 +148,7 @@ class Segments:
             if   item[0] == 'l' : self._instances.append(L(item))
             elif item[0] == 'c' : self._instances.append(C(item))
             elif item[0] == 're': self._instances.append(R(item))
+            elif item[0] == 'qu': self._instances.append(Q(item))
         
         # close path
         if close_path and len(items)>=2:
@@ -257,8 +293,8 @@ class Path:
                 # update current point
                 cursor = end
 
-            # rectangle as a separate segments group
-            elif item[0] == 're':
+            # rectangle / quad as a separate segments group
+            elif item[0] in ('re', 'qu'):
                 # close current segments
                 if segments:
                     segments_list.append(segments)
@@ -352,8 +388,12 @@ class Path:
                 canvas.draw_line(item[1], item[2])
             elif item[0] == "re":  # rectangle
                 canvas.draw_rect(item[1])
+            elif item[0] == "qu":  # quad
+                canvas.draw_quad(item[1])
             elif item[0] == "c":  # curve
                 canvas.draw_bezier(item[1], item[2], item[3], item[4])
+            else:
+                raise ValueError("unhandled drawing", item)
 
         # now apply the common properties to finish the path
         canvas.finish(
