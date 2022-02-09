@@ -85,7 +85,11 @@ jobs:
         run: |
           cd test\outputs
           $files = Get-ChildItem "."
-          for ($i=0; $i -lt $files.Count; $i++) { OfficeToPDF $files[$i] }
+          for ($i=0; $i -lt $files.Count; $i++) { 
+            $name = $files[$i].name;
+            echo "Converting $name to pdf...";
+            OfficeToPDF $files[$i] 
+          }
           del *.docx
       
       # upload pdf for further job
@@ -127,4 +131,4 @@ jobs:
 
       - name: Check converting quality
         run: |
-          pytest -v ./test/test.py::TestQuality
+          pytest -sv ./test/test.py::TestQuality
