@@ -203,7 +203,7 @@ class Shapes(ElementCollection):
             lambda shape: not shape.is_determined, shapes))
         
         # group by color and connectivity        
-        f = lambda a, b: a.color==b.color and a.bbox & b.bbox
+        f = lambda a, b: a.color==b.color and a.bbox.intersects(b.bbox)
         groups = Collection(normal_shapes).group(f)
 
         merged_shapes = []

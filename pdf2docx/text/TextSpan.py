@@ -204,7 +204,7 @@ class TextSpan(Element):
 
         # no, then add this span as it is
         # Note the case bool(intsec)=True but intsec.get_area()=0
-        if not intsec.get_area(): return [self]
+        if intsec.is_empty: return [self]
         
 
         # yes, then split spans:

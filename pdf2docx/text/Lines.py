@@ -152,9 +152,8 @@ class Lines(ElementCollection):
 
         for line in self._instances:
             # any intersection in this line?
-            intsec = shape.bbox & line.get_expand_bbox(constants.MAJOR_DIST)
-            
-            if not intsec: 
+            expanded_bbox = line.get_expand_bbox(constants.MAJOR_DIST)
+            if not shape.bbox.intersects(expanded_bbox): 
                 if shape.bbox.y1 < line.bbox.y0: break # lines must be sorted in advance
                 continue
 
