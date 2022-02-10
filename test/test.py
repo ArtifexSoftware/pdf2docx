@@ -277,7 +277,7 @@ class TestQuality:
         'demo-image.pdf': 0.90,
         'demo-path-transformation.pdf': 0.90,
         'demo-section-spacing.pdf': 0.90,
-        'demo-section.pdf': 0.69,
+        'demo-section.pdf': 0.70,
         'demo-table-align-borders.pdf': 0.49,
         'demo-table-border-style.pdf': 0.90,
         'demo-table-bottom.pdf': 0.90,

@@ -20,7 +20,9 @@ Data structure based on results of ``page.get_drawings()``::
         ...
     }
 
-References: https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
+References: 
+    - https://pymupdf.readthedocs.io/en/latest/page.html#Page.get_drawings
+    - https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
 
 .. note::
     The coordinates extracted by ``page.get_drawings()`` is based on **real** page CS, i.e. with rotation 
@@ -43,6 +45,13 @@ class Segment:
 class L(Segment):
     '''Line path with source ``("l", p1, p2)``.'''
 
+    @property
+    def length(self):
+        x0, y0 = self.points[0]
+        x1, y1 = self.points[1]
+        return ((x1-x0)**2+(y1-y0)**2)**0.5
+
+
     def to_strokes(self, width:float, color:list):
         """Convert to stroke dict.
 
@@ -60,8 +69,8 @@ class L(Segment):
         """ 
         strokes = []
         strokes.append({
-                'start': tuple(self.points[0]),
-                'end'  : tuple(self.points[1]),
+                'start': self.points[0],
+                'end'  : self.points[1],
                 'width': width,
                 'color': rgb_value(color)
             })
@@ -75,7 +84,7 @@ class R(Segment):
         # NOTE: center line of path without stroke width considered
         x0, y0, x1, y1 = item[1]
         self.points = [
-            (x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)
+            (x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0) # close path
             ]
 
 
@@ -103,36 +112,13 @@ class R(Segment):
         return strokes
 
 
-class Q(Segment):
+class Q(R):
     '''Quad path with source ``("qu", quad)``.'''
     def __init__(self, item):
         # four corner points
         # NOTE: center line of path without stroke width considered
-        self.points = list(item[1])
-        self.points.append(item[1][0])  # close
-
-    def to_strokes(self, width:float, color:list):
-        """Convert each edge to stroke dict.
-
-        Args:
-            width (float): Specify width for the stroke.
-            color (list): Specify color for the stroke.
-
-        Returns:
-            list: A list of ``Stroke`` dicts. 
-        
-        .. note::
-            One Rect path is converted to a list of 4 stroke dicts.
-        """
-        strokes = []
-        for i in range(len(self.points)-1):
-            strokes.append({
-                    'start': tuple(self.points[i]),
-                    'end'  : tuple(self.points[i+1]),
-                    'width': width * 2.0, # seems need adjustment by * 2.0
-                    'color': rgb_value(color)
-                })
-        return strokes
+        ul, ur, ll, lr = item[1]
+        self.points = [ul, ur, lr, ll, ul] # close path
 
 
 class C(Segment):
@@ -151,9 +137,10 @@ class Segments:
             elif item[0] == 'qu': self._instances.append(Q(item))
         
         # close path
-        if close_path and len(items)>=2:
-            item = ('l', items[-1][-1], items[0][1])
-            self._instances.append(L(item))
+        if close_path:
+            item = ('l', self._instances[-1].points[-1], self._instances[0].points[0])
+            line = L(item)
+            if line.length>1e-3: self._instances.append(line)
 
     
     def __iter__(self): return (instance for instance in self._instances)
@@ -245,14 +232,23 @@ class Segments:
 class Path:
     '''Path extracted from PDF, consist of one or more ``Segments``.'''
     def __init__(self, raw:dict):
-        '''Init path in real page CS.'''
+        '''Init path in real page CS.
+
+        Args:
+            raw (dict): Raw dict extracted with `PyMuPDF`, see link
+            https://pymupdf.readthedocs.io/en/latest/page.html#Page.get_drawings
+        '''
         # all path properties
         self.raw = raw
+        self.path_type = raw['type'] # s, f, or fs
+
+        # always close path if fill, otherwise, depends on property 'closePath'
+        close_path = True if self.is_fill else raw['closePath']
 
         # path segments
         self.items = [] # type: list[Segments]
         self.bbox = fitz.Rect()
-        close_path, w = raw['closePath'], raw['width']
+        w = raw.get('width', 0.0)
         for segments in self._group_segments(raw['items']):
             S = Segments(segments, close_path)
             self.items.append(S)
@@ -309,10 +305,10 @@ class Path:
                 
 
     @property
-    def is_stroke(self): self.raw.get('color', None) is not None
+    def is_stroke(self): return 's' in self.path_type
 
     @property
-    def is_fill(self): self.raw.get('fill', None) is not None
+    def is_fill(self): return 'f' in self.path_type
 
     @property
     def is_iso_oriented(self):
@@ -327,19 +323,18 @@ class Path:
 
         Returns:
             list: A list of ``Shape`` dict.
-        """        
-        stroke_color = self.raw.get('color', None)
-        fill_color = self.raw.get('fill', None)
-        width = self.raw.get('width', 0.0)
-
+        """
         iso_shapes = []
 
         # convert to strokes
-        if not stroke_color is None:
+        if self.is_stroke:
+            stroke_color = self.raw.get('color', None)
+            width = self.raw.get('width', 0.0)
             iso_shapes.extend(self._to_strokes(width, stroke_color))
 
         # convert to rectangular fill
-        if not fill_color is None:
+        if self.is_fill:
+            fill_color = self.raw.get('fill', None)
             iso_shapes.extend(self._to_fills(fill_color))
 
         return iso_shapes

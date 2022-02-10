@@ -336,7 +336,7 @@ class RawPage(BasePage, Layout):
     def _preprocess_shapes(self, raw, **settings):
         '''Identify iso-oriented paths and convert vector graphic paths to pixmap.'''
         # extract paths by `page.get_drawings()`
-        raw_paths = self.fitz_page.get_drawings()
+        raw_paths = self.fitz_page.get_cdrawings()
 
         # extract iso-oriented paths, while clip image for curved paths
         paths = Paths(parent=self).restore(raw_paths)
