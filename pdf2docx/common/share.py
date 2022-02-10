@@ -194,11 +194,11 @@ def new_page(doc, width:float, height:float, title:str):
         title (str): Page title shown in page.
     '''
     # insert a new page
-    page = doc.newPage(width=width, height=height)    
+    page = doc.new_page(width=width, height=height)    
 
     # plot title at the top-left corner
     gray = rgb_component_from_name('gray')
-    page.insertText((5, 16), title, color=gray, fontsize=15)
+    page.insert_text((5, 16), title, color=gray, fontsize=15)
     
     return page
 

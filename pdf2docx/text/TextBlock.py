@@ -29,7 +29,7 @@ from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from .Lines import Lines
 from ..image.ImageSpan import ImageSpan
-from ..common.share import RectType, TextDirection, TextAlignment
+from ..common.share import RectType, TextAlignment
 from ..common.Block import Block
 from ..common.share import rgb_component_from_name
 from ..common import constants
@@ -310,7 +310,10 @@ class TextBlock(Block):
         pf.space_after = Pt(after_spacing)        
 
         # line spacing
-        pf.line_spacing = round(self.line_space, 2)
+        if self.line_space_type==0: # exact line spacing
+            pf.line_spacing = Pt(round(self.line_space, 1))
+        else: # relative line spacing
+            pf.line_spacing = round(self.line_space, 2)
 
         # horizontal alignment
         # - alignment mode

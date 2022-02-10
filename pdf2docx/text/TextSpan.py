@@ -50,11 +50,13 @@ class TextSpan(Element):
         self.chars = [ Char(c) for c in raw.get('chars', []) ] # type: list[Char]
 
         # font metrics
+        # line_height is the standard single line height used in relative line spacing,
+        # while exact line spacing is used when line_height==-1 by default.
         self.font = raw.get('font', '')
         self.size = raw.get('size', 12.0)
         self.ascender = raw.get('ascender', 1.0)
         self.descender = raw.get('descender', 0.0)
-        self.line_height = raw.get('line_height', 1.2*self.size)  # not an original key
+        self.line_height = raw.get('line_height', -1)  # not an original key
 
         # introduced attributes
         # a list of dict: { 'type': int, 'color': int }
@@ -104,7 +106,6 @@ class TextSpan(Element):
 
         Args:
             font_name (str): Font name.
-            line_height (float): line height.
         '''
         # set new font property
         self.font = font_name
@@ -203,7 +204,7 @@ class TextSpan(Element):
 
         # no, then add this span as it is
         # Note the case bool(intsec)=True but intsec.get_area()=0
-        if not intsec.get_area(): return [self]
+        if intsec.is_empty: return [self]
         
 
         # yes, then split spans:

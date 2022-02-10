@@ -289,25 +289,6 @@ class Element(IText):
     # ------------------------------------------------
     # others
     # ------------------------------------------------
-    def compare(self, e, threshold=0.9):
-        """Whether has same type and bbox with ``e``.
-
-        Args:
-            e (Element): Target object.
-            threshold (float, optional): Intersection rate representing how much two boxes are same. Defaults to 0.9.
-
-        Returns:
-            tuple: (True/False, message)
-        """        
-        if not isinstance(e, self.__class__):
-            return False, f'Inconsistent type: {self.__class__.__name__} v.s. {e.__class__.__name__} (expected)'
-        
-        if not self.get_main_bbox(e, threshold):
-            return False, f'Inconsistent bbox: {self.bbox} v.s. {e.bbox}(expected)'
-        
-        return True, ''
-
-
     def store(self):
         '''Store properties in raw dict.'''
         return { 'bbox': tuple([x for x in self.bbox]) }
@@ -315,4 +296,4 @@ class Element(IText):
     
     def plot(self, page, stroke:tuple=(0,0,0), width:float=0.5, fill:tuple=None, dashes:str=None):
         '''Plot bbox in PDF page for debug purpose.'''
-        page.drawRect(self.bbox, color=stroke, fill=fill, width=width, dashes=dashes, overlay=False, fill_opacity=0.5)
+        page.draw_rect(self.bbox, color=stroke, fill=fill, width=width, dashes=dashes, overlay=False, fill_opacity=0.5)

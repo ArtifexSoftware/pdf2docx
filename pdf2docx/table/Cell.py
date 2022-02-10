@@ -41,36 +41,6 @@ class Cell(Element, Layout):
         bbox = (x0+w_left/2.0, y0+w_top/2.0, x1-w_right/2.0, y1-w_bottom/2.0)
         return Element().update_bbox(bbox).bbox # convert to fitz.Rect
 
-    
-    def compare(self, cell, threshold:float=0.9):
-        """Whether has same structure with given Cell.
-
-        Args:
-            cell (Cell): Target cell to compare.
-            threshold (float, optional): Considered as same bbox if exceeds this value. Defaults to 0.9.
-
-        Returns:
-            tuple: ``(True or False, message)``
-        """
-        # bbox
-        res, msg = super().compare(cell, threshold)
-        if not res: return res, msg
-
-        # cell style        
-        if self.bg_color != cell.bg_color:
-            return False, f'Inconsistent background color @ Cell {self.bbox}:\n{self.bg_color} v.s. {cell.bg_color} (expected)'
-
-        if tuple(self.border_color) != tuple(cell.border_color):
-            return False, f'Inconsistent border color @ Cell {self.bbox}:\n{self.border_color} v.s. {cell.border_color} (expected)'
-
-        if tuple(self.border_width) != tuple(cell.border_width):
-            return False, f'Inconsistent border width @ Cell {self.bbox}:\n{self.border_width} v.s. {cell.border_width} (expected)'
-
-        if tuple(self.merged_cells) != tuple(cell.merged_cells):
-            return False, f'Inconsistent count of merged cells @ Cell {self.bbox}:\n{self.merged_cells} v.s. {cell.merged_cells} (expected)'
-
-        return True, ''
-
 
     def store(self):
         if bool(self):

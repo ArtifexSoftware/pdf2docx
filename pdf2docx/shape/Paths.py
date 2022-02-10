@@ -54,7 +54,7 @@ class Paths(Collection):
         '''
         if not self._instances: return
         # make a drawing canvas and plot path
-        canvas = page.newShape()
+        canvas = page.new_shape()
         for path in self._instances: path.plot(canvas)
         canvas.commit() # commit the drawing shapes to page
     

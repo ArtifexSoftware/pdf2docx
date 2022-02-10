@@ -43,9 +43,9 @@ class Char(Element):
         if self.bbox in rect.bbox:
             return True
 
-        # intersection?
+        # intersection? 
         else:
-            intsec = self.bbox & rect.bbox
+            intsec = self.bbox & rect.bbox # width=0 if invalid intersection
             if horizontal:
                 return intsec.width > 0.5*self.bbox.width
             else:

@@ -111,13 +111,11 @@ class RawPage(BasePage, Layout):
         # check and update font name, line height
         for span in spans:
             font = fonts.get(span.font)
+            if not font: continue
+
             # update font properties with font parsed by fonttools
-            if font:
-                span.font = font.name
-                span.line_height = font.line_height * span.size
-            # otherwise, use the default properties
-            else:
-                span.line_height = (span.ascender-span.descender) * span.size
+            span.font = font.name
+            span.line_height = font.line_height * span.size
 
 
     def calculate_margin(self, **settings):
@@ -338,7 +336,7 @@ class RawPage(BasePage, Layout):
     def _preprocess_shapes(self, raw, **settings):
         '''Identify iso-oriented paths and convert vector graphic paths to pixmap.'''
         # extract paths by `page.get_drawings()`
-        raw_paths = self.fitz_page.get_drawings()
+        raw_paths = self.fitz_page.get_cdrawings()
 
         # extract iso-oriented paths, while clip image for curved paths
         paths = Paths(parent=self).restore(raw_paths)

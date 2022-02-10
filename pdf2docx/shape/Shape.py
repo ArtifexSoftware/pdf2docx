@@ -134,7 +134,7 @@ class Shape(Element):
 
     def plot(self, page, color):
         '''Plot rectangle shapes with ``PyMuPDF``.'''
-        page.drawRect(self.bbox, color=color, fill=color, width=0, overlay=True)
+        page.draw_rect(self.bbox, color=color, fill=color, width=0, overlay=True)
 
 
 class Stroke(Shape):

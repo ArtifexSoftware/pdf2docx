@@ -12,12 +12,12 @@ from ..common.share import BlockType, rgb_value
 from ..common.Block import Block
 from ..common.docx import reset_paragraph_format, delete_paragraph
 from ..text.TextBlock import TextBlock
+from ..text.TextSpan import TextSpan
 from ..text.Line import Line
 from ..text.Lines import Lines
 from ..table.Cell import Cell
 from ..image.ImageBlock import ImageBlock
 from ..table.TableBlock import TableBlock
-
 
 
 class Blocks(ElementCollection):
@@ -626,6 +626,20 @@ class Blocks(ElementCollection):
         .. note::
             Run parsing block vertical spacing in advance.
         '''
+        def is_exact_line_spacing(block):
+            '''check line spacing type based on parsed font metrics of text span:
+            exact line spacing if no standard line height is extracted
+            '''
+            for line in block.lines:
+                absent_line_heights = list(span.line_height==-1 for span in line.spans if isinstance(span, TextSpan))
+                if any(absent_line_heights): return True
+            return False
+
         for block in self._instances:
-            if block.is_text_block:
+            if not block.is_text_block: continue
+            
+            if is_exact_line_spacing(block):
+                block.line_space_type = 0
+                block.parse_exact_line_spacing()
+            else:
                 block.parse_relative_line_spacing()

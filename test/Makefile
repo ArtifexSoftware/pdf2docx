@@ -6,21 +6,30 @@ OUTPUTDIR	:=$(CURDIR)/outputs
 .PHONY: test pdf2docx docx2pdf check clean
 
 
-test: pdf2docx docx2pdf check
+test: clean pdf2docx docx2pdf check
 
 
 pdf2docx: 
-	@pytest -v test.py::TestConversion --cov="$(SOURCEDIR)" --cov-report=xml
+	@if [ -n "$(TESTCASE)" ] ; then \
+		pytest -v test.py::TestConversion::$(TESTCASE) --cov="$(SOURCEDIR)" --cov-report=xml ; \
+	else \
+		pytest -v test.py::TestConversion --cov="$(SOURCEDIR)" --cov-report=xml ; \
+	fi
 
 
 docx2pdf:
 	@if [ -n "$(wildcard outputs/*.docx)" ] ; then \
-		echo "Converting docx to pdf for comparing..." ; \
-		cd $(OUTPUTDIR) && for f in *.docx ; do OfficeToPDF $$f ; done ; \
+		cd $(OUTPUTDIR) ; \
+		for f in *.docx ; \
+		do \
+			echo "Converting $$f to pdf..." ; \
+			OfficeToPDF $$f ; \
+		done ; \
 	fi
 
+
 check:
-	@pytest -v test.py::TestQuality
+	@pytest -sv test.py::TestQuality
 
 
 clean:

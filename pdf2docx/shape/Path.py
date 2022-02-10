@@ -14,10 +14,15 @@ Data structure based on results of ``page.get_drawings()``::
         'items': [                 # list of draw commands: lines, rectangle or curves.
             ("l", p1, p2),         # a line from p1 to p2
             ("c", p1, p2, p3, p4), # cubic Bézier curve from p1 to p4, p2 and p3 are the control points
-            ("re", rect),          # a rect
+            ("re", rect),          # a rect represented with two diagonal points
+            ("qu", quad)           # a quad represented with four corner points
         ],
         ...
     }
+
+References: 
+    - https://pymupdf.readthedocs.io/en/latest/page.html#Page.get_drawings
+    - https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
 
 .. note::
     The coordinates extracted by ``page.get_drawings()`` is based on **real** page CS, i.e. with rotation 
@@ -40,6 +45,13 @@ class Segment:
 class L(Segment):
     '''Line path with source ``("l", p1, p2)``.'''
 
+    @property
+    def length(self):
+        x0, y0 = self.points[0]
+        x1, y1 = self.points[1]
+        return ((x1-x0)**2+(y1-y0)**2)**0.5
+
+
     def to_strokes(self, width:float, color:list):
         """Convert to stroke dict.
 
@@ -57,8 +69,8 @@ class L(Segment):
         """ 
         strokes = []
         strokes.append({
-                'start': tuple(self.points[0]),
-                'end'  : tuple(self.points[1]),
+                'start': self.points[0],
+                'end'  : self.points[1],
                 'width': width,
                 'color': rgb_value(color)
             })
@@ -72,7 +84,7 @@ class R(Segment):
         # NOTE: center line of path without stroke width considered
         x0, y0, x1, y1 = item[1]
         self.points = [
-            (x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)
+            (x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0) # close path
             ]
 
 
@@ -100,6 +112,15 @@ class R(Segment):
         return strokes
 
 
+class Q(R):
+    '''Quad path with source ``("qu", quad)``.'''
+    def __init__(self, item):
+        # four corner points
+        # NOTE: center line of path without stroke width considered
+        ul, ur, ll, lr = item[1]
+        self.points = [ul, ur, lr, ll, ul] # close path
+
+
 class C(Segment):
     '''Bezier curve path with source ``("c", p1, p2, p3, p4)``.'''
     pass
@@ -113,11 +134,13 @@ class Segments:
             if   item[0] == 'l' : self._instances.append(L(item))
             elif item[0] == 'c' : self._instances.append(C(item))
             elif item[0] == 're': self._instances.append(R(item))
+            elif item[0] == 'qu': self._instances.append(Q(item))
         
         # close path
-        if close_path and len(items)>=2:
-            item = ('l', items[-1][-1], items[0][1])
-            self._instances.append(L(item))
+        if close_path:
+            item = ('l', self._instances[-1].points[-1], self._instances[0].points[0])
+            line = L(item)
+            if line.length>1e-3: self._instances.append(line)
 
     
     def __iter__(self): return (instance for instance in self._instances)
@@ -209,14 +232,23 @@ class Segments:
 class Path:
     '''Path extracted from PDF, consist of one or more ``Segments``.'''
     def __init__(self, raw:dict):
-        '''Init path in real page CS.'''
+        '''Init path in real page CS.
+
+        Args:
+            raw (dict): Raw dict extracted with `PyMuPDF`, see link
+            https://pymupdf.readthedocs.io/en/latest/page.html#Page.get_drawings
+        '''
         # all path properties
         self.raw = raw
+        self.path_type = raw['type'] # s, f, or fs
+
+        # always close path if fill, otherwise, depends on property 'closePath'
+        close_path = True if self.is_fill else raw['closePath']
 
         # path segments
         self.items = [] # type: list[Segments]
         self.bbox = fitz.Rect()
-        close_path, w = raw['closePath'], raw['width']
+        w = raw.get('width', 0.0)
         for segments in self._group_segments(raw['items']):
             S = Segments(segments, close_path)
             self.items.append(S)
@@ -257,8 +289,8 @@ class Path:
                 # update current point
                 cursor = end
 
-            # rectangle as a separate segments group
-            elif item[0] == 're':
+            # rectangle / quad as a separate segments group
+            elif item[0] in ('re', 'qu'):
                 # close current segments
                 if segments:
                     segments_list.append(segments)
@@ -273,10 +305,10 @@ class Path:
                 
 
     @property
-    def is_stroke(self): self.raw.get('color', None) is not None
+    def is_stroke(self): return 's' in self.path_type
 
     @property
-    def is_fill(self): self.raw.get('fill', None) is not None
+    def is_fill(self): return 'f' in self.path_type
 
     @property
     def is_iso_oriented(self):
@@ -291,19 +323,18 @@ class Path:
 
         Returns:
             list: A list of ``Shape`` dict.
-        """        
-        stroke_color = self.raw.get('color', None)
-        fill_color = self.raw.get('fill', None)
-        width = self.raw.get('width', 0.0)
-
+        """
         iso_shapes = []
 
         # convert to strokes
-        if not stroke_color is None:
+        if self.is_stroke:
+            stroke_color = self.raw.get('color', None)
+            width = self.raw.get('width', 0.0)
             iso_shapes.extend(self._to_strokes(width, stroke_color))
 
         # convert to rectangular fill
-        if not fill_color is None:
+        if self.is_fill:
+            fill_color = self.raw.get('fill', None)
             iso_shapes.extend(self._to_fills(fill_color))
 
         return iso_shapes
@@ -340,7 +371,7 @@ class Path:
         ''' Plot path for debug purpose.
 
         Args:
-            canvas: ``PyMuPDF`` drawing canvas by ``page.newShape()``.
+            canvas: ``PyMuPDF`` drawing canvas by ``page.new_shape()``.
 
         Reference:
         
@@ -349,11 +380,15 @@ class Path:
         # draw each entry of the 'items' list
         for item in self.raw.get('items', []):
             if item[0] == "l":  # line
-                canvas.drawLine(item[1], item[2])
+                canvas.draw_line(item[1], item[2])
             elif item[0] == "re":  # rectangle
-                canvas.drawRect(item[1])
+                canvas.draw_rect(item[1])
+            elif item[0] == "qu":  # quad
+                canvas.draw_quad(item[1])
             elif item[0] == "c":  # curve
-                canvas.drawBezier(item[1], item[2], item[3], item[4])
+                canvas.draw_bezier(item[1], item[2], item[3], item[4])
+            else:
+                raise ValueError("unhandled drawing", item)
 
         # now apply the common properties to finish the path
         canvas.finish(

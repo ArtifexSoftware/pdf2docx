@@ -86,8 +86,8 @@ class Image(Element):
             page (fitz.Page): Plotting page.
         '''
         x0, y0, x1, y1 = self.bbox
-        page.drawLine((x0, y0), (x1, y1), color=color, width=0.5)
-        page.drawLine((x0, y1), (x1, y0), color=color, width=0.5)
+        page.draw_line((x0, y0), (x1, y1), color=color, width=0.5)
+        page.draw_line((x0, y1), (x1, y0), color=color, width=0.5)
         super().plot(page, stroke=color)
 
 

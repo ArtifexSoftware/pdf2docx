@@ -1,18 +1,26 @@
 # -*- coding: utf-8 -*-
 
 '''
-To leverage the Github Action, it's divided into three parts to test the conversion and also
-quality between sample pdf and the converted docx. This is part Three.
+To test the pdf conversion and converting quality, the idea is to convert generated docx to pdf,
+then check the image similarity between source pdf page and converted pdf page. Considering the 
+converting quality from docx to pdf, a Windows-based command line tool `OfficeToPDF` is used, in
+addition, an installation of Microsoft Word is required.
 
+To leverage the benefit of Github Action, the testing process is divided into three parts:
   1. Convert sample pdf to docx with this module.
-  2. Convert docx back to pdf. 
-     Considering the converting quality, a Windows-based command line tool `OfficeToPDF` is used,
-     and an installation of Microsoft Word is required.
+  2. Convert generated docx to pdf for comparing. 
   3. Convert page to image and compare similarity with python-opencv.
+
+Test scripts on Part One and Three are applied with two test class respectively in this module,
+so they could be run seperately with pytest command, e.g.
+
+- pytest -v test.py::TestConversion for Part One
+- pytest -v test.py::TestQuality for Part Three
 
 Links on MS Word to PDF conversion:
   - https://github.com/cognidox/OfficeToPDF/releases
   - https://github.com/AndyCyberSec/pylovepdf
+  - https://www.e-iceblue.com/Tutorials/Java/Spire.Doc-for-Java/Program-Guide/Conversion/Convert-Word-to-PDF-in-Java.html
 '''
 
 import os
@@ -261,6 +269,32 @@ class TestQuality:
     Note the docx files must be converted to PDF files in advance.
     '''
 
+    INDEX_MAP = {
+        'demo-blank.pdf': 1.0,
+        'demo-image-cmyk.pdf': 0.90,
+        'demo-image-transparent.pdf': 0.90,
+        'demo-image-vector-graphic.pdf': 0.90,
+        'demo-image.pdf': 0.90,
+        'demo-path-transformation.pdf': 0.90,
+        'demo-section-spacing.pdf': 0.90,
+        'demo-section.pdf': 0.70,
+        'demo-table-align-borders.pdf': 0.49,
+        'demo-table-border-style.pdf': 0.90,
+        'demo-table-bottom.pdf': 0.90,
+        'demo-table-close-underline.pdf': 0.59,
+        'demo-table-lattice-one-cell.pdf': 0.79,
+        'demo-table-lattice.pdf': 0.75,
+        'demo-table-nested.pdf': 0.84,
+        'demo-table-shading-highlight.pdf': 0.60,
+        'demo-table-shading.pdf': 0.80,
+        'demo-table-stream.pdf': 0.60,
+        'demo-table.pdf': 0.90,
+        'demo-text-alignment.pdf': 0.90,
+        'demo-text-scaling.pdf': 0.80,
+        'demo-text-unnamed-fonts.pdf': 0.80,
+        'demo-text.pdf': 0.80
+    }
+
     def setup(self):
         '''create output path if not exist.'''
         if not os.path.exists(output_path): os.mkdir(output_path)
@@ -268,7 +302,6 @@ class TestQuality:
 
     def test_quality(self):
         '''Convert page to image and compare similarity.'''
-        threshold = 0.65
         for filename in os.listdir(output_path):
             if not filename.endswith('pdf'): continue
 
@@ -280,10 +313,11 @@ class TestQuality:
             target_pdf = fitz.open(target_pdf_file)
 
             # compare page count
-            m, n = len(target_pdf), len(source_pdf)
-            assert m==n, f"\nThe page count of {filename} is inconsistent: {n} v.s. {m}."
+            if len(source_pdf)>1: continue # one page sample only
+            assert len(target_pdf)==1, f"\nThe page count of {filename} is incorrect."
 
-            # compare each page
-            for i, (page_source, page_target) in enumerate(zip(source_pdf, target_pdf), start=1):
-                sidx = get_page_similarity(page_target, page_source)
-                assert sidx>=threshold, f'Page {i} might have significant difference since similarity index = {sidx}.'
+            # compare the first page
+            sidx = get_page_similarity(target_pdf[0], source_pdf[0])
+            threshold = TestQuality.INDEX_MAP.get(filename, 0.80)
+            print(f'Checking {filename}: {sidx} v.s. {threshold}')
+            assert sidx>=threshold, 'Significant difference might exist since similarity index is lower than threshold.'
