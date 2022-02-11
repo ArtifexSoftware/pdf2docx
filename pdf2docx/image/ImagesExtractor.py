@@ -39,35 +39,40 @@ class ImagesExtractor:
         '''
         # pdf document
         doc = self._page.parent
+        rotation = self._page.rotation
 
         # check each image item:
         # (xref, smask, width, height, bpc, colorspace, ...)
         images = []
         for item in self._page.get_images(full=True):
-            # should always wrap get_image_bbox in a try-except clause, per
-            # https://github.com/pymupdf/PyMuPDF/issues/487
-            try:
-                item = list(item)
-                item[-1] = 0
-                bbox = self._page.get_image_bbox(item) # item[7]: name entry of such an item
-            except ValueError:
-                continue
-
-            # ignore images outside page
-            if not bbox.intersects(self._page.rect): continue
+            item = list(item)
+            item[-1] = 0
 
             # recover image
             pix = self._recover_pixmap(doc, item)
+            
+            # find all occurrences referenced to this image            
+            rects = self._page.get_image_rects(item)
 
-            # regarding images consist of alpha values only, i.e. colorspace is None,
-            # the turquoise color shown in the PDF is not part of the image, but part of PDF background.
-            # So, just to clip page pixmap according to the right bbox
-            # https://github.com/pymupdf/PyMuPDF/issues/677
-            if not pix.colorspace:
-                pix = self._clip_page(bbox, zoom=clip_image_res_ratio)
+            # ignore images outside page
+            for bbox in rects:
+                if not self._page.rect.intersects(bbox): continue
 
-            raw_dict = self._to_raw_dict(pix, bbox)
-            images.append(raw_dict)
+                # regarding images consist of alpha values only, i.e. colorspace is None,
+                # the turquoise color shown in the PDF is not part of the image, but part of PDF background.
+                # So, just to clip page pixmap according to the right bbox
+                # https://github.com/pymupdf/PyMuPDF/issues/677
+                if not pix.colorspace:
+                    pix = self._clip_page(bbox, zoom=clip_image_res_ratio)
+
+                raw_dict = self._to_raw_dict(pix, bbox)
+
+                # rotate image with opencv if page is rotated
+                if rotation: 
+                    raw_dict['image'] = self._rotate_image(raw_dict['image'], -rotation)
+
+                images.append(raw_dict)
+
         return images
     
 
@@ -155,11 +160,54 @@ class ImagesExtractor:
         return {
             'type': BlockType.IMAGE.value,
             'bbox': tuple(bbox),
-            'ext': 'png',
             'width': image.width,
             'height': image.height,
             'image': image.tobytes()
         }
+
+
+    @staticmethod
+    def _rotate_image(image_bytes, rotation:int):
+        '''Rotate image represented by image bytes.
+
+        Args:
+            image_bytes (bytes): Image to rotate.
+            rotation (int): Rotation angle.
+        '''
+        import cv2 as cv
+        import numpy as np
+
+        # convert to opencv image
+        img = cv.imdecode(np.frombuffer(image_bytes, np.uint8), cv.IMREAD_COLOR)        
+        h, w = img.shape[:2] # get image height, width
+
+        # calculate the center of the image
+        x0, y0 = w//2, h//2
+
+        # default scale value for now -> might be extracted from PDF page property    
+        scale = 1.0
+
+        # rotation matrix
+        matrix = cv.getRotationMatrix2D((x0, y0), rotation, scale)
+
+        # calculate the final dimension
+        cos = np.abs(matrix[0, 0])
+        sin = np.abs(matrix[0, 1])
+    
+        # compute the new bounding dimensions of the image
+        W = int((h * sin) + (w * cos))
+        H = int((h * cos) + (w * sin))
+    
+        # adjust the rotation matrix to take into account translation
+        matrix[0, 2] += (W / 2) - x0
+        matrix[1, 2] += (H / 2) - y0
+        
+        # perform the rotation holding at the center        
+        rotated_img = cv.warpAffine(img, matrix, (W, H))
+
+        # convert back to bytes
+        _, im_png = cv.imencode('.png', rotated_img)
+        return im_png.tobytes()
 
 
     def _hide_page_text(self):

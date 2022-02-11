@@ -8,6 +8,7 @@ from docx.shared import Pt
 from ..common.Collection import BaseCollection
 from ..common.docx import reset_paragraph_format
 from .Section import Section
+from ..common import constants
 
 
 class Sections(BaseCollection):
@@ -36,14 +37,14 @@ class Sections(BaseCollection):
             line_height = min(section.before_space, 11)
             pf = reset_paragraph_format(p, line_spacing=Pt(line_height))
             pf.space_after = Pt(section.before_space-line_height)
-            return p
 
         # ---------------------------------------------------
         # first section
         # ---------------------------------------------------
-        # vertical position
+        # vertical position: add dummy paragraph only if before space is required
         section = self[0]
-        p0 = create_dummy_paragraph_for_section(section)
+        if section.before_space > constants.MINOR_DIST:
+            create_dummy_paragraph_for_section(section)
         
         # create first section
         if section.num_cols==2: 
@@ -74,9 +75,9 @@ class Sections(BaseCollection):
         # ---------------------------------------------------
         # create floating images
         # ---------------------------------------------------
-        # lazy: assign all float images to the first paragraph
+        # lazy: assign all float images to the recently created paragraph
         for image in self.parent.float_images:
-            image.make_docx(p0)
+            image.make_docx(doc.paragraphs[-1])
 
 
     def plot(self, page):

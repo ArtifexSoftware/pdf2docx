@@ -167,6 +167,11 @@ class TestConversion:
     def test_image_transparent(self):
         '''test transparent images.'''
         self.convert('demo-image-transparent')
+    
+    def test_image_rotation(self):
+        '''test rotating image due to pdf page rotation.'''
+        self.convert('demo-image-rotation')
+
 
     # ------------------------------------------
     # table styles
@@ -275,6 +280,7 @@ class TestQuality:
         'demo-image-transparent.pdf': 0.90,
         'demo-image-vector-graphic.pdf': 0.90,
         'demo-image.pdf': 0.90,
+        'demo-image-rotation.pdf': 0.90,
         'demo-path-transformation.pdf': 0.90,
         'demo-section-spacing.pdf': 0.90,
         'demo-section.pdf': 0.70,
