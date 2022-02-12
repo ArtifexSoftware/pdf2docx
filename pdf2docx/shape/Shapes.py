@@ -4,7 +4,7 @@
 '''
 
 from .Shape import Shape, Stroke, Fill, Hyperlink
-from ..common.share import RectType, lazyproperty
+from ..common.share import RectType
 from ..common.Collection import Collection, ElementCollection
 from ..common import share
 from ..common import constants
@@ -202,8 +202,9 @@ class Shapes(ElementCollection):
         normal_shapes = list(filter(
             lambda shape: not shape.is_determined, shapes))
         
-        # group by color and connectivity        
-        f = lambda a, b: a.color==b.color and a.bbox.intersects(b.bbox)
+        # group by color and connectivity (with margin considered)
+        f = lambda a, b: \
+            a.color==b.color and a.bbox.intersects(b.get_expand_bbox(constants.TINY_DIST))
         groups = Collection(normal_shapes).group(f)
 
         merged_shapes = []
