@@ -172,6 +172,10 @@ class TestConversion:
         '''test rotating image due to pdf page rotation.'''
         self.convert('demo-image-rotation')
 
+    def test_image_overlap(self):
+        '''test images with both intersection and page rotation.'''
+        self.convert('demo-image-overlap')
+
 
     # ------------------------------------------
     # table styles
@@ -281,6 +285,7 @@ class TestQuality:
         'demo-image-vector-graphic.pdf': 0.90,
         'demo-image.pdf': 0.90,
         'demo-image-rotation.pdf': 0.90,
+        'demo-image-overlap.pdf': 0.90,
         'demo-path-transformation.pdf': 0.90,
         'demo-section-spacing.pdf': 0.90,
         'demo-section.pdf': 0.70,

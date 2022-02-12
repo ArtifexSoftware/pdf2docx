@@ -126,11 +126,11 @@ class Paths(Collection):
             if paths.is_iso_oriented:
                 iso_shapes.extend(paths.to_shapes())
                 for svg_bbox in inner_bboxes:
-                    images.append(ie.extract_image(svg_bbox, clip_image_res_ratio))
+                    images.append(ie.clip_page_to_dict(fitz.Rect(svg_bbox), clip_image_res_ratio))
             
             # otherwise, it's a svg
             else:
-                images.append(ie.extract_image(bbox, clip_image_res_ratio))
+                images.append(ie.clip_page_to_dict(fitz.Rect(bbox), clip_image_res_ratio))
 
         return iso_shapes, images
 
