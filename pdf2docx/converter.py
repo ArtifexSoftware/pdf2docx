@@ -199,14 +199,15 @@ class Converter:
         num_pages = len(parsed_pages)
         for i, page in enumerate(parsed_pages, start=1):
             if not page.finalized: continue # ignore unparsed pages
-            logging.info('(%d/%d) Page %d', i, num_pages, page.id+1)
+            pid = page.id + 1
+            logging.info('(%d/%d) Page %d', i, num_pages, pid)
             try:
                 page.make_docx(docx_file)
             except Exception as e:
                 if not kwargs['debug'] and kwargs['ignore_page_error']:
-                    logging.error('Ignore page %d due to making page error: %s', page.id, e)
+                    logging.error('Ignore page %d due to making page error: %s', pid, e)
                 else:
-                    raise MakedocxException(f'Error when make page {page.id}: {e}')
+                    raise MakedocxException(f'Error when make page {pid}: {e}')
 
         # save docx
         docx_file.save(filename)
