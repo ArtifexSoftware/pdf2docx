@@ -2,6 +2,7 @@
 from enum import Enum
 import random
 from collections.abc import Iterable
+import unicodedata
 from fitz.utils import getColorList, getColorInfoList
 
 
@@ -115,6 +116,11 @@ def flatten(items, klass):
         else:
             yield item
 
+def is_control_char(ch):
+    '''Whether a control character.
+    https://stackoverflow.com/questions/4324790/removing-control-characters-from-a-string-in-python
+    '''
+    return unicodedata.category(ch)[0]=='C'
 
 # -------------------------
 # color methods

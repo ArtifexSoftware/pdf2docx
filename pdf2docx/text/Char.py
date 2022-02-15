@@ -12,6 +12,7 @@ Data structure refer to this `link <https://pymupdf.readthedocs.io/en/latest/tex
 '''
 
 
+from ..common.share import is_control_char
 from ..common.Element import Element
 from ..shape.Shape import Shape
 
@@ -20,8 +21,13 @@ class Char(Element):
     '''Object representing a character.'''
     def __init__(self, raw:dict=None):
         if raw is None: raw = {}
-        self.c = raw.get('c', '')
+
+        # Note to filter control character avoiding error when makeing docx, #126
+        c = raw.get('c', '')
+        if is_control_char(c): c = ''
+        self.c = c
         self.origin = raw.get('origin', None)
+
         super().__init__(raw) # NOTE: ignore parent element for Char instance
 
 

@@ -46,8 +46,11 @@ class TextSpan(Element):
         raw = raw or {}
         self.color = raw.get('color', 0)
         self.flags = raw.get('flags', 0)
+
+        # filter empty chars
+        chars = [Char(c) for c in raw.get('chars', [])] # type: list[Char]
+        self.chars = [char for char in chars if char.c!='']
         self._text = raw.get('text', '') # not an original key from PyMuPDF
-        self.chars = [ Char(c) for c in raw.get('chars', []) ] # type: list[Char]
 
         # font metrics
         # line_height is the standard single line height used in relative line spacing,
