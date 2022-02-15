@@ -12,7 +12,7 @@ Data structure refer to this `link <https://pymupdf.readthedocs.io/en/latest/tex
 '''
 
 
-from ..common.share import is_control_char
+from ..common.constants import INVALID_CHARS
 from ..common.Element import Element
 from ..shape.Shape import Shape
 
@@ -24,7 +24,7 @@ class Char(Element):
 
         # Note to filter control character avoiding error when makeing docx, #126
         c = raw.get('c', '')
-        if is_control_char(c): c = ''
+        if c in INVALID_CHARS: c = ''
         self.c = c
         self.origin = raw.get('origin', None)
 

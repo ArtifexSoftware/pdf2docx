@@ -30,6 +30,10 @@ DEFULT_LINE_SPACING = 1.02
 # punctuation implying end of a sentense
 SENTENSE_END_PUNC = '.．。?？!！'
 
+# control characters not supported by lxml
+# https://github.com/dothinking/pdf2docx/issues/126#issuecomment-1040034077
+INVALID_CHARS = '\x00\x01\x02\x03\x04\x05\x06\x07\x08\x0b\x0c\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f'
+
 
 # -------------------------------------
 # font parameters
