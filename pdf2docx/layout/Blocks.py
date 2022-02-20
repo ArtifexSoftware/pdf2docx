@@ -364,24 +364,6 @@ class Blocks(ElementCollection):
     # ----------------------------------------------------------------------------------
     # internal methods
     # ----------------------------------------------------------------------------------
-
-    def _remove_overlapped_lines(self, line_overlap_threshold:float):
-        '''Delete overlapped lines. Don't run this method until floating images are excluded.'''
-        # group lines by overlap
-        fun = lambda a, b: a.get_main_bbox(b, threshold=line_overlap_threshold)
-        groups = self.group(fun)
-        
-        # delete overlapped lines
-        for group in filter(lambda group: len(group)>1, groups):
-            # keep only the line with largest area
-            sorted_lines = sorted(group, key=lambda line: line.bbox.get_area())
-            for line in sorted_lines[:-1]:
-                logging.warning('Ignore Line "%s" due to overlap', line.text)
-                line.update_bbox((0,0,0,0))
-
-        return self
-
-
     def _identify_floating_images(self, float_image_ignorable_gap:float):
         '''Identify floating image lines and convert to ImageBlock.'''
         # group lines by connectivity
@@ -398,6 +380,25 @@ class Blocks(ElementCollection):
                 line.update_bbox((0,0,0,0))
 
         return self
+
+    def _remove_overlapped_lines(self, line_overlap_threshold:float):
+        '''Delete overlapped lines. 
+        NOTE: Don't run this method until floating images are excluded.
+        '''
+        # group lines by overlap
+        fun = lambda a, b: a.get_main_bbox(b, threshold=line_overlap_threshold)
+        groups = self.group(fun)
+        
+        # delete overlapped lines
+        for group in filter(lambda group: len(group)>1, groups):
+            # keep only the line with largest area
+            sorted_lines = sorted(group, key=lambda line: line.bbox.get_area())
+            for line in sorted_lines[:-1]:
+                logging.warning('Ignore Line "%s" due to overlap', line.text)
+                line.update_bbox((0,0,0,0))
+
+        return self
+
 
 
     @staticmethod

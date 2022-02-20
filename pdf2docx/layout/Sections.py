@@ -32,6 +32,9 @@ class Sections(BaseCollection):
         '''Create sections in docx.'''        
         if not self: return
 
+        # mark paragraph index before creating current page
+        n = len(doc.paragraphs)
+
         def create_dummy_paragraph_for_section(section):
             p = doc.add_paragraph()
             line_height = min(section.before_space, 11)
@@ -75,9 +78,9 @@ class Sections(BaseCollection):
         # ---------------------------------------------------
         # create floating images
         # ---------------------------------------------------
-        # lazy: assign all float images to the recently created paragraph
+        # lazy: assign all float images to first paragraph of current page
         for image in self.parent.float_images:
-            image.make_docx(doc.paragraphs[-1])
+            image.make_docx(doc.paragraphs[n])
 
 
     def plot(self, page):
