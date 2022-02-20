@@ -25,13 +25,13 @@ Data structure based on this `link <https://pymupdf.readthedocs.io/en/latest/tex
     }
 '''
 
-from docx.shared import Pt
+from docx.shared import (Pt,Inches)
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from .Lines import Lines
 from ..image.ImageSpan import ImageSpan
-from ..common.share import RectType, TextAlignment
+from ..common.share import (RectType, TextAlignment, lower_round)
 from ..common.Block import Block
-from ..common.share import rgb_component_from_name
+from ..common.share import (rgb_component_from_name, lower_round)
 from ..common import constants
 from ..common import docx
 
@@ -301,7 +301,9 @@ class TextBlock(Block):
         '''
         pf = docx.reset_paragraph_format(p)
 
+        # ------------------------------------
         # vertical spacing
+        # ------------------------------------
         before_spacing = max(round(self.before_space, 1), 0.0)
         after_spacing = max(round(self.after_space, 1), 0.0)
         pf.space_before = Pt(before_spacing)
@@ -313,35 +315,54 @@ class TextBlock(Block):
         else: # relative line spacing
             pf.line_spacing = round(self.line_space, 2)
 
+        # ------------------------------------
         # horizontal alignment
-        # - alignment mode
+        # ------------------------------------
+        # (1) set paragraph indentation
+        # NOTE: different left spacing setting in case first line indent and hanging
+        left_space  = self.left_space        
+        if self.first_line_space<0: # in case hanging
+            left_space -= self.first_line_space           
+        
+        pf.left_indent  = Pt(left_space)
+        pf.right_indent  = Pt(self.right_space)
+        pf.first_line_indent = Pt(self.first_line_space)
+
+        # (2) set alignment mode and adjust indentation:
+        # round indention on the opposite side to lower bound (inches), so it saves more space to 
+        # avoid unexpected line break
         if self.alignment==TextAlignment.LEFT:
             pf.alignment = WD_ALIGN_PARAGRAPH.LEFT            
             # set tab stops to ensure line position
             for pos in self.tab_stops:
                 pf.tab_stops.add_tab_stop(Pt(self.left_space + pos))
+            
+            # adjust right indent
+            d = lower_round(self.right_space/constants.ITP, 1)
+            pf.right_indent = Inches(d)
 
         elif self.alignment==TextAlignment.RIGHT:
-            pf.alignment = WD_ALIGN_PARAGRAPH.RIGHT            
+            pf.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            
+            # adjust left indent
+            d = lower_round(left_space/constants.ITP, 1)
+            pf.left_indent = Inches(d)
 
         elif self.alignment==TextAlignment.CENTER:
             pf.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
+            # adjust both left and right indent
+            d = lower_round(left_space/constants.ITP, 1)
+            pf.left_indent = Inches(d)
+            d = lower_round(self.right_space/constants.ITP, 1)
+            pf.right_indent = Inches(d)
+
         else:
             pf.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
 
-        # - paragraph indentation
-        # NOTE: different left spacing setting in case first line indent and hanging
-        if self.first_line_space<0: # hanging
-            pf.left_indent  = Pt(self.left_space-self.first_line_space)
-        else: # first line indent
-            pf.left_indent  = Pt(self.left_space)
-        pf.right_indent  = Pt(self.right_space)
-
-        # - first line indentation
-        pf.first_line_indent = Pt(self.first_line_space)
-
+        # ------------------------------------
         # add lines
+        # ------------------------------------
         for line in self.lines: line.make_docx(p)
 
         return p

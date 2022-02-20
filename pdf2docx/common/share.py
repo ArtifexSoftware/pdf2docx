@@ -2,7 +2,6 @@
 from enum import Enum
 import random
 from collections.abc import Iterable
-import unicodedata
 from fitz.utils import getColorList, getColorInfoList
 
 
@@ -115,6 +114,12 @@ def flatten(items, klass):
             yield from flatten(item, klass)
         else:
             yield item
+
+def lower_round(number:float, ndigits:int=0):
+    '''Round number to lower bound with specified digits, e.g. lower_round(1.26, 1)=1.2'''
+    n = 10.0**ndigits
+    return int(n*number) / n
+
 
 # -------------------------
 # color methods
