@@ -87,13 +87,15 @@ class TextSpan(Element):
     def text(self, value):
         '''Set span text directly in case no chars are stores, e.g. restored from json.'''
         self._text = value
-
     
     def cal_bbox(self):
         '''Calculate bbox based on contained instances.'''
         bbox = fitz.Rect()
         for char in self.chars: bbox |= char.bbox
         return bbox
+
+    @property
+    def is_valid_line_height(self): return self.line_height!=-1
 
 
     def _change_font_and_update_bbox(self, font_name:str):

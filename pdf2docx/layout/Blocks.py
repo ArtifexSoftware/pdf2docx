@@ -8,9 +8,9 @@ import logging
 from docx.shared import Pt
 from ..common import constants
 from ..common.Collection import ElementCollection
-from ..common.share import BlockType, rgb_value
+from ..common.share import (BlockType, lower_round, rgb_value)
 from ..common.Block import Block
-from ..common.docx import reset_paragraph_format, delete_paragraph
+from ..common.docx import (reset_paragraph_format, delete_paragraph)
 from ..text.TextBlock import TextBlock
 from ..text.TextSpan import TextSpan
 from ..text.Line import Line
@@ -307,7 +307,7 @@ class Blocks(ElementCollection):
             # - a minimum line height of paragraph is 0.7pt, so ignore before space if less than this value
             # - but tow adjacent tables will be combined automatically, so adding a minimum dummy paragraph is required
             if table_block.before_space>=constants.MIN_LINE_SPACING or pre_table:
-                h = int(10*table_block.before_space)/10.0 # round(x,1), but to lower bound
+                h = lower_round(table_block.before_space, 1) # round(x,1), but to lower bound
                 p = doc.add_paragraph()
                 reset_paragraph_format(p, line_spacing=Pt(h))
 
@@ -631,7 +631,8 @@ class Blocks(ElementCollection):
             exact line spacing if no standard line height is extracted
             '''
             for line in block.lines:
-                absent_line_heights = list(span.line_height==-1 for span in line.spans if isinstance(span, TextSpan))
+                absent_line_heights = list(not span.is_valid_line_height \
+                                        for span in line.spans if isinstance(span, TextSpan))
                 if any(absent_line_heights): return True
             return False
 

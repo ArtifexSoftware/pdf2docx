@@ -114,7 +114,8 @@ class RawPage(BasePage, Layout):
 
             # update font properties with font parsed by fonttools
             span.font = font.name
-            span.line_height = font.line_height * span.size
+            if font.line_height:
+                span.line_height = font.line_height * span.size
 
 
     def calculate_margin(self, **settings):

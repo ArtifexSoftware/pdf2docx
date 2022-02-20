@@ -70,17 +70,17 @@ class Fonts(BaseCollection):
         for xref in xrefs:
             basename, ext, _, buffer = fitz_doc.extract_font(xref)
             name = cls._normalized_font_name(basename)
-
-            # process embedded and supported fonts (true type) only
-            if ext in ('n/a', 'ccf'): continue
-
-            # valid true type font, no matter installed in the system or not
+            
             try:
+                # process embedded and supported fonts (true type) only
+                assert ext not in ('n/a', 'ccf'), "base font or not supported font"
+
+                # try to get more font metrices with fonttool
                 tt = TTFont(BytesIO(buffer))
                 name = cls.get_font_family_name(tt)
                 line_height = cls.get_line_height_factor(tt)
             except Exception:
-                continue
+                line_height = None
 
             fonts.append(Font(
                 descriptor=cls._to_descriptor(name),
