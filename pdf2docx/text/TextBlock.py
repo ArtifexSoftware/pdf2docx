@@ -169,8 +169,7 @@ class TextBlock(Block):
                     line_break_free_space_ratio:float,
                     lines_left_aligned_threshold:float,
                     lines_right_aligned_threshold:float,
-                    lines_center_aligned_threshold:float,
-                    line_condense_spacing:float):
+                    lines_center_aligned_threshold:float):
         ''' Set horizontal spacing based on lines layout and page bbox.
         
         * The general spacing is determined by paragraph alignment and indentation.
@@ -214,8 +213,7 @@ class TextBlock(Block):
         # parse line break
         self.lines.parse_line_break(bbox, 
             line_break_width_ratio, 
-            line_break_free_space_ratio, 
-            line_condense_spacing)
+            line_break_free_space_ratio)
 
 
     def parse_relative_line_spacing(self):

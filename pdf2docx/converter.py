@@ -76,13 +76,12 @@ class Converter:
             'line_overlap_threshold'         : 0.9,    # [0,1] delete line if the intersection to other lines exceeds this value
             'line_break_width_ratio'         : 0.5,    # break line if the ratio of line width to entire layout bbox is lower than this value
             'line_break_free_space_ratio'    : 0.1,    # break line if the ratio of free space to entire line exceeds this value
-            'line_condense_spacing'          : 4.0,    # total condense spacing (in Pt) at end of line to avoid unexpected line break
             'line_separate_threshold'        : 5.0,    # two separate lines if the x-distance exceeds this value
             'new_paragraph_free_space_ratio' : 0.85,   # new paragraph if the ratio of free space to line height exceeds this value
             'lines_left_aligned_threshold'   : 1.0,    # left aligned if d_x0 of two lines is lower than this value (Pt)
             'lines_right_aligned_threshold'  : 1.0,    # right aligned if d_x1 of two lines is lower than this value (Pt)
             'lines_center_aligned_threshold' : 2.0,    # center aligned if delta center of two lines is lower than this value
-            'clip_image_res_ratio'           : 3.0,    # resolution ratio (to 72dpi) when cliping page image
+            'clip_image_res_ratio'           : 4.0,    # resolution ratio (to 72dpi) when cliping page image
             'min_svg_gap_dx'                 : 15.0,   # merge adjacent vector graphics if the horizontal gap is less than this value
             'min_svg_gap_dy'                 : 2.0,    # merge adjacent vector graphics if the vertical gap is less than this value
             'min_svg_w'                      : 2.0,    # ignore vector graphics if the bbox width is less than this value

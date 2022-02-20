@@ -65,8 +65,10 @@ class TextSpan(Element):
         # a list of dict: { 'type': int, 'color': int }
         self.style = raw.get('style', [])
 
-        # total condense spacing
-        self.condense_spacing = raw.get('condense_spacing', 0.0)
+        # char spacing between adjacent two chars -> pdf operador Tc
+        # positive to expand space, otherwise condense
+        # just an attribute placeholder: not used yet
+        self.char_spacing = raw.get('char_spacing', 0.0)
         
         # init text span element
         super().__init__(raw)
@@ -183,7 +185,7 @@ class TextSpan(Element):
             'flags': self.flags,
             'text': self.text,
             'style': self.style,
-            'condense_spacing': self.condense_spacing
+            'char_spacing': self.char_spacing
         }) # not storing chars for space saving
         return res
 
@@ -375,10 +377,9 @@ class TextSpan(Element):
         # set text style, e.g. font, underline and highlight
         self._set_text_format(docx_run)
 
-        # condense charaters to avoid potential line break
-        if self.condense_spacing:
-            v = min(self.condense_spacing/len(self.text), 1.0)
-            docx.set_condense_spacing(docx_run, -v)
+        # set charaters spacing
+        if self.char_spacing: 
+            docx.set_char_spacing(docx_run, self.char_spacing)
 
 
     def _set_text_format(self, docx_run):

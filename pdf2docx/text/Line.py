@@ -170,31 +170,7 @@ class Line(Element):
         if self.tab_stop: p.add_run().add_tab()
 
         # create span -> run in paragraph
-        for span in self.spans: 
-            if not isinstance(span, TextSpan) or not span.condense_spacing:
-                span.make_docx(p)
-            
-            # split the span: the last two words
-            else:
-                words = span.text.strip().split(' ')
-                last_2_words = ' '.join(words[-2:])
-                num = len(last_2_words)+1
-                raw = span.store()
-
-                # NOTE 1: didn't update bbox after splitting, but there's no
-                # side effect for making docx.
-                # NOTE 2: don't use chars to update text since there is no chars 
-                # if span is restored from JSON. Chars are not stored considering 
-                # space saving.
-                span_1 = TextSpan(raw)
-                span_1.text = span.text[:-num]
-                span_1.condense_spacing = 0.0
-
-                span_2 = TextSpan(raw)
-                span_2.text = span.text[-num:]
-
-                if span_1.text: span_1.make_docx(p)
-                if span_2.text: span_2.make_docx(p)
+        for span in self.spans: span.make_docx(p)            
 
         # line break
         if self.line_break: p.add_run('\n')
