@@ -10,6 +10,7 @@ Submodules
    pdf2docx.common.Block
    pdf2docx.common.Collection
    pdf2docx.common.Element
+   pdf2docx.common.algorithm
    pdf2docx.common.constants
    pdf2docx.common.docx
    pdf2docx.common.share

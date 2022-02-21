@@ -1,0 +1,7 @@
+pdf2docx.common.algorithm module
+================================
+
+.. automodule:: pdf2docx.common.algorithm
+   :members:
+   :undoc-members:
+   :show-inheritance:
