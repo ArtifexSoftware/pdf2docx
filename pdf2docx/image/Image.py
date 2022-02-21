@@ -7,12 +7,12 @@ Data structure defined in link https://pymupdf.readthedocs.io/en/latest/textpage
     {
         'type': 1,
         'bbox': (x0,y0,x1,y1),
-        'ext': 'png',
         'width': w,
         'height': h,
         'image': b'',
 
         # --- discard properties ---
+        'ext': 'png',
         'colorspace': n,
         'xref': xref, 'yref': yref, 'bpc': bpc
     }
@@ -29,7 +29,6 @@ class Image(Element):
 
     def __init__(self, raw:dict=None):
         if raw is None: raw = {}        
-        self.ext = raw.get('ext', 'png')
         self.width = raw.get('width', 0.0)
         self.height = raw.get('height', 0.0)
 
@@ -54,7 +53,6 @@ class Image(Element):
         Args:
             image (Image): Target image block/span.
         '''
-        self.ext = image.ext
         self.width = image.width
         self.height = image.height
         self.image = image.image
@@ -70,7 +68,6 @@ class Image(Element):
         '''
         res = super().store()
         res.update({
-            'ext': self.ext,
             'width': self.width,
             'height': self.height,
             'image': base64.b64encode(self.image).decode() # serialize image with base64

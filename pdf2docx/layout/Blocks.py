@@ -8,9 +8,9 @@ import logging
 from docx.shared import Pt
 from ..common import constants
 from ..common.Collection import ElementCollection
-from ..common.share import BlockType, rgb_value
+from ..common.share import (BlockType, lower_round, rgb_value)
 from ..common.Block import Block
-from ..common.docx import reset_paragraph_format, delete_paragraph
+from ..common.docx import (reset_paragraph_format, delete_paragraph)
 from ..text.TextBlock import TextBlock
 from ..text.TextSpan import TextSpan
 from ..text.Line import Line
@@ -307,7 +307,7 @@ class Blocks(ElementCollection):
             # - a minimum line height of paragraph is 0.7pt, so ignore before space if less than this value
             # - but tow adjacent tables will be combined automatically, so adding a minimum dummy paragraph is required
             if table_block.before_space>=constants.MIN_LINE_SPACING or pre_table:
-                h = int(10*table_block.before_space)/10.0 # round(x,1), but to lower bound
+                h = lower_round(table_block.before_space, 1) # round(x,1), but to lower bound
                 p = doc.add_paragraph()
                 reset_paragraph_format(p, line_spacing=Pt(h))
 
@@ -364,24 +364,6 @@ class Blocks(ElementCollection):
     # ----------------------------------------------------------------------------------
     # internal methods
     # ----------------------------------------------------------------------------------
-
-    def _remove_overlapped_lines(self, line_overlap_threshold:float):
-        '''Delete overlapped lines. Don't run this method until floating images are excluded.'''
-        # group lines by overlap
-        fun = lambda a, b: a.get_main_bbox(b, threshold=line_overlap_threshold)
-        groups = self.group(fun)
-        
-        # delete overlapped lines
-        for group in filter(lambda group: len(group)>1, groups):
-            # keep only the line with largest area
-            sorted_lines = sorted(group, key=lambda line: line.bbox.get_area())
-            for line in sorted_lines[:-1]:
-                logging.warning('Ignore Line "%s" due to overlap', line.text)
-                line.update_bbox((0,0,0,0))
-
-        return self
-
-
     def _identify_floating_images(self, float_image_ignorable_gap:float):
         '''Identify floating image lines and convert to ImageBlock.'''
         # group lines by connectivity
@@ -398,6 +380,25 @@ class Blocks(ElementCollection):
                 line.update_bbox((0,0,0,0))
 
         return self
+
+    def _remove_overlapped_lines(self, line_overlap_threshold:float):
+        '''Delete overlapped lines. 
+        NOTE: Don't run this method until floating images are excluded.
+        '''
+        # group lines by overlap
+        fun = lambda a, b: a.get_main_bbox(b, threshold=line_overlap_threshold)
+        groups = self.group(fun)
+        
+        # delete overlapped lines
+        for group in filter(lambda group: len(group)>1, groups):
+            # keep only the line with largest area
+            sorted_lines = sorted(group, key=lambda line: line.bbox.get_area())
+            for line in sorted_lines[:-1]:
+                logging.warning('Ignore Line "%s" due to overlap', line.text)
+                line.update_bbox((0,0,0,0))
+
+        return self
+
 
 
     @staticmethod
@@ -631,7 +632,8 @@ class Blocks(ElementCollection):
             exact line spacing if no standard line height is extracted
             '''
             for line in block.lines:
-                absent_line_heights = list(span.line_height==-1 for span in line.spans if isinstance(span, TextSpan))
+                absent_line_heights = list(not span.is_valid_line_height \
+                                        for span in line.spans if isinstance(span, TextSpan))
                 if any(absent_line_heights): return True
             return False
 

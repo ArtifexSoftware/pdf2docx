@@ -412,7 +412,7 @@ class TableStructure:
     def _check_merging_status(self):
         '''Check cell merging status.'''
         x_cols, y_rows = self.x_cols, self.y_rows
-        # check merged cells in each row
+        # check cell merging status in each row
         merged_cells_rows = []  # type: list[list[int]]
         ordered_strokes = [self.v_strokes[k] for k in x_cols]
         for row in self.cells:
@@ -420,7 +420,7 @@ class TableStructure:
             row_structure = TableStructure._check_merged_cells(ref_y, ordered_strokes, 'row')
             merged_cells_rows.append(row_structure)
 
-        # check merged cells in each column
+        # check cell merging status in each column
         merged_cells_cols = []  # type: list[list[int]]
         ordered_strokes = [self.h_strokes[k] for k in y_rows]
         for cell in self.cells[0]:
@@ -428,18 +428,25 @@ class TableStructure:
             col_structure = TableStructure._check_merged_cells(ref_x, ordered_strokes, 'column')
             merged_cells_cols.append(col_structure)
 
-        # check merged cells
+        # count merged cells in row and column directions
         for i in range(self.num_rows):
             for j in range(self.num_cols):
                 cell = self.cells[i][j]
-                # check merged columns/rows in row/column direction
                 n_col = TableStructure._count_merged_cells(merged_cells_rows[i][j:])
                 n_row = TableStructure._count_merged_cells(merged_cells_cols[j][i:])                
-                cell.merged_cells = (n_row, n_col)
+                cell.merged_cells = (n_row, n_col)        
+
+        # check whether merged region is valid
+        for i in range(self.num_rows):
+            for j in range(self.num_cols):
+                # validate region
+                self._validate_merging_region(i, j)
 
                 # update merged bbox
                 # A separate cell without merging can also be treated as a merged range 
                 # with 1 row and 1 colum, i.e. itself.
+                cell = self.cells[i][j]               
+                n_row, n_col = cell.merged_cells
                 bbox = (x_cols[j], y_rows[i], x_cols[j+n_col], y_rows[i+n_row])
                 cell.merged_bbox = fitz.Rect(bbox)
 
@@ -585,3 +592,45 @@ class TableStructure:
             else: 
                 break            
         return num
+    
+
+    def _validate_merging_region(self, i:int, j:int):
+        '''Check whether the merging region of Cell (i,j) is valid. If not, unset merging status. 
+
+        Args:
+            i (int): Row index of the target cell.
+            j (int): Column index of the target cell.
+        '''
+        cell = self.cells[i][j]
+        if cell.is_merged: return
+
+        # merged cells count
+        n_row, n_col = cell.merged_cells 
+        if n_row==1 and n_col==1: return
+
+        # unset merging status if invalid merging region
+        if not self._is_valid_region(i, i+n_row, j, j+n_col):
+            for m in range(i, i+n_row):
+                for n in range(j, j+n_col):
+                    target = self.cells[m][n]
+                    if target.is_merged: target.merged_cells = (1, 1)
+            # reset current cell
+            cell.merged_cells = (1, 1)        
+
+
+    def _is_valid_region(self, row_start:int, row_end:int, col_start:int, col_end:int):
+        '''Check whether all cells in given region are marked to merge.
+
+        Args:
+            row_start (int): Start row index (included) of the target region.
+            row_end (int): End row index (excluded) of the target region.
+            col_start (int): Start column index (included) of the target region.
+            col_end (int): Start column index (excluded) of the target region.
+        '''
+        for i in range(row_start, row_end):
+            for j in range(col_start, col_end):
+                if i==row_start and j==col_start: continue # skip top-left cell
+                if not self.cells[i][j].is_merged:
+                    return False
+        return True
+

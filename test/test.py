@@ -167,6 +167,15 @@ class TestConversion:
     def test_image_transparent(self):
         '''test transparent images.'''
         self.convert('demo-image-transparent')
+    
+    def test_image_rotation(self):
+        '''test rotating image due to pdf page rotation.'''
+        self.convert('demo-image-rotation')
+
+    def test_image_overlap(self):
+        '''test images with both intersection and page rotation.'''
+        self.convert('demo-image-overlap')
+
 
     # ------------------------------------------
     # table styles
@@ -273,19 +282,21 @@ class TestQuality:
         'demo-blank.pdf': 1.0,
         'demo-image-cmyk.pdf': 0.90,
         'demo-image-transparent.pdf': 0.90,
-        'demo-image-vector-graphic.pdf': 0.90,
+        'demo-image-vector-graphic.pdf': 0.89,
         'demo-image.pdf': 0.90,
+        'demo-image-rotation.pdf': 0.90,
+        'demo-image-overlap.pdf': 0.90,
         'demo-path-transformation.pdf': 0.90,
         'demo-section-spacing.pdf': 0.90,
         'demo-section.pdf': 0.70,
         'demo-table-align-borders.pdf': 0.49,
         'demo-table-border-style.pdf': 0.90,
         'demo-table-bottom.pdf': 0.90,
-        'demo-table-close-underline.pdf': 0.59,
+        'demo-table-close-underline.pdf': 0.58,
         'demo-table-lattice-one-cell.pdf': 0.79,
         'demo-table-lattice.pdf': 0.75,
         'demo-table-nested.pdf': 0.84,
-        'demo-table-shading-highlight.pdf': 0.60,
+        'demo-table-shading-highlight.pdf': 0.55,
         'demo-table-shading.pdf': 0.80,
         'demo-table-stream.pdf': 0.60,
         'demo-table.pdf': 0.90,
@@ -317,7 +328,8 @@ class TestQuality:
             assert len(target_pdf)==1, f"\nThe page count of {filename} is incorrect."
 
             # compare the first page
-            sidx = get_page_similarity(target_pdf[0], source_pdf[0])
-            threshold = TestQuality.INDEX_MAP.get(filename, 0.80)
+            diff_png = os.path.join(output_path, f'{filename[:-4]}.png')
+            sidx = get_page_similarity(target_pdf[0], source_pdf[0], diff_png)
+            threshold = TestQuality.INDEX_MAP.get(filename, 0.10)
             print(f'Checking {filename}: {sidx} v.s. {threshold}')
             assert sidx>=threshold, 'Significant difference might exist since similarity index is lower than threshold.'

@@ -27,6 +27,7 @@ from ..shape.Shapes import Shapes
 from ..text.Lines import Lines
 from .TableStructure import TableStructure
 from .Border import Border, Borders
+from .Cell import Cell
 
 
 class TablesConstructor:
@@ -191,6 +192,11 @@ class TablesConstructor:
             # parse table structure
             strokes.sort_in_reading_order() # required
             table = TableStructure(strokes, **settings).parse(explicit_shadings).to_table_block()
+
+            # Attention: avoid further infinite stream table detection.
+            # Generally, a 1x1 stream table nested in a table cell is of no use
+            if isinstance(self._parent, Cell) and table.num_cols*table.num_rows==1:
+                continue
 
             table.set_stream_table_block()
             tables.append(table)

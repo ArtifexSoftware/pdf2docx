@@ -10,7 +10,9 @@ Both raster images and vector graphics are considered:
   ``re``, ``m``, ``l`` and ``c``. They're detected by finding the contours with ``opencv``.
 '''
 
+import logging
 import fitz
+from ..common.Collection import Collection
 from ..common.share import BlockType
 from ..common.algorithm import (recursive_xy_cut, inner_contours, xy_project_profile)
 
@@ -23,6 +25,55 @@ class ImagesExtractor:
             page (fitz.Page): pdf page to extract images.
         '''
         self._page = page
+    
+
+    def clip_page_to_pixmap(self, bbox:fitz.Rect=None, zoom:float=3.0):
+        '''Clip page pixmap (without text) according to ``bbox``.
+
+        Args:
+            bbox (fitz.Rect, optional): Target area to clip. Defaults to None, i.e. entire page.
+                Note that ``bbox`` depends on un-rotated page CS, while cliping page is based on
+                the final page.
+            zoom (float, optional): Improve resolution by this rate. Defaults to 3.0.
+
+        Returns:
+            fitz.Pixmap: The extracted pixmap.
+        '''        
+        # hide text 
+        self._hide_page_text(self._page)
+        
+        if bbox is None:
+            clip_bbox = self._page.rect
+        
+        # transform to the final bbox when page is rotated
+        elif self._page.rotation:
+            clip_bbox = bbox * self._page.rotation_matrix
+            
+        else:
+            clip_bbox = bbox
+        
+        clip_bbox = clip_bbox & self._page.rect
+        
+        # improve resolution
+        # - https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-increase-image-resolution
+        # - https://github.com/pymupdf/PyMuPDF/issues/181
+        matrix = fitz.Matrix(zoom, zoom)
+
+        return self._page.get_pixmap(clip=clip_bbox, matrix=matrix) # type: fitz.Pixmap
+
+
+    def clip_page_to_dict(self, bbox:fitz.Rect=None, clip_image_res_ratio:float=3.0):
+        '''Clip page pixmap (without text) according to ``bbox`` and convert to source image.
+
+        Args:
+            bbox (fitz.Rect, optional): Target area to clip. Defaults to None, i.e. entire page.
+            clip_image_res_ratio (float, optional): Resolution ratio of clipped bitmap. Defaults to 3.0.
+
+        Returns:
+            list: A list of image raw dict.
+        '''
+        pix = self.clip_page_to_pixmap(bbox=bbox, zoom=clip_image_res_ratio)
+        return self._to_raw_dict(pix, bbox)
 
 
     def extract_images(self, clip_image_res_ratio:float=3.0):
@@ -39,52 +90,67 @@ class ImagesExtractor:
         '''
         # pdf document
         doc = self._page.parent
+        rotation = self._page.rotation
 
-        # check each image item:
-        # (xref, smask, width, height, bpc, colorspace, ...)
-        images = []
+        # The final view might be formed by several images with alpha channel only, as shown in issue-123. 
+        # It's still inconvenient to extract the original alpha/mask image, as a compromise, extract the 
+        # equivalent image by cliping the union page region for now.
+        # https://github.com/dothinking/pdf2docx/issues/123
+
+        # step 1: collect images: [(bbox, item), ..., ]
+        ic = Collection()
         for item in self._page.get_images(full=True):
-            # should always wrap get_image_bbox in a try-except clause, per
-            # https://github.com/pymupdf/PyMuPDF/issues/487
-            try:
-                item = list(item)
-                item[-1] = 0
-                bbox = self._page.get_image_bbox(item) # item[7]: name entry of such an item
-            except ValueError:
-                continue
+            # image item: (xref, smask, width, height, bpc, colorspace, ...)
+            item = list(item)
+            item[-1] = 0            
+            
+            # find all occurrences referenced to this image            
+            rects = self._page.get_image_rects(item)
+            unrotated_page_bbox = self._page.cropbox # note the difference to page.rect
+            for bbox in rects:
+                # ignore images outside page
+                if not unrotated_page_bbox.intersects(bbox): continue
 
-            # ignore images outside page
-            if not bbox.intersects(self._page.rect): continue
+                # collect images
+                ic.append((bbox, item))
 
-            # recover image
-            pix = self._recover_pixmap(doc, item)
+        # step 2: group by intersection
+        fun = lambda a, b: a[0].intersects(b[0])
+        groups = ic.group(fun)
 
-            # regarding images consist of alpha values only, i.e. colorspace is None,
-            # the turquoise color shown in the PDF is not part of the image, but part of PDF background.
-            # So, just to clip page pixmap according to the right bbox
-            # https://github.com/pymupdf/PyMuPDF/issues/677
-            if not pix.colorspace:
-                pix = self._clip_page(bbox, zoom=clip_image_res_ratio)
+        # step 3: check each group
+        images = []
+        for group in groups:
+            # clip page with the union bbox of all intersected images
+            if len(group) > 1:
+                clip_bbox = fitz.Rect()
+                for (bbox, item) in group: clip_bbox |= bbox
+                raw_dict = self.clip_page_to_dict(clip_bbox, clip_image_res_ratio)
+            
+            else:
+                bbox, item = group[0]
+                # recover image
+                pix = self._recover_pixmap(doc, item)
 
-            raw_dict = self._to_raw_dict(pix, bbox)
+                # regarding images consist of alpha values only, i.e. colorspace is None,
+                # the turquoise color shown in the PDF is not part of the image, but part of PDF background.
+                # So, just to clip page pixmap according to the right bbox
+                # https://github.com/pymupdf/PyMuPDF/issues/677
+                alpha_only = not pix.colorspace
+                if alpha_only:
+                    raw_dict = self.clip_page_to_dict(bbox, clip_image_res_ratio)
+                
+                # rotate image with opencv if page is rotated
+                else:
+                    raw_dict = self._to_raw_dict(pix, bbox)
+                    if rotation: 
+                        raw_dict['image'] = self._rotate_image(pix, -rotation)
+
             images.append(raw_dict)
-        return images
+
+        return images    
+        
     
-
-    def extract_image(self, bbox:fitz.Rect=None, clip_image_res_ratio:float=3.0):
-        '''Clip page pixmap (without text) according to ``bbox`` and convert to source image.
-
-        Args:
-            bbox (fitz.Rect, optional): Target area to clip. Defaults to None, i.e. entire page.
-            clip_image_res_ratio (float, optional): Resolution ratio of clipped bitmap. Defaults to 3.0.
-
-        Returns:
-            list: A list of image raw dict.
-        '''
-        pix = self._page.get_pixmap(clip=bbox, matrix=fitz.Matrix(clip_image_res_ratio, clip_image_res_ratio))
-        return self._to_raw_dict(pix, bbox)
-
-
     def detect_svg_contours(self, min_svg_gap_dx:float, min_svg_gap_dy:float, min_w:float, min_h:float):
         '''Find contour of potential vector graphics.
 
@@ -98,11 +164,10 @@ class ImagesExtractor:
             list: A list of potential svg region: (external_bbox, inner_bboxes:list).
         '''
         import cv2 as cv
-        import numpy as np
 
         # clip page and convert to opencv image
-        img_byte = self._clip_page(zoom=1.0).tobytes()
-        src = cv.imdecode(np.frombuffer(img_byte, np.uint8), cv.IMREAD_COLOR)
+        pixmap = self.clip_page_to_pixmap(zoom=1.0)
+        src = self._pixmap_to_cv_image(pixmap)
 
         # gray and binary
         gray = cv.cvtColor(src, cv.COLOR_BGR2GRAY)
@@ -155,54 +220,78 @@ class ImagesExtractor:
         return {
             'type': BlockType.IMAGE.value,
             'bbox': tuple(bbox),
-            'ext': 'png',
             'width': image.width,
             'height': image.height,
             'image': image.tobytes()
         }
 
 
-    def _hide_page_text(self):
+    @staticmethod
+    def _rotate_image(pixmap:fitz.Pixmap, rotation:int):
+        '''Rotate image represented by image bytes.
+
+        Args:
+            pixmap (fitz.Pixmap): Image to rotate.
+            rotation (int): Rotation angle.
+        
+        Return: image bytes.
+        '''
+        import cv2 as cv
+        import numpy as np
+
+        # convert to opencv image
+        img = ImagesExtractor._pixmap_to_cv_image(pixmap)
+        h, w = img.shape[:2] # get image height, width
+
+        # calculate the center of the image
+        x0, y0 = w//2, h//2
+
+        # default scale value for now -> might be extracted from PDF page property    
+        scale = 1.0
+
+        # rotation matrix
+        matrix = cv.getRotationMatrix2D((x0, y0), rotation, scale)
+
+        # calculate the final dimension
+        cos = np.abs(matrix[0, 0])
+        sin = np.abs(matrix[0, 1])
+    
+        # compute the new bounding dimensions of the image
+        W = int((h * sin) + (w * cos))
+        H = int((h * cos) + (w * sin))
+    
+        # adjust the rotation matrix to take into account translation
+        matrix[0, 2] += (W / 2) - x0
+        matrix[1, 2] += (H / 2) - y0
+        
+        # perform the rotation holding at the center        
+        rotated_img = cv.warpAffine(img, matrix, (W, H))
+
+        # convert back to bytes
+        _, im_png = cv.imencode('.png', rotated_img)
+        return im_png.tobytes()
+
+
+    @staticmethod
+    def _hide_page_text(page:fitz.Page):
         '''Hide page text before clipping page.'''
         # NOTE: text might exist in both content stream and form object stream
         # - content stream, i.e. direct page content
         # - form object, i.e. contents referenced by this page
-        xref_list = [xref for (xref, name, invoker, bbox) in self._page.get_xobjects()]
-        xref_list.extend(self._page.get_contents())        
+        xref_list = [xref for (xref, name, invoker, bbox) in page.get_xobjects()]
+        xref_list.extend(page.get_contents())        
 
         # render Tr: set the text rendering mode
         # - 3: neither fill nor stroke the text -> invisible
         # read more:
         # - https://github.com/pymupdf/PyMuPDF/issues/257
         # - https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/pdf_reference_archives/PDFReference.pdf
-        doc = self._page.parent # type: fitz.Document
+        doc = page.parent # type: fitz.Document
         for xref in xref_list:
             stream = doc.xref_stream(xref).replace(b'BT', b'BT 3 Tr') \
                                              .replace(b'Tm', b'Tm 3 Tr') \
                                              .replace(b'Td', b'Td 3 Tr')
             doc.update_stream(xref, stream)
-
-
-    def _clip_page(self, bbox:fitz.Rect=None, zoom:float=3.0):
-        '''Clip page pixmap (without text) according to ``bbox``.
-
-        Args:
-            page (fitz.Page): pdf page to extract.
-            bbox (fitz.Rect, optional): Target area to clip. Defaults to None, i.e. entire page.
-            zoom (float, optional): Improve resolution by this rate. Defaults to 3.0.
-
-        Returns:
-            fitz.Pixmap: The extracted pixmap.
-        '''        
-        # hide text 
-        self._hide_page_text()
-        
-        # improve resolution
-        # - https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-increase-image-resolution
-        # - https://github.com/pymupdf/PyMuPDF/issues/181
-        bbox = self._page.rect if bbox is None else bbox & self._page.rect
-        return self._page.get_pixmap(clip=bbox, matrix=fitz.Matrix(zoom, zoom)) # type: fitz.Pixmap
-
    
     @staticmethod
     def _recover_pixmap(doc:fitz.Document, item:list):
@@ -230,15 +319,18 @@ class ImagesExtractor:
         pix = fitz.Pixmap(doc, x)
 
         # reconstruct the alpha channel with the smask if exists
-        if s > 0:        
-            # copy of base image, with an alpha channel added
-            pix = fitz.Pixmap(pix, 1)  
+        if s > 0:
+            mask = fitz.Pixmap(doc, s)
+            if pix.alpha:
+                temp = fitz.Pixmap(pix, 0)  # make temp pixmap w/o the alpha
+                pix = None  # release storage
+                pix = temp
             
-            # create pixmap of the /SMask entry
-            ba = bytearray(fitz.Pixmap(doc, s).samples)
-            for i in range(len(ba)):
-                if ba[i] > 0: ba[i] = 255
-            pix.set_alpha(ba)
+            # check dimension
+            if pix.width==mask.width and pix.height==mask.height:
+                pix = fitz.Pixmap(pix, mask)  # now compose final pixmap
+            else:
+                logging.warning('Ignore image due to inconsistent size of color and mask pixmaps: %s', item)
 
         # we may need to adjust something for CMYK pixmaps here -> 
         # recreate pixmap in RGB color space if necessary
@@ -247,3 +339,16 @@ class ImagesExtractor:
             pix = fitz.Pixmap(fitz.csRGB, pix)
 
         return pix
+
+
+    @staticmethod
+    def _pixmap_to_cv_image(pixmap:fitz.Pixmap):
+        '''Convert fitz Pixmap to opencv image.
+
+        Args:
+            pixmap (fitz.Pixmap): PyMuPDF Pixmap.
+        '''
+        import cv2 as cv
+        import numpy as np
+        img_byte = pixmap.tobytes()
+        return cv.imdecode(np.frombuffer(img_byte, np.uint8), cv.IMREAD_COLOR)

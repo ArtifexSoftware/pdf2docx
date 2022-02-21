@@ -25,7 +25,6 @@ is described per link https://pymupdf.readthedocs.io/en/latest/textpage.html::
 In addition to the raw layout dict, rectangle shapes are also included.
 '''
 
-from collections import defaultdict
 from .BasePage import BasePage
 from ..layout.Layout import Layout
 from ..layout.Section import Section
@@ -115,7 +114,8 @@ class RawPage(BasePage, Layout):
 
             # update font properties with font parsed by fonttools
             span.font = font.name
-            span.line_height = font.line_height * span.size
+            if font.line_height:
+                span.line_height = font.line_height * span.size
 
 
     def calculate_margin(self, **settings):
@@ -161,7 +161,7 @@ class RawPage(BasePage, Layout):
             - Page margin must be parsed before this step.
         '''
         # bbox
-        X0, Y0, X1, _ = self.working_bbox        
+        X0, Y0, X1, _ = self.working_bbox
     
         # collect all blocks (line level) and shapes
         elements = Collection()
@@ -261,6 +261,7 @@ class RawPage(BasePage, Layout):
         # source blocks
         # NOTE: all these coordinates are relative to un-rotated page
         # https://pymupdf.readthedocs.io/en/latest/page.html#modifying-pages
+        # https://pymupdf.readthedocs.io/en/latest/textpage.html#dictionary-structure-of-extractdict-and-extractrawdict
         raw_layout = self.fitz_page.get_text('rawdict')
 
         # page size: though 'width', 'height' are contained in `raw_dict`, 
@@ -281,55 +282,19 @@ class RawPage(BasePage, Layout):
 
 
     def _preprocess_images(self, raw, **settings):
-        '''Adjust image blocks. 
-        
-        Image block extracted by ``page.get_text('rawdict')`` doesn't contain alpha channel data,
-        so it needs to get page images by ``page.get_images()`` and then recover them. However, 
-        ``Page.get_images()`` contains each image only once, while ``page.get_text('rawdict')`` 
-        generates image blocks for every image location, whether or not there are any duplicates. 
-        See PyMuPDF doc:
-
-        https://pymupdf.readthedocs.io/en/latest/textpage.html#dictionary-structure-of-extractdict-and-extractrawdict
-            
-        Above all, a compromise:
-
-        * Get image contents with ``page.get_images()`` -> ensure correct images
-        * Get image location with ``page.get_text('rawdict')`` -> ensure correct locations
+        '''Adjust image blocks. Image block extracted by ``page.get_text('rawdict')`` doesn't 
+        contain alpha channel data, so it has to get page images by ``page.get_images()`` and 
+        then recover them. Note that ``Page.get_images()`` contains each image only once, i.e., 
+        ignore duplicated occurrences.
         '''
+        # delete images blocks detected by get_text('rawdict)
+        for block in raw['blocks']:
+            if block['type'] == 1: block['type'] = -1 # "delete" it
+        
         # recover image blocks
         recovered_images = ImagesExtractor(self.fitz_page). \
                                 extract_images(settings['clip_image_res_ratio'])
-
-        # group original image blocks by image contents
-        image_blocks_group = defaultdict(list)
-        for block in raw['blocks']:
-            if block['type'] != 1: continue
-            block['type'] = -1 # "delete" it temporally
-            image_blocks_group[hash(block['image'])].append(block)
-        
-        def same_images(img, img_list):
-            bbox = list(map(round, img['bbox']))
-            for _img in img_list:
-                if list(map(round, _img['bbox']))==bbox: return True
-            return False
-
-        # An example to show complicated things here:
-        # - images in `page.get_images`: [a, b, c]
-        # - images in `page.get_text`     : [a1, a2, b, d]
-        # (1) a -> a1, a2: an image in page maps to multi-instances in raw dict
-        # (2) c: an image in page may not exist in raw dict -> so, add it
-        # (3) d: an image in raw dict may not exist in page -> so, delete it
-        for image in recovered_images:
-            for k, image_blocks in image_blocks_group.items():
-                if not same_images(image, image_blocks): continue
-                for image_block in image_blocks:
-                    image_block['type'] = 1 # add it back
-                    image_block['image'] = image['image']
-                break
-
-            # an image outside the page is not counted in page.get_text(), so let's add it here
-            else:
-                raw['blocks'].append(image)
+        raw['blocks'].extend(recovered_images)
 
 
     @debug_plot('Source Paths')

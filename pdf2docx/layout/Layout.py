@@ -172,5 +172,4 @@ class Layout:
             settings['line_break_free_space_ratio'],
             settings['lines_left_aligned_threshold'],
             settings['lines_right_aligned_threshold'],
-            settings['lines_center_aligned_threshold'],
-            settings['line_condense_spacing'])
+            settings['lines_center_aligned_threshold'])
