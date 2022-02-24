@@ -18,12 +18,13 @@
     - [ ] page header and footer
 
 - [x] Parse and re-create paragraph
+    - [ ] OCR text
     - [x] text in horizontal/vertical direction: from left to right, from bottom to top
     - [x] font style, e.g. font name, size, weight, italic and color
     - [x] text format, e.g. highlight, underline, strike-through
+    - [ ] list style
     - [x] external hyper link
     - [x] paragraph horizontal alignment (left/right/center/justify) and vertical spacing
-    - [ ] list style
     
 - [x] Parse and re-create image
 	- [x] in-line image

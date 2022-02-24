@@ -4,12 +4,13 @@
 A wrapper of PyMuPDF Page as page engine.
 '''
 
-
 from .RawPage import RawPage
 from ..image.ImagesExtractor import ImagesExtractor
 from ..shape.Paths import Paths
+from ..common.constants import FACTOR_A_HALF
 from ..common.Element import Element
 from ..common.share import (RectType, debug_plot)
+from ..common.algorithm import get_area
 
 
 class RawPageFitz(RawPage):
@@ -25,7 +26,7 @@ class RawPageFitz(RawPage):
         self.width, self.height = w, h
 
         # pre-processing layout elements. e.g. text, images and shapes
-        text_blocks = self._preprocess_text()
+        text_blocks = self._preprocess_text(**settings)
         raw_dict['blocks'] = text_blocks
 
         image_blocks = self._preprocess_images(**settings)
@@ -44,7 +45,7 @@ class RawPageFitz(RawPage):
         return raw_dict
     
 
-    def _preprocess_text(self):
+    def _preprocess_text(self, **settings):
         '''Extract page text and identify hidden text. 
         
         NOTE: All the coordinates are relative to un-rotated page.
@@ -53,22 +54,57 @@ class RawPageFitz(RawPage):
             https://pymupdf.readthedocs.io/en/latest/functions.html#Page.get_texttrace
             https://pymupdf.readthedocs.io/en/latest/textpage.html
         '''
+        ocr = settings['ocr']
+        if ocr==1: raise SystemExit("OCR feature is planned but not implemented yet.")
+
         # all text blocks no matter hidden or not
         raw = self.page_engine.get_text('rawdict', flags=64)
         text_blocks = raw.get('blocks', [])
 
-        spans = self.page_engine.get_texttrace()
-        hidden_spans = list(filter(lambda span: span['type']==3, spans))
+        # ignore hidden text if ocr=0, while extract only hidden text if ocr=2
+        if ocr==2:
+            f = lambda span: span['type']!=3  # find displayed text and ignore it
+        else:
+            f = lambda span: span['type']==3  # find hidden text and ignore it
 
-        return text_blocks
+        spans = self.page_engine.get_texttrace()
+        filtered_spans = list(filter(f, spans))
+        
+        def span_area(bbox):
+            x0, y0, x1, y1 = bbox
+            return (x1-x0) * (y1-y0)
+
+        # filter blocks by checking span intersection: mark the entire block if 
+        # any span is matched
+        blocks = []
+        for block in text_blocks:
+            intersected = False
+            for line in block['lines']:
+                for span in line['spans']:
+                    for filter_span in filtered_spans:
+                        intersected_area = get_area(span['bbox'], filter_span['bbox'])
+                        if intersected_area / span_area(span['bbox']) >= FACTOR_A_HALF \
+                            and span['font']==filter_span['font']:
+                            intersected = True
+                            break
+                    if intersected: break # skip further span check if found
+                if intersected: break     # skip further line check
+
+            # keep block if no any intersection with filtered span
+            if not intersected: blocks.append(block)
+
+        return blocks
 
 
     def _preprocess_images(self, **settings):
-        '''Adjust image blocks. Image block extracted by ``page.get_text('rawdict')`` doesn't 
+        '''Extract image blocks. Image block extracted by ``page.get_text('rawdict')`` doesn't 
         contain alpha channel data, so it has to get page images by ``page.get_images()`` and 
         then recover them. Note that ``Page.get_images()`` contains each image only once, i.e., 
         ignore duplicated occurrences.
         '''
+        # ignore image if ocr-ed pdf: get ocr-ed text only
+        if settings['ocr']==2: return []
+        
         return ImagesExtractor(self.page_engine).extract_images(settings['clip_image_res_ratio'])
 
 
