@@ -14,35 +14,35 @@ English | [中文](README_CN.md)
 
 ## Features
 
-- [x] Parse and re-create page layout
-    - [x] page margin
-    - [x] section and column (1 or 2 columns only)
-    - [ ] page header and footer
+- Parse and re-create page layout
+    - page margin
+    - section and column (1 or 2 columns only)
+    - page header and footer [TODO]
 
-- [x] Parse and re-create paragraph
-    - [ ] OCR text
-    - [x] text in horizontal/vertical direction: from left to right, from bottom to top
-    - [x] font style, e.g. font name, size, weight, italic and color
-    - [x] text format, e.g. highlight, underline, strike-through
-    - [ ] list style
-    - [x] external hyper link
-    - [x] paragraph horizontal alignment (left/right/center/justify) and vertical spacing
+- Parse and re-create paragraph
+    - OCR text [TODO]
+    - text in horizontal/vertical direction: from left to right, from bottom to top
+    - font style, e.g. font name, size, weight, italic and color
+    - text format, e.g. highlight, underline, strike-through
+    - list style [TODO]
+    - external hyper link
+    - paragraph horizontal alignment (left/right/center/justify) and vertical spacing
     
-- [x] Parse and re-create image
-	- [x] in-line image
-    - [x] image in Gray/RGB/CMYK mode
-    - [x] transparent image
-    - [x] floating image, i.e. picture behind text
+- Parse and re-create image
+	- in-line image
+    - image in Gray/RGB/CMYK mode
+    - transparent image
+    - floating image, i.e. picture behind text
 
-- [x] Parse and re-create table
-    - [x] border style, e.g. width, color
-    - [x] shading style, i.e. background color
-    - [x] merged cells
-    - [x] vertical direction cell
-    - [x] table with partly hidden borders
-    - [x] nested tables
+- Parse and re-create table
+    - border style, e.g. width, color
+    - shading style, i.e. background color
+    - merged cells
+    - vertical direction cell
+    - table with partly hidden borders
+    - nested tables
 
-- [x] Parsing pages with multi-processing
+- Parsing pages with multi-processing
 
 *It can also be used as a tool to extract table contents since both table content and format/style is parsed.*
 

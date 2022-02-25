@@ -4,7 +4,7 @@
 import os
 from setuptools import find_packages, setup
 
-DESCRIPTION = 'Open source Python library for converting pdf to docx.'
+DESCRIPTION = 'Open source Python library converting pdf to docx.'
 EXCLUDE_FROM_PACKAGES = ["build", "dist", "test"]
 
 # read version number from version.txt, otherwise alpha version
