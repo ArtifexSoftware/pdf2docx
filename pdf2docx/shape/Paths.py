@@ -99,7 +99,7 @@ class Paths(Collection):
 
         # detect svg with python opencv
         images = []
-        ie = ImagesExtractor(self.parent.fitz_page)
+        ie = ImagesExtractor(self.parent.page_engine)
         groups = ie.detect_svg_contours(min_svg_gap_dx, min_svg_gap_dy, min_w, min_h)
 
         # `bbox` is the external bbox of current region, while `inner_bboxes` are the inner contours

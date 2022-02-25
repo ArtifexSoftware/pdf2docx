@@ -3,8 +3,9 @@
 '''Collection of :py:class:`~pdf2docx.page.Page` instances.'''
 
 import logging
+
+from .RawPageFactory import RawPageFactory
 from ..common.Collection import BaseCollection
-from .RawPage import RawPage
 from ..font.Fonts import Fonts
 
 
@@ -32,7 +33,7 @@ class Pages(BaseCollection):
             if page.skip_parsing: continue
 
             # init and extract data from PDF
-            raw_page = RawPage(fitz_page=fitz_doc[page.id])
+            raw_page = RawPageFactory.create(page_engine=fitz_doc[page.id], backend='PyMuPDF')
             raw_page.restore(**settings)
 
             # check if any words are extracted since scanned pdf may be directed

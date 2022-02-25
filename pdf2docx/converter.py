@@ -61,6 +61,7 @@ class Converter:
         '''Default parsing parameters.'''
         return {
             'debug'                          : False,  # plot layout if True
+            'ocr'                            : 0,      # ocr status: 0 - no ocr; 1 - to do ocr; 2 - ocr-ed pdf
             'ignore_page_error'              : True,   # not break the conversion process due to failure of a certain page if True
             'multi_processing'               : False,  # convert pages with multi-processing if True
             'cpu_count'                      : 0,      # working cpu count when convert pages with multi-processing

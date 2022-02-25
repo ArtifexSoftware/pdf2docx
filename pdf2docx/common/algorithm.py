@@ -4,6 +4,24 @@ import cv2 as cv
 
 
 # -------------------------------------------------------------------------------------------
+# Intersection area of two iso-oriented rectangles
+# -------------------------------------------------------------------------------------------
+def get_area(bbox_1:tuple, bbox_2:tuple):
+    x0, y0, x1, y1 = bbox_1
+    u0, v0, u1, v1 = bbox_2
+
+    # width of intersected area
+    w = (x1-x0) + (u1-u0) - (max(x1, u1)-min(x0, u0))
+    if w<=0: return 0
+
+    # height of intersected area
+    h = (y1-y0) + (v1-v0) - (max(y1, v1)-min(y0, v0))
+    if h<=0: return 0
+
+    return w*h
+
+
+# -------------------------------------------------------------------------------------------
 # Breadth First Search method for graph
 # -------------------------------------------------------------------------------------------
 def graph_bfs(graph): 

@@ -103,6 +103,25 @@ def reset_paragraph_format(p, line_spacing:float=1.05):
     return pf
 
 
+def set_hidden_property(p):
+    '''Hide paragraph. This method just sets the paragraph property, while the added text must
+    be hided explicitly.
+
+        r = p.add_run()
+        r.text = "Hidden"
+        r.font.hidden = True
+
+    Args:
+        p (Paragraph): python-docx created paragraph.
+    '''
+    pPr = OxmlElement('w:pPr') # paragraph property
+    rPr = OxmlElement('w:rPr') # run property
+    v = OxmlElement('w:vanish') # hidden
+    rPr.append(v)
+    pPr.append(rPr)
+    p._p.append(rPr)
+
+
 # ---------------------------------------------------------
 # text properties
 # ---------------------------------------------------------
