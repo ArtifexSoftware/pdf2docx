@@ -1,3 +1,5 @@
+English | [中文](README_CN.md)
+
 # pdf2docx 
 
 ![python-version](https://img.shields.io/badge/python->=3.6-green.svg)

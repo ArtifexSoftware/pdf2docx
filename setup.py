@@ -4,6 +4,7 @@
 import os
 from setuptools import find_packages, setup
 
+DESCRIPTION = 'Open source Python library for converting pdf to docx.'
 EXCLUDE_FROM_PACKAGES = ["build", "dist", "test"]
 
 # read version number from version.txt, otherwise alpha version
@@ -23,7 +24,7 @@ def load_long_description(fname):
         with open(fname, 'r') as f:
             long_description = f.read()
     else:
-        long_description = 'Parse PDF file with PyMuPDF and generate docx with python-docx.'
+        long_description = DESCRIPTION
 
     return long_description
 
@@ -45,11 +46,11 @@ def load_requirements(fname):
 
 setup(
     name="pdf2docx",    
-    version=get_version('version.txt'),
+    version=get_version("version.txt"),
     keywords=["pdf-to-word", "pdf-to-docx"],
-    description="parse PDF files to docx",
-    long_description=load_long_description('README.md'),
-    long_description_content_type='text/markdown',
+    description=DESCRIPTION,
+    long_description=load_long_description("README.md"),
+    long_description_content_type="text/markdown",
     license="GPL v3", 
     author="dothinking",
     author_email="train8808@gmail.com",
