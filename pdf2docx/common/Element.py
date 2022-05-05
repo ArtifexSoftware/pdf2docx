@@ -50,7 +50,7 @@ class Element(IText):
 
     def __init__(self, raw:dict=None, parent=None):
         ''' Initialize Element and convert to the real (rotation considered) page coordinate system.'''        
-        self.bbox = fitz.Rect()
+        self.bbox = fitz.Rect()  # type: fitz.Rect
         self._parent = parent # type: Element
 
         # NOTE: Any coordinates provided in raw is in original page CS (without considering page rotation).
@@ -130,7 +130,7 @@ class Element(IText):
     # --------------------------------------------
     # location relationship to other Element instance
     # -------------------------------------------- 
-    def contains(self, e, threshold:float=1.0):
+    def contains(self, e:'Element', threshold:float=1.0):
         """Whether given element is contained in this instance, with margin considered.
 
         Args:
