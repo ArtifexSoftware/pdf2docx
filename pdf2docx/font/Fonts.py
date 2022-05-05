@@ -72,8 +72,10 @@ class Fonts(BaseCollection):
             name = cls._normalized_font_name(basename)
             
             try:
-                # process embedded and supported fonts (true type) only
-                assert ext not in ('n/a', 'ccf'), "base font or not supported font"
+                # supported fonts: open/true type only
+                # - n/a: base 14 fonts
+                # - cff: Adobe Compact File Format, i.e. Type 1 font
+                assert ext not in ('n/a', 'cff'), "base font or not supported font"
 
                 # try to get more font metrices with fonttool
                 tt = TTFont(BytesIO(buffer))

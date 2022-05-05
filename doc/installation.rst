@@ -4,23 +4,40 @@ Installation
 ``pdf2docx`` can be installed from either Pypi or the source code.
 
 
-From Pypi
-----------------
-::
+Install from Pypi
+-------------------
+
+Type the command below for a new installation::
 
   $ pip install pdf2docx
 
+Or, upgrade this library with::
 
-From source code
--------------------
+  $ pip install --upgrade pdf2docx
 
-Clone or download `pdf2docx <https://github.com/dothinking/pdf2docx>`_, and navigate to the root directory::
+
+Install from source code remotely
+--------------------------------------
+
+Install ``pdf2docx`` directly from the ``master`` branch::
+
+  $ pip install git+git://github.com/dothinking/pdf2docx.git@master --upgrade
+
+.. note::
+  In this way, ``pdf2docx`` might have a higher version than Pypi, which is not released yet.
+
+
+Install from source code locally
+---------------------------------------
+
+Clone or download `pdf2docx <https://github.com/dothinking/pdf2docx>`_, navigate to the root directory and run::
 
   $ python setup.py install 
 
-Or install it in developing mode::
+Or, install it in developing mode::
 
   $ python setup.py develop
+
 
 Uninstall
 --------------

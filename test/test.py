@@ -148,6 +148,10 @@ class TestConversion:
     def test_text_scaling(self):
         '''test font size. In this case, the font size is set precisely with character scaling.'''
         self.convert('demo-text-scaling')
+    
+    def test_text_hidden(self):
+        '''test hidden text, which is ignore by default.'''
+        self.convert('demo-text-hidden')
 
     # ------------------------------------------
     # image styles
@@ -303,6 +307,7 @@ class TestQuality:
         'demo-text-alignment.pdf': 0.90,
         'demo-text-scaling.pdf': 0.80,
         'demo-text-unnamed-fonts.pdf': 0.80,
+        'demo-text-hidden.pdf': 0.90,
         'demo-text.pdf': 0.80
     }
 
