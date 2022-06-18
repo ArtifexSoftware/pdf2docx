@@ -40,7 +40,7 @@ class RawPageFitz(RawPage):
         raw_dict['shapes'].extend(hyperlinks)        
        
         # Element is a base class processing coordinates, so set rotation matrix globally
-        Element.set_rotation_matrix(self.page_engine.rotationMatrix)
+        Element.set_rotation_matrix(self.page_engine.rotation_matrix)
 
         return raw_dict
     
