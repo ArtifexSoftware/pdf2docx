@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation &mdash; pdf2docx 0.5.3 documentation</title>
+  <title>Installation &mdash; pdf2docx 0.5.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -40,8 +41,9 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#from-pypi">From Pypi</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#from-source-code">From source code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-from-pypi">Install from Pypi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-from-source-code-remotely">Install from source code remotely</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-from-source-code-locally">Install from source code locally</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#uninstall">Uninstall</a></li>
 </ul>
 </li>
@@ -75,27 +77,43 @@
            <div itemprop="articleBody">
              
   <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">pdf2docx</span></code> can be installed from either Pypi or the source code.</p>
-<section id="from-pypi">
-<h2>From Pypi<a class="headerlink" href="#from-pypi" title="Permalink to this headline"></a></h2>
+<section id="install-from-pypi">
+<h2>Install from Pypi<a class="headerlink" href="#install-from-pypi" title="Permalink to this heading"></a></h2>
+<p>Type the command below for a new installation:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install pdf2docx
 </pre></div>
 </div>
+<p>Or, upgrade this library with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install --upgrade pdf2docx
+</pre></div>
+</div>
 </section>
-<section id="from-source-code">
-<h2>From source code<a class="headerlink" href="#from-source-code" title="Permalink to this headline"></a></h2>
-<p>Clone or download <a class="reference external" href="https://github.com/dothinking/pdf2docx">pdf2docx</a>, and navigate to the root directory:</p>
+<section id="install-from-source-code-remotely">
+<h2>Install from source code remotely<a class="headerlink" href="#install-from-source-code-remotely" title="Permalink to this heading"></a></h2>
+<p>Install <code class="docutils literal notranslate"><span class="pre">pdf2docx</span></code> directly from the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install git+git://github.com/dothinking/pdf2docx.git@master --upgrade
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In this way, <code class="docutils literal notranslate"><span class="pre">pdf2docx</span></code> might have a higher version than Pypi, which is not released yet.</p>
+</div>
+</section>
+<section id="install-from-source-code-locally">
+<h2>Install from source code locally<a class="headerlink" href="#install-from-source-code-locally" title="Permalink to this heading"></a></h2>
+<p>Clone or download <a class="reference external" href="https://github.com/dothinking/pdf2docx">pdf2docx</a>, navigate to the root directory and run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python setup.py install
 </pre></div>
 </div>
-<p>Or install it in developing mode:</p>
+<p>Or, install it in developing mode:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python setup.py develop
 </pre></div>
 </div>
 </section>
 <section id="uninstall">
-<h2>Uninstall<a class="headerlink" href="#uninstall" title="Permalink to this headline"></a></h2>
+<h2>Uninstall<a class="headerlink" href="#uninstall" title="Permalink to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip uninstall pdf2docx
 </pre></div>
 </div>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pdf2docx.font.Fonts module &mdash; pdf2docx 0.5.3 documentation</title>
+  <title>pdf2docx.font.Fonts module &mdash; pdf2docx 0.5.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -92,7 +93,7 @@
            <div itemprop="articleBody">
              
   <section id="module-pdf2docx.font.Fonts">
-<span id="pdf2docx-font-fonts-module"></span><h1>pdf2docx.font.Fonts module<a class="headerlink" href="#module-pdf2docx.font.Fonts" title="Permalink to this headline"></a></h1>
+<span id="pdf2docx-font-fonts-module"></span><h1>pdf2docx.font.Fonts module<a class="headerlink" href="#module-pdf2docx.font.Fonts" title="Permalink to this heading"></a></h1>
 <p>Extract fonts properties from PDF.</p>
 <p>Font properties like font name, size are covered in <a class="reference internal" href="pdf2docx.text.TextSpan.html#module-pdf2docx.text.TextSpan" title="pdf2docx.text.TextSpan"><code class="xref py py-class docutils literal notranslate"><span class="pre">TextSpan</span></code></a>,
 but more generic properties are required further:</p>
@@ -141,7 +142,7 @@ embedded font data might crash.</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="pdf2docx.font.Fonts.Fonts">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.font.Fonts.</span></span><span class="sig-name descname"><span class="pre">Fonts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instances</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.font.Fonts.Fonts" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.BaseCollection" title="pdf2docx.common.Collection.BaseCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Collection.BaseCollection</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.BaseCollection" title="pdf2docx.common.Collection.BaseCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCollection</span></code></a></p>
 <p>Extracted fonts properties from PDF.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pdf2docx.font.Fonts.Fonts.extract">
@@ -159,14 +160,14 @@ embedded font data might crash.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pdf2docx.font.Fonts.Fonts.get_font_family_name">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_font_family_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tt_font</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">fontTools.ttLib.ttFont.TTFont</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.font.Fonts.Fonts.get_font_family_name" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_font_family_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tt_font</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TTFont</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.font.Fonts.Fonts.get_font_family_name" title="Permalink to this definition"></a></dt>
 <dd><p>Get the font family name from the font’s names table.</p>
 <p><a class="reference external" href="https://gist.github.com/pklaus/dce37521579513c574d0">https://gist.github.com/pklaus/dce37521579513c574d0</a></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pdf2docx.font.Fonts.Fonts.get_line_height_factor">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_line_height_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tt_font</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">fontTools.ttLib.ttFont.TTFont</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.font.Fonts.Fonts.get_line_height_factor" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_line_height_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tt_font</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TTFont</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.font.Fonts.Fonts.get_line_height_factor" title="Permalink to this definition"></a></dt>
 <dd><p>Calculate line height ratio based on <code class="docutils literal notranslate"><span class="pre">hhea</span></code> and <code class="docutils literal notranslate"><span class="pre">OS/2</span></code> tables.</p>
 <p>Fon non-CJK fonts:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="n">hhea</span><span class="o">.</span><span class="n">Ascent</span> <span class="o">-</span> <span class="n">hhea</span><span class="o">.</span><span class="n">Descent</span> <span class="o">+</span> <span class="n">hhea</span><span class="o">.</span><span class="n">LineGap</span><span class="p">)</span> <span class="o">/</span> <span class="n">units_per_em</span>
@@ -190,7 +191,7 @@ embedded font data might crash.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pdf2docx.font.Fonts.Fonts.is_cjk_font">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_cjk_font</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tt_font</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">fontTools.ttLib.ttFont.TTFont</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.font.Fonts.Fonts.is_cjk_font" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_cjk_font</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tt_font</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TTFont</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.font.Fonts.Fonts.is_cjk_font" title="Permalink to this definition"></a></dt>
 <dd><p>Test font object to confirm that it meets our definition of a CJK font file.</p>
 <p>The definition is met if any of the following conditions are True:
 1. The font has a CJK code page bit set in the OS/2 table

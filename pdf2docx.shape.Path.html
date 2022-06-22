@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pdf2docx.shape.Path module &mdash; pdf2docx 0.5.3 documentation</title>
+  <title>pdf2docx.shape.Path module &mdash; pdf2docx 0.5.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -92,7 +93,7 @@
            <div itemprop="articleBody">
              
   <section id="module-pdf2docx.shape.Path">
-<span id="pdf2docx-shape-path-module"></span><h1>pdf2docx.shape.Path module<a class="headerlink" href="#module-pdf2docx.shape.Path" title="Permalink to this headline"></a></h1>
+<span id="pdf2docx-shape-path-module"></span><h1>pdf2docx.shape.Path module<a class="headerlink" href="#module-pdf2docx.shape.Path" title="Permalink to this heading"></a></h1>
 <p>Objects representing PDF path (stroke and filling) extracted from pdf drawings and annotations.</p>
 <p>Data structure based on results of <code class="docutils literal notranslate"><span class="pre">page.get_drawings()</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -124,14 +125,14 @@ considered. This is different from <code class="docutils literal notranslate"><s
 <dl class="py class">
 <dt class="sig sig-object py" id="pdf2docx.shape.Path.C">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.shape.Path.</span></span><span class="sig-name descname"><span class="pre">C</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.C" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#pdf2docx.shape.Path.Segment" title="pdf2docx.shape.Path.Segment"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.shape.Path.Segment</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#pdf2docx.shape.Path.Segment" title="pdf2docx.shape.Path.Segment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Segment</span></code></a></p>
 <p>Bezier curve path with source <code class="docutils literal notranslate"><span class="pre">(&quot;c&quot;,</span> <span class="pre">p1,</span> <span class="pre">p2,</span> <span class="pre">p3,</span> <span class="pre">p4)</span></code>.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pdf2docx.shape.Path.L">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.shape.Path.</span></span><span class="sig-name descname"><span class="pre">L</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.L" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#pdf2docx.shape.Path.Segment" title="pdf2docx.shape.Path.Segment"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.shape.Path.Segment</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#pdf2docx.shape.Path.Segment" title="pdf2docx.shape.Path.Segment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Segment</span></code></a></p>
 <p>Line path with source <code class="docutils literal notranslate"><span class="pre">(&quot;l&quot;,</span> <span class="pre">p1,</span> <span class="pre">p2)</span></code>.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="pdf2docx.shape.Path.L.length">
@@ -221,14 +222,14 @@ is always 1.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pdf2docx.shape.Path.Q">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.shape.Path.</span></span><span class="sig-name descname"><span class="pre">Q</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.Q" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#pdf2docx.shape.Path.R" title="pdf2docx.shape.Path.R"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.shape.Path.R</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#pdf2docx.shape.Path.R" title="pdf2docx.shape.Path.R"><code class="xref py py-class docutils literal notranslate"><span class="pre">R</span></code></a></p>
 <p>Quad path with source <code class="docutils literal notranslate"><span class="pre">(&quot;qu&quot;,</span> <span class="pre">quad)</span></code>.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pdf2docx.shape.Path.R">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.shape.Path.</span></span><span class="sig-name descname"><span class="pre">R</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.shape.Path.R" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#pdf2docx.shape.Path.Segment" title="pdf2docx.shape.Path.Segment"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.shape.Path.Segment</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#pdf2docx.shape.Path.Segment" title="pdf2docx.shape.Path.Segment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Segment</span></code></a></p>
 <p>Rect path with source <code class="docutils literal notranslate"><span class="pre">(&quot;re&quot;,</span> <span class="pre">rect)</span></code>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pdf2docx.shape.Path.R.to_strokes">

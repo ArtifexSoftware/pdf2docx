@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; pdf2docx 0.5.3 documentation</title>
+  <title>Index &mdash; pdf2docx 0.5.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -13,6 +13,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="#" />
@@ -264,6 +265,8 @@
 </li>
       <li><a href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element.copy">copy() (pdf2docx.common.Element.Element method)</a>
 </li>
+      <li><a href="pdf2docx.page.RawPageFactory.html#pdf2docx.page.RawPageFactory.RawPageFactory.create">create() (pdf2docx.page.RawPageFactory.RawPageFactory class method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -312,14 +315,18 @@
 </li>
       <li><a href="pdf2docx.common.Collection.html#pdf2docx.common.Collection.BaseCollection.extend">extend() (pdf2docx.common.Collection.BaseCollection method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pdf2docx.font.Fonts.html#pdf2docx.font.Fonts.Fonts.extract">extract() (pdf2docx.font.Fonts.Fonts class method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pdf2docx.image.ImagesExtractor.html#pdf2docx.image.ImagesExtractor.ImagesExtractor.extract_images">extract_images() (pdf2docx.image.ImagesExtractor.ImagesExtractor method)</a>
 </li>
       <li><a href="pdf2docx.page.RawPage.html#pdf2docx.page.RawPage.RawPage.extract_raw_dict">extract_raw_dict() (pdf2docx.page.RawPage.RawPage method)</a>
+
+      <ul>
+        <li><a href="pdf2docx.page.RawPageFitz.html#pdf2docx.page.RawPageFitz.RawPageFitz.extract_raw_dict">(pdf2docx.page.RawPageFitz.RawPageFitz method)</a>
 </li>
+      </ul></li>
       <li><a href="pdf2docx.converter.html#pdf2docx.converter.Converter.extract_tables">extract_tables() (pdf2docx.converter.Converter method)</a>
 
       <ul>
@@ -367,6 +374,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pdf2docx.font.Fonts.html#pdf2docx.font.Fonts.Fonts.get">get() (pdf2docx.font.Fonts.Fonts method)</a>
+</li>
+      <li><a href="pdf2docx.common.algorithm.html#pdf2docx.common.algorithm.get_area">get_area() (in module pdf2docx.common.algorithm)</a>
 </li>
       <li><a href="pdf2docx.table.Border.html#pdf2docx.table.Border.Border.get_boundary_borders">get_boundary_borders() (pdf2docx.table.Border.Border method)</a>
 </li>
@@ -612,6 +621,8 @@
       </ul></li>
       <li><a href="pdf2docx.converter.html#pdf2docx.converter.MakedocxException">MakedocxException</a>
 </li>
+      <li><a href="pdf2docx.page.RawPageFactory.html#pdf2docx.page.RawPageFactory.RawPageFactory.MAP">MAP (pdf2docx.page.RawPageFactory.RawPageFactory attribute)</a>
+</li>
       <li><a href="pdf2docx.common.share.html#pdf2docx.common.share.TextDirection.MIX">MIX (pdf2docx.common.share.TextDirection attribute)</a>
 </li>
       <li>
@@ -681,6 +692,10 @@
         <li><a href="pdf2docx.page.Pages.html#module-pdf2docx.page.Pages">pdf2docx.page.Pages</a>
 </li>
         <li><a href="pdf2docx.page.RawPage.html#module-pdf2docx.page.RawPage">pdf2docx.page.RawPage</a>
+</li>
+        <li><a href="pdf2docx.page.RawPageFactory.html#module-pdf2docx.page.RawPageFactory">pdf2docx.page.RawPageFactory</a>
+</li>
+        <li><a href="pdf2docx.page.RawPageFitz.html#module-pdf2docx.page.RawPageFitz">pdf2docx.page.RawPageFitz</a>
 </li>
         <li><a href="pdf2docx.shape.html#module-pdf2docx.shape">pdf2docx.shape</a>
 </li>
@@ -1003,8 +1018,6 @@
         <li><a href="pdf2docx.layout.Blocks.html#module-pdf2docx.layout.Blocks">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     pdf2docx.layout.Column
 
@@ -1012,6 +1025,8 @@
         <li><a href="pdf2docx.layout.Column.html#module-pdf2docx.layout.Column">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     pdf2docx.layout.Layout
 
@@ -1073,6 +1088,20 @@
 
       <ul>
         <li><a href="pdf2docx.page.RawPage.html#module-pdf2docx.page.RawPage">module</a>
+</li>
+      </ul></li>
+      <li>
+    pdf2docx.page.RawPageFactory
+
+      <ul>
+        <li><a href="pdf2docx.page.RawPageFactory.html#module-pdf2docx.page.RawPageFactory">module</a>
+</li>
+      </ul></li>
+      <li>
+    pdf2docx.page.RawPageFitz
+
+      <ul>
+        <li><a href="pdf2docx.page.RawPageFitz.html#module-pdf2docx.page.RawPageFitz">module</a>
 </li>
       </ul></li>
       <li>
@@ -1286,6 +1315,10 @@
       </ul></li>
       <li><a href="pdf2docx.page.RawPage.html#pdf2docx.page.RawPage.RawPage">RawPage (class in pdf2docx.page.RawPage)</a>
 </li>
+      <li><a href="pdf2docx.page.RawPageFactory.html#pdf2docx.page.RawPageFactory.RawPageFactory">RawPageFactory (class in pdf2docx.page.RawPageFactory)</a>
+</li>
+      <li><a href="pdf2docx.page.RawPageFitz.html#pdf2docx.page.RawPageFitz.RawPageFitz">RawPageFitz (class in pdf2docx.page.RawPageFitz)</a>
+</li>
       <li><a href="pdf2docx.common.share.html#pdf2docx.common.share.RectType">RectType (class in pdf2docx.common.share)</a>
 </li>
       <li><a href="pdf2docx.common.algorithm.html#pdf2docx.common.algorithm.recursive_xy_cut">recursive_xy_cut() (in module pdf2docx.common.algorithm)</a>
@@ -1387,6 +1420,8 @@
       <li><a href="pdf2docx.common.docx.html#pdf2docx.common.docx.set_equal_columns">set_equal_columns() (in module pdf2docx.common.docx)</a>
 </li>
       <li><a href="pdf2docx.common.Block.html#pdf2docx.common.Block.Block.set_float_image_block">set_float_image_block() (pdf2docx.common.Block.Block method)</a>
+</li>
+      <li><a href="pdf2docx.common.docx.html#pdf2docx.common.docx.set_hidden_property">set_hidden_property() (in module pdf2docx.common.docx)</a>
 </li>
       <li><a href="pdf2docx.common.Block.html#pdf2docx.common.Block.Block.set_inline_image_block">set_inline_image_block() (pdf2docx.common.Block.Block method)</a>
 </li>

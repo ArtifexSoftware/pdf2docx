@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pdf2docx.common.Element module &mdash; pdf2docx 0.5.3 documentation</title>
+  <title>pdf2docx.common.Element module &mdash; pdf2docx 0.5.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -92,7 +93,7 @@
            <div itemprop="articleBody">
              
   <section id="module-pdf2docx.common.Element">
-<span id="pdf2docx-common-element-module"></span><h1>pdf2docx.common.Element module<a class="headerlink" href="#module-pdf2docx.common.Element" title="Permalink to this headline"></a></h1>
+<span id="pdf2docx-common-element-module"></span><h1>pdf2docx.common.Element module<a class="headerlink" href="#module-pdf2docx.common.Element" title="Permalink to this heading"></a></h1>
 <p>Object with a bounding box, e.g. Block, Line, Span.</p>
 <p>Based on <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code>, the coordinates (e.g. bbox of <code class="docutils literal notranslate"><span class="pre">page.get_text('rawdict')</span></code>) are generally
 provided relative to the un-rotated page; while this <code class="docutils literal notranslate"><span class="pre">pdf2docx</span></code> library works under real page
@@ -110,7 +111,7 @@ CS. If final coordinates are provided, should update it after creating an empty 
 <dl class="py class">
 <dt class="sig sig-object py" id="pdf2docx.common.Element.Element">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.Element.</span></span><span class="sig-name descname"><span class="pre">Element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Element.Element" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.share.html#pdf2docx.common.share.IText" title="pdf2docx.common.share.IText"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.share.IText</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.share.html#pdf2docx.common.share.IText" title="pdf2docx.common.share.IText"><code class="xref py py-class docutils literal notranslate"><span class="pre">IText</span></code></a></p>
 <p>Boundary box with attribute in fitz.Rect type.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pdf2docx.common.Element.Element.ROTATION_MATRIX">
@@ -119,7 +120,7 @@ CS. If final coordinates are provided, should update it after creating an empty 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pdf2docx.common.Element.Element.contains">
-<span class="sig-name descname"><span class="pre">contains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Element.Element.contains" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">contains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><span class="pre">Element</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.Element.Element.contains" title="Permalink to this definition"></a></dt>
 <dd><p>Whether given element is contained in this instance, with margin considered.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

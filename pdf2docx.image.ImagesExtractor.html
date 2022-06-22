@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pdf2docx.image.ImagesExtractor module &mdash; pdf2docx 0.5.3 documentation</title>
+  <title>pdf2docx.image.ImagesExtractor module &mdash; pdf2docx 0.5.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -92,7 +93,7 @@
            <div itemprop="articleBody">
              
   <section id="module-pdf2docx.image.ImagesExtractor">
-<span id="pdf2docx-image-imagesextractor-module"></span><h1>pdf2docx.image.ImagesExtractor module<a class="headerlink" href="#module-pdf2docx.image.ImagesExtractor" title="Permalink to this headline"></a></h1>
+<span id="pdf2docx-image-imagesextractor-module"></span><h1>pdf2docx.image.ImagesExtractor module<a class="headerlink" href="#module-pdf2docx.image.ImagesExtractor" title="Permalink to this heading"></a></h1>
 <p>Extract images from PDF.</p>
 <p>Both raster images and vector graphics are considered:</p>
 <ul class="simple">
@@ -103,11 +104,11 @@ and <code class="docutils literal notranslate"><span class="pre">Page.get_images
 </ul>
 <dl class="py class">
 <dt class="sig sig-object py" id="pdf2docx.image.ImagesExtractor.ImagesExtractor">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.image.ImagesExtractor.</span></span><span class="sig-name descname"><span class="pre">ImagesExtractor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">fitz.fitz.Page</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImagesExtractor.ImagesExtractor" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.image.ImagesExtractor.</span></span><span class="sig-name descname"><span class="pre">ImagesExtractor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Page</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImagesExtractor.ImagesExtractor" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pdf2docx.image.ImagesExtractor.ImagesExtractor.clip_page_to_dict">
-<span class="sig-name descname"><span class="pre">clip_page_to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">fitz.fitz.Rect</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_image_res_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImagesExtractor.ImagesExtractor.clip_page_to_dict" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">clip_page_to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Rect</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_image_res_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImagesExtractor.ImagesExtractor.clip_page_to_dict" title="Permalink to this definition"></a></dt>
 <dd><p>Clip page pixmap (without text) according to <code class="docutils literal notranslate"><span class="pre">bbox</span></code> and convert to source image.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -127,7 +128,7 @@ and <code class="docutils literal notranslate"><span class="pre">Page.get_images
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pdf2docx.image.ImagesExtractor.ImagesExtractor.clip_page_to_pixmap">
-<span class="sig-name descname"><span class="pre">clip_page_to_pixmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">fitz.fitz.Rect</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImagesExtractor.ImagesExtractor.clip_page_to_pixmap" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">clip_page_to_pixmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Rect</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImagesExtractor.ImagesExtractor.clip_page_to_pixmap" title="Permalink to this definition"></a></dt>
 <dd><p>Clip page pixmap (without text) according to <code class="docutils literal notranslate"><span class="pre">bbox</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pdf2docx.image.ImageSpan module &mdash; pdf2docx 0.5.4 documentation</title>
+  <title>pdf2docx.page.RawPageFitz module &mdash; pdf2docx 0.5.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -19,8 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="pdf2docx.image.ImagesExtractor module" href="pdf2docx.image.ImagesExtractor.html" />
-    <link rel="prev" title="pdf2docx.image.ImageBlock module" href="pdf2docx.image.ImageBlock.html" /> 
+    <link rel="next" title="pdf2docx.shape package" href="pdf2docx.shape.html" />
+    <link rel="prev" title="pdf2docx.page.RawPageFactory module" href="pdf2docx.page.RawPageFactory.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -49,9 +49,9 @@
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.common.html">pdf2docx.common package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.font.html">pdf2docx.font package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.gui.html">pdf2docx.gui package</a></li>
-<li class="toctree-l4 current"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.layout.html">pdf2docx.layout package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.shape.html">pdf2docx.shape package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.table.html">pdf2docx.table package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pdf2docx.text.html">pdf2docx.text package</a></li>
@@ -81,10 +81,10 @@
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="modules.html">API Documentation</a> &raquo;</li>
           <li><a href="pdf2docx.html">pdf2docx package</a> &raquo;</li>
-          <li><a href="pdf2docx.image.html">pdf2docx.image package</a> &raquo;</li>
-      <li>pdf2docx.image.ImageSpan module</li>
+          <li><a href="pdf2docx.page.html">pdf2docx.page package</a> &raquo;</li>
+      <li>pdf2docx.page.RawPageFitz module</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/pdf2docx.image.ImageSpan.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/pdf2docx.page.RawPageFitz.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -92,29 +92,30 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-pdf2docx.image.ImageSpan">
-<span id="pdf2docx-image-imagespan-module"></span><h1>pdf2docx.image.ImageSpan module<a class="headerlink" href="#module-pdf2docx.image.ImageSpan" title="Permalink to this heading"></a></h1>
-<p>Image span based on same raw data structure with Image block.</p>
+  <section id="module-pdf2docx.page.RawPageFitz">
+<span id="pdf2docx-page-rawpagefitz-module"></span><h1>pdf2docx.page.RawPageFitz module<a class="headerlink" href="#module-pdf2docx.page.RawPageFitz" title="Permalink to this heading"></a></h1>
+<p>A wrapper of PyMuPDF Page as page engine.</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="pdf2docx.image.ImageSpan.ImageSpan">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.image.ImageSpan.</span></span><span class="sig-name descname"><span class="pre">ImageSpan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageSpan.ImageSpan" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="pdf2docx.image.Image.html#pdf2docx.image.Image.Image" title="pdf2docx.image.Image.Image"><code class="xref py py-class docutils literal notranslate"><span class="pre">Image</span></code></a></p>
-<p>Image span.</p>
+<dt class="sig sig-object py" id="pdf2docx.page.RawPageFitz.RawPageFitz">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.page.RawPageFitz.</span></span><span class="sig-name descname"><span class="pre">RawPageFitz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page_engine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.RawPageFitz.RawPageFitz" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.page.RawPage.html#pdf2docx.page.RawPage.RawPage" title="pdf2docx.page.RawPage.RawPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">RawPage</span></code></a></p>
+<p>A wrapper of <code class="docutils literal notranslate"><span class="pre">fitz.Page</span></code> to extract source contents.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="pdf2docx.image.ImageSpan.ImageSpan.intersects">
-<span class="sig-name descname"><span class="pre">intersects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rect</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.image.ImageSpan.ImageSpan.intersects" title="Permalink to this definition"></a></dt>
-<dd><p>Create new ImageSpan object with image contained in given bbox.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>rect</strong> (<em>fitz.Rect</em>) – Target bbox.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A copy of itself if intersects with target; otherwise empty ImageSpan.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#pdf2docx.image.ImageSpan.ImageSpan" title="pdf2docx.image.ImageSpan.ImageSpan">ImageSpan</a></p>
+<dt class="sig sig-object py" id="pdf2docx.page.RawPageFitz.RawPageFitz.extract_raw_dict">
+<span class="sig-name descname"><span class="pre">extract_raw_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.page.RawPageFitz.RawPageFitz.extract_raw_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Extract source data with page engine. Return a dict with the following structure:
+<a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a></p>
+<blockquote>
+<div><dl class="simple">
+<dt>{</dt><dd><p>“width” : w,
+“height”: h,
+“blocks”: [{…}, {…}, …],
+“shapes” : [{…}, {…}, …]</p>
 </dd>
 </dl>
+<p>}</p>
+</div></blockquote>
+<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
 </dd></dl>
 
 </dd></dl>
@@ -125,8 +126,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="pdf2docx.image.ImageBlock.html" class="btn btn-neutral float-left" title="pdf2docx.image.ImageBlock module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="pdf2docx.image.ImagesExtractor.html" class="btn btn-neutral float-right" title="pdf2docx.image.ImagesExtractor module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pdf2docx.page.RawPageFactory.html" class="btn btn-neutral float-left" title="pdf2docx.page.RawPageFactory module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pdf2docx.shape.html" class="btn btn-neutral float-right" title="pdf2docx.shape package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

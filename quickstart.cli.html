@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Command Line Interface &mdash; pdf2docx 0.5.3 documentation</title>
+  <title>Command Line Interface &mdash; pdf2docx 0.5.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -82,7 +83,7 @@
            <div itemprop="articleBody">
              
   <section id="command-line-interface">
-<h1>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline"></a></h1>
+<h1>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Permalink to this heading"></a></h1>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pdf2docx --help
 
 NAME
@@ -108,7 +109,7 @@ COMMANDS
 </pre></div>
 </div>
 <section id="by-range-of-pages">
-<h2>By range of pages<a class="headerlink" href="#by-range-of-pages" title="Permalink to this headline"></a></h2>
+<h2>By range of pages<a class="headerlink" href="#by-range-of-pages" title="Permalink to this heading"></a></h2>
 <p>Specify pages range by <code class="docutils literal notranslate"><span class="pre">--start</span></code> (from the first page if omitted) and
 <code class="docutils literal notranslate"><span class="pre">--end</span></code> (to the last page if omitted).</p>
 <div class="admonition note">
@@ -138,14 +139,14 @@ COMMANDS
 </div>
 </section>
 <section id="by-page-numbers">
-<h2>By page numbers<a class="headerlink" href="#by-page-numbers" title="Permalink to this headline"></a></h2>
+<h2>By page numbers<a class="headerlink" href="#by-page-numbers" title="Permalink to this heading"></a></h2>
 <p>Convert the first, third and 5th pages:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pdf2docx convert test.pdf test.docx --pages=0,2,4
 </pre></div>
 </div>
 </section>
 <section id="multi-processing">
-<h2>Multi-Processing<a class="headerlink" href="#multi-processing" title="Permalink to this headline"></a></h2>
+<h2>Multi-Processing<a class="headerlink" href="#multi-processing" title="Permalink to this heading"></a></h2>
 <p>Turn on multi-processing with default count of CPU:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pdf2docx convert test.pdf test.docx --multi_processing=True
 </pre></div>

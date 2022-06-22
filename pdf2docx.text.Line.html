@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pdf2docx.text.Line module &mdash; pdf2docx 0.5.3 documentation</title>
+  <title>pdf2docx.text.Line module &mdash; pdf2docx 0.5.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -92,7 +93,7 @@
            <div itemprop="articleBody">
              
   <section id="module-pdf2docx.text.Line">
-<span id="pdf2docx-text-line-module"></span><h1>pdf2docx.text.Line module<a class="headerlink" href="#module-pdf2docx.text.Line" title="Permalink to this headline"></a></h1>
+<span id="pdf2docx-text-line-module"></span><h1>pdf2docx.text.Line module<a class="headerlink" href="#module-pdf2docx.text.Line" title="Permalink to this heading"></a></h1>
 <p>Text Line objects based on PDF raw dict extracted with <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code>.</p>
 <p>Data structure of line in text block referring to this
 <a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/textpage.html">link</a>:</p>
@@ -107,7 +108,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="pdf2docx.text.Line.Line">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.text.Line.</span></span><span class="sig-name descname"><span class="pre">Line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><code class="xref py py-class docutils literal notranslate"><span class="pre">pdf2docx.common.Element.Element</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><code class="xref py py-class docutils literal notranslate"><span class="pre">Element</span></code></a></p>
 <p>Object representing a line in text block.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pdf2docx.text.Line.Line.add">
@@ -122,7 +123,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pdf2docx.text.Line.Line.add_span">
-<span class="sig-name descname"><span class="pre">add_span</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">span</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><span class="pre">pdf2docx.common.Element.Element</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line.add_span" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">add_span</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">span</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pdf2docx.common.Element.html#pdf2docx.common.Element.Element" title="pdf2docx.common.Element.Element"><span class="pre">Element</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.Line.Line.add_span" title="Permalink to this definition"></a></dt>
 <dd><p>Add span to current Line.</p>
 </dd></dl>
 

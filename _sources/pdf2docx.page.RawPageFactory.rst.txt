@@ -1,0 +1,7 @@
+pdf2docx.page.RawPageFactory module
+===================================
+
+.. automodule:: pdf2docx.page.RawPageFactory
+   :members:
+   :undoc-members:
+   :show-inheritance:

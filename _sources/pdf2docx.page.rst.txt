@@ -11,6 +11,8 @@ Submodules
    pdf2docx.page.Page
    pdf2docx.page.Pages
    pdf2docx.page.RawPage
+   pdf2docx.page.RawPageFactory
+   pdf2docx.page.RawPageFitz
 
 Module contents
 ---------------

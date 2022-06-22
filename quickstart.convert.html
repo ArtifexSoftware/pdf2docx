@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Convert PDF &mdash; pdf2docx 0.5.3 documentation</title>
+  <title>Convert PDF &mdash; pdf2docx 0.5.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -83,13 +84,13 @@
            <div itemprop="articleBody">
              
   <section id="convert-pdf">
-<h1>Convert PDF<a class="headerlink" href="#convert-pdf" title="Permalink to this headline"></a></h1>
+<h1>Convert PDF<a class="headerlink" href="#convert-pdf" title="Permalink to this heading"></a></h1>
 <p>We can use either the <a class="reference internal" href="pdf2docx.converter.html#pdf2docx.converter.Converter" title="pdf2docx.converter.Converter"><code class="xref py py-class docutils literal notranslate"><span class="pre">Converter</span></code></a> class, or
 a wrapped method <a class="reference internal" href="pdf2docx.main.html#pdf2docx.main.parse" title="pdf2docx.main.parse"><code class="xref py py-meth docutils literal notranslate"><span class="pre">parse()</span></code></a> to convert all/specified
 pdf pages to docx. Multi-processing is supported in case pdf file with a
 large number of pages.</p>
 <section id="example-1-convert-all-pages">
-<h2>Example 1: convert all pages<a class="headerlink" href="#example-1-convert-all-pages" title="Permalink to this headline"></a></h2>
+<h2>Example 1: convert all pages<a class="headerlink" href="#example-1-convert-all-pages" title="Permalink to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pdf2docx</span> <span class="kn">import</span> <span class="n">Converter</span>
 
 <span class="n">pdf_file</span> <span class="o">=</span> <span class="s1">&#39;/path/to/sample.pdf&#39;</span>
@@ -113,7 +114,7 @@ large number of pages.</p>
 </div>
 </section>
 <section id="example-2-convert-specified-pages">
-<h2>Example 2: convert specified pages<a class="headerlink" href="#example-2-convert-specified-pages" title="Permalink to this headline"></a></h2>
+<h2>Example 2: convert specified pages<a class="headerlink" href="#example-2-convert-specified-pages" title="Permalink to this heading"></a></h2>
 <ul>
 <li><p>Specify pages range by <code class="docutils literal notranslate"><span class="pre">start</span></code> (from the first page if omitted) and
 <code class="docutils literal notranslate"><span class="pre">end</span></code> (to the last page if omitted):</p>
@@ -142,7 +143,7 @@ on the input arguments.</p>
 </div>
 </section>
 <section id="example-3-multi-processing">
-<h2>Example 3: multi-Processing<a class="headerlink" href="#example-3-multi-processing" title="Permalink to this headline"></a></h2>
+<h2>Example 3: multi-Processing<a class="headerlink" href="#example-3-multi-processing" title="Permalink to this heading"></a></h2>
 <p>Turn on multi-processing with default count of CPU:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cv</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">docx_file</span><span class="p">,</span> <span class="n">multi_processing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
@@ -157,7 +158,7 @@ on the input arguments.</p>
 </div>
 </section>
 <section id="example-4-convert-encrypted-pdf">
-<h2>Example 4: convert encrypted pdf<a class="headerlink" href="#example-4-convert-encrypted-pdf" title="Permalink to this headline"></a></h2>
+<h2>Example 4: convert encrypted pdf<a class="headerlink" href="#example-4-convert-encrypted-pdf" title="Permalink to this heading"></a></h2>
 <p>Provide <code class="docutils literal notranslate"><span class="pre">password</span></code> to open and convert password protected pdf:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cv</span> <span class="o">=</span> <span class="n">Converter</span><span class="p">(</span><span class="n">pdf_file</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
 <span class="n">cv</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">docx_file</span><span class="p">)</span>
