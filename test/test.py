@@ -7,15 +7,15 @@ converting quality from docx to pdf, a Windows-based command line tool `OfficeTo
 addition, an installation of Microsoft Word is required.
 
 To leverage the benefit of Github Action, the testing process is divided into three parts:
-  1. Convert sample pdf to docx with this module.
+  1. Convert sample pdf to docx with `pdf2docx`.
   2. Convert generated docx to pdf for comparing. 
-  3. Convert page to image and compare similarity with python-opencv.
+  3. Convert page to image and compare similarity with `python-opencv`.
 
 Test scripts on Part One and Three are applied with two test class respectively in this module,
 so they could be run seperately with pytest command, e.g.
 
-- pytest -v test.py::TestConversion for Part One
-- pytest -v test.py::TestQuality for Part Three
+- pytest -vs --no-header test.py::TestConversion for Part One
+- pytest -vs --no-header test.py::TestQuality for Part Three
 
 Links on MS Word to PDF conversion:
   - https://github.com/cognidox/OfficeToPDF/releases
@@ -302,7 +302,7 @@ class TestQuality:
         'demo-table-nested.pdf': 0.84,
         'demo-table-shading-highlight.pdf': 0.55,
         'demo-table-shading.pdf': 0.80,
-        'demo-table-stream.pdf': 0.60,
+        'demo-table-stream.pdf': 0.55,
         'demo-table.pdf': 0.90,
         'demo-text-alignment.pdf': 0.90,
         'demo-text-scaling.pdf': 0.80,
