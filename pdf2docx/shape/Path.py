@@ -243,7 +243,7 @@ class Path:
         self.path_type = raw['type'] # s, f, or fs
 
         # always close path if fill, otherwise, depends on property 'closePath'
-        close_path = True if self.is_fill else raw['closePath']
+        close_path = True if self.is_fill else raw.get('closePath', False)
 
         # path segments
         self.items = [] # type: list[Segments]
@@ -396,10 +396,10 @@ class Path:
             color=self.raw.get("color", None),  # line color
             dashes=self.raw.get("dashes", None),  # line dashing
             even_odd=self.raw.get("even_odd", False),  # control color of overlaps
-            closePath=self.raw.get("closePath", True),  # whether to connect last and first point
+            closePath=self.raw.get("closePath", False),  # whether to connect last and first point
             lineJoin=self.raw.get("lineJoin", 0),  # how line joins should look like
             lineCap=max(self.raw["lineCap"]) if "lineCap" in self.raw else 0,  # how line ends should look like
             width=self.raw.get("width", 1),  # line width
-            stroke_opacity=self.raw.get("opacity", 1),  # same value for both
-            fill_opacity=self.raw.get("opacity", 1)  # opacity parameters
+            stroke_opacity=self.raw.get("stroke_opacity", 1),  # same value for both
+            fill_opacity=self.raw.get("fill_opacity", 1)  # opacity parameters
             )
