@@ -66,7 +66,11 @@ class Sections(BaseCollection):
             # NOTE: the after space doesn't work if last paragraph is 
             # image only (without any text). In this case, set after
             # space for the section break.
-            p = doc.paragraphs[-2] # -1 is the section break
+            try:
+                p = doc.paragraphs[-2] # -1 is the section break
+            except IndexError:
+                p = doc.paragraphs[-1]
+
             if not p.text.strip() and 'graphicData' in p._p.xml:
                 p = doc.paragraphs[-1]
             pf = p.paragraph_format
