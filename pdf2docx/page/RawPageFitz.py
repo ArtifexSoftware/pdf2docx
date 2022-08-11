@@ -4,6 +4,7 @@
 A wrapper of PyMuPDF Page as page engine.
 '''
 
+import logging
 from .RawPage import RawPage
 from ..image.ImagesExtractor import ImagesExtractor
 from ..shape.Paths import Paths
@@ -61,13 +62,22 @@ class RawPageFitz(RawPage):
         raw = self.page_engine.get_text('rawdict', flags=64)
         text_blocks = raw.get('blocks', [])
 
+        # potential UnicodeDecodeError issue when trying to filter hidden text:
+        # https://github.com/dothinking/pdf2docx/issues/144
+        # https://github.com/dothinking/pdf2docx/issues/155
+        try:
+            spans = self.page_engine.get_texttrace()
+        except SystemError:
+            logging.warning('Ignore hidden text checking due to UnicodeDecodeError in upstream library.')
+            spans = []
+        
+        if not spans: return text_blocks
+
         # ignore hidden text if ocr=0, while extract only hidden text if ocr=2
         if ocr==2:
             f = lambda span: span['type']!=3  # find displayed text and ignore it
         else:
             f = lambda span: span['type']==3  # find hidden text and ignore it
-
-        spans = self.page_engine.get_texttrace()
         filtered_spans = list(filter(f, spans))
         
         def span_area(bbox):

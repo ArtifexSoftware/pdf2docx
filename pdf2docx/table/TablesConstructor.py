@@ -195,7 +195,8 @@ class TablesConstructor:
 
             # Attention: avoid further infinite stream table detection.
             # Generally, a 1x1 stream table nested in a table cell is of no use
-            if isinstance(self._parent, Cell) and table.num_cols*table.num_rows==1:
+            if isinstance(self._parent, Cell) and \
+                table.num_cols*table.num_rows==1 and table[0][0].bg_color is None:
                 continue
 
             table.set_stream_table_block()
