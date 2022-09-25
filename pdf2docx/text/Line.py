@@ -167,7 +167,9 @@ class Line(Element):
     def make_docx(self, p):
         '''Create docx line, i.e. a run in ``python-docx``.'''
         # tab stop before this line to ensure horizontal position
-        if self.tab_stop: p.add_run().add_tab()
+        # Note it might need more than one tabs if multi-tabs are set for current paragraph
+        if self.tab_stop: 
+            for _ in range(self.tab_stop): p.add_run().add_tab()
 
         # create span -> run in paragraph
         for span in self.spans: span.make_docx(p)            

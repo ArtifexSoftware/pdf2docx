@@ -237,18 +237,31 @@ class Lines(ElementCollection):
         idx0, idx1 = (0, 2) if block.is_horizontal_text else (3, 1)
         fun = lambda line: round(abs(line.bbox[idx0]-block.bbox[idx0]), 1)
         all_pos = set(map(fun, self._instances))
-        block.tab_stops = list(filter(lambda pos: pos>=constants.MINOR_DIST, all_pos))
+        tab_stops = list(filter(lambda pos: pos>=constants.MINOR_DIST, all_pos))
+        tab_stops.sort() # sort in order
+        block.tab_stops = tab_stops
 
         # no tab stop need
         if not block.tab_stops: return
 
+        def tab_position(pos): # tab stop index of given position
+            # 0   T0  <pos>  T1    T2
+            i = 0
+            pos -= block.bbox[idx0]
+            for t in tab_stops:
+                if pos<t: break
+                i += 1
+            return i
+
         # otherwise, set tab stop option for each line
+        # Note: it might need more than one tab stops
+        # https://github.com/dothinking/pdf2docx/issues/157
         ref = block.bbox[idx0]
         for i, line in enumerate(self._instances):
             # left indentation implemented with tab
             distance = line.bbox[idx0] - ref
             if distance>line_separate_threshold:
-                line.tab_stop = 1
+                line.tab_stop = tab_position(line.bbox[idx0])-tab_position(ref)
 
             # update stop reference position
             if line==self._instances[-1]: break
