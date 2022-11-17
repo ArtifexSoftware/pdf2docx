@@ -200,7 +200,8 @@ class TablesConstructor:
                 continue
 
             table.set_stream_table_block()
-            tables.append(table)
+            if table.num_rows > 1:
+                tables.append(table)
 
         # assign blocks/shapes to each table
         self._blocks.assign_to_tables(tables)
