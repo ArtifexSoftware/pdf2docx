@@ -30,17 +30,28 @@ class Converter:
     * Finally, generate docx with ``python-docx``.
     '''
 
-    def __init__(self, pdf_file:str, password:str=None):
+    def __init__(
+        self, pdf_file: str = None, password: str = None, stream: bytes = None
+    ):
         '''Initialize fitz object with given pdf file path.
 
         Args:
             pdf_file (str): pdf file path.
+            stream   (bytes): pdf file in memory.
             password (str): Password for encrypted pdf. Default to None if not encrypted.
         '''
         # fitz object
         self.filename_pdf = pdf_file
-        self.password = str(password or '')
-        self._fitz_doc = fitz.Document(pdf_file)
+        self.password = str(password or "")
+
+        if not pdf_file and not stream:
+            raise ValueError("Either pdf_file or stream must be given.")
+
+        if stream:
+            self._fitz_doc = fitz.Document(stream=stream)
+
+        else:
+            self._fitz_doc = fitz.Document(pdf_file)
 
         # initialize empty pages container
         self._pages = Pages()
