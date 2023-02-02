@@ -14,7 +14,7 @@ def get_version(fname):
         with open(fname, "r", encoding="utf-8") as f:
             version = f.readline().strip()
     else:
-        version = 'alpha'
+        version = '0.5.6a1'
 
     return version
 
