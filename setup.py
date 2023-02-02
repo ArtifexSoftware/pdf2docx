@@ -11,7 +11,7 @@ EXCLUDE_FROM_PACKAGES = ["build", "dist", "test"]
 # Github CI can create version.txt dynamically.
 def get_version(fname):
     if os.path.exists(fname):
-        with open(fname, 'r') as f:
+        with open(fname, "r", encoding="utf-8") as f:
             version = f.readline().strip()
     else:
         version = 'alpha'
@@ -21,7 +21,7 @@ def get_version(fname):
 # Load README.md for long description
 def load_long_description(fname):
     if os.path.exists(fname):
-        with open(fname, 'r') as f:
+        with open(fname, "r", encoding="utf-8") as f:
             long_description = f.read()
     else:
         long_description = DESCRIPTION
