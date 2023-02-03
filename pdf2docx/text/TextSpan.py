@@ -405,11 +405,11 @@ class TextSpan(Element):
         docx_run.font.name = font_name
         docx_run._element.rPr.rFonts.set(qn('w:eastAsia'), font_name) # set font for chinese characters
         docx_run.font.color.rgb = RGBColor(*share.rgb_component(self.color))
-
         # font size
         # NOTE: only x.0 and x.5 is accepted in docx, so set character scaling accordingly
         # if the font size doesn't meet this condition.
-        font_size = round(self.size*2)/2.0
+        # font_size = round(self.size*2)/2.0
+        font_size = max(round(self.size*2)/2.0 - 1, 1) # an
         docx_run.font.size = Pt(font_size)
 
         # adjust by set scaling

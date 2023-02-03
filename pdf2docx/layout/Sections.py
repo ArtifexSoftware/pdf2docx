@@ -39,7 +39,8 @@ class Sections(BaseCollection):
             p = doc.add_paragraph()
             line_height = min(section.before_space, 11)
             pf = reset_paragraph_format(p, line_spacing=Pt(line_height))
-            pf.space_after = Pt(section.before_space-line_height)
+            # pf.space_after = Pt(section.before_space-line_height) # an
+            pf.space_after = 11   # an
 
         # ---------------------------------------------------
         # first section
@@ -70,7 +71,8 @@ class Sections(BaseCollection):
             if not p.text.strip() and 'graphicData' in p._p.xml:
                 p = doc.paragraphs[-1]
             pf = p.paragraph_format
-            pf.space_after = Pt(section.before_space)
+            # pf.space_after = Pt(section.before_space) # an
+            pf.space_after = 11 # an
             
             # section content
             section.make_docx(doc)

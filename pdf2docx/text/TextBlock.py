@@ -311,7 +311,7 @@ class TextBlock(Block):
 
         # line spacing
         if self.line_space_type==0: # exact line spacing
-            pf.line_spacing = Pt(round(self.line_space, 1))
+            pf.line_spacing = Pt(min(round(self.line_space, 1) - 1, 11)) # an
         else: # relative line spacing
             pf.line_spacing = round(self.line_space, 2)
 
