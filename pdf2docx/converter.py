@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
-import os
 import json
 import logging
-from time import perf_counter
+import os
 from multiprocessing import Pool, cpu_count
+from time import perf_counter
+from typing import AnyStr, IO, Union
+
 import fitz
 from docx import Document
+
 from .page.Page import Page
 from .page.Pages import Pages
 
@@ -189,7 +192,7 @@ class Converter:
         '''Step 4 of converting process: create docx file with converted pages.
         
         Args:
-            docx_filename (str): docx filename to write to.
+            docx_filename (str, file-like): docx file to write.
             kwargs (dict, optional): Configuration parameters. 
         '''
         logging.info(self._color_output('[4/4] Creating pages...'))
@@ -201,9 +204,18 @@ class Converter:
         if not parsed_pages:
             raise ConversionException('No parsed pages. Please parse page first.')
 
-        # docx file to convert to        
-        filename = docx_filename or f'{self.filename_pdf[0:-len(".pdf")]}.docx'
-        if os.path.exists(filename): os.remove(filename)
+        if not docx_filename:
+            raise ConversionException(
+                "No docx file name. Please specify a docx file name or a file-like object to write."
+            )
+
+        # docx file to convert to
+        if hasattr(docx_filename, "write"):
+            filename = docx_filename
+
+        else:
+            filename = docx_filename or f'{self.filename_pdf[0:-len(".pdf")]}.docx' if self.filename_pdf else "output.docx"
+            if os.path.exists(filename): os.remove(filename)
 
         # create page by page        
         docx_file = Document() 
@@ -294,12 +306,12 @@ class Converter:
         # layout information for debugging
         self.serialize(layout_file)
 
-
-    def convert(self, docx_filename:str=None, start:int=0, end:int=None, pages:list=None, **kwargs):
+    def convert(self, docx_filename: Union[str, IO[AnyStr]] = None, start: int = 0, end: int = None, pages: list = None,
+                **kwargs):
         """Convert specified PDF pages to docx file.
 
         Args:
-            docx_filename (str, optional): docx filename to write to. Defaults to None.
+            docx_filename (str, file-like, optional): docx file to write. Defaults to None.
             start (int, optional): First page to process. Defaults to 0, the first page.
             end (int, optional): Last page to process. Defaults to None, the last page.
             pages (list, optional): Range of page indexes. Defaults to None.
