@@ -2,6 +2,7 @@
 
 import os
 import json
+import uuid
 from time import perf_counter
 from multiprocessing import Pool, cpu_count
 import fitz
@@ -161,7 +162,8 @@ class Converter:
         # make vectors of arguments for the processes
         cpu = min(config['cpu_count'], cpu_count()) if 'cpu_count' in config else cpu_count()
         start, end = min(page_indexes), max(page_indexes)
-        prefix_layout = 'layout'
+
+        prefix_layout = '{}_layout'.format(uuid.uuid4().hex)
         vectors = [(i, cpu, start, end, self.filename_pdf, config, f'{prefix_layout}-{i}.json') for i in range(cpu)]
 
         # start parsing processes
@@ -178,7 +180,6 @@ class Converter:
             os.remove(filename)
         
         # restore layouts and create docx pages
-        print()
         num_pages = len(page_indexes)
         layouts = []
         for page_index in page_indexes:
