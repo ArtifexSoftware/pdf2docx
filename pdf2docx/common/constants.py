@@ -25,10 +25,10 @@ FACTOR_FEW = 0.01
 # -------------------------------------
 HIDDEN_W_BORDER = 0.0   # do not show border
 MIN_LINE_SPACING = 0.7  # minimum line spacing available in MS word
-DEFULT_LINE_SPACING = 1.02
+DEFAULT_LINE_SPACING = 1.02
 
 # punctuation implying end of a sentense
-SENTENSE_END_PUNC = '.．。?？!！'
+SENTENCE_END_PUNC = '.．。?？!！'
 
 # control characters not supported by lxml
 # https://github.com/dothinking/pdf2docx/issues/126#issuecomment-1040034077

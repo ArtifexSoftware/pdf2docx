@@ -276,7 +276,7 @@ class TextSpan(Element):
         """Parse text style based on the position to a rect shape.
 
         Args:
-            rect (Shape): Target rect shape reprenting potential text style.
+            rect (Shape): Target rect shape representing potential text style.
             horizontal (bool, optional): Horizontal text direction. Defaults to True.
 
         Returns:
@@ -347,7 +347,7 @@ class TextSpan(Element):
         if not rect.intersects(self.bbox):
             return TextSpan()
 
-        # furcher check chars in span
+        # further check chars in span
         span = self.copy()
         span.chars.clear()
         span.update_bbox((0.0,0.0,0.0,0.0))
@@ -379,7 +379,7 @@ class TextSpan(Element):
         # set text style, e.g. font, underline and highlight
         self._set_text_format(docx_run)
 
-        # set charaters spacing
+        # set charters spacing
         if self.char_spacing: 
             docx.set_char_spacing(docx_run, self.char_spacing)
 

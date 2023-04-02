@@ -22,7 +22,7 @@ class Char(Element):
     def __init__(self, raw:dict=None):
         if raw is None: raw = {}
 
-        # Note to filter control character avoiding error when makeing docx, #126
+        # Note to filter control character avoiding error when making docx, #126
         c = raw.get('c', '')
         if c in INVALID_CHARS: c = ''
         self.c = c

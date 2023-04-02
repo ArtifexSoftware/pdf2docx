@@ -75,7 +75,7 @@ class Paths(Collection):
 
     def to_shapes_and_images(self, min_svg_gap_dx:float=15, min_svg_gap_dy:float=15, 
                                 min_w:float=2, min_h:float=2, clip_image_res_ratio:float=3.0):
-        '''Convert paths to iso-oriented shapes or images. The sementic type of path is either table/text style or 
+        '''Convert paths to iso-oriented shapes or images. The semantic type of path is either table/text style or 
         vector graphic. This method is to:
         * detect svg regions -> exist at least one non-iso-oriented path
         * convert svg to bitmap by clipping page
@@ -91,7 +91,7 @@ class Paths(Collection):
         Returns:
             tuple: (list of shape raw dict, list of image raw dict).
         '''
-        # convert all paths to shapes if no non-iso-orientied path exists
+        # convert all paths to shapes if no non-iso-orientated path exists
         iso_shapes = []
         if self.is_iso_oriented:
             iso_shapes.extend(self.to_shapes())

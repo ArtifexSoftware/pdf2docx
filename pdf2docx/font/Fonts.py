@@ -77,7 +77,7 @@ class Fonts(BaseCollection):
                 # - cff: Adobe Compact File Format, i.e. Type 1 font
                 assert ext not in ('n/a', 'cff'), "base font or not supported font"
 
-                # try to get more font metrices with fonttool
+                # try to get more font metrics with fonttool
                 tt = TTFont(BytesIO(buffer))
                 name = cls.get_font_family_name(tt)
                 line_height = cls.get_line_height_factor(tt)

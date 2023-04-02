@@ -111,7 +111,7 @@ class Block(Element):
             bbox (fitz.rect): boundary box of this block.
         """
         # NOTE: in PyMuPDF CS, horizontal text direction is same with positive x-axis,
-        # while vertical text is on the contrarory, so use f = -1 here
+        # while vertical text is on the contrary, so use f = -1 here
         idx, f = (0, 1.0) if self.is_horizontal_text else (3, -1.0)
         self.alignment = TextAlignment.LEFT
         self.left_space = (self.bbox[idx] - bbox[idx]) * f

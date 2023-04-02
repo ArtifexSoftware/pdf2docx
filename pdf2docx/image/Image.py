@@ -64,7 +64,7 @@ class Image(Element):
         '''Store image with base64 encode.
 
         * Encode image bytes with base64 -> base64 bytes
-        * Decode base64 bytes -> str -> so can be serialized in json formart
+        * Decode base64 bytes -> str -> so can be serialized in json format
         '''
         res = super().store()
         res.update({

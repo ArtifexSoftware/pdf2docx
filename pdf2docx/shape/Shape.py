@@ -103,7 +103,7 @@ class Shape(Element):
 
 
     def parse_semantic_type(self, blocks:list):
-        '''Determin semantic type based on the position to text blocks. Note the results might be 
+        '''Determine semantic type based on the position to text blocks. Note the results might be 
         a combination of raw types, e.g. the semantic type of a stroke can be either text strike,
         underline or table border.
 
@@ -217,7 +217,7 @@ class Stroke(Shape):
 
     @property
     def default_type(self):
-        '''Default sementic type for a Stroke shape: table border, underline or strike-through.'''
+        '''Default semantic type for a Stroke shape: table border, underline or strike-through.'''
         return RectType.BORDER.value | RectType.UNDERLINE.value | RectType.STRIKE.value
 
     def _semantic_type(self, line):
@@ -294,11 +294,11 @@ class Fill(Shape):
 
     @property
     def default_type(self):
-        '''Default sementic type for a Fill shape: table shading or text highlight.'''
+        '''Default semantic type for a Fill shape: table shading or text highlight.'''
         return RectType.SHADING.value | RectType.HIGHLIGHT.value
     
     def _semantic_type(self, line):
-        '''Override. Check semantic type based on the position to a text line. Along the main dimesion,
+        '''Override. Check semantic type based on the position to a text line. Along the main dimension,
         text highlight never exceeds text line.
 
         Args:
@@ -357,7 +357,7 @@ class Hyperlink(Shape):
 
     @property
     def default_type(self):
-        '''Default sementic type for a Hyperlink: always hyperlink.'''
+        '''Default semantic type for a Hyperlink: always hyperlink.'''
         return RectType.HYPERLINK.value
 
     def parse_semantic_type(self, blocks:list=None):
