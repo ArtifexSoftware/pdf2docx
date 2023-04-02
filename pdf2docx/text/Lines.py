@@ -18,7 +18,7 @@ class Lines(ElementCollection):
 
     @property
     def unique_parent(self):
-        '''Whether all contained lines have same parant.'''
+        '''Whether all contained lines have same parent.'''
         if not bool(self): return False
 
         first_line = self._instances[0]
@@ -65,9 +65,9 @@ class Lines(ElementCollection):
         # check row by row
         res = []
         lines = Lines()
-        punc = tuple(constants.SENTENSE_END_PUNC)
+        punc = tuple(constants.SENTENCE_END_PUNC)
         start_of_para = end_of_para = False # start/end of paragraph
-        start_of_sen = end_of_sen = False   # start/end of sentense
+        start_of_sen = end_of_sen = False   # start/end of sentence
         for row in rows:
             end_of_sen = row[-1].text.strip().endswith(punc)
             w =  row[-1].bbox[2]-row[0].bbox[0]
@@ -76,7 +76,7 @@ class Lines(ElementCollection):
             if end_of_sen and w/W <= 1.0-line_break_free_space_ratio:
                 end_of_para = True
 
-            # start of sentense and free space at the start -> start of paragraph
+            # start of sentence and free space at the start -> start of paragraph
             elif start_of_sen and (W-w)/H >= new_paragraph_free_space_ratio:
                 start_of_para = True
 

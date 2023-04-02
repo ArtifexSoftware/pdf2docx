@@ -117,7 +117,7 @@ class RawPage(BasePage, Layout):
             Ensure this method is run right after cleaning up the layout, so the page margin is 
             calculated based on valid layout, and stay constant.
         """
-        # Exclude hyperlink from shapes because hyperlink might exist out of page unreasonablely, 
+        # Exclude hyperlink from shapes because hyperlink might exist out of page unreasonably, 
         # while it should always within page since attached to text.
         shapes = Shapes([shape for shape in self.shapes if not isinstance(shape, Hyperlink)])
 

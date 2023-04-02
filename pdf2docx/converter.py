@@ -25,7 +25,7 @@ class Converter:
     * Read PDF file with ``PyMuPDF`` to get raw layout data page by page, including text,
       image, drawing and its properties, e.g. boundary box, font, size, image width, height.
     * Analyze layout in document level, e.g. page header, footer and margin.
-    * Parse page layout to docx structure, e.g. paragraph and its properties like indentaton, 
+    * Parse page layout to docx structure, e.g. paragraph and its properties like indentation, 
       spacing, text alignment; table and its properties like border, shading, merging. 
     * Finally, generate docx with ``python-docx``.
     '''
@@ -82,7 +82,7 @@ class Converter:
             'lines_left_aligned_threshold'   : 1.0,    # left aligned if d_x0 of two lines is lower than this value (Pt)
             'lines_right_aligned_threshold'  : 1.0,    # right aligned if d_x1 of two lines is lower than this value (Pt)
             'lines_center_aligned_threshold' : 2.0,    # center aligned if delta center of two lines is lower than this value
-            'clip_image_res_ratio'           : 4.0,    # resolution ratio (to 72dpi) when cliping page image
+            'clip_image_res_ratio'           : 4.0,    # resolution ratio (to 72dpi) when clipping page image
             'min_svg_gap_dx'                 : 15.0,   # merge adjacent vector graphics if the horizontal gap is less than this value
             'min_svg_gap_dy'                 : 2.0,    # merge adjacent vector graphics if the vertical gap is less than this value
             'min_svg_w'                      : 2.0,    # ignore vector graphics if the bbox width is less than this value

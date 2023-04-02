@@ -227,7 +227,7 @@ class TextBlock(Block):
         # return default line spacing if any images exists
         for line in self.lines:
             if list(span for span in line.spans if isinstance(span, ImageSpan)):
-                self.line_space = constants.DEFULT_LINE_SPACING
+                self.line_space = constants.DEFAULT_LINE_SPACING
                 return
 
         # otherwise, calculate average line spacing
@@ -243,7 +243,7 @@ class TextBlock(Block):
         line_space = block_height/standard_height
 
         # overlap may exist when multi-rows, so set minimum spacing  -> default spacing
-        if len(rows)>1: line_space = max(line_space, constants.DEFULT_LINE_SPACING)
+        if len(rows)>1: line_space = max(line_space, constants.DEFAULT_LINE_SPACING)
         self.line_space = line_space
 
 

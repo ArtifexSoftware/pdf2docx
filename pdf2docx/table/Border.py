@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-'''Module to determin stream table borders.
+'''Module to determine stream table borders.
 
 Though no exact borders exist for stream table, it's better to simplify table structure by
 aligning borders as more as possible. Taking vertical borders for example, it can be moved 
@@ -197,7 +197,7 @@ class Border:
             * The border-like stroke may be an underline or strike-through.      
         '''
         # NOTE: don't do this: `if self.finalized: continue`, 
-        # because `self.finalized` just determed the main dimension, still need a chance to determin 
+        # because `self.finalized` just determined the main dimension, still need a chance to determine 
         # the other dimension.         
 
         if self.is_horizontal:
@@ -334,7 +334,7 @@ class Borders(BaseCollection):
         # check intersection status of each intervals
         x_status = [] # [(x, status), ...]
         for i in range(len(x_points)-1):
-            x = (x_points[i]+x_points[i+1])/2.0 # cenper point
+            x = (x_points[i]+x_points[i+1])/2.0 # center point
             s = [int(border.is_valid(x)) for border in borders]
             x_status.append((x,s))
             

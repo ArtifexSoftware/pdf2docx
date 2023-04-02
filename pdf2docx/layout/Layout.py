@@ -7,7 +7,7 @@ source blocks and shapes to a *flow layout* that can be re-created as docx eleme
 table. In addition to ``Section`` and ``Column``, ``TableBlock`` is used to maintain the page layout . 
 So, detecting and parsing table block is the principle steps.
 
-The prerequite work is done before this step:
+The prerequisite work is done before this step:
 
 1. Clean up source blocks and shapes in Page level, e.g. convert source blocks to ``Line`` level,
    because the block structure determined by ``PyMuPDF`` might be not reasonable.

@@ -220,7 +220,7 @@ class Element(IText):
         L2 = e.bbox[idx+2]-e.bbox[idx]
         L = max(self.bbox[idx+2], e.bbox[idx+2]) - min(self.bbox[idx], e.bbox[idx])
 
-        eps = 1e-3 # tolerent
+        eps = 1e-3 # tolerant
         return L1+L2-L+eps >= factor*min(L1,L2)
 
 
@@ -252,7 +252,7 @@ class Element(IText):
         L2 = e.bbox[idx+2]-e.bbox[idx]
         L = max(self.bbox[idx+2], e.bbox[idx+2]) - min(self.bbox[idx], e.bbox[idx])
 
-        eps = 1e-3 # tolerent
+        eps = 1e-3 # tolerant
         return L1+L2-L+eps >= factor*min(L1,L2)
 
 

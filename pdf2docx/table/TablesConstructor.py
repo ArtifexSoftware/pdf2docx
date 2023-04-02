@@ -300,7 +300,7 @@ class TablesConstructor:
         * Rebuild layout, e.g. text layout with two columns, and
         * parsing real borderless table.
 
-        It's controdictory that the former needn't to deep into row level, just ``1xN`` table 
+        It's contradictory that the former needn't to deep into row level, just ``1xN`` table 
         convenient for layout recreation; instead, the later should, ``MxN`` table for each 
         cell precisely. So, the principle determining stream tables borders:
 

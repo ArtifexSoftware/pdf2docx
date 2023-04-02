@@ -13,7 +13,7 @@ class Pages(BaseCollection):
     '''A collection of ``Page``.'''
 
     def parse(self, fitz_doc, **settings):
-        '''Analyse document structure, e.g. page section, header, footer.
+        '''Analyze document structure, e.g. page section, header, footer.
 
         Args:
             fitz_doc (fitz.Document): ``PyMuPDF`` Document instance.

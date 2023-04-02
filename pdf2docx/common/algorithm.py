@@ -124,7 +124,7 @@ def solve_rects_intersection(V:list, num:int, index_groups:list):
     S22 = list(filter( lambda item: item[1][0]>X, right ))
     S21 = list(filter( lambda item: item[1][0]<=X0, right ))
     
-    # intersection in x-direction is fullfilled, so check y-direction further
+    # intersection in x-direction is fulfilled, so check y-direction further
     _stab(S12, S22, index_groups)
     _stab(S21, S11, index_groups)
     _stab(S12, S21, index_groups)
@@ -290,7 +290,7 @@ def inner_contours(img_binary:np.array, bbox:tuple, min_w:float, min_h:float):
     '''Inner contours of current region, especially level 2 contours of the default opencv tree hirerachy.
 
     Args:
-        img_binary (np.array): Binarized image with intresting region (255) and empty region (0).
+        img_binary (np.array): Binarized image with interesting region (255) and empty region (0).
         bbox (tuple): The external bbox.
         min_w (float): Ignore contours if the bbox width is less than this value.
         min_h (float): Ignore contours if the bbox height is less than this value.

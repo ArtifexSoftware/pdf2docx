@@ -503,7 +503,7 @@ class Blocks(ElementCollection):
 
     @staticmethod
     def _split_text_block_vertically(instances:list, line_break_free_space_ratio:float, new_paragraph_free_space_ratio:float):
-        '''Split text block into separate paragraph based on punctuation of sentense.
+        '''Split text block into separate paragraph based on punctuation of sentence.
 
         .. note::
             Considered only normal reading direction, from left to right, from top
