@@ -413,7 +413,7 @@ class TextSpan(Element):
         docx_run.font.size = Pt(font_size)
 
         # adjust by set scaling
-        scale = self.size / font_size
+        scale = self.size / (font_size or self.size or 1)
         if abs(scale-1.0)>=0.01:
             docx.set_char_scaling(docx_run, scale)
         
