@@ -4,7 +4,7 @@
 '''
 
 from docx.shared import Pt
-from docx.oxml import OxmlElement, parse_xml, register_element_cls
+from docx.oxml.parser import OxmlElement, parse_xml, register_element_cls
 from docx.oxml.ns import qn, nsdecls
 from docx.oxml.shape import CT_Picture
 from docx.oxml.xmlchemy import BaseOxmlElement, OneAndOnlyOne
