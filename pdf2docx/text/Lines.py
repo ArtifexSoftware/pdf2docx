@@ -110,7 +110,7 @@ class Lines(ElementCollection):
         '''
         punc_ex_hyphen = ''.join(c for c in string.punctuation if c!='-')
         def is_end_of_english_word(c):
-            return c.isalnum() or (c and c in punc_ex_hyphen)
+            return c.encode().isalnum() or (c and c in punc_ex_hyphen)
         
         for i, line in enumerate(self._instances[:-1]):
             # last char in this line
