@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.abspath("../pdf2docx/"))
 # -- Project information -----------------------------------------------------
 
 project = 'pdf2docx'
-copyright = '2021, dothinking'
-author = 'dothinking'
+copyright = '2023, Artifex'
+author = 'Artifex Software, Inc.'
 
 # The full version, including alpha/beta/rc tags
 # read version number from version.txt, otherwise alpha version
