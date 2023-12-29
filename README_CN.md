@@ -56,14 +56,14 @@
 
 ## 使用帮助
 
-- [安装](https://dothinking.github.io/pdf2docx/installation.html)
-- [快速上手](https://dothinking.github.io/pdf2docx/quickstart.html)
-    - [转换PDF](https://dothinking.github.io/pdf2docx/quickstart.convert.html)
-    - [提取表格](https://dothinking.github.io/pdf2docx/quickstart.table.html)
-    - [命令行参数](https://dothinking.github.io/pdf2docx/quickstart.cli.html)
-    - [简单图形界面](https://dothinking.github.io/pdf2docx/quickstart.gui.html)
-- [技术手册](https://dothinking.github.io/pdf2docx/techdoc.html)
-- [API手册](https://dothinking.github.io/pdf2docx/modules.html)
+- [安装](https://pdf2docx.readthedocs.io/en/latest/installation.html)
+- [快速上手](https://pdf2docx.readthedocs.io/en/latest/quickstart.html)
+    - [转换PDF](https://pdf2docx.readthedocs.io/en/latest/quickstart.convert.html)
+    - [提取表格](https://pdf2docx.readthedocs.io/en/latest/quickstart.table.html)
+    - [命令行参数](https://pdf2docx.readthedocs.io/en/latest/quickstart.cli.html)
+    - [简单图形界面](https://pdf2docx.readthedocs.io/en/latest/quickstart.gui.html)
+- [技术手册](https://pdf2docx.readthedocs.io/en/latest/techdoc.html)
+- [API手册](https://pdf2docx.readthedocs.io/en/latest/modules.html)
 
 ## 样例
 

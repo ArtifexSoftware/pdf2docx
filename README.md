@@ -56,14 +56,14 @@ English | [中文](README_CN.md)
 
 ## Documentation
 
-- [Installation](https://dothinking.github.io/pdf2docx/installation.html)
-- [Quickstart](https://dothinking.github.io/pdf2docx/quickstart.html)
-    - [Convert PDF](https://dothinking.github.io/pdf2docx/quickstart.convert.html)
-    - [Extract table](https://dothinking.github.io/pdf2docx/quickstart.table.html)
-    - [Command Line Interface](https://dothinking.github.io/pdf2docx/quickstart.cli.html)
-    - [Graphic User Interface](https://dothinking.github.io/pdf2docx/quickstart.gui.html)
-- [Technical Documentation (In Chinese)](https://dothinking.github.io/pdf2docx/techdoc.html)
-- [API Documentation](https://dothinking.github.io/pdf2docx/modules.html)
+- [Installation](https://pdf2docx.readthedocs.io/en/latest/installation.html)
+- [Quickstart](https://pdf2docx.readthedocs.io/en/latest/quickstart.html)
+    - [Convert PDF](https://pdf2docx.readthedocs.io/en/latest/quickstart.convert.html)
+    - [Extract table](https://pdf2docx.readthedocs.io/en/latest/quickstart.table.html)
+    - [Command Line Interface](https://pdf2docx.readthedocs.io/en/latest/quickstart.cli.html)
+    - [Graphic User Interface](https://pdf2docx.readthedocs.io/en/latest/quickstart.gui.html)
+- [Technical Documentation (In Chinese)](https://pdf2docx.readthedocs.io/en/latest/techdoc.html)
+- [API Documentation](https://pdf2docx.readthedocs.io/en/latest/modules.html)
 
 ## Sample
 
