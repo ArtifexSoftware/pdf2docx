@@ -1,7 +1,6 @@
 # files
 *.pyc
 *.jp*g
-*.txt
 *.docx
 layout.json
 .vscode/
