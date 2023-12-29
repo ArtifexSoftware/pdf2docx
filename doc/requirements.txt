@@ -3,4 +3,3 @@ rst2pdf
 # define sphinx versioning
 sphinx==5.3.0
 autodoc
-napoleon
