@@ -67,3 +67,65 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 # html_static_path = ['_static']
 
+# -- Options for LaTeX output ---------------------------------------------
+latex_elements = {
+    # "fontpkg": r"\usepackage[sfdefault]{ClearSans} \usepackage[T1]{fontenc}"
+}
+# Grouping the document tree into LaTeX files. List of tuples
+# (source start file, target name, title,
+#  author, documentclass [howto, manual, or own class]).
+latex_documents = [("index", "pdf2docx.tex", "pdf2docx Documentation", "Artifex", "manual")]
+# The name of an image file (relative to this directory) to place at the top of
+# the title page.
+#latex_logo = "images/pymupdf-logo.png"
+
+# For "manual" documents, if this is true, then toplevel headings are parts,
+# not chapters.
+# latex_use_parts = False
+
+# If true, show page references after internal links.
+latex_show_pagerefs = False
+
+# If true, show URL addresses after external links.
+# latex_show_urls = True
+# latex_use_xindy = True
+# Documents to append as an appendix to all manuals.
+# latex_appendices = []
+
+# If false, no module index is generated.
+latex_domain_indices = True
+
+# -- Options for PDF output --------------------------------------------------
+# Grouping the document tree into PDF files. List of tuples
+# (source start file, target name, title, author).
+
+pdf_documents = [("index", "pdf2docx", "pdf2docx manual", "Artifex")]
+
+# A comma-separated list of custom stylesheets. Example:
+# pdf_stylesheets = ["sphinx", "bahnschrift", "a4"]
+
+# Create a compressed PDF
+pdf_compressed = True
+
+# A colon-separated list of folders to search for fonts. Example:
+# pdf_font_path=['/usr/share/fonts', '/usr/share/texmf-dist/fonts/']
+
+# Language to be used for hyphenation support
+pdf_language = "en_US"
+
+# If false, no index is generated.
+pdf_use_index = True
+
+# If false, no modindex is generated.
+pdf_use_modindex = True
+
+# If false, no coverpage is generated.
+pdf_use_coverpage = True
+
+pdf_break_level = 2
+
+pdf_verbosity = 0
+pdf_invariant = True
+
+
+
