@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+'''Build package.'''
 
 import os
 from setuptools import find_packages, setup
@@ -45,18 +44,18 @@ def load_requirements(fname):
     return requirements
 
 setup(
-    name="pdf2docx",    
+    name="pdf2docx",
     version=get_version("version.txt"),
     keywords=["pdf-to-word", "pdf-to-docx"],
     description=DESCRIPTION,
     long_description=load_long_description("README.md"),
     long_description_content_type="text/markdown",
-    license="GPL v3", 
-    author="dothinking",
-    author_email="train8808@gmail.com",
+    license="GPL v3",
+    author = 'Artifex',
+    author_email = 'support@artifex.com',
     url="https://github.com/dothinking/pdf2docx",
     packages=find_packages(exclude=EXCLUDE_FROM_PACKAGES),
-    include_package_data=True,    
+    include_package_data=True,
     zip_safe=False,
     install_requires=load_requirements("requirements.txt"),
     python_requires=">=3.6",

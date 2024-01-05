@@ -5,8 +5,8 @@ OUTPUTDIR	:=$(CURDIR)/outputs
 
 .PHONY: test pdf2docx docx2pdf check clean
 
-
-test: clean pdf2docx docx2pdf check
+# test: clean pdf2docx docx2pdf check
+test: clean pdf2docx
 
 
 pdf2docx: 

@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
-
 '''
+The test framework: pytest, pytest-cov.
+
 To test the pdf conversion and converting quality, the idea is to convert generated docx to pdf,
 then check the image similarity between source pdf page and converted pdf page. Considering the 
 converting quality from docx to pdf, a Windows-based command line tool `OfficeToPDF` is used, in
@@ -8,11 +8,11 @@ addition, an installation of Microsoft Word is required.
 
 To leverage the benefit of Github Action, the testing process is divided into three parts:
   1. Convert sample pdf to docx with `pdf2docx`.
-  2. Convert generated docx to pdf for comparing. 
+  2. Convert generated docx to pdf for comparing.
   3. Convert page to image and compare similarity with `python-opencv`.
 
 Test scripts on Part One and Three are applied with two test class respectively in this module,
-so they could be run seperately with pytest command, e.g.
+so they could be run separately with pytest command, e.g.
 
 - pytest -vs --no-header test.py::TestConversion for Part One
 - pytest -vs --no-header test.py::TestQuality for Part Three
@@ -46,12 +46,12 @@ def get_page_similarity(page_a, page_b, diff_img_filename='diff.png'):
     if image_a.shape != image_b.shape:
         rows, cols = image_a.shape[:2]
         image_b = cv.resize(image_b, (cols, rows))
-    
+
     # write different image
     if diff_img_filename:
         diff = cv.subtract(image_a, image_b)
         cv.imwrite(diff_img_filename, diff)
-    
+
     return get_mssism(image_a, image_b)
 
 
@@ -105,7 +105,7 @@ class TestConversion:
     def setup(self):
         '''create output path if not exist.'''
         if not os.path.exists(output_path): os.mkdir(output_path)
-    
+
 
     def convert(self, filename):
         '''Convert PDF file from sample path to output path.'''
@@ -113,7 +113,7 @@ class TestConversion:
         docx_file = os.path.join(output_path, f'{filename}.docx')
         cv = Converter(source_pdf_file)        
         cv.convert(docx_file)
-        cv.close()    
+        cv.close()
 
     # ------------------------------------------
     # layout: section
@@ -140,7 +140,7 @@ class TestConversion:
     def test_text_alignment(self):
         '''test text alignment.'''
         self.convert('demo-text-alignment')    
-    
+
     def test_unnamed_fonts(self):
         '''test unnamed fonts which destroys span bbox, and accordingly line/block layout.'''
         self.convert('demo-text-unnamed-fonts')
@@ -148,7 +148,7 @@ class TestConversion:
     def test_text_scaling(self):
         '''test font size. In this case, the font size is set precisely with character scaling.'''
         self.convert('demo-text-scaling')
-    
+
     def test_text_hidden(self):
         '''test hidden text, which is ignore by default.'''
         self.convert('demo-text-hidden')
@@ -171,7 +171,7 @@ class TestConversion:
     def test_image_transparent(self):
         '''test transparent images.'''
         self.convert('demo-image-transparent')
-    
+
     def test_image_rotation(self):
         '''test rotating image due to pdf page rotation.'''
         self.convert('demo-image-rotation')
@@ -204,7 +204,7 @@ class TestConversion:
     def test_table_shading(self):
         '''test simulating shape with shading cell.'''
         self.convert('demo-table-shading')
-    
+
     def test_table_shading_highlight(self):
         '''test distinguishing table shading and highlight.'''
         self.convert('demo-table-shading-highlight')
@@ -261,7 +261,7 @@ class TestConversion:
         ]
         assert table==sample
 
-    
+
     # ------------------------------------------
     # command line arguments
     # ------------------------------------------
@@ -269,16 +269,16 @@ class TestConversion:
         '''test converting pdf with multi-pages.'''
         filename = 'demo'
         pdf_file = os.path.join(sample_path, f'{filename}.pdf')
-        docx_file = os.path.join(output_path, f'{filename}.docx')    
+        docx_file = os.path.join(output_path, f'{filename}.docx')
         parse(pdf_file, docx_file, start=1, end=5)
 
-        # check file        
+        # check file
         assert os.path.isfile(docx_file)
-    
+
 
 
 class TestQuality:
-    '''Check the quality of converted docx. 
+    '''Check the quality of converted docx.
     Note the docx files must be converted to PDF files in advance.
     '''
 
