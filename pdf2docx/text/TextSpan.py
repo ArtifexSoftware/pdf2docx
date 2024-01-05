@@ -55,7 +55,8 @@ class TextSpan(Element):
         # font metrics
         # line_height is the standard single line height used in relative line spacing,
         # while exact line spacing is used when line_height==-1 by default.
-        self.font = raw.get('font', '')
+        font_name = raw.get('font', '')
+        self.font = bytes(ord(c) for c in font_name).decode() # in case unicode in font name
         self.size = raw.get('size', 12.0)
         self.ascender = raw.get('ascender', 1.0)
         self.descender = raw.get('descender', 0.0)
