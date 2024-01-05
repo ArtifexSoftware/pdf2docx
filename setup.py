@@ -53,7 +53,6 @@ setup(
     license="GPL v3",
     author = 'Artifex',
     author_email = 'support@artifex.com',
-    url="https://github.com/dothinking/pdf2docx",
     packages=find_packages(exclude=EXCLUDE_FROM_PACKAGES),
     include_package_data=True,
     zip_safe=False,

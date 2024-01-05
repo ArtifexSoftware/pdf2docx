@@ -24,6 +24,7 @@ Links on MS Word to PDF conversion:
 '''
 
 import os
+import io
 import numpy as np
 import cv2 as cv
 import fitz
@@ -102,7 +103,7 @@ def get_mssism(i1, i2, kernel=(15,15)):
 class TestConversion:
     '''Test the converting process.'''
 
-    def setup(self):
+    def setup_method(self):
         '''create output path if not exist.'''
         if not os.path.exists(output_path): os.mkdir(output_path)
 
@@ -114,6 +115,26 @@ class TestConversion:
         cv = Converter(source_pdf_file)        
         cv.convert(docx_file)
         cv.close()
+    
+    def convert_by_io_stream(self, filename):
+        '''Convert PDF file from sample path to output path.'''
+        source_pdf_file = os.path.join(sample_path, f'{filename}.pdf')
+        with open(source_pdf_file, 'rb') as f: in_stream = f.read()
+
+        cv = Converter(stream=in_stream)
+        out_stream = io.BytesIO()
+        cv.convert(out_stream)
+        cv.close()
+
+        docx_file = os.path.join(output_path, f'{filename}.docx')
+        with open(docx_file, 'wb') as f: f.write(out_stream.getvalue())
+
+    # ------------------------------------------
+    # stream
+    # ------------------------------------------
+    def test_io_stream(self):
+        '''test input/output file stream.'''
+        self.convert_by_io_stream('demo-text')
 
     # ------------------------------------------
     # layout: section

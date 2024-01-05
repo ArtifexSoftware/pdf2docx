@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+'''PDF to Docx Converter.'''
 import json
 import logging
 import os
@@ -188,12 +188,12 @@ class Converter:
         return self
 
 
-    def make_docx(self, docx_filename=None, **kwargs):
+    def make_docx(self, filename_or_stream=None, **kwargs):
         '''Step 4 of converting process: create docx file with converted pages.
         
         Args:
-            docx_filename (str, file-like): docx file to write.
-            kwargs (dict, optional): Configuration parameters. 
+            filename_or_stream (str, file-like): docx file to write.
+            kwargs (dict, optional): Configuration parameters.
         '''
         logging.info(self._color_output('[4/4] Creating pages...'))
 
@@ -204,18 +204,13 @@ class Converter:
         if not parsed_pages:
             raise ConversionException('No parsed pages. Please parse page first.')
 
-        if not docx_filename:
-            raise ConversionException(
-                "No docx file name. Please specify a docx file name or a file-like object to write."
-            )
-
-        # docx file to convert to
-        if hasattr(docx_filename, "write"):
-            filename = docx_filename
-
-        else:
-            filename = docx_filename or f'{self.filename_pdf[0:-len(".pdf")]}.docx' if self.filename_pdf else "output.docx"
-            if os.path.exists(filename): os.remove(filename)
+        if not filename_or_stream:
+            if self.filename_pdf:
+                filename_or_stream = f'{self.filename_pdf[0:-len(".pdf")]}.docx'
+                # remove existing file
+                if os.path.exists(filename_or_stream): os.remove(filename_or_stream)
+            else:
+                raise ConversionException("Please specify a docx file name or a file-like object to write.")
 
         # create page by page        
         docx_file = Document() 
@@ -233,7 +228,7 @@ class Converter:
                     raise MakedocxException(f'Error when make page {pid}: {e}')
 
         # save docx
-        docx_file.save(filename)
+        docx_file.save(filename_or_stream)
 
 
     # -----------------------------------------------------------------------
