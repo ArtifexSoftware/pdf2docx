@@ -87,4 +87,4 @@ CJK_UNICODE_RANGES = [
     [0xA490, 0xA4CF],  # Yi Radicals
 ]
 
-DEFAULT_FONT_NAME = 'Arial'
+DEFAULT_FONT_NAME = 'helv'
