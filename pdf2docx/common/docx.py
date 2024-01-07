@@ -1,10 +1,12 @@
-# -*- coding: utf-8 -*-
-
-'''docx operation methods based on ``python-docx``.
-'''
+'''docx operation methods based on ``python-docx``.'''
 
 from docx.shared import Pt
-from docx.oxml.parser import OxmlElement, parse_xml, register_element_cls
+try:
+    # python-docx <= 0.8.11 or python-docx > 1.0.0
+    from docx.oxml import OxmlElement, parse_xml, register_element_cls
+except ImportError:
+    # python-docx >= 1.0.0
+    from docx.oxml.parser import OxmlElement, parse_xml, register_element_cls
 from docx.oxml.ns import qn, nsdecls
 from docx.oxml.shape import CT_Picture
 from docx.oxml.xmlchemy import BaseOxmlElement, OneAndOnlyOne
@@ -47,17 +49,25 @@ def set_columns(section, width_list:list, space=0):
         </w:cols>
     """
     cols = section._sectPr.xpath('./w:cols')[0]
-    cols.set(qn('w:num'), str(len(width_list)))    
+
+    # do nothing if only one column
+    if len(width_list)==1:
+        # recovery to default column setting in case previous section has multiple columns
+        if len(cols)!=1: cols.clear()
+        return
+
+    # set multiple column properties
+    # clear columns in advance because the latest column setting seems to be inherited
+    cols.clear()
+    cols.set(qn('w:num'), str(len(width_list)))
     cols.set(qn('w:equalWidth'), '0')
 
     # insert column with width
-    # default col exists in cols, so insert new col to the beginning
-    for w in width_list[::-1]:
+    for w in width_list:
         e = OxmlElement('w:col')
         e.set(qn('w:w'), str(int(20*w)))
         e.set(qn('w:space'), str(int(20*space))) # basic unit 1/20 Pt
-        cols.insert(0, e)
-
+        cols.append(e)
 
 def delete_paragraph(paragraph):
     '''Delete a paragraph.
