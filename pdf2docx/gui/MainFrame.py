@@ -27,11 +27,11 @@ class MainFrame(Frame):
         self.program_use_label.grid(row=0, column=0, columnspan=2, padx=120, pady=50)
 
         # PDF file entry
-        self.file_path_pdf_entry = Entry(self, border=5, width=55)
+        self.file_path_pdf_entry = Entry(self, border=5)
         self.file_path_pdf_entry.grid(row=1, column=0, sticky='w', ipady=4, padx=10)
 
         # Docx file entry
-        self.file_path_docx_entry = Entry(self, border=5, width=55)
+        self.file_path_docx_entry = Entry(self, border=5)
         self.file_path_docx_entry.grid(row=2, column=0, sticky='w', ipady=4, padx=10, pady=75)
 
         # Select PDF files Button
