@@ -1,3 +1,4 @@
+pdf2docx
 rst2pdf
 
 # define sphinx versioning
