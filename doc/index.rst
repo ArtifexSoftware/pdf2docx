@@ -14,7 +14,7 @@ generate docx file with ``python-docx``.
    installation
    quickstart
    techdoc
-   modules
+   api/modules
 
 
 Indices and tables

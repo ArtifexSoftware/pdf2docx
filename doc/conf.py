@@ -40,8 +40,13 @@ release = get_version('../version.txt')
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc'
+    'sphinxcontrib.apidoc'
 ]
+
+apidoc_module_dir = '../pdf2docx'
+apidoc_output_dir = 'api'
+apidoc_excluded_paths = []
+apidoc_separate_modules = True
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']

@@ -1,5 +1,5 @@
-API Documentation
-=================
+pdf2docx
+========
 
 .. toctree::
    :maxdepth: 4
