@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install sphinx sphinx_rtd_theme
+          pip install sphinx sphinx_rtd_theme autodoc sphinxcontrib.apidoc
           pip install -r requirements.txt
           python setup.py develop
 
