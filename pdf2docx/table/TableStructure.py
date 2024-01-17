@@ -483,9 +483,9 @@ class TableStructure:
         target = bbox[idx]
         
         # add missing border rects
-        sample_border = Stroke()        
-        bbox[idx] = target
-        bbox[(idx+2)%4] = target
+        sample_border = Stroke()
+        idx1 = (idx+2)%4
+        bbox[idx1] = target + 0.1 * (1 if idx1>idx else -1)
 
         # add whole border if not exist
         if abs(target-current)> max_border_width:
@@ -513,7 +513,6 @@ class TableStructure:
                 start = right
             
             borders[current].extend(segments)
-
 
     @staticmethod
     def _check_merged_cells(ref:float, borders:list, direction:str='row'):
@@ -548,7 +547,6 @@ class TableStructure:
                     ref0, ref1 = border.y0, border.y1
                 else:
                     ref0, ref1 = border.x0, border.x1
-
                 # 1) intersection found
                 if ref0 < ref < ref1:
                     res.append(1)

@@ -125,7 +125,7 @@ class Layout:
             self.blocks.append(block)
         
         # deep into line span if any intersection
-        elif self.bbox & block.bbox and isinstance(block, Line):
+        elif isinstance(block, Line) and self.bbox.intersects(block.bbox):
             self.blocks.append(block.intersects(self.bbox))
 
 

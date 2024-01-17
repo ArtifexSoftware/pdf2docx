@@ -40,22 +40,19 @@ class Char(Element):
 
         Returns:
             bool: Whether a Char locates in target rect.
-        
+
         .. note::
             It's considered as contained in the target rect if the intersection is larger than 
             half of the char bbox.
-        """ 
+        """
         # char in rect?
-        if self.bbox in rect.bbox:
-            return True
+        if self.bbox in rect.bbox: return True
 
-        # intersection? 
-        else:
-            intsec = self.bbox & rect.bbox # width=0 if invalid intersection
-            if horizontal:
-                return intsec.width > 0.5*self.bbox.width
-            else:
-                return intsec.height > 0.5*self.bbox.height
+        # intersection?
+        s = self.bbox & rect.bbox
+        if s.is_empty: return False
+        if horizontal: return s.width > 0.5*self.bbox.width
+        return s.height > 0.5*self.bbox.height
 
 
     def store(self):

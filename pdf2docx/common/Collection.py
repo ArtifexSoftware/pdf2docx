@@ -348,10 +348,12 @@ class ElementCollection(Collection):
         for instance in self._instances:
             # A contains B => A & B = B
             intersection = instance.bbox & bbox
-            factor = round(intersection.get_area()/instance.bbox.get_area(), 2)
-
-            if factor >= threshold:
-                intersections.append(instance)
-            else:
+            if intersection.is_empty:
                 no_intersections.append(instance)
+            else:
+                factor = round(intersection.get_area()/instance.bbox.get_area(), 2)
+                if factor >= threshold:
+                    intersections.append(instance)
+                else:
+                    no_intersections.append(instance)
         return self.__class__(intersections), self.__class__(no_intersections)
