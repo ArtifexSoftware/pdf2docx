@@ -1,0 +1,7 @@
+pdf2docx.image.ImageSpan module
+===============================
+
+.. automodule:: pdf2docx.image.ImageSpan
+   :members:
+   :undoc-members:
+   :show-inheritance:

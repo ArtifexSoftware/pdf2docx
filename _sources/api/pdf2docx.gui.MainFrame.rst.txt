@@ -1,0 +1,7 @@
+pdf2docx.gui.MainFrame module
+=============================
+
+.. automodule:: pdf2docx.gui.MainFrame
+   :members:
+   :undoc-members:
+   :show-inheritance:

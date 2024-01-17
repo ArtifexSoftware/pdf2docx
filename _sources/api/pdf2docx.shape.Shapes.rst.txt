@@ -1,0 +1,7 @@
+pdf2docx.shape.Shapes module
+============================
+
+.. automodule:: pdf2docx.shape.Shapes
+   :members:
+   :undoc-members:
+   :show-inheritance:

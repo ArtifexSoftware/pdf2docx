@@ -1,0 +1,21 @@
+pdf2docx.image package
+======================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pdf2docx.image.Image
+   pdf2docx.image.ImageBlock
+   pdf2docx.image.ImageSpan
+   pdf2docx.image.ImagesExtractor
+
+Module contents
+---------------
+
+.. automodule:: pdf2docx.image
+   :members:
+   :undoc-members:
+   :show-inheritance:

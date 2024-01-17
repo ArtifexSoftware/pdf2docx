@@ -1,0 +1,22 @@
+pdf2docx.layout package
+=======================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pdf2docx.layout.Blocks
+   pdf2docx.layout.Column
+   pdf2docx.layout.Layout
+   pdf2docx.layout.Section
+   pdf2docx.layout.Sections
+
+Module contents
+---------------
+
+.. automodule:: pdf2docx.layout
+   :members:
+   :undoc-members:
+   :show-inheritance:

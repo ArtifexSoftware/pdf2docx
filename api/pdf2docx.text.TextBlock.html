@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pdf2docx.text.TextBlock module &mdash; pdf2docx refs/heads/master documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=03c5a516"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pdf2docx.text.TextSpan module" href="pdf2docx.text.TextSpan.html" />
+    <link rel="prev" title="pdf2docx.text.Spans module" href="pdf2docx.text.Spans.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            pdf2docx
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">USER GUIDE</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../techdoc.html">Technical Documentation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API DOCUMENTATION</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pdf2docx</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pdf2docx.html">pdf2docx package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pdf2docx.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.common.html">pdf2docx.common package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.font.html">pdf2docx.font package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.gui.html">pdf2docx.gui package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.layout.html">pdf2docx.layout package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.shape.html">pdf2docx.shape package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.table.html">pdf2docx.table package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="pdf2docx.text.html">pdf2docx.text package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-pdf2docx">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pdf2docx</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pdf2docx</a></li>
+          <li class="breadcrumb-item"><a href="pdf2docx.html">pdf2docx package</a></li>
+          <li class="breadcrumb-item"><a href="pdf2docx.text.html">pdf2docx.text package</a></li>
+      <li class="breadcrumb-item active">pdf2docx.text.TextBlock module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/pdf2docx.text.TextBlock.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pdf2docx.text.TextBlock">
+<span id="pdf2docx-text-textblock-module"></span><h1>pdf2docx.text.TextBlock module<a class="headerlink" href="#module-pdf2docx.text.TextBlock" title="Link to this heading"></a></h1>
+<p>Text block objects based on PDF raw dict extracted with <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code>.</p>
+<p>Data structure based on this <a class="reference external" href="https://pymupdf.readthedocs.io/en/latest/textpage.html">link</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="c1"># raw dict</span>
+    <span class="c1"># --------------------------------</span>
+    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s1">&#39;bbox&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span><span class="n">y0</span><span class="p">,</span><span class="n">x1</span><span class="p">,</span><span class="n">y1</span><span class="p">),</span>
+    <span class="s1">&#39;lines&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="n">lines</span> <span class="p">]</span>
+
+    <span class="c1"># introduced dict</span>
+    <span class="c1"># --------------------------------</span>
+    <span class="s1">&#39;before_space&#39;</span><span class="p">:</span> <span class="n">bs</span><span class="p">,</span>
+    <span class="s1">&#39;after_space&#39;</span><span class="p">:</span> <span class="k">as</span><span class="p">,</span>
+    <span class="s1">&#39;line_space&#39;</span><span class="p">:</span> <span class="n">ls</span><span class="p">,</span>
+
+    <span class="s1">&#39;alignment&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s1">&#39;left_space&#39;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="s1">&#39;right_space&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+
+    <span class="s1">&#39;tab_stops&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">15.4</span><span class="p">,</span> <span class="mf">35.0</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.text.TextBlock.</span></span><span class="sig-name descname"><span class="pre">TextBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../pdf2docx.common.Block.html#pdf2docx.common.Block.Block" title="pdf2docx.common.Block.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block</span></code></a></p>
+<p>Text block.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_or_lines</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.add" title="Link to this definition"></a></dt>
+<dd><p>Add line or lines to TextBlock.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.average_row_gap">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">average_row_gap</span></span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.average_row_gap" title="Link to this definition"></a></dt>
+<dd><p>Average distance between adjacent two physical rows.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.make_docx">
+<span class="sig-name descname"><span class="pre">make_docx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.make_docx" title="Link to this definition"></a></dt>
+<dd><p>Create paragraph for a text block.</p>
+<p>Refer to <code class="docutils literal notranslate"><span class="pre">python-docx</span></code> doc for details on text format:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://python-docx.readthedocs.io/en/latest/user/text.html">https://python-docx.readthedocs.io/en/latest/user/text.html</a></p></li>
+<li><p><a class="reference external" href="https://python-docx.readthedocs.io/en/latest/api/enum/WdAlignParagraph.html#wdparagraphalignment">https://python-docx.readthedocs.io/en/latest/api/enum/WdAlignParagraph.html#wdparagraphalignment</a></p></li>
+</ul>
+<dl class="simple">
+<dt>Args:</dt><dd><p>p (Paragraph): <code class="docutils literal notranslate"><span class="pre">python-docx</span></code> paragraph instance.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The left position of paragraph is set by paragraph indent, rather than <code class="docutils literal notranslate"><span class="pre">TAB</span></code> stop.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.parse_exact_line_spacing">
+<span class="sig-name descname"><span class="pre">parse_exact_line_spacing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.parse_exact_line_spacing" title="Link to this definition"></a></dt>
+<dd><p>Calculate exact line spacing, e.g. <cite>spacing = Pt(12)</cite>.</p>
+<p>The layout of pdf text block: line-space-line-space-line, excepting space before first line, 
+i.e. space-line-space-line, when creating paragraph in docx. So, an average line height is 
+<code class="docutils literal notranslate"><span class="pre">space+line</span></code>. Then, the height of first line can be adjusted by updating paragraph before-spacing.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Compared with the relative spacing mode, it has a more precise layout, but less flexible editing
+ability, especially changing the font size.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.parse_horizontal_spacing">
+<span class="sig-name descname"><span class="pre">parse_horizontal_spacing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_separate_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_break_width_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_break_free_space_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_left_aligned_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_right_aligned_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_center_aligned_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.parse_horizontal_spacing" title="Link to this definition"></a></dt>
+<dd><p>Set horizontal spacing based on lines layout and page bbox.</p>
+<ul class="simple">
+<li><p>The general spacing is determined by paragraph alignment and indentation.</p></li>
+<li><p>The detailed spacing of block lines is determined by tab stops.</p></li>
+</ul>
+<p>Multiple alignment modes may exist in block (due to improper organized lines
+from <code class="docutils literal notranslate"><span class="pre">PyMuPDF</span></code>), e.g. some lines align left, and others right. In this case,
+<strong>LEFT</strong> alignment is set, and use <code class="docutils literal notranslate"><span class="pre">TAB</span></code> to position each line.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.parse_relative_line_spacing">
+<span class="sig-name descname"><span class="pre">parse_relative_line_spacing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.parse_relative_line_spacing" title="Link to this definition"></a></dt>
+<dd><p>Calculate relative line spacing, e.g. <cite>spacing = 1.02</cite>.  Relative line spacing is based on standard 
+single line height, which is font-related.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The line spacing could be updated automatically when changing the font size, while the layout might
+be broken in exact spacing mode, e.g. overlapping of lines.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.parse_text_format">
+<span class="sig-name descname"><span class="pre">parse_text_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.parse_text_format" title="Link to this definition"></a></dt>
+<dd><p>Parse text format with style represented by rectangles.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>shapes (Shapes): Shapes representing potential styles applied on blocks.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.plot" title="Link to this definition"></a></dt>
+<dd><p>Plot block/line/span area for debug purpose.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>page (fitz.Page): pdf page.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.raw_text">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">raw_text</span></span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.raw_text" title="Link to this definition"></a></dt>
+<dd><p>Raw text content in block without considering images.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.row_count">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">row_count</span></span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.row_count" title="Link to this definition"></a></dt>
+<dd><p>Count of physical rows.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.store">
+<span class="sig-name descname"><span class="pre">store</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.store" title="Link to this definition"></a></dt>
+<dd><p>Store attributes in json format.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.text">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">text</span></span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.text" title="Link to this definition"></a></dt>
+<dd><p>Text content in block. Note image is counted as a placeholder <code class="docutils literal notranslate"><span class="pre">&lt;image&gt;</span></code>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.text_direction">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">text_direction</span></span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.text_direction" title="Link to this definition"></a></dt>
+<dd><p>All lines contained in text block must have same text direction. 
+Otherwise, set normal direction.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.text.TextBlock.TextBlock.white_space_only">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">white_space_only</span></span><a class="headerlink" href="#pdf2docx.text.TextBlock.TextBlock.white_space_only" title="Link to this definition"></a></dt>
+<dd><p>If this block contains only white space or not. If True, this block is safe to be removed.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pdf2docx.text.Spans.html" class="btn btn-neutral float-left" title="pdf2docx.text.Spans module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pdf2docx.text.TextSpan.html" class="btn btn-neutral float-right" title="pdf2docx.text.TextSpan module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Artifex.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+pdf2docx.table.TableBlock module
+================================
+
+.. automodule:: pdf2docx.table.TableBlock
+   :members:
+   :undoc-members:
+   :show-inheritance:

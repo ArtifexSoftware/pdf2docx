@@ -1,0 +1,7 @@
+pdf2docx.common.share module
+============================
+
+.. automodule:: pdf2docx.common.share
+   :members:
+   :undoc-members:
+   :show-inheritance:

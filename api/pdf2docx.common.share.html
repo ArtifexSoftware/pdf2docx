@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pdf2docx.common.share module &mdash; pdf2docx refs/heads/master documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=03c5a516"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pdf2docx.font package" href="pdf2docx.font.html" />
+    <link rel="prev" title="pdf2docx.common.docx module" href="pdf2docx.common.docx.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            pdf2docx
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">USER GUIDE</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../techdoc.html">Technical Documentation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API DOCUMENTATION</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pdf2docx</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pdf2docx.html">pdf2docx package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pdf2docx.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="pdf2docx.common.html">pdf2docx.common package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.font.html">pdf2docx.font package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.gui.html">pdf2docx.gui package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.layout.html">pdf2docx.layout package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.shape.html">pdf2docx.shape package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.table.html">pdf2docx.table package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.text.html">pdf2docx.text package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-pdf2docx">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pdf2docx</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pdf2docx</a></li>
+          <li class="breadcrumb-item"><a href="pdf2docx.html">pdf2docx package</a></li>
+          <li class="breadcrumb-item"><a href="pdf2docx.common.html">pdf2docx.common package</a></li>
+      <li class="breadcrumb-item active">pdf2docx.common.share module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/pdf2docx.common.share.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pdf2docx.common.share">
+<span id="pdf2docx-common-share-module"></span><h1>pdf2docx.common.share module<a class="headerlink" href="#module-pdf2docx.common.share" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pdf2docx.common.share.BlockType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">BlockType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.BlockType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Block types.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.BlockType.FLOAT_IMAGE">
+<span class="sig-name descname"><span class="pre">FLOAT_IMAGE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#pdf2docx.common.share.BlockType.FLOAT_IMAGE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.BlockType.IMAGE">
+<span class="sig-name descname"><span class="pre">IMAGE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#pdf2docx.common.share.BlockType.IMAGE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.BlockType.LATTICE_TABLE">
+<span class="sig-name descname"><span class="pre">LATTICE_TABLE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#pdf2docx.common.share.BlockType.LATTICE_TABLE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.BlockType.STREAM_TABLE">
+<span class="sig-name descname"><span class="pre">STREAM_TABLE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#pdf2docx.common.share.BlockType.STREAM_TABLE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.BlockType.TEXT">
+<span class="sig-name descname"><span class="pre">TEXT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#pdf2docx.common.share.BlockType.TEXT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.BlockType.UNDEFINED">
+<span class="sig-name descname"><span class="pre">UNDEFINED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#pdf2docx.common.share.BlockType.UNDEFINED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pdf2docx.common.share.IText">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">IText</span></span><a class="headerlink" href="#pdf2docx.common.share.IText" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Text related interface considering text direction.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.common.share.IText.is_horizontal_text">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_horizontal_text</span></span><a class="headerlink" href="#pdf2docx.common.share.IText.is_horizontal_text" title="Link to this definition"></a></dt>
+<dd><p>Check whether text direction is from left to right.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.common.share.IText.is_mix_text">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_mix_text</span></span><a class="headerlink" href="#pdf2docx.common.share.IText.is_mix_text" title="Link to this definition"></a></dt>
+<dd><p>Check whether text direction is either from left to 
+right or from bottom to top.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.common.share.IText.is_vertical_text">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_vertical_text</span></span><a class="headerlink" href="#pdf2docx.common.share.IText.is_vertical_text" title="Link to this definition"></a></dt>
+<dd><p>Check whether text direction is from bottom to top.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.common.share.IText.text_direction">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">text_direction</span></span><a class="headerlink" href="#pdf2docx.common.share.IText.text_direction" title="Link to this definition"></a></dt>
+<dd><p>Text direction is from left to right by default.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pdf2docx.common.share.RectType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">RectType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.RectType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Shape type in context.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.RectType.BORDER">
+<span class="sig-name descname"><span class="pre">BORDER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">16</span></em><a class="headerlink" href="#pdf2docx.common.share.RectType.BORDER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.RectType.HIGHLIGHT">
+<span class="sig-name descname"><span class="pre">HIGHLIGHT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#pdf2docx.common.share.RectType.HIGHLIGHT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.RectType.HYPERLINK">
+<span class="sig-name descname"><span class="pre">HYPERLINK</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8</span></em><a class="headerlink" href="#pdf2docx.common.share.RectType.HYPERLINK" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.RectType.SHADING">
+<span class="sig-name descname"><span class="pre">SHADING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">32</span></em><a class="headerlink" href="#pdf2docx.common.share.RectType.SHADING" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.RectType.STRIKE">
+<span class="sig-name descname"><span class="pre">STRIKE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#pdf2docx.common.share.RectType.STRIKE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.RectType.UNDERLINE">
+<span class="sig-name descname"><span class="pre">UNDERLINE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#pdf2docx.common.share.RectType.UNDERLINE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextAlignment">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">TextAlignment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.TextAlignment" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Text alignment.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The difference between <code class="docutils literal notranslate"><span class="pre">NONE</span></code> and <code class="docutils literal notranslate"><span class="pre">UNKNOWN</span></code>:</p>
+<ul class="simple">
+<li><p>NONE: none of left/right/center align -&gt; need TAB stop</p></li>
+<li><p>UNKNOWN: can’t decide, e.g. single line only</p></li>
+</ul>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextAlignment.CENTER">
+<span class="sig-name descname"><span class="pre">CENTER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.CENTER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextAlignment.JUSTIFY">
+<span class="sig-name descname"><span class="pre">JUSTIFY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.JUSTIFY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextAlignment.LEFT">
+<span class="sig-name descname"><span class="pre">LEFT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.LEFT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextAlignment.NONE">
+<span class="sig-name descname"><span class="pre">NONE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.NONE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextAlignment.RIGHT">
+<span class="sig-name descname"><span class="pre">RIGHT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.RIGHT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextAlignment.UNKNOWN">
+<span class="sig-name descname"><span class="pre">UNKNOWN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#pdf2docx.common.share.TextAlignment.UNKNOWN" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextDirection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">TextDirection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.TextDirection" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Text direction.    
+* LEFT_RIGHT: from left to right within a line, and lines go from top to bottom
+* BOTTOM_TOP: from bottom to top within a line, and lines go from left to right
+* MIX       : a mixture if LEFT_RIGHT and BOTTOM_TOP
+* IGNORE    : neither LEFT_RIGHT nor BOTTOM_TOP</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextDirection.BOTTOM_TOP">
+<span class="sig-name descname"><span class="pre">BOTTOM_TOP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#pdf2docx.common.share.TextDirection.BOTTOM_TOP" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextDirection.IGNORE">
+<span class="sig-name descname"><span class="pre">IGNORE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#pdf2docx.common.share.TextDirection.IGNORE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextDirection.LEFT_RIGHT">
+<span class="sig-name descname"><span class="pre">LEFT_RIGHT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#pdf2docx.common.share.TextDirection.LEFT_RIGHT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdf2docx.common.share.TextDirection.MIX">
+<span class="sig-name descname"><span class="pre">MIX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#pdf2docx.common.share.TextDirection.MIX" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdf2docx.common.share.cmyk_to_rgb">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">cmyk_to_rgb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmyk_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.cmyk_to_rgb" title="Link to this definition"></a></dt>
+<dd><p>CMYK components to GRB value.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdf2docx.common.share.debug_plot">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">debug_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.debug_plot" title="Link to this definition"></a></dt>
+<dd><p>Plot the returned objects of inner function.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>title (str): Page title.
+show (bool, optional): Don’t plot if show==False. Default to True.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<dl class="simple">
+<dt>Prerequisite of the inner function: </dt><dd><ul class="simple">
+<li><p>the first argument is a <a class="reference internal" href="../pdf2docx.page.BasePage.html#module-pdf2docx.page.BasePage" title="pdf2docx.page.BasePage"><code class="xref py py-class docutils literal notranslate"><span class="pre">BasePage</span></code></a> instance.</p></li>
+<li><p>the last argument is configuration parameters in <code class="docutils literal notranslate"><span class="pre">dict</span></code> type.</p></li>
+</ul>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdf2docx.common.share.flatten">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">klass</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.flatten" title="Link to this definition"></a></dt>
+<dd><p>Yield items from any nested iterable.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdf2docx.common.share.is_number">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">is_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.is_number" title="Link to this definition"></a></dt>
+<dd><p>Whether can be converted to a float.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pdf2docx.common.share.lazyproperty">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">lazyproperty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.lazyproperty" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Calculate only once and cache property value.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdf2docx.common.share.lower_round">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">lower_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndigits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.lower_round" title="Link to this definition"></a></dt>
+<dd><p>Round number to lower bound with specified digits, e.g. lower_round(1.26, 1)=1.2</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdf2docx.common.share.new_page">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">new_page</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.new_page" title="Link to this definition"></a></dt>
+<dd><p>Insert a new page with given title.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>doc (fitz.Document): pdf document object.
+width (float): Page width.
+height (float): Page height.
+title (str): Page title shown in page.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdf2docx.common.share.rgb_component">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">rgb_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">srgb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.rgb_component" title="Link to this definition"></a></dt>
+<dd><p>srgb value to R,G,B components, e.g. 16711680 -&gt; (255, 0, 0).</p>
+<p>Equal to PyMuPDF built-in method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="mi">255</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">fitz</span><span class="o">.</span><span class="n">sRGB_to_pdf</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdf2docx.common.share.rgb_component_from_name">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">rgb_component_from_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.rgb_component_from_name" title="Link to this definition"></a></dt>
+<dd><p>Get a named RGB color (or random color) from fitz predefined colors, e.g. ‘red’ -&gt; (1.0,0.0,0.0).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdf2docx.common.share.rgb_to_value">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">rgb_to_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rgb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.rgb_to_value" title="Link to this definition"></a></dt>
+<dd><p>RGB components to decimal value, e.g. (1,0,0) -&gt; 16711680.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdf2docx.common.share.rgb_value">
+<span class="sig-prename descclassname"><span class="pre">pdf2docx.common.share.</span></span><span class="sig-name descname"><span class="pre">rgb_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">components</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.common.share.rgb_value" title="Link to this definition"></a></dt>
+<dd><p>Gray/RGB/CMYK mode components to color value.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pdf2docx.common.docx.html" class="btn btn-neutral float-left" title="pdf2docx.common.docx module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pdf2docx.font.html" class="btn btn-neutral float-right" title="pdf2docx.font package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Artifex.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

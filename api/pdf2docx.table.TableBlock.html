@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pdf2docx.table.TableBlock module &mdash; pdf2docx refs/heads/master documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=03c5a516"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pdf2docx.table.TableStructure module" href="pdf2docx.table.TableStructure.html" />
+    <link rel="prev" title="pdf2docx.table.Rows module" href="pdf2docx.table.Rows.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            pdf2docx
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">USER GUIDE</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../techdoc.html">Technical Documentation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API DOCUMENTATION</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pdf2docx</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pdf2docx.html">pdf2docx package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pdf2docx.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.common.html">pdf2docx.common package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.font.html">pdf2docx.font package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.gui.html">pdf2docx.gui package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.image.html">pdf2docx.image package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.layout.html">pdf2docx.layout package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.page.html">pdf2docx.page package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.shape.html">pdf2docx.shape package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="pdf2docx.table.html">pdf2docx.table package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pdf2docx.text.html">pdf2docx.text package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdf2docx.html#module-pdf2docx">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pdf2docx</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pdf2docx</a></li>
+          <li class="breadcrumb-item"><a href="pdf2docx.html">pdf2docx package</a></li>
+          <li class="breadcrumb-item"><a href="pdf2docx.table.html">pdf2docx.table package</a></li>
+      <li class="breadcrumb-item active">pdf2docx.table.TableBlock module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/pdf2docx.table.TableBlock.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pdf2docx.table.TableBlock">
+<span id="pdf2docx-table-tableblock-module"></span><h1>pdf2docx.table.TableBlock module<a class="headerlink" href="#module-pdf2docx.table.TableBlock" title="Link to this heading"></a></h1>
+<p>Table block object parsed from raw image and text blocks.</p>
+<p>Data Structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s1">&#39;bbox&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span>
+    <span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;bbox&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span>
+            <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+            <span class="s2">&quot;cells&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s1">&#39;bbox&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span>
+                    <span class="s1">&#39;border_color&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">sRGB</span><span class="p">,,,),</span> <span class="c1"># top, right, bottom, left</span>
+                    <span class="s1">&#39;bg_color&#39;</span><span class="p">:</span> <span class="n">sRGB</span><span class="p">,</span>
+                    <span class="s1">&#39;border_width&#39;</span><span class="p">:</span> <span class="p">(,,,),</span>
+                    <span class="s1">&#39;merged_cells&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">),</span> <span class="c1"># this is the bottom-right cell of merged region: x rows, y cols</span>
+                    <span class="s1">&#39;blocks&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="p">{</span><span class="n">text</span> <span class="n">blocks</span><span class="p">}</span> <span class="p">]</span>
+                <span class="p">},</span> <span class="c1"># end of cell</span>
+                <span class="p">{},</span>
+                <span class="kc">None</span><span class="p">,</span> <span class="c1"># merged cell</span>
+                <span class="o">...</span>
+            <span class="p">]</span>
+        <span class="p">},</span> <span class="c1"># end of row</span>
+        <span class="p">{</span><span class="o">...</span><span class="p">}</span> <span class="c1"># more rows</span>
+    <span class="p">]</span> <span class="c1"># end of row</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="pdf2docx.table.TableBlock.TableBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdf2docx.table.TableBlock.</span></span><span class="sig-name descname"><span class="pre">TableBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TableBlock.TableBlock" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../pdf2docx.common.Block.html#pdf2docx.common.Block.Block" title="pdf2docx.common.Block.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block</span></code></a></p>
+<p>Table block.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.table.TableBlock.TableBlock.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../pdf2docx.table.Row.html#pdf2docx.table.Row.Row" title="pdf2docx.table.Row.Row"><span class="pre">Row</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TableBlock.TableBlock.append" title="Link to this definition"></a></dt>
+<dd><p>Append row to table and update bbox accordingly.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>row (Row): Target row to add.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.table.TableBlock.TableBlock.assign_blocks">
+<span class="sig-name descname"><span class="pre">assign_blocks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blocks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TableBlock.TableBlock.assign_blocks" title="Link to this definition"></a></dt>
+<dd><p>Assign <code class="docutils literal notranslate"><span class="pre">blocks</span></code> to associated cell.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>blocks (list): A list of text/table blocks.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.table.TableBlock.TableBlock.assign_shapes">
+<span class="sig-name descname"><span class="pre">assign_shapes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TableBlock.TableBlock.assign_shapes" title="Link to this definition"></a></dt>
+<dd><p>Assign <code class="docutils literal notranslate"><span class="pre">shapes</span></code> to associated cell.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>shapes (list): A list of Shape.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.table.TableBlock.TableBlock.make_docx">
+<span class="sig-name descname"><span class="pre">make_docx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TableBlock.TableBlock.make_docx" title="Link to this definition"></a></dt>
+<dd><p>Create docx table.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>table (Table): <code class="docutils literal notranslate"><span class="pre">python-docx</span></code> table instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.table.TableBlock.TableBlock.num_cols">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_cols</span></span><a class="headerlink" href="#pdf2docx.table.TableBlock.TableBlock.num_cols" title="Link to this definition"></a></dt>
+<dd><p>Count of columns.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.table.TableBlock.TableBlock.num_rows">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_rows</span></span><a class="headerlink" href="#pdf2docx.table.TableBlock.TableBlock.num_rows" title="Link to this definition"></a></dt>
+<dd><p>Count of rows.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.table.TableBlock.TableBlock.outer_bbox">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outer_bbox</span></span><a class="headerlink" href="#pdf2docx.table.TableBlock.TableBlock.outer_bbox" title="Link to this definition"></a></dt>
+<dd><p>Outer bbox with border considered.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.table.TableBlock.TableBlock.parse">
+<span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TableBlock.TableBlock.parse" title="Link to this definition"></a></dt>
+<dd><p>Parse layout under cell level.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>settings (dict): Layout parsing parameters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.table.TableBlock.TableBlock.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TableBlock.TableBlock.plot" title="Link to this definition"></a></dt>
+<dd><p>Plot table block, i.e. cell/line/span, for debug purpose.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>page (fitz.Page): pdf page.
+content (bool): Plot text blocks contained in cells if True.
+style (bool): Plot cell style if True, e.g. border width, shading.
+color (bool): Plot border stroke color if <code class="docutils literal notranslate"><span class="pre">style=False</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdf2docx.table.TableBlock.TableBlock.store">
+<span class="sig-name descname"><span class="pre">store</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pdf2docx.table.TableBlock.TableBlock.store" title="Link to this definition"></a></dt>
+<dd><p>Store attributes in json format.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pdf2docx.table.TableBlock.TableBlock.text">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">text</span></span><a class="headerlink" href="#pdf2docx.table.TableBlock.TableBlock.text" title="Link to this definition"></a></dt>
+<dd><p>Get text contained in each cell.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>list: 2D-list with each element representing text in cell.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pdf2docx.table.Rows.html" class="btn btn-neutral float-left" title="pdf2docx.table.Rows module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pdf2docx.table.TableStructure.html" class="btn btn-neutral float-right" title="pdf2docx.table.TableStructure module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Artifex.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

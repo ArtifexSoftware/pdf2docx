@@ -1,0 +1,7 @@
+pdf2docx.font.Fonts module
+==========================
+
+.. automodule:: pdf2docx.font.Fonts
+   :members:
+   :undoc-members:
+   :show-inheritance:

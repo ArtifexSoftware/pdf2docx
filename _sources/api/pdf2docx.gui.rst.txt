@@ -1,0 +1,19 @@
+pdf2docx.gui package
+====================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pdf2docx.gui.App
+   pdf2docx.gui.MainFrame
+
+Module contents
+---------------
+
+.. automodule:: pdf2docx.gui
+   :members:
+   :undoc-members:
+   :show-inheritance:

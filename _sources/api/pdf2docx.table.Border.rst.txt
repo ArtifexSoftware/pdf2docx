@@ -1,0 +1,7 @@
+pdf2docx.table.Border module
+============================
+
+.. automodule:: pdf2docx.table.Border
+   :members:
+   :undoc-members:
+   :show-inheritance:

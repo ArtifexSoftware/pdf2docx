@@ -1,0 +1,7 @@
+pdf2docx.layout.Blocks module
+=============================
+
+.. automodule:: pdf2docx.layout.Blocks
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+pdf2docx.text.TextSpan module
+=============================
+
+.. automodule:: pdf2docx.text.TextSpan
+   :members:
+   :undoc-members:
+   :show-inheritance:

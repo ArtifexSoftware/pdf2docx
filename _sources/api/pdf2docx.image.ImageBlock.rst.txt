@@ -1,0 +1,7 @@
+pdf2docx.image.ImageBlock module
+================================
+
+.. automodule:: pdf2docx.image.ImageBlock
+   :members:
+   :undoc-members:
+   :show-inheritance:

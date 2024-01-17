@@ -1,0 +1,35 @@
+pdf2docx package
+================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pdf2docx.common
+   pdf2docx.font
+   pdf2docx.gui
+   pdf2docx.image
+   pdf2docx.layout
+   pdf2docx.page
+   pdf2docx.shape
+   pdf2docx.table
+   pdf2docx.text
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pdf2docx.converter
+   pdf2docx.main
+
+Module contents
+---------------
+
+.. automodule:: pdf2docx
+   :members:
+   :undoc-members:
+   :show-inheritance:

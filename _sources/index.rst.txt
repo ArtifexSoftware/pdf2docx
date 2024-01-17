@@ -9,12 +9,18 @@ generate docx file with ``python-docx``.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: USER GUIDE
 
    installation
    quickstart
    techdoc
-   modules
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API DOCUMENTATION
+
+   api/modules
 
 
 Indices and tables
