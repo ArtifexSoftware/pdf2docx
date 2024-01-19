@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 '''A wrapper of pdf page engine (e.g. PyMuPDF, pdfminer) to do the following work:
 
 * extract source contents
@@ -8,12 +6,13 @@
 * parse page structure roughly, i.e. section and column
 '''
 
+from abc import (ABC, abstractmethod)
 from .BasePage import BasePage
-from ..layout.Layout import Layout
 from ..layout.Section import Section
 from ..layout.Column import Column
 from ..shape.Shape import Hyperlink
 from ..shape.Shapes import Shapes
+from ..layout.Blocks import Blocks
 from ..font.Fonts import Fonts
 from ..text.TextSpan import TextSpan
 from ..common.share import debug_plot
@@ -21,36 +20,38 @@ from ..common import constants
 from ..common.Collection import Collection
 
 
-class RawPage(BasePage, Layout):
+class RawPage(BasePage, ABC):
     '''A wrapper of page engine.'''
 
     def __init__(self, page_engine=None):
         ''' Initialize page layout.
-        
+
         Args:
             page_engine (Object): Source pdf page.
         '''
         BasePage.__init__(self)
-        Layout.__init__(self)
         self.page_engine = page_engine
-    
+        self.blocks = Blocks(parent=self)
+        self.shapes = Shapes(parent=self)
 
+
+    @abstractmethod
     def extract_raw_dict(self, **settings):
         '''Extract source data with page engine. Return a dict with the following structure:
         ```
             {
                 "width" : w,
-                "height": h,    
+                "height": h,
                 "blocks": [{...}, {...}, ...],
                 "shapes" : [{...}, {...}, ...]
             }
         ```
         '''
-        raise NotImplementedError
-    
+
+
     @property
     def text(self):
-        '''All extracted text in this page, with images considered as ``<image>``. 
+        '''All extracted text in this page, with images considered as ``<image>``.
         Should be run after ``restore()`` data.'''
         return '\n'.join([block.text for block in self.blocks])
 
@@ -64,14 +65,15 @@ class RawPage(BasePage, Layout):
     def restore(self, **settings):
         '''Initialize layout extracted with ``PyMuPDF``.'''
         raw_dict = self.extract_raw_dict(**settings)
-        super().restore(raw_dict)
+        self.blocks.restore(raw_dict.get('blocks', []))
+        self.shapes.restore(raw_dict.get('shapes', []))
         return self.blocks
 
-    
+
     @debug_plot('Cleaned Shapes')
     def clean_up(self, **settings):
-        '''Clean up raw blocks and shapes, e.g. 
-        
+        '''Clean up raw blocks and shapes, e.g.
+
         * remove negative or duplicated instances,
         * detect semantic type of shapes
         '''
@@ -79,18 +81,16 @@ class RawPage(BasePage, Layout):
         self.blocks.clean_up(
             settings['float_image_ignorable_gap'],
             settings['line_overlap_threshold'])
-
-        # clean up shapes        
+        # clean up shapes
         self.shapes.clean_up(
             settings['max_border_width'],
             settings['shape_min_dimension'])
-        
         return self.shapes
 
 
-    def process_font(self, fonts:Fonts):      
+    def process_font(self, fonts:Fonts):
         '''Update font properties, e.g. font name, font line height ratio, of ``TextSpan``.
-        
+
         Args:
             fonts (Fonts): Fonts parsed by ``fonttools``.
         '''
@@ -114,10 +114,10 @@ class RawPage(BasePage, Layout):
         """Calculate page margin.
 
         .. note::
-            Ensure this method is run right after cleaning up the layout, so the page margin is 
+            Ensure this method is run right after cleaning up the layout, so the page margin is
             calculated based on valid layout, and stay constant.
         """
-        # Exclude hyperlink from shapes because hyperlink might exist out of page unreasonably, 
+        # Exclude hyperlink from shapes because hyperlink might exist out of page unreasonably,
         # while it should always within page since attached to text.
         shapes = Shapes([shape for shape in self.shapes if not isinstance(shape, Hyperlink)])
 
@@ -139,9 +139,9 @@ class RawPage(BasePage, Layout):
 
         # use normal margin if calculated margin is large enough
         return (
-            min(constants.ITP, round(left, 1)), 
-            min(constants.ITP, round(right, 1)), 
-            min(constants.ITP, round(top, 1)), 
+            min(constants.ITP, round(left, 1)),
+            min(constants.ITP, round(right, 1)),
+            min(constants.ITP, round(top, 1)),
             min(constants.ITP, round(bottom, 1)))
 
 
@@ -154,15 +154,15 @@ class RawPage(BasePage, Layout):
         '''
         # bbox
         X0, Y0, X1, _ = self.working_bbox
-    
+
         # collect all blocks (line level) and shapes
         elements = Collection()
         elements.extend(self.blocks)
         elements.extend(self.shapes)
         if not elements: return
 
-        # to create section with collected lines        
-        lines = Collection()        
+        # to create section with collected lines
+        lines = Collection()
         sections = []
         def close_section(num_col, elements, y_ref):
             # append to last section if both single column
@@ -173,7 +173,7 @@ class RawPage(BasePage, Layout):
             # otherwise, create new section
             else:
                 section = self._create_section(num_col, elements, (X0, X1), y_ref)
-                if section: 
+                if section:
                     sections.append(section)
 
 
@@ -189,7 +189,7 @@ class RawPage(BasePage, Layout):
             # consider 2-cols only
             if current_num_col>2:
                 current_num_col = 1
-            
+
             # the width of two columns shouldn't have significant difference
             elif current_num_col==2:
                 u0, v0, u1, v1 = cols[0].bbox
@@ -198,25 +198,25 @@ class RawPage(BasePage, Layout):
                 c1, c2 = x0-X0, X1-x0 # column width
                 w1, w2 = u1-u0, m1-m0 # line width
                 f = 2.0
-                if not 1/f<=c1/c2<=f or w1/c1<0.33 or w2/c2<0.33: 
+                if not 1/f<=c1/c2<=f or w1/c1<0.33 or w2/c2<0.33:
                     current_num_col = 1
 
             # process exceptions
             if pre_num_col==2 and current_num_col==1:
-                # though current row has one single column, it might have another virtual 
+                # though current row has one single column, it might have another virtual
                 # and empty column. If so, it should be counted as 2-cols
                 cols = lines.group_by_columns()
                 pos = cols[0].bbox[2]
                 if row.bbox[2]<=pos or row.bbox[0]>pos:
                     current_num_col = 2
-                
+
                 # pre_num_col!=current_num_col => to close section with collected lines,
                 # before that, further check the height of collected lines
                 else:
                     x0, y0, x1, y1 = lines.bbox
                     if y1-y0<settings['min_section_height']:
                         pre_num_col = 1
-                
+
 
             elif pre_num_col==2 and current_num_col==2:
                 # though both 2-cols, they don't align with each other
@@ -229,10 +229,10 @@ class RawPage(BasePage, Layout):
             if current_num_col!=pre_num_col:
                 # process pre-section
                 close_section(pre_num_col, lines, y_ref)
-                if sections: 
+                if sections:
                     y_ref = sections[-1][-1].bbox[3]
 
-                # start potential new section                
+                # start potential new section
                 lines = Collection(row)
                 pre_num_col = current_num_col
 
@@ -244,7 +244,7 @@ class RawPage(BasePage, Layout):
         close_section(current_num_col, lines, y_ref)
 
         return sections
-    
+
 
     @staticmethod
     def _create_section(num_col:int, elements:Collection, h_range:tuple, y_ref:float):
@@ -254,7 +254,9 @@ class RawPage(BasePage, Layout):
 
         if num_col==1:
             x0, y0, x1, y1 = elements.bbox
-            column = Column().update_bbox((X0, y0, X1, y1))
+            # Note: do not use Column((X0, y0, X1, y1)) directly here. We have to set final bbox
+            # per update_bbox to avoid double rotation in case page rotation exists.
+            column = Column().update_bbox((X0, y0, X1, y1)) # this is final bbox, must use update_bbox
             column.add_elements(elements)
             section = Section(space=0, columns=[column])
             before_space = y0 - y_ref

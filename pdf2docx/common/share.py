@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+'''Common methods.'''
+
 from enum import Enum
 import random
 from collections.abc import Iterable
@@ -26,7 +27,7 @@ class RectType(Enum):
 
 
 class TextDirection(Enum):
-    '''Text direction.    
+    '''Text direction.
     * LEFT_RIGHT: from left to right within a line, and lines go from top to bottom
     * BOTTOM_TOP: from bottom to top within a line, and lines go from left to right
     * MIX       : a mixture if LEFT_RIGHT and BOTTOM_TOP
@@ -48,7 +49,7 @@ class TextAlignment(Enum):
         * UNKNOWN: can't decide, e.g. single line only
     '''
     NONE    = -1
-    UNKNOWN = 0 
+    UNKNOWN = 0
     LEFT    = 1
     CENTER  = 2
     RIGHT   = 3
@@ -115,10 +116,23 @@ def flatten(items, klass):
         else:
             yield item
 
+
 def lower_round(number:float, ndigits:int=0):
     '''Round number to lower bound with specified digits, e.g. lower_round(1.26, 1)=1.2'''
     n = 10.0**ndigits
     return int(n*number) / n
+
+
+def decode(s:str):
+    '''Try to decode a unicode string.'''
+    b = bytes(ord(c) for c in s)
+    for encoding in ['utf-8', 'gbk', 'gb2312', 'iso-8859-1']:
+        try:
+            res = b.decode(encoding)
+            break
+        except:
+            continue
+    return res
 
 
 # -------------------------
@@ -131,14 +145,14 @@ def rgb_component_from_name(name:str=''):
         pos = getColorList().index(name.upper())
     else:
         pos = random.randint(0, len(getColorList())-1)
-        
+
     c = getColorInfoList()[pos]
     return (c[1] / 255.0, c[2] / 255.0, c[3] / 255.0)
 
 
 def rgb_component(srgb:int):
     '''srgb value to R,G,B components, e.g. 16711680 -> (255, 0, 0).
-    
+
     Equal to PyMuPDF built-in method::
 
         [int(255*x) for x in fitz.sRGB_to_pdf(x)]
@@ -191,7 +205,7 @@ def rgb_value(components:list):
 # -------------------------
 def new_page(doc, width:float, height:float, title:str):
     '''Insert a new page with given title.
-    
+
     Args:
         doc (fitz.Document): pdf document object.
         width (float): Page width.
@@ -204,17 +218,17 @@ def new_page(doc, width:float, height:float, title:str):
     # plot title at the top-left corner
     gray = rgb_component_from_name('gray')
     page.insert_text((5, 16), title, color=gray, fontsize=15)
-    
+
     return page
 
 
 def debug_plot(title:str, show=True):
     '''Plot the returned objects of inner function.
-    
+
     Args:
         title (str): Page title.
         show (bool, optional): Don't plot if show==False. Default to True.
-    
+
     .. note::
         Prerequisite of the inner function: 
             - the first argument is a :py:class:`~pdf2docx.page.BasePage` instance.
@@ -241,4 +255,3 @@ def debug_plot(title:str, show=True):
             return objects
         return inner
     return wrapper
-

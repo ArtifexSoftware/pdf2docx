@@ -12,9 +12,11 @@ from docx import Document
 from .page.Page import Page
 from .page.Pages import Pages
 
-# check PyMuPDF>=1.19.x
-if list(map(int, fitz.VersionBind.split("."))) < [1, 19, 0]:
-    raise SystemExit("PyMuPDF>=1.19.0 is required for pdf2docx.")
+# check PyMuPDF version
+# 1.19.0 <= v <= 1.23.8, or v>=1.23.16
+v = list(map(int, fitz.VersionBind.split(".")))
+if v < [1,19,0] or [1,23,8]<v<[1,23,16]:
+    raise SystemExit("1.19.0 <= PyMuPDF <= 1.23.8, or PyMuPDF>=1.23.16 is required for pdf2docx.")
 
 # logging
 logging.basicConfig(

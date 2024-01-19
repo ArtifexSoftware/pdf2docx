@@ -1,30 +1,31 @@
 '''Extract fonts properties from PDF.
 
-Font properties like font name, size are covered in :py:class:`~pdf2docx.text.TextSpan`, 
+Font properties like font name, size are covered in :py:class:`~pdf2docx.text.TextSpan`,
 but more generic properties are required further:
 
-* Font family name. The font name extracted and set in ``TextSpan`` might not valid when 
+* Font family name. The font name extracted and set in ``TextSpan`` might not valid when
   directly used in MS Word, e.g. "ArialMT" should be "Arial". So, we need to get font
   family name, which should be accepted by MS Word, based on the font file itself.
 
-* Font line height ratio. As line height = font_size * line_height_ratio, it's used to 
+* Font line height ratio. As line height = font_size * line_height_ratio, it's used to
   calculate relative line spacing. In general, 1.12 is an approximate value to this ratio,
-  but it's in fact a font-related value, especially for CJK font. 
+  but it's in fact a font-related value, especially for CJK font.
 
     * So, extract font metrics, e.g. ascender and descender, with third party library ``fontTools``
-      in first priority. This can obtain an accurate line height ratio, but sometimes the 
+      in first priority. This can obtain an accurate line height ratio, but sometimes the
       embedded font data might crash.
-  
+
     * Then, we have to use the default properties, i.e. ascender and descender, extracted by
-      ``PyMuPDF`` directly, but this value isn't so accurate.    
+      ``PyMuPDF`` directly, but this value isn't so accurate.
 '''
 
 import os
 from io import BytesIO
-from collections import namedtuple 
+from collections import namedtuple
 from fontTools.ttLib import TTFont
 from ..common.Collection import BaseCollection
 from ..common.constants import (CJK_CODEPAGE_BITS, CJK_UNICODE_RANGE_BITS, CJK_UNICODE_RANGES)
+from ..common.share import decode
 
 
 Font = namedtuple('Font', [ 'descriptor',     # font descriptor
@@ -42,7 +43,7 @@ class Fonts(BaseCollection):
         # 1st priority: check right the name
         for font in self:
             if target==font.descriptor: return font
-        
+
         # 2nd priority: target name is contained in font name
         for font in self:
             if target in font.descriptor: return font
@@ -50,7 +51,7 @@ class Fonts(BaseCollection):
         # 3rd priority: target name contains font name
         for font in self:
             if font.descriptor in target: return font
-        
+
         return None
 
 
@@ -59,7 +60,7 @@ class Fonts(BaseCollection):
         '''Extract fonts from PDF and get properties.
         * Only embedded fonts (v.s. the base 14 fonts) can be extracted.
         * The extracted fonts may be invalid due to reason from PDF file itself.
-        '''        
+        '''
         # get unique font references
         xrefs = set()
         for page in fitz_doc:
@@ -69,9 +70,9 @@ class Fonts(BaseCollection):
         fonts = []
         for xref in xrefs:
             basename, ext, _, buffer = fitz_doc.extract_font(xref)
-            basename = bytes(ord(c) for c in basename).decode()
+            basename = decode(basename)
             name = cls._normalized_font_name(basename)
-            
+
             try:
                 # supported fonts: open/true type only
                 # - n/a: base 14 fonts
@@ -91,7 +92,7 @@ class Fonts(BaseCollection):
                 line_height=line_height))
 
         return cls(fonts)
-    
+
 
     @staticmethod
     def _normalized_font_name(name):
@@ -104,7 +105,7 @@ class Fonts(BaseCollection):
         '''Remove potential space, dash in font name, and turn to upper case.'''
         return name.replace(' ', '').replace('-', '').upper()
 
-    
+
     @staticmethod
     def get_font_family_name(tt_font:TTFont):
         '''Get the font family name from the font's names table.
@@ -139,7 +140,7 @@ class Fonts(BaseCollection):
         Fon non-CJK fonts::
 
             f = (hhea.Ascent - hhea.Descent + hhea.LineGap) / units_per_em
-        
+
         For non-CJK fonts (Windows)::
 
             f = (OS/2.winAscent + OS/2.winDescent + [External Leading]) / units_per_em
@@ -176,9 +177,9 @@ class Fonts(BaseCollection):
             os2_win_total_height = os2_win_ascent + os2_win_descent
             win_external_leading = max(0.0, hhea_linegap-(os2_win_total_height-hhea_total_height))
             win_btb_distance = os2_win_total_height + win_external_leading
-            
+
             btb_distance = win_btb_distance
-        
+
         else:
             btb_distance = hhea_btb_distance
 
@@ -187,7 +188,7 @@ class Fonts(BaseCollection):
         distance = 1.3*hhea_total_height if cjk else 1.0*btb_distance
 
         return distance / units_per_em
-    
+
 
     @staticmethod
     def is_cjk_font(tt_font:TTFont):
