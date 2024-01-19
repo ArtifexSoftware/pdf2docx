@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 '''Extract images from PDF.
 
 Both raster images and vector graphics are considered:
@@ -32,7 +30,7 @@ class ImagesExtractor:
 
         Args:
             bbox (fitz.Rect, optional): Target area to clip. Defaults to None, i.e. entire page.
-                Note that ``bbox`` depends on un-rotated page CS, while cliping page is based on
+                Note that ``bbox`` depends on un-rotated page CS, while clipping page is based on
                 the final page.
             zoom (float, optional): Improve resolution by this rate. Defaults to 3.0.
 
@@ -100,7 +98,6 @@ class ImagesExtractor:
         # step 1: collect images: [(bbox, item), ..., ]
         ic = Collection()
         for item in self._page.get_images(full=True):
-            # image item: (xref, smask, width, height, bpc, colorspace, ...)
             item = list(item)
             item[-1] = 0            
             
@@ -132,19 +129,33 @@ class ImagesExtractor:
             
             else:
                 bbox, item = group[0]
-                # recover image
-                pix = self._recover_pixmap(doc, item)
 
-                # regarding images consist of alpha values only, i.e. colorspace is None,
-                # the turquoise color shown in the PDF is not part of the image, but part of PDF background.
+                # Regarding images consist of alpha values only, the turquoise color shown in
+                # the PDF is not part of the image, but part of PDF background.
                 # So, just to clip page pixmap according to the right bbox
                 # https://github.com/pymupdf/PyMuPDF/issues/677
-                alpha_only = not pix.colorspace
-                if alpha_only:
+
+                # It's not safe to identify images with alpha values only,
+                # - colorspace is None, for pymupdf <= 1.23.8
+                # - colorspace is always Colorspace(CS_RGB), for pymupdf==1.23.9-15 -> issue
+                # - colorspace is Colorspace(CS_), for pymupdf >= 1.23.16
+
+                # So, use extracted image info directly.
+                # image item: (xref, smask, width, height, bpc, colorspace, ...), e.g.,
+                # (19, 0, 331, 369, 1, '', '', 'Im1', 'FlateDecode', 0)
+                # (20, 24, 1265, 1303, 8, 'DeviceRGB', '', 'Im2', 'FlateDecode', 0)
+                # (21, 0, 331, 369, 1, '', '', 'Im3', 'CCITTFaxDecode', 0)
+                # (22, 25, 1265, 1303, 8, 'DeviceGray', '', 'Im4', 'DCTDecode', 0)
+                # (23, 0, 1731, 1331, 8, 'DeviceGray', '', 'Im5', 'DCTDecode', 0)
+                if item[5]=='':
                     raw_dict = self.clip_page_to_dict(bbox, clip_image_res_ratio)
                 
-                # rotate image with opencv if page is rotated
+                # normal images
                 else:
+                    # recover image, e.g., handle image with mask, or CMYK color space
+                    pix = self._recover_pixmap(doc, item)
+
+                    # rotate image with opencv if page is rotated
                     raw_dict = self._to_raw_dict(pix, bbox)
                     if rotation: 
                         raw_dict['image'] = self._rotate_image(pix, -rotation)
@@ -338,7 +349,7 @@ class ImagesExtractor:
         # we may need to adjust something for CMYK pixmaps here -> 
         # recreate pixmap in RGB color space if necessary
         # NOTE: pix.colorspace may be None for images with alpha channel values only
-        if pix.colorspace and not pix.colorspace.name in (fitz.csGRAY.name, fitz.csRGB.name):
+        if 'CMYK' in item[5].upper():
             pix = fitz.Pixmap(fitz.csRGB, pix)
 
         return pix

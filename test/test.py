@@ -112,19 +112,19 @@ class TestConversion:
         '''Convert PDF file from sample path to output path.'''
         source_pdf_file = os.path.join(sample_path, f'{filename}.pdf')
         docx_file = os.path.join(output_path, f'{filename}.docx')
-        cv = Converter(source_pdf_file)        
-        cv.convert(docx_file)
-        cv.close()
-    
+        c = Converter(source_pdf_file)
+        c.convert(docx_file)
+        c.close()
+
     def convert_by_io_stream(self, filename):
         '''Convert PDF file from sample path to output path.'''
         source_pdf_file = os.path.join(sample_path, f'{filename}.pdf')
         with open(source_pdf_file, 'rb') as f: in_stream = f.read()
 
-        cv = Converter(stream=in_stream)
+        c = Converter(stream=in_stream)
         out_stream = io.BytesIO()
-        cv.convert(out_stream)
-        cv.close()
+        c.convert(out_stream)
+        c.close()
 
         docx_file = os.path.join(output_path, f'{filename}.docx')
         with open(docx_file, 'wb') as f: f.write(out_stream.getvalue())
@@ -141,7 +141,7 @@ class TestConversion:
     # ------------------------------------------
     def test_section(self):
         '''test page layout: section and column.'''
-        self.convert('demo-section')    
+        self.convert('demo-section')
 
     def test_section_spacing(self):
         '''test page layout: section vertical position.'''
@@ -185,13 +185,13 @@ class TestConversion:
         '''test vector graphic.'''
         self.convert('demo-image-vector-graphic')
 
-    def test_image_cmyk(self):
-        '''test image in CMYK color-space.'''
-        self.convert('demo-image-cmyk')
+    def test_image_color_space(self):
+        '''test image color space.'''
+        self.convert('demo-image-colorspace')
 
-    def test_image_transparent(self):
-        '''test transparent images.'''
-        self.convert('demo-image-transparent')
+    def test_image_floating(self):
+        '''test floating images.'''
+        self.convert('demo-image-floating')
 
     def test_image_rotation(self):
         '''test rotating image due to pdf page rotation.'''
@@ -210,7 +210,7 @@ class TestConversion:
         self.convert('demo-table-bottom')
 
     def test_table_format(self):
-        '''test table format, e.g. 
+        '''test table format, e.g.
             - border and shading style
             - vertical cell
             - merged cell
@@ -359,3 +359,4 @@ class TestQuality:
             threshold = TestQuality.INDEX_MAP.get(filename, 0.10)
             print(f'Checking {filename}: {sidx} v.s. {threshold}')
             assert sidx>=threshold, 'Significant difference might exist since similarity index is lower than threshold.'
+
