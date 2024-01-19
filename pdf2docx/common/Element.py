@@ -1,8 +1,8 @@
 '''Object with a bounding box, e.g. Block, Line, Span.
 
-Based on ``PyMuPDF``, the coordinates (e.g. bbox of ``page.get_text('rawdict')``) are generally 
-provided relative to the un-rotated page; while this ``pdf2docx`` library works under real page 
-coordinate system, i.e. with rotation considered. So, any instances created by this Class are 
+Based on ``PyMuPDF``, the coordinates (e.g. bbox of ``page.get_text('rawdict')``) are generally
+provided relative to the un-rotated page; while this ``pdf2docx`` library works under real page
+coordinate system, i.e. with rotation considered. So, any instances created by this Class are
 always applied a rotation matrix automatically.
 
 Therefore, the bbox parameter used to create ``Element`` instance MUST be relative to un-rotated
@@ -34,7 +34,7 @@ class Element(IText):
 
         Args:
             Rotation_matrix (fitz.Matrix): target matrix
-        """        
+        """
         if rotation_matrix and isinstance(rotation_matrix, fitz.Matrix):
             cls.ROTATION_MATRIX = rotation_matrix
 
@@ -198,8 +198,7 @@ class Element(IText):
             e (Element): Object to check with
             factor (float, optional): Threshold of overlap ratio, the larger it is, the higher
                 probability the two bbox-es are aligned.
-            text_direction (bool, optional): Consider text direction or not.
-                True by default,from left to right if False.
+            text_direction (bool, optional): Consider text direction or not. True by default.
 
         Returns:
             bool: [description]
@@ -240,8 +239,7 @@ class Element(IText):
             e (Element): Element to check with
             factor (float, optional): threshold of overlap ratio, the larger it is, the higher
                 probability the two bbox-es are aligned.
-            text_direction (bool, optional): consider text direction or not.
-                True by default, from left to right if False.
+            text_direction (bool, optional): consider text direction or not. True by default.
 
         Examples::
 
