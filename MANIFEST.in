@@ -1,7 +1,6 @@
 include *.md
 include LICENSE*
 include requirements.txt
-include pdf2docx/gui/*.ico
 prune test
 include test/*.py
 include test/samples/*.pdf
