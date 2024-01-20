@@ -6,19 +6,18 @@ from setuptools import find_packages, setup
 DESCRIPTION = 'Open source Python library converting pdf to docx.'
 EXCLUDE_FROM_PACKAGES = ["build", "dist", "test"]
 
-# read version number from version.txt, otherwise alpha version
-# Github CI can create version.txt dynamically.
+
 def get_version(fname):
+    '''Read version number from version.txt, created dynamically per Github Action.'''
     if os.path.exists(fname):
         with open(fname, "r", encoding="utf-8") as f:
             version = f.readline().strip()
     else:
         version = '0.5.6a1'
-
     return version
 
-# Load README.md for long description
 def load_long_description(fname):
+    '''Load README.md for long description'''
     if os.path.exists(fname):
         with open(fname, "r", encoding="utf-8") as f:
             long_description = f.read()
@@ -28,9 +27,10 @@ def load_long_description(fname):
     return long_description
 
 def load_requirements(fname):
+    '''Load requirements.'''
     try:
         # pip >= 10.0
-        from pip._internal.req import parse_requirements        
+        from pip._internal.req import parse_requirements
     except ImportError:
         # pip < 10.0
         from pip.req import parse_requirements
@@ -40,8 +40,8 @@ def load_requirements(fname):
         requirements = [str(ir.requirement) for ir in reqs]
     except AttributeError:
         requirements = [str(ir.req) for ir in reqs]
-
     return requirements
+
 
 setup(
     name="pdf2docx",
@@ -51,8 +51,9 @@ setup(
     long_description=load_long_description("README.md"),
     long_description_content_type="text/markdown",
     license="GPL v3",
-    author = 'Artifex',
-    author_email = 'support@artifex.com',
+    author='Artifex',
+    author_email='support@artifex.com',
+    url='https://artifex.com/',
     packages=find_packages(exclude=EXCLUDE_FROM_PACKAGES),
     include_package_data=True,
     zip_safe=False,
