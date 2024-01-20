@@ -1,7 +1,6 @@
-PyMuPDF
+PyMuPDF>=1.19.0
 python-docx>=0.8.10
 fonttools>=4.24.0
 numpy>=1.17.2
-opencv-python>=4.5
-# opencv-python-headless>=4.5
+opencv-python-headless>=4.5
 fire>=0.3.0
