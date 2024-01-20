@@ -43,7 +43,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-cov codecov
+          pip install pytest pytest-cov
           python setup.py develop
 
       - name: Run unit test
@@ -51,10 +51,9 @@ jobs:
           pytest -v ./test/test.py::TestConversion --cov=./pdf2docx --cov-report=xml
 
       - name: Upload coverage reports to Codecov
-        run: |
-          codecov
-        env: # Or as an environment variable
-          super_secret: ${{ secrets.CODECOV_TOKEN }}
+        uses: codecov/codecov-action@v3
+        with: # Or as an environment variable
+          token: ${{ secrets.CODECOV_TOKEN }}
       
       # upload docx for further job
       - name: Archive package
