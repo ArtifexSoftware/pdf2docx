@@ -47,7 +47,8 @@ class TextSpan(Element):
 
         # filter empty chars
         chars = [Char(c) for c in raw.get('chars', [])] # type: list[Char]
-        self.chars = [char for char in chars if char.c!='']
+        # ignore replacement character, see issue#256
+        self.chars = [char for char in chars if char.c not in ('', '\ufffd')]
         self._text = raw.get('text', '') # not an original key from PyMuPDF
 
         # font metrics
@@ -85,7 +86,7 @@ class TextSpan(Element):
     def text(self, value):
         '''Set span text directly in case no chars are stores, e.g. restored from json.'''
         self._text = value
-    
+
     def cal_bbox(self):
         '''Calculate bbox based on contained instances.'''
         bbox = fitz.Rect()
@@ -306,7 +307,8 @@ class TextSpan(Element):
         # highlight: both the rect height and overlap must be large enough
         if h_rect >= 0.5*h_span:
             # In general, highlight color isn't white
-            if rect.color != rgb_value((1,1,1)) and self.get_main_bbox(rect, constants.FACTOR_MAJOR):
+            if rect.color != rgb_value((1,1,1)) and \
+                self.get_main_bbox(rect, constants.FACTOR_MAJOR):
                 rect.type = RectType.HIGHLIGHT
 
         # near to bottom of span? yes, underline
@@ -400,7 +402,7 @@ class TextSpan(Element):
         # font name
         font_name = self.font
         docx_run.font.name = font_name
-        docx_run._element.rPr.rFonts.set(qn('w:eastAsia'), font_name) # set font for chinese characters
+        docx_run._element.rPr.rFonts.set(qn('w:eastAsia'), font_name) # for CJK characters
         docx_run.font.color.rgb = RGBColor(*rgb_component(self.color))
 
         # font size
@@ -419,8 +421,8 @@ class TextSpan(Element):
         for style in self.style:
 
             t = style['type']
-            # Built-in method is provided to set highlight in python-docx, but supports only limited colors;
-            # so, set character shading instead if out of highlight color scope
+            # Built-in method is provided to set highlight in python-docx,but supports only
+            # limited colors; so, set character shading instead if out of highlight color scope.
             if t==RectType.HIGHLIGHT.value:
                 docx.set_char_shading(docx_run, style['color'])
 

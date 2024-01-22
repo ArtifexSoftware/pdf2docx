@@ -70,6 +70,8 @@ class Fonts(BaseCollection):
         fonts = []
         for xref in xrefs:
             basename, ext, _, buffer = fitz_doc.extract_font(xref)
+            if not basename: continue
+
             basename = decode(basename)
             name = cls._normalized_font_name(basename)
 

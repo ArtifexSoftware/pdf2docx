@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-
-'''A group of ``Shape`` instances.
-'''
+'''A group of ``Shape`` instances.'''
 
 from .Shape import Shape, Stroke, Fill, Hyperlink
 from ..common.share import RectType
@@ -26,20 +23,16 @@ class Shapes(ElementCollection):
                 shape = Fill(raw)
             # add to list
             self.append(shape)
-        
         return self
 
 
-    def _update_bbox(self, shape:Shape):
+    def _update_bbox(self, e:Shape):
         ''' override. Do nothing.'''
-        pass
 
 
     @property
     def strokes(self):
-        ''' Stroke Shapes, including table border, text underline and strike-through. 
-            Cache it once calculated since it doesn't change generally.
-        '''
+        ''' Stroke Shapes, including table border, text underline and strike-through.'''
         instances = list(filter(
             lambda shape: isinstance(shape, Stroke), self._instances))
         return Shapes(instances)
@@ -47,9 +40,7 @@ class Shapes(ElementCollection):
 
     @property
     def fillings(self):
-        ''' Fill Shapes, including cell shading and highlight. 
-            Cache it once calculated since it doesn't change generally.
-        '''
+        ''' Fill Shapes, including cell shading and highlight.'''
         # white bg-color is by default, so ignore those fillings
         instances = list(filter(
             lambda shape: isinstance(shape, Fill) and \
@@ -72,21 +63,24 @@ class Shapes(ElementCollection):
             lambda shape: shape.has_potential_type(RectType.BORDER), self._instances))
         return ElementCollection(instances)
 
-    
+
     @property
     def table_fillings(self):
         '''Potential table shadings.'''
         instances = list(filter(
             lambda shape: shape.has_potential_type(RectType.SHADING), self._instances))
         return ElementCollection(instances)
-    
+
+
     @property
     def text_style_shapes(self):
-        '''Potential text style based shapes, e.g. underline, strike-through, highlight and hyperlink.'''
-        f = lambda shape: shape.has_potential_type(RectType.HIGHLIGHT) or \
-                            shape.has_potential_type(RectType.UNDERLINE) or \
-                            shape.has_potential_type(RectType.STRIKE) or \
-                            shape.has_potential_type(RectType.HYPERLINK)
+        '''Potential text style based shapes,
+        e.g. underline, strike-through, highlight and hyperlink.'''
+        def f(shape):
+            return shape.has_potential_type(RectType.HIGHLIGHT) or \
+                    shape.has_potential_type(RectType.UNDERLINE) or \
+                    shape.has_potential_type(RectType.STRIKE) or \
+                    shape.has_potential_type(RectType.HYPERLINK)
         instances = set(filter(f, self._instances))
         return ElementCollection(instances)
 
@@ -101,19 +95,24 @@ class Shapes(ElementCollection):
 
         Args:
             max_border_width (float): The max border width.
-            shape_min_dimension (float): Ignore shape if both width and height is lower than this value.
+            shape_min_dimension (float): Ignore shape if both width and height
+                is lower than this value.
         """
         if not self._instances: return
 
-        # remove small shapes or shapes out of page
+        # remove small shapes or shapes out of page; and
+        # update bbox in case part of the shape is out of page
         page_bbox = self.parent.bbox
-        f = lambda shape: shape.bbox.intersects(page_bbox) and \
-                        max(shape.bbox.width, shape.bbox.height)>=shape_min_dimension
-        cleaned_shapes = list(filter(f, self._instances)) # type: list[Shape]
+        cleaned_shapes = [] # type: list[Shape]
+        for s in self:
+            if max(s.bbox.width, s.bbox.height)<shape_min_dimension: continue # small shapes
+            bbox_in_page = s.bbox.intersect(page_bbox)
+            if bbox_in_page.is_empty: continue # shapes out of page
+            cleaned_shapes.append(s.update_bbox(bbox_in_page)) # ignore out of page part
 
         # merge normal shapes if same filling color
         merged_shapes = self._merge_shapes(cleaned_shapes)
-                
+
         # convert Fill instance to Stroke if looks like stroke
         shapes = []
         for shape in merged_shapes:
@@ -126,7 +125,7 @@ class Shapes(ElementCollection):
 
         # detect semantic type
         self._parse_semantic_type()
-    
+
 
     def assign_to_tables(self, tables:list):
         """Add Shape to associated cells of given tables.
@@ -136,7 +135,7 @@ class Shapes(ElementCollection):
         """
         if not tables: return
 
-        # assign shapes to table region        
+        # assign shapes to table region
         shapes_in_tables = [[] for _ in tables] # type: list[list[Shape]]
         shapes = []   # type: list[Shape]
         for shape in self._instances:
@@ -154,7 +153,7 @@ class Shapes(ElementCollection):
                 # not possible in current table, then check next table
                 elif not table.bbox.intersects(shape.bbox):
                     continue
-            
+
             # Now, this shape belongs to previous layout
             else:
                 shapes.append(shape)
@@ -169,10 +168,11 @@ class Shapes(ElementCollection):
 
 
     def plot(self, page):
-        '''Plot shapes for debug purpose. Different colors are used to display the shapes in detected 
-        semantic types, e.g. yellow for text based shape (stroke, underline and highlight). Due to 
-        overlaps between Stroke and Fill related groups, some shapes are plot twice.
-        
+        '''Plot shapes for debug purpose.
+        Different colors are used to display the shapes in detected semantic types, e.g.
+        yellow for text based shape (stroke, underline and highlight). Due to overlaps
+        between Stroke and Fill related groups, some shapes are plot twice.
+
         Args:
             page (fitz.Page): pdf page.
         '''
@@ -201,10 +201,10 @@ class Shapes(ElementCollection):
         # shapes excluding hyperlink first
         normal_shapes = list(filter(
             lambda shape: not shape.is_determined, shapes))
-        
+
         # group by color and connectivity (with margin considered)
-        f = lambda a, b: \
-            a.color==b.color and a.bbox.intersects(b.get_expand_bbox(constants.TINY_DIST))
+        def f(a, b):
+            return a.color==b.color and a.bbox.intersects(b.get_expand_bbox(constants.TINY_DIST))
         groups = Collection(normal_shapes).group(f)
 
         merged_shapes = []
@@ -215,22 +215,21 @@ class Shapes(ElementCollection):
                 merged_shapes.append(group[0].update_bbox(group.bbox))
             else:
                 merged_shapes.extend(group)
-        
+
         # add hyperlinks back
         hyperlinks = filter(lambda shape: shape.equal_to_type(RectType.HYPERLINK), shapes)
         merged_shapes.extend(hyperlinks)
-        
         return merged_shapes
 
 
     def _parse_semantic_type(self):
-        ''' Detect shape type based on the position to text blocks. 
+        ''' Detect shape type based on the position to text blocks.
 
         .. note::
-            Stroke shapes are grouped on connectivity to each other, but in some cases, 
+            Stroke shapes are grouped on connectivity to each other, but in some cases,
             the gap between borders and underlines/strikes are very close, which leads
             to an incorrect table structure. So, it's required to distinguish them in
-            advance, though we needn't to ensure 100% accuracy. They are finally determined 
+            advance, though we needn't to ensure 100% accuracy. They are finally determined
             when parsing table structure and text format.
         '''
         # blocks in page (the original blocks without any further processing)
@@ -240,4 +239,3 @@ class Shapes(ElementCollection):
         # check positions between shapes and text blocks
         for shape in self._instances:
             shape.parse_semantic_type(blocks)
-
