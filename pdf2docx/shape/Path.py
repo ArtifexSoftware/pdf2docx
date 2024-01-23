@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 '''
 Objects representing PDF path (stroke and filling) extracted from pdf drawings and annotations.
 
@@ -13,20 +11,21 @@ Data structure based on results of ``page.get_drawings()``::
         'rect' : rect,             # page area covered by this path
         'items': [                 # list of draw commands: lines, rectangle or curves.
             ("l", p1, p2),         # a line from p1 to p2
-            ("c", p1, p2, p3, p4), # cubic Bézier curve from p1 to p4, p2 and p3 are the control points
+            ("c", p1, p2, p3, p4), # cubic Bézier curve from p1 to p4, p2 and p3
+                                   # are the control points
             ("re", rect),          # a rect represented with two diagonal points
             ("qu", quad)           # a quad represented with four corner points
         ],
         ...
     }
 
-References: 
+References:
     - https://pymupdf.readthedocs.io/en/latest/page.html#Page.get_drawings
     - https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
 
 .. note::
-    The coordinates extracted by ``page.get_drawings()`` is based on **real** page CS, i.e. with rotation 
-    considered. This is different from ``page.get_text('rawdict')``.
+    The coordinates extracted by ``page.get_drawings()`` is based on **real** page CS,
+    i.e. with rotation considered. This is different from ``page.get_text('rawdict')``.
 '''
 
 import fitz
@@ -47,6 +46,7 @@ class L(Segment):
 
     @property
     def length(self):
+        '''Length of line.'''
         x0, y0 = self.points[0]
         x1, y1 = self.points[1]
         return ((x1-x0)**2+(y1-y0)**2)**0.5
@@ -60,13 +60,13 @@ class L(Segment):
             color (list): Specify color for the stroke.
 
         Returns:
-            list: A list of ``Stroke`` dicts. 
-        
+            list: A list of ``Stroke`` dicts.
+
         .. note::
-            A line corresponds to one stroke, but considering the consistence, 
-            the return stroke dict is append to a list. So, the length of list 
+            A line corresponds to one stroke, but considering the consistence,
+            the return stroke dict is append to a list. So, the length of list
             is always 1.
-        """ 
+        """
         strokes = []
         strokes.append({
                 'start': self.points[0],
@@ -96,8 +96,8 @@ class R(Segment):
             color (list): Specify color for the stroke.
 
         Returns:
-            list: A list of ``Stroke`` dicts. 
-        
+            list: A list of ``Stroke`` dicts.
+
         .. note::
             One Rect path is converted to a list of 4 stroke dicts.
         """
@@ -123,26 +123,25 @@ class Q(R):
 
 class C(Segment):
     '''Bezier curve path with source ``("c", p1, p2, p3, p4)``.'''
-    pass
 
 
 class Segments:
     '''A sub-path composed of one or more segments.'''
-    def __init__(self, items:list, close_path=False): 
+    def __init__(self, items:list, close_path=False):
         self._instances = [] # type: list[Segment]
         for item in items:
             if   item[0] == 'l' : self._instances.append(L(item))
             elif item[0] == 'c' : self._instances.append(C(item))
             elif item[0] == 're': self._instances.append(R(item))
             elif item[0] == 'qu': self._instances.append(Q(item))
-        
+
         # close path
         if close_path:
             item = ('l', self._instances[-1].points[-1], self._instances[0].points[0])
             line = L(item)
             if line.length>1e-3: self._instances.append(line)
 
-    
+
     def __iter__(self): return (instance for instance in self._instances)
 
 
@@ -164,18 +163,18 @@ class Segments:
 
     @property
     def area(self):
-        '''Calculate segments area with Green formulas. Note the boundary of Bezier curve 
+        '''Calculate segments area with Green formulas. Note the boundary of Bezier curve
         is simplified with its control points.
-        
+
         * https://en.wikipedia.org/wiki/Shoelace_formula
-        '''        
+        '''
         points = self.points
         start, end = points[0], points[-1]
-        if abs(start[0]-end[0])+abs(start[1]-end[1])>1e-3: 
+        if abs(start[0]-end[0])+abs(start[1]-end[1])>1e-3:
             return 0.0 # open curve
-            
-        # closed curve 
-        area = 0.0       
+
+        # closed curve
+        area = 0.0
         for i in range(len(points)-1):
             x0, y0 = points[i]
             x1, y1 = points[i+1]
@@ -192,7 +191,7 @@ class Segments:
         y0 = min(points, key=lambda point: point[1])[1]
         x1 = max(points, key=lambda point: point[0])[0]
         y1 = max(points, key=lambda point: point[1])[1]
-        
+
         # bbox: `round()` is required to avoid float error
         return fitz.Rect(
             round(x0, 2), round(y0, 2), round(x1, 2), round(y1, 2))
@@ -207,12 +206,12 @@ class Segments:
 
         Returns:
             list: A list of ``Stroke`` dicts.
-        """        
+        """
         strokes = []
-        for segment in self._instances: 
+        for segment in self._instances:
             strokes.extend(segment.to_strokes(width, color))
         return strokes
-    
+
 
     def to_fill(self, color:list):
         """Convert segment closed area to a ``Fill`` dict.
@@ -222,9 +221,9 @@ class Segments:
 
         Returns:
             dict: ``Fill`` dict.
-        """        
+        """
         return {
-            'bbox' : list(self.bbox), 
+            'bbox' : list(self.bbox),
             'color': rgb_value(color)
         }
 
@@ -268,7 +267,7 @@ class Path:
 
         Returns:
             list: A list of segments list.
-        """        
+        """
         segments, segments_list = [], []
         cursor = None
         for item in items:
@@ -279,13 +278,13 @@ class Path:
                 # - first point of segments, or
                 # - connected to previous segment
                 if not segments or start==cursor:
-                    segments.append(item)                    
-                
+                    segments.append(item)
+
                 # otherwise, close current segments and start a new one
                 else:
                     segments_list.append(segments)
-                    segments = [item] 
-                
+                    segments = [item]
+
                 # update current point
                 cursor = end
 
@@ -297,12 +296,12 @@ class Path:
                     segments = []
                 # add this segment
                 segments_list.append([item])
-        
+
         # add last segments if exists
         if segments: segments_list.append(segments)
 
         return segments_list
-                
+
 
     @property
     def is_stroke(self): return 's' in self.path_type
@@ -327,14 +326,15 @@ class Path:
         iso_shapes = []
 
         # convert to strokes
+        white = (1,1,1)
         if self.is_stroke:
-            stroke_color = self.raw.get('color', None)
+            stroke_color = self.raw.get('color', white) # white stroke by default
             width = self.raw.get('width', 0.0)
             iso_shapes.extend(self._to_strokes(width, stroke_color))
 
         # convert to rectangular fill
         if self.is_fill:
-            fill_color = self.raw.get('fill', None)
+            fill_color = self.raw.get('fill', white) # white filling by default
             iso_shapes.extend(self._to_fills(fill_color))
 
         return iso_shapes
@@ -346,9 +346,9 @@ class Path:
         Returns:
             list: A list of ``Stroke`` dict.
         '''
-        strokes = []        
+        strokes = []
         for segments in self.items:
-            strokes.extend(segments.to_strokes(width, color))        
+            strokes.extend(segments.to_strokes(width, color))
         return strokes
 
 
@@ -357,13 +357,13 @@ class Path:
 
         Returns:
             list: A list of ``Fill`` dict.
-        
+
         .. note::
-            The real filling area of this path may be not a rectangle.        
+            The real filling area of this path may be not a rectangle.
         '''
-        fills = []        
+        fills = []
         for segments in self.items:
-            fills.append(segments.to_fill(color))        
+            fills.append(segments.to_fill(color))
         return fills
 
 
@@ -374,7 +374,7 @@ class Path:
             canvas: ``PyMuPDF`` drawing canvas by ``page.new_shape()``.
 
         Reference:
-        
+
             https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
         '''
         # draw each entry of the 'items' list
