@@ -1,3 +1,5 @@
+.. include:: header.rst
+
 Graphic User Interface
 ===========================
 
@@ -8,4 +10,6 @@ To launch the GUI::
     $ pdf2docx gui
 
 
-.. image:: https://z3.ax1x.com/2021/05/30/2ZYiUs.png
+.. image:: images/pdf-converter.png
+
+.. include:: footer.rst

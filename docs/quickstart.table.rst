@@ -1,3 +1,5 @@
+.. include:: header.rst
+
 Extract table
 ======================
 
@@ -24,3 +26,6 @@ The output may look like::
     ['Description D ', 'kg ', '0.84 ', '0.53 ', '0.52 ', '0.33 '],
     ['Description E ', '1.00 ', '0.15 ', None, None, None],
     ['Description F ', '1.00 ', '0.86 ', '0.37 ', '0.78 ', '0.01 ']]
+
+
+.. include:: footer.rst
