@@ -1,3 +1,5 @@
+.. include:: header.rst
+
 Quickstart
 =============
 
@@ -11,3 +13,5 @@ Quickstart
    quickstart.table
    quickstart.cli
    quickstart.gui
+
+.. include:: footer.rst

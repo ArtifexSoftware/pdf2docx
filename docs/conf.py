@@ -12,27 +12,32 @@
 #
 import os
 import sys
+import datetime
 sys.path.insert(0, os.path.abspath("../pdf2docx/"))
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'pdf2docx'
-copyright = '2023, Artifex'
+thisday = datetime.date.today()
+copyright = str(thisday.year) + ", Artifex"
 author = 'Artifex Software, Inc.'
 
-# The full version, including alpha/beta/rc tags
-# read version number from version.txt, otherwise alpha version
-# Github CI can create version.txt dynamically.
+# The version info for the project you're documenting, acts as replacement for
+# |version| and |release|, also used in various other places throughout the
+# built documents.
+#
+# The full version, including alpha/beta/rc tags.
 def get_version(fname):
     if os.path.exists(fname):
         with open(fname, 'r') as f:
-            version = f.readline().strip()
+            release = f.readline().strip()
     else:
-        version = 'alpha'
+        release = 'alpha'
 
-    return version
-release = get_version('../version.txt')
+    return release
+
+version = get_version('../version.txt')
 
 # -- General configuration ---------------------------------------------------
 
@@ -40,7 +45,8 @@ release = get_version('../version.txt')
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinxcontrib.apidoc'
+    'sphinxcontrib.apidoc',
+    'sphinx_copybutton'
 ]
 
 apidoc_module_dir = '../pdf2docx'
@@ -63,14 +69,22 @@ exclude_patterns = [
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-# html_theme = 'alabaster'
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'furo'
 
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
+html_static_path = ['_static']
+
+# A list of CSS files. The entry must be a filename string or a tuple containing
+# the filename string and the attributes dictionary. The filename must be
+# relative to the html_static_path, or a full URI
+html_css_files = ["custom.css"]
+
+
+html_favicon = "_static/PyMuPDF.ico"
+
 
 # -- Options for LaTeX output ---------------------------------------------
 latex_elements = {

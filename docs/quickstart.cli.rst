@@ -1,3 +1,5 @@
+.. include:: header.rst
+
 Command Line Interface
 ===========================
 
@@ -79,3 +81,5 @@ Turn on multi-processing with default count of CPU::
 Specify the count of CPUs::
 
   $ pdf2docx convert test.pdf test.docx --multi_processing=True --cpu_count=4
+
+.. include:: footer.rst

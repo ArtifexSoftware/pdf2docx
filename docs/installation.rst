@@ -1,10 +1,12 @@
+.. include:: header.rst
+
 Installation
 ====================
 
-``pdf2docx`` can be installed from either Pypi or the source code.
+``pdf2docx`` can be installed from either PyPI or the source code.
 
 
-Install from Pypi
+Install from PyPI
 -------------------
 
 Type the command below for a new installation::
@@ -24,7 +26,7 @@ Install ``pdf2docx`` directly from the ``master`` branch::
   $ pip install git+git://github.com/dothinking/pdf2docx.git@master --upgrade
 
 .. note::
-  In this way, ``pdf2docx`` might have a higher version than Pypi, which is not released yet.
+  In this way, ``pdf2docx`` might have a higher version than PyPI, which is not released yet.
 
 
 Install from source code locally
@@ -45,3 +47,6 @@ Uninstall
 ::
 
   $ pip uninstall pdf2docx
+
+
+.. include:: footer.rst

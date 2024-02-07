@@ -1,3 +1,5 @@
+.. include:: header.rst
+
 Convert PDF
 =======================
 
@@ -87,3 +89,7 @@ Provide ``password`` to open and convert password protected pdf::
   cv = Converter(pdf_file, password)
   cv.convert(docx_file)
   cv.close()
+
+
+.. include:: footer.rst
+
