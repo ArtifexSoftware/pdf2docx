@@ -33,6 +33,9 @@
 
         <div class="feedbackLink"><a id="feedbackLinkTop" target=_blank>Do you have any feedback on this page?</b></a></div>
     </div>
+    <div>
+        <a href="https://pymupdf.readthedocs.io" target=_blank><button class="cta orange" style="text-transform:none;">Try PyMuPDF</button></a>
+    </div>
 
     <script>
         var url_string = window.location.href;
