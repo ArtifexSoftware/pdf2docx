@@ -50,7 +50,7 @@ setup(
     description=DESCRIPTION,
     long_description=load_long_description("README.md"),
     long_description_content_type="text/markdown",
-    license="GPL v3",
+    license="GNU AFFERO GPL 3.0",
     author='Artifex',
     author_email='support@artifex.com',
     url='https://artifex.com/',
