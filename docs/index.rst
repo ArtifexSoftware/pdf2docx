@@ -22,6 +22,7 @@ generate **docx** files with ``python-docx``.
    installation
    quickstart
    techdoc
+   license
 
 
 .. toctree::
