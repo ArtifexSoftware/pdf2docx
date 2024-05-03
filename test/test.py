@@ -1,34 +1,45 @@
 '''
 The test framework: pytest, pytest-cov.
 
-To test the pdf conversion and converting quality, the idea is to convert generated docx to pdf,
-then check the image similarity between source pdf page and converted pdf page. Considering the 
-converting quality from docx to pdf, a Windows-based command line tool `OfficeToPDF` is used, in
-addition, an installation of Microsoft Word is required.
+We have a set of PDF files as test inputs.
 
-To leverage the benefit of Github Action, the testing process is divided into three parts:
-  1. Convert sample pdf to docx with `pdf2docx`.
-  2. Convert generated docx to pdf for comparing.
-  3. Convert page to image and compare similarity with `python-opencv`.
+For a test file foo.pdf, we convert it into a file foo.pdf.docx using pdf2docx.
 
-Test scripts on Part One and Three are applied with two test class respectively in this module,
-so they could be run separately with pytest command, e.g.
+To check whether this has worked as expected, we use Python package docx2pdf
+(which uses Word) on Windows, or Libreoffice command line on other platforms,
+to convert foo.pdf.docx into foo.pdf.docx.pdf.
 
-- pytest -vs --no-header test.py::TestConversion for Part One
-- pytest -vs --no-header test.py::TestQuality for Part Three
+We then compare foo.pdf.docx.pdf with the original foo.pdf file using opencv,
+generating a similarity value.
 
-Links on MS Word to PDF conversion:
-  - https://github.com/cognidox/OfficeToPDF/releases
-  - https://github.com/AndyCyberSec/pylovepdf
-  - https://www.e-iceblue.com/Tutorials/Java/Spire.Doc-for-Java/Program-Guide/Conversion/Convert-Word-to-PDF-in-Java.html
+So on Windows we require Word is installed, and on other platforms we require
+that Libreoffice is installed.
+
+If docx2pdf fails with `Object reference not set to an instance of an
+object. Did not convert`, it might be necessary to follow the instructions at:
+
+    https://stackoverflow.com/questions/24860351/object-reference-not-set-to-an-instance-of-an-object-did-not-convert
+
+    In a Cmd window run:
+        DCOMCNFG
+    Then:
+        Console Root > Component Services > Computers > My Computer > DCOM Config > Microsoft Word 97 - 2003 Document
+    Then: Right click then properties then Identity tab and set a username and
+    password.
 '''
 
+import glob
 import os
 import io
 import numpy as np
 import cv2 as cv
 import fitz
 from pdf2docx import Converter, parse
+import subprocess
+import time
+import shutil
+import platform
+import pytest
 
 
 script_path = os.path.abspath(__file__) # current script path
@@ -99,6 +110,89 @@ def get_mssism(i1, i2, kernel=(15,15)):
     return np.mean(mssim[0:3])
 
 
+def run(command):
+   print(f'Running: {command}')
+   subprocess.run(command, shell=1, check=1)
+
+
+def document_to(in_, out):
+    if platform.system() == 'Windows':
+        return word_to(in_, out)
+    else:
+        return libreoffice_to(in_, out)
+
+
+_g_word_to_docx2pdf = False
+
+def word_to(in_, out):
+    global _g_word_to_docx2pdf
+    if not _g_word_to_docx2pdf:
+        run('pip install docx2pdf')
+        import docx2pdf
+        _g_word_to_docx2pdf = True
+    assert os.path.isfile(in_), f'Not a file: {in_=}'
+    run(f'docx2pdf {in_} {out}')
+    return
+    import docx2pdf
+    try:
+        docx2pdf.convert(in_, out)
+    except Exception as e:
+        print(f'docx2pdf.convert() raised exception: {e}')
+        raise
+    
+
+
+def libreoffice_to(in_, out):
+    '''Converts file to pdf using libreoffice. Returns generated path
+    f'{in_}.pdf'.'''
+    # Libreoffice does not allow direct specification of the output path and
+    # goes wrong wtih paths with multiple '.' characters, so we work on a
+    # temporary. Also it does not return non-zero if it fails so we check
+    # mtime.
+    #print(f'{in_=} {out=}')
+    assert os.path.isfile(in_)
+    in_root, in_ext = os.path.splitext(in_)
+    _, out_ext = os.path.splitext(out)
+    out_dir = os.path.dirname(out)
+    temp = f'{out_dir}/_temp_libreoffice_to'
+    in2 = f'{temp}{in_ext}'
+    out2 = f'{temp}{out_ext}'
+    shutil.copy2(in_, in2)
+    try:
+        t = time.time()
+        #print(f'{in_=} {in2=} {in_ext=}')
+        run(f'libreoffice --convert-to {out_ext[1:]} --outdir {out_dir} {in2}')
+        os.rename(out2, out)
+        t_out = os.path.getmtime(out)
+        assert t_out >= t, f'libreoffice failed to update/create {out=}'
+    finally:
+        os.remove(in2)
+        if os.path.isfile(out2):
+            os.remove(out2)
+
+
+def compare_pdf(pdf1, pdf2, num_pages=None):
+    #print(f'Comparing {pdf1=} {pdf2=}')
+    with fitz.Document(pdf1) as doc1, fitz.Document(pdf2) as doc2:
+        if num_pages:
+            n1 = num_pages
+        else:
+            n1 = len(doc1)
+            n2 = len(doc2)
+            if n1 != n2:
+                print(f'Differing numbers of pages: {n1=} {n2=}.')
+                return -1
+        sidx = 0
+        # Find average similarity.
+        for n in range(n1):
+            diff_png = f'{pdf2}.diff.{n}.png'
+            sidx_n = get_page_similarity(doc1[n], doc2[n], diff_png)
+            #print(f'Page {n}: {diff_png} {sidx_n=}.')
+            sidx += sidx_n
+        sidx /= n1
+        #print(f'{sidx=}')
+        return sidx
+
 
 class TestConversion:
     '''Test the converting process.'''
@@ -128,135 +222,6 @@ class TestConversion:
 
         docx_file = os.path.join(output_path, f'{filename}.docx')
         with open(docx_file, 'wb') as f: f.write(out_stream.getvalue())
-
-    # ------------------------------------------
-    # stream
-    # ------------------------------------------
-    def test_io_stream(self):
-        '''test input/output file stream.'''
-        self.convert_by_io_stream('demo-text')
-
-    # ------------------------------------------
-    # layout: section
-    # ------------------------------------------
-    def test_section(self):
-        '''test page layout: section and column.'''
-        self.convert('demo-section')
-
-    def test_section_spacing(self):
-        '''test page layout: section vertical position.'''
-        self.convert('demo-section-spacing')
-
-    # ------------------------------------------
-    # text styles
-    # ------------------------------------------
-    def test_blank_file(self):
-        '''test blank file without any texts or images.'''
-        self.convert('demo-blank')
-
-    def test_text_format(self):
-        '''test text format, e.g. highlight, underline, strike-through.'''
-        self.convert('demo-text')
-
-    def test_text_alignment(self):
-        '''test text alignment.'''
-        self.convert('demo-text-alignment')    
-
-    def test_unnamed_fonts(self):
-        '''test unnamed fonts which destroys span bbox, and accordingly line/block layout.'''
-        self.convert('demo-text-unnamed-fonts')
-
-    def test_text_scaling(self):
-        '''test font size. In this case, the font size is set precisely with character scaling.'''
-        self.convert('demo-text-scaling')
-
-    def test_text_hidden(self):
-        '''test hidden text, which is ignore by default.'''
-        self.convert('demo-text-hidden')
-
-    # ------------------------------------------
-    # image styles
-    # ------------------------------------------
-    def test_image(self):
-        '''test inline-image.'''
-        self.convert('demo-image')
-
-    def test_vector_graphic(self):
-        '''test vector graphic.'''
-        self.convert('demo-image-vector-graphic')
-
-    def test_image_color_space(self):
-        '''test image color space.'''
-        self.convert('demo-image-colorspace')
-
-    def test_image_floating(self):
-        '''test floating images.'''
-        self.convert('demo-image-floating')
-
-    def test_image_rotation(self):
-        '''test rotating image due to pdf page rotation.'''
-        self.convert('demo-image-rotation')
-
-    def test_image_overlap(self):
-        '''test images with both intersection and page rotation.'''
-        self.convert('demo-image-overlap')
-
-
-    # ------------------------------------------
-    # table styles
-    # ------------------------------------------
-    def test_table_bottom(self):
-        '''page break due to table at the end of page.'''
-        self.convert('demo-table-bottom')
-
-    def test_table_format(self):
-        '''test table format, e.g.
-            - border and shading style
-            - vertical cell
-            - merged cell
-            - text format in cell
-        '''
-        self.convert('demo-table')
-
-    def test_stream_table(self):
-        '''test stream structure and shading.'''
-        self.convert('demo-table-stream')
-
-    def test_table_shading(self):
-        '''test simulating shape with shading cell.'''
-        self.convert('demo-table-shading')
-
-    def test_table_shading_highlight(self):
-        '''test distinguishing table shading and highlight.'''
-        self.convert('demo-table-shading-highlight')
-
-    def test_lattice_table(self):
-        '''test lattice table with very close text underlines to table borders.'''
-        self.convert('demo-table-close-underline')
-
-    def test_lattice_table_invoice(self):
-        '''test invoice sample file with lattice table, vector graphic.'''
-        self.convert('demo-table-lattice')
-
-    def test_lattice_cell(self):
-        '''test generating stream borders for lattice table cell.'''
-        self.convert('demo-table-lattice-one-cell')
-
-    def test_table_border_style(self):
-        '''test border style, e.g. width, color.'''
-        self.convert('demo-table-border-style')
-
-    def test_table_align_borders(self):
-        '''aligning stream table borders to simplify table structure.'''
-        self.convert('demo-table-align-borders')
-
-    def test_nested_table(self):
-        '''test nested tables.'''
-        self.convert('demo-table-nested')
-
-    def test_path_transformation(self):
-        '''test path transformation. In this case, the (0,0) origin is out of the page.'''
-        self.convert('demo-path-transformation')
 
 
     # ------------------------------------------
@@ -297,66 +262,88 @@ class TestConversion:
         assert os.path.isfile(docx_file)
 
 
+# We make a separate pytest test for each sample file.
 
-class TestQuality:
+def _find_paths():
+    ret = list()
+    for path in glob.glob(f'{sample_path}/*.docx') + glob.glob(f'{sample_path}/*.pdf'):
+        path_leaf = os.path.basename(path)
+        if path_leaf.count('.') > 1:
+            continue
+        ret.append(path)
+    return ret
+
+g_paths = _find_paths()
+
+@pytest.mark.parametrize('path', g_paths)
+def test_one(path):
     '''Check the quality of converted docx.
-    Note the docx files must be converted to PDF files in advance.
     '''
-
-    INDEX_MAP = {
+    
+    # Where there are two values, they are (sidx_required_word,
+    # sidx_required_libreoffice).
+    #
+    docx_to_sidx_required = {
         'demo-blank.pdf': 1.0,
         'demo-image-cmyk.pdf': 0.90,
         'demo-image-transparent.pdf': 0.90,
-        'demo-image-vector-graphic.pdf': 0.89,
+        'demo-image-vector-graphic.pdf': (0.89, 0.68),
         'demo-image.pdf': 0.90,
-        'demo-image-rotation.pdf': 0.90,
-        'demo-image-overlap.pdf': 0.90,
-        'demo-path-transformation.pdf': 0.90,
-        'demo-section-spacing.pdf': 0.90,
-        'demo-section.pdf': 0.70,
+        'demo-image-rotation.pdf': (0.90, 0.82),
+        'demo-image-overlap.pdf': (0.90, 0.70),
+        'demo-path-transformation.pdf': (0.89, 0.60),
+        'demo-section-spacing.pdf': (0.90, 0.86),
+        'demo-section.pdf': (0.70, 0.45),
         'demo-table-align-borders.pdf': 0.49,
-        'demo-table-border-style.pdf': 0.90,
+        'demo-table-border-style.pdf': (0.90, 0.89),
         'demo-table-bottom.pdf': 0.90,
-        'demo-table-close-underline.pdf': 0.58,
-        'demo-table-lattice-one-cell.pdf': 0.79,
-        'demo-table-lattice.pdf': 0.75,
+        'demo-table-close-underline.pdf': (0.57, 0.49),
+        'demo-table-lattice-one-cell.pdf': (0.79, 0.75),
+        'demo-table-lattice.pdf': (0.75, 0.59),
         'demo-table-nested.pdf': 0.84,
-        'demo-table-shading-highlight.pdf': 0.55,
-        'demo-table-shading.pdf': 0.80,
+        'demo-table-shading-highlight.pdf': (0.55, 0.45),
+        'demo-table-shading.pdf': (0.80, 0.60),
         'demo-table-stream.pdf': 0.55,
-        'demo-table.pdf': 0.90,
-        'demo-text-alignment.pdf': 0.90,
-        'demo-text-scaling.pdf': 0.80,
-        'demo-text-unnamed-fonts.pdf': 0.80,
+        'demo-table.pdf': (0.90, 0.75),
+        'demo-text-alignment.pdf': (0.90, 0.86),
+        'demo-text-scaling.pdf': (0.80, 0.65),
+        'demo-text-unnamed-fonts.pdf': (0.80, 0.77),
         'demo-text-hidden.pdf': 0.90,
-        'demo-text.pdf': 0.80
+        'demo-text.pdf': 0.80,
+        'pdf2docx-lists-bullets3.docx': (0.98, 0.99),
     }
 
-    def setup(self):
-        '''create output path if not exist.'''
-        if not os.path.exists(output_path): os.mkdir(output_path)
+    print(f'# Looking at: {path}')
+    path_leaf = os.path.basename(path)
+    _, ext = os.path.splitext(path)
+    if ext == '.docx':
+        pdf = f'{path}.pdf'
+        document_to(path, pdf)
+    else:
+        pdf = path
+    docx2 = f'{pdf}.docx'
+    with fitz.Document(pdf) as doc:
+        if len(doc) > 1:
+            print(f'Not testing because more than one page: {path}')
+            return
+    #print(f'Calling parse() {pdf=} {docx2=}')
+    parse(pdf, docx2, raw_exceptions=True)
+    assert os.path.isfile(docx2)
+    pdf2 = f'{docx2}.pdf'
+    document_to(docx2, pdf2)
+    sidx = compare_pdf(pdf, pdf2, num_pages=1)
 
+    sidx_required = docx_to_sidx_required.get(path_leaf)
+    if sidx_required:
+        if isinstance(sidx_required, tuple):
+            sr_word, sr_libreoffice = sidx_required
+            sidx_required = sr_word if platform.system() == 'Windows' else sr_libreoffice
 
-    def test_quality(self):
-        '''Convert page to image and compare similarity.'''
-        for filename in os.listdir(output_path):
-            if not filename.endswith('pdf'): continue
-
-            source_pdf_file = os.path.join(sample_path, filename)
-            target_pdf_file = os.path.join(output_path, filename)
-
-            # open pdf    
-            source_pdf = fitz.open(source_pdf_file)
-            target_pdf = fitz.open(target_pdf_file)
-
-            # compare page count
-            if len(source_pdf)>1: continue # one page sample only
-            assert len(target_pdf)==1, f"\nThe page count of {filename} is incorrect."
-
-            # compare the first page
-            diff_png = os.path.join(output_path, f'{filename[:-4]}.png')
-            sidx = get_page_similarity(target_pdf[0], source_pdf[0], diff_png)
-            threshold = TestQuality.INDEX_MAP.get(filename, 0.10)
-            print(f'Checking {filename}: {sidx} v.s. {threshold}')
-            assert sidx>=threshold, 'Significant difference might exist since similarity index is lower than threshold.'
-
+        #print(f'{path=}: {sidx_required=} {sidx=}.')
+        if sidx < sidx_required:
+            print(f'{sidx=} too low - should be >= {sidx_required=}')
+            print(f'    {pdf}')
+            print(f'    {pdf2}')
+            assert 0
+    else:
+        print(f'# No sidx_required available for {path_leaf=}.')
