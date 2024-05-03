@@ -108,6 +108,7 @@ class Converter:
             'parse_stream_table'             : True,   # whether parse stream table or not; may destroy the layout if set False
             'delete_end_line_hyphen'         : False,  # delete hyphen at the end of a line
             'raw_exceptions'                 : False,  # Don't swallow exceptions
+            'list_not_table'                 : True,   # Avoid treating bullet list as table.
         }
 
     # -----------------------------------------------------------------------
