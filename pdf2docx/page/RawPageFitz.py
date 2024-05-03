@@ -4,6 +4,7 @@
 A wrapper of PyMuPDF Page as page engine.
 '''
 
+import fitz
 import logging
 from .RawPage import RawPage
 from ..image.ImagesExtractor import ImagesExtractor
@@ -22,6 +23,7 @@ class RawPageFitz(RawPage):
         if not self.page_engine: return raw_dict
 
         # actual page size
+        # `self.page_engine` is the `fitz.Page`.
         *_, w, h = self.page_engine.rect # always reflecting page rotation
         raw_dict.update({ 'width' : w, 'height': h })
         self.width, self.height = w, h
@@ -59,7 +61,15 @@ class RawPageFitz(RawPage):
         if ocr==1: raise SystemExit("OCR feature is planned but not implemented yet.")
 
         # all text blocks no matter hidden or not
-        raw = self.page_engine.get_text('rawdict', flags=64)
+        sort = settings.get('sort')
+        raw = self.page_engine.get_text(
+                'rawdict',
+                flags=0
+                    | fitz.TEXT_MEDIABOX_CLIP
+                    | fitz.TEXT_CID_FOR_UNKNOWN_UNICODE
+                    ,
+                sort=sort,
+                )
         text_blocks = raw.get('blocks', [])
 
         # potential UnicodeDecodeError issue when trying to filter hidden text:
