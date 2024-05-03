@@ -255,3 +255,56 @@ def debug_plot(title:str, show=True):
             return objects
         return inner
     return wrapper
+
+def is_list_item(text, bullets=True, numbers=True):
+    '''Returns `text` if `bullets` is true and `text` is a bullet character, or
+    `numbers` is true and `text` is not empty and consists entirely of digits
+    0-9. Otherwise returns None.
+
+    If `bullets` is True we use an internal list of bullet characters;
+    otherwise it should be a list of integer Unicode values.
+    '''
+    return False
+    if bullets is True:
+        bullets2 = (
+                # From https://en.wikipedia.org/wiki/Bullet_(typography).
+                0x2022, # BULLET (&bull;, &bullet;)
+                0x2023, # TRIANGULAR BULLET
+                0x2043, # HYPHEN BULLET (&hybull;)
+                0x204c, # BLACK LEFTWARDS BULLET
+                0x204d, # BLACK RIGHTWARDS BULLET
+                0x2219, # BULLET OPERATOR for use in mathematical notation primarily as a dot product instead of interpunct.
+                0x25c9, # FISHEYE used in Japan as a bullet, and called tainome.
+                0x25cb, # WHITE CIRCLE (&cir;)
+                0x25cf, # BLACK CIRCLE
+                0x25cf, # Bullet, black small circle.
+                0x25d8, # INVERSE BULLET
+                0x25e6, # WHITE BULLET
+                0x2619, # REVERSED ROTATED FLORAL HEART BULLET; see Fleuron (typography)
+                0x2765, # ROTATED HEAVY BLACK HEART BULLET
+                0x2767, # ROTATED FLORAL HEART BULLET; see Fleuron (typography)
+                0x29be, # CIRCLED WHITE BULLET (&olcir;)
+                0x29bf, # CIRCLED BULLET (&ofcir;)
+
+                # Additional.
+                0x25aa, # Black small square, square bullet.
+                0xf0b7, # "Private Use Character" but seems to be used by libreoffice for bullets.
+                )
+    else:
+        bullets2 = bullets
+    if bullets:
+        if len(text)==1:
+            c = text[0]
+            cc = ord(c)
+            if cc in bullets2:
+                if bullets is True and cc == 0xf0b7:
+                    return chr(0x2022)
+                return text
+    if numbers:
+        for c in text:
+            if isinstance(c, list):
+                c = c[0]
+            if c not in '0123456789':
+                break
+        else:
+            return text

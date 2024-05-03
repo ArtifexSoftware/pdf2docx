@@ -41,6 +41,8 @@ class PDF2DOCX:
             cv.convert(docx_file, start, end, pages, **kwargs)
         except Exception as e:
             logging.error(e)
+            if kwargs['raw_exceptions']:
+                raise
         finally:
             cv.close()
 

@@ -106,7 +106,8 @@ class Converter:
             'extract_stream_table'           : False,  # don't consider stream table when extracting tables
             'parse_lattice_table'            : True,   # whether parse lattice table or not; may destroy the layout if set False
             'parse_stream_table'             : True,   # whether parse stream table or not; may destroy the layout if set False
-            'delete_end_line_hyphen'         : False   # delete hyphen at the end of a line
+            'delete_end_line_hyphen'         : False,  # delete hyphen at the end of a line
+            'raw_exceptions'                 : False,  # Don't swallow exceptions
         }
 
     # -----------------------------------------------------------------------
@@ -182,6 +183,8 @@ class Converter:
             try:
                 page.parse(**kwargs)
             except Exception as e:
+                if kwargs['raw_exceptions']:
+                    raise
                 if not kwargs['debug'] and kwargs['ignore_page_error']:
                     logging.error('Ignore page %d due to parsing page error: %s', pid, e)
                 else:
@@ -224,6 +227,8 @@ class Converter:
             try:
                 page.make_docx(docx_file)
             except Exception as e:
+                if kwargs['raw_exceptions']:
+                    raise
                 if not kwargs['debug'] and kwargs['ignore_page_error']:
                     logging.error('Ignore page %d due to making page error: %s', pid, e)
                 else:

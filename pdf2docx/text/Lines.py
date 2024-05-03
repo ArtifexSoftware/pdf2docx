@@ -11,6 +11,7 @@ from ..image.ImageSpan import ImageSpan
 from ..common.Collection import ElementCollection
 from ..common.share import TextAlignment
 from ..common import constants
+from ..common.share import is_list_item
 
 
 class Lines(ElementCollection):
@@ -31,6 +32,11 @@ class Lines(ElementCollection):
             line = Line(raw)
             self.append(line)
         return self
+
+
+    def text(self):
+        '''For debugging.'''
+        return '\n'.join([line.text for line in self])
 
 
     @property
@@ -72,8 +78,12 @@ class Lines(ElementCollection):
             end_of_sen = row[-1].text.strip().endswith(punc)
             w =  row[-1].bbox[2]-row[0].bbox[0]
 
+            if 0 and is_list_item(row[0].text[0]):
+                # Treat bullet list items as separate paragraphs.
+                start_of_para = True
+            
             # end of a sentense and free space at the end -> end of paragraph
-            if end_of_sen and w/W <= 1.0-line_break_free_space_ratio:
+            elif end_of_sen and w/W <= 1.0-line_break_free_space_ratio:
                 end_of_para = True
 
             # start of sentence and free space at the start -> start of paragraph

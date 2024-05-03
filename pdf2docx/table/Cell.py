@@ -25,8 +25,11 @@ class Cell(Layout):
         '''Text contained in this cell.'''
         if not self: return None
         # NOTE: sub-table may exists in
-        return '\n'.join([block.text if block.is_text_block else '<NEST TABLE>'
-                                 for block in self.blocks])
+        # fixme: prev code did `if block.is_text_block`, but sometimes
+        # there is no `is_text_block` member; would be good to ensure
+        # this member is always present and avoid use of `hasattr()`.
+        return '\n'.join([block.text if hasattr(block, 'text') else '<NEST TABLE>'
+                                for block in self.blocks])
 
 
     @property
