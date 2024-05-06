@@ -449,7 +449,7 @@ class Blocks(ElementCollection):
                 y0, y1 = get_v_bdy(block)
                 distances.append(round(y0-ref1, 2))
                 ref0, ref1 = y0, y1        
-            return max(distances, key=distances.count) if distances else 0.0
+            return max(max(distances, key=distances.count), 0.0) if distances else 0.0
 
         # create text block based on lines
         blocks = [] # type: list[TextBlock]
