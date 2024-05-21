@@ -89,7 +89,37 @@ class ImagesExtractor:
         pix = self.clip_page_to_pixmap(bbox=bbox, rm_image=rm_image, zoom=clip_image_res_ratio)
         return self._to_raw_dict(pix, bbox)
 
-
+    @staticmethod
+    def _get_rotateinfo_bymatrix(m:fitz.Matrix):
+        rotate=0
+        vflip=False
+        hflip=False
+        if m.b * m.c == 0:  # means rotation by 0, 180, or flippings
+            if m.a * m.d > 0:  # same sign -> no flippings
+                if m.a < 0:  # so both, a and d are negative!
+                    rotate=180
+                else:
+                    pass
+            else:  # we have a flip
+                if m.a < 0:  # horizontal flip
+                    hflip=True
+                else:
+                    vflip=True
+        else:
+            if m.b * m.c < 0:
+                if m.b > 0:
+                    rotate=90
+                else:
+                    rotate=270
+            else:
+                if m.b > 0:
+                    hflip=True
+                    rotate=90                   
+                else:
+                    hflip=True
+                    rotate=270         
+        return rotate,vflip,hflip
+    
     def extract_images(self, clip_image_res_ratio:float=3.0):
         '''Extract normal images with ``Page.get_images()``.
 
@@ -121,17 +151,17 @@ class ImagesExtractor:
             item[-1] = 0
 
             # find all occurrences referenced to this image
-            rects = self._page.get_image_rects(item)
+            rects = self._page.get_image_rects(item,True)
             unrotated_page_bbox = self._page.cropbox # note the difference to page.rect
             for bbox in rects:
                 # ignore small images
-                if bbox.get_area()<=4: continue
+                if bbox[0].get_area()<=4: continue
 
                 # ignore images outside page
-                if not unrotated_page_bbox.intersects(bbox): continue
+                if not unrotated_page_bbox.intersects(bbox[0]): continue
 
                 # collect images
-                ic.append((bbox, item))
+                ic.append((bbox[0], item,bbox[1]))
 
         # step 2: group by intersection
         fun = lambda a, b: a[0].intersects(b[0])
@@ -143,11 +173,11 @@ class ImagesExtractor:
             # clip page with the union bbox of all intersected images
             if len(group) > 1:
                 clip_bbox = fitz.Rect()
-                for (bbox, item) in group: clip_bbox |= bbox
+                for (bbox, item, matrix) in group: clip_bbox |= bbox
                 raw_dict = self.clip_page_to_dict(clip_bbox, False, clip_image_res_ratio)
 
             else:
-                bbox, item = group[0]
+                bbox, item, matrix = group[0]
 
                 # Regarding images consist of alpha values only, the turquoise color shown in
                 # the PDF is not part of the image, but part of PDF background.
@@ -173,11 +203,13 @@ class ImagesExtractor:
                 else:
                     # recover image, e.g., handle image with mask, or CMYK color space
                     pix = self._recover_pixmap(doc, item)
-
+                    #some jpg have exifinfo
+                    imgrotate,vflip,hflip=self._get_rotateinfo_bymatrix(matrix)
                     # rotate image with opencv if page is rotated
                     raw_dict = self._to_raw_dict(pix, bbox)
-                    if rotation:
-                        raw_dict['image'] = self._rotate_image(pix, -rotation)
+                    rotation+=imgrotate
+                    if rotation or vflip or hflip: 
+                        raw_dict['image'] = self._rotate_image(pix, -rotation, vflip, hflip)
 
             images.append(raw_dict)
 
@@ -254,17 +286,27 @@ class ImagesExtractor:
         Returns:
             dict: Raw dict of the pixmap.
         '''
+        img_result=""
+        try:
+            img_result=image.tobytes()
+        except Exception as e:
+            try:
+                print(e)
+                # need PIL.Image
+                img_result=image.pil_tobytes(format="PNG")
+            except Exception as e:
+                print(e)
         return {
             'type': BlockType.IMAGE.value,
             'bbox': tuple(bbox),
             'width': image.width,
             'height': image.height,
-            'image': image.tobytes()
+            'image': img_result
         }
 
 
     @staticmethod
-    def _rotate_image(pixmap:fitz.Pixmap, rotation:int):
+    def _rotate_image(pixmap:fitz.Pixmap, rotation:int, vflip:bool, hflip:bool):
         '''Rotate image represented by image bytes.
 
         Args:
@@ -303,6 +345,13 @@ class ImagesExtractor:
 
         # perform the rotation holding at the center
         rotated_img = cv.warpAffine(img, matrix, (W, H))
+        if vflip:
+            if hflip:
+                rotated_img=cv.flip(rotated_img,-1)
+            else:
+                rotated_img=cv.flip(rotated_img,0)
+        elif hflip:
+            rotated_img=cv.flip(rotated_img,1)
 
         # convert back to bytes
         _, im_png = cv.imencode('.png', rotated_img)
