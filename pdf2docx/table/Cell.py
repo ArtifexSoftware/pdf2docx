@@ -78,7 +78,12 @@ class Cell(Layout):
         docx_cell = table.cell(i, j)
         if n_row*n_col!=1:
             _cell = table.cell(i+n_row-1, j+n_col-1)
-            docx_cell.merge(_cell)
+            try:
+                docx_cell.merge(_cell)
+            except Exception as e:
+                def show(c):
+                    return f'[_tc.top={c._tc.top} _tc.bottom={c._tc.bottom}]'
+                raise Exception(f'Failed to merge docx_cell={show(docx_cell)} _cell={show(_cell)}. {i=} {j=} {n_row=} {n_col=}') from e
 
         # ---------------------
         # cell width (cell height is set by row height)
