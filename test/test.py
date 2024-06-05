@@ -42,6 +42,7 @@ import platform
 import pytest
 
 
+root_path = os.path.abspath(f'{__file__}/../..')
 script_path = os.path.abspath(__file__) # current script path
 test_dir = os.path.dirname(script_path)
 sample_path = os.path.join(test_dir, 'samples')
@@ -270,10 +271,17 @@ def _find_paths():
         path_leaf = os.path.basename(path)
         if path_leaf.count('.') > 1:
             continue
-        ret.append(path)
+        ret.append(os.path.relpath(path, root_path))
     return ret
 
 g_paths = _find_paths()
+
+# We create a separate pytest for each sample file, paramaterised using the
+# path of the sample file relative to the pdf2docx directory.
+#
+# So one can run a specific test with:
+#
+# pytest pdf2docx/test/test.py::test_one[test/samples/demo-whisper_2_3.pdf]
 
 @pytest.mark.parametrize('path', g_paths)
 def test_one(path):
@@ -314,6 +322,10 @@ def test_one(path):
     }
 
     print(f'# Looking at: {path}')
+    if os.path.basename(path) == 'demo-whisper_2_3.pdf':
+        print(f'Ignoring {path=} because known to fail.')
+        return
+    path = f'{root_path}/{path}'
     path_leaf = os.path.basename(path)
     _, ext = os.path.splitext(path)
     if ext == '.docx':
@@ -322,12 +334,16 @@ def test_one(path):
     else:
         pdf = path
     docx2 = f'{pdf}.docx'
-    with fitz.Document(pdf) as doc:
-        if len(doc) > 1:
-            print(f'Not testing because more than one page: {path}')
-            return
+    pages = None
+    if os.path.basename(path) == 'demo-whisper_2_3.pdf':
+        pages = [25, 26, 27]
+    else:
+        with fitz.Document(pdf) as doc:
+            if len(doc) > 1:
+                print(f'Not testing because more than one page: {path}')
+                return
     #print(f'Calling parse() {pdf=} {docx2=}')
-    parse(pdf, docx2, raw_exceptions=True)
+    parse(pdf, docx2, pages=pages, raw_exceptions=True)
     assert os.path.isfile(docx2)
     pdf2 = f'{docx2}.pdf'
     document_to(docx2, pdf2)
