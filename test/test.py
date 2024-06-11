@@ -271,6 +271,9 @@ def _find_paths():
         path_leaf = os.path.basename(path)
         if path_leaf.count('.') > 1:
             continue
+        if path_leaf == 'demo-whisper_2_3.pdf':
+            # Known to fail.
+            continue
         ret.append(os.path.relpath(path, root_path))
     return ret
 
@@ -322,9 +325,6 @@ def test_one(path):
     }
 
     print(f'# Looking at: {path}')
-    if os.path.basename(path) == 'demo-whisper_2_3.pdf':
-        print(f'Ignoring {path=} because known to fail.')
-        return
     path = f'{root_path}/{path}'
     path_leaf = os.path.basename(path)
     _, ext = os.path.splitext(path)
