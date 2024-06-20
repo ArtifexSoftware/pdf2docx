@@ -88,37 +88,6 @@ class ImagesExtractor:
         '''
         pix = self.clip_page_to_pixmap(bbox=bbox, rm_image=rm_image, zoom=clip_image_res_ratio)
         return self._to_raw_dict(pix, bbox)
-
-    @staticmethod
-    def _get_rotateinfo_bymatrix(m:fitz.Matrix):
-        rotate=0
-        vflip=False
-        hflip=False
-        if m.b * m.c == 0:  # means rotation by 0, 180, or flippings
-            if m.a * m.d > 0:  # same sign -> no flippings
-                if m.a < 0:  # so both, a and d are negative!
-                    rotate=180
-                else:
-                    pass
-            else:  # we have a flip
-                if m.a < 0:  # horizontal flip
-                    hflip=True
-                else:
-                    vflip=True
-        else:
-            if m.b * m.c < 0:
-                if m.b > 0:
-                    rotate=90
-                else:
-                    rotate=270
-            else:
-                if m.b > 0:
-                    hflip=True
-                    rotate=90                   
-                else:
-                    hflip=True
-                    rotate=270         
-        return rotate,vflip,hflip
     
     def extract_images(self, clip_image_res_ratio:float=3.0):
         '''Extract normal images with ``Page.get_images()``.
@@ -203,13 +172,15 @@ class ImagesExtractor:
                 else:
                     # recover image, e.g., handle image with mask, or CMYK color space
                     pix = self._recover_pixmap(doc, item)
-                    #some jpg have exifinfo
-                    imgrotate,vflip,hflip=self._get_rotateinfo_bymatrix(matrix)
                     # rotate image with opencv if page is rotated
                     raw_dict = self._to_raw_dict(pix, bbox)
-                    rotation+=imgrotate
-                    if rotation or vflip or hflip: 
-                        raw_dict['image'] = self._rotate_image(pix, -rotation, vflip, hflip)
+                    if matrix.b*matrix.c != 0.0 or matrix.a<0 or matrix.d<0:
+                        raw_dict['image']=self._matrix_translate(pix,matrix,bbox.width,bbox.height)
+                        #还要继续处理旋转的页面
+                        if rotation:
+                            pix = fitz.Pixmap(raw_dict['image'])
+                    if rotation: 
+                        raw_dict['image'] = self._rotate_image(pix, -rotation) 
 
             images.append(raw_dict)
 
@@ -304,9 +275,62 @@ class ImagesExtractor:
             'image': img_result
         }
 
+    @staticmethod
+    def _matrix_translate(pixmap:fitz.Pixmap,matrix:fitz.Matrix,W:float,H:float):
+        import cv2 as cv
+        import numpy as np
+
+        # Convert QPixmap to OpenCV image
+        img = ImagesExtractor._pixmap_to_cv_image(pixmap)
+        h, w = img.shape[:2] # get image height, width
+        
+
+        # Build the affine transformation matrix
+        # TODO: I don't understand why I need an inverse matrix
+        # 虽然我知道opencv图片坐标系是左上角，而pdf是左下角，但是为什么逆矩阵能正确不了解
+        # 因为仿射变换需要逆矩阵，试了下，逆矩阵的结果是正确的
+        inverse_matrix=np.linalg.inv(np.array([
+            [matrix.a/W, matrix.b/H]
+            ,[matrix.c/W, matrix.d/H]]
+            )) 
+        opencv_matrix = np.array([[inverse_matrix[0][0], inverse_matrix[0][1], 0],
+                           [inverse_matrix[1][0], inverse_matrix[1][1], 0]])
+        
+        # Image corners (in the top-left coordinate system)
+        corners = np.array([
+            [0, 0],
+            [w, 0],
+            [w, h],
+            [0, h]
+        ], dtype=np.float32)
+
+        # Apply inverse affine transformation
+        transformed_corners  = cv.transform(np.array([corners]), opencv_matrix)[0]
+        
+        # Find the minimum x and y coordinates after transformation
+        min_x = np.min(transformed_corners[:, 0])
+        min_y = np.min(transformed_corners[:, 1])
+        
+        # Calculate the translation distance
+        tx = -min_x
+        ty = -min_y
+        
+        # Calculate the new image size
+        new_w = int(np.max(transformed_corners[:, 0]) - min_x)
+        new_h = int(np.max(transformed_corners[:, 1]) - min_y)
+        opencv_matrix[0][2]=tx
+        opencv_matrix[1][2]=ty
+        #cv.imshow('Original Image',img)
+        #cv.waitKey(0)
+        transform_img = cv.warpAffine(img, opencv_matrix, (new_w, new_h))
+        #transform_img = cv.warpAffine(img, opencv_matrix, (int(w), int(h)))
+        #cv.imshow('Rotated Image',transform_img)
+        #cv.waitKey(0)
+        _, im_png = cv.imencode('.png', transform_img)
+        return im_png.tobytes()
 
     @staticmethod
-    def _rotate_image(pixmap:fitz.Pixmap, rotation:int, vflip:bool, hflip:bool):
+    def _rotate_image(pixmap:fitz.Pixmap, rotation:int):
         '''Rotate image represented by image bytes.
 
         Args:
@@ -345,13 +369,6 @@ class ImagesExtractor:
 
         # perform the rotation holding at the center
         rotated_img = cv.warpAffine(img, matrix, (W, H))
-        if vflip:
-            if hflip:
-                rotated_img=cv.flip(rotated_img,-1)
-            else:
-                rotated_img=cv.flip(rotated_img,0)
-        elif hflip:
-            rotated_img=cv.flip(rotated_img,1)
 
         # convert back to bytes
         _, im_png = cv.imencode('.png', rotated_img)
@@ -474,4 +491,6 @@ class ImagesExtractor:
         import cv2 as cv
         import numpy as np
         img_byte = pixmap.tobytes()
-        return cv.imdecode(np.frombuffer(img_byte, np.uint8), cv.IMREAD_COLOR)
+
+        #fix png alpha to black bug
+        return cv.imdecode(np.frombuffer(img_byte, np.uint8), cv.IMREAD_UNCHANGED)
