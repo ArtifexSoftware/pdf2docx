@@ -198,6 +198,9 @@ class TablesConstructor:
             if isinstance(self._parent, Cell) and \
                 table.num_cols*table.num_rows==1 and table[0][0].bg_color is None:
                 continue
+            # one line table is error
+            if isinstance(self._parent, Cell)==False and table.num_cols*table.num_rows==1:
+                continue
 
             table.set_stream_table_block()
             tables.append(table)

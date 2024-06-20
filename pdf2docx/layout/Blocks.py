@@ -583,7 +583,8 @@ class Blocks(ElementCollection):
 
             start_pos = block.bbox[idx] - dw
             para_space = start_pos-ref_pos
-
+            if block.is_text_block:
+                para_space //= len(block.lines._instances)
             # modify vertical space in case the block is out of bottom boundary
             dy = max(block.bbox[idx+2]-bbox[idx+2], 0.0)
             para_space -= dy
