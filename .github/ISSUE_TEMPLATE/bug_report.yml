@@ -1,9 +1,7 @@
 name: Bug Report
 description: |
   Create a bug report for pdf2docx
-  Please **_use English language_** only in all your posts and all your issues. Please remember:
-  * We, the maintainers are a team of international experts. You are causing a significant additional amount of work if we have to translate before we can deal with your contributions.
-  * The users of this package are from all over the world. Your valuable insights, comments and examples will mostly be ignored if you do not use English language.
+  Please use English only in posts and issues to aid maintainers and benefit all users. We will immediately reject and close non-English posts.
 
 # We omit `title: "..."` so that the field defaults to blank. If we set it to
 # empty string, Github seems to reject this .yml file.
