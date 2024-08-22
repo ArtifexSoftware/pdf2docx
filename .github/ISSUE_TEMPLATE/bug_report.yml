@@ -1,6 +1,6 @@
 name: Bug Report
 description: |
-  Create a bug report for pdf2docx
+  Create a bug report for pdf2docx.
   Please use English only in posts and issues to aid maintainers and benefit all users. We will immediately reject and close non-English posts.
 
 # We omit `title: "..."` so that the field defaults to blank. If we set it to
