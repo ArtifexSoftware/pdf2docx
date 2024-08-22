@@ -88,8 +88,7 @@ class ImagesExtractor:
         '''
         pix = self.clip_page_to_pixmap(bbox=bbox, rm_image=rm_image, zoom=clip_image_res_ratio)
         return self._to_raw_dict(pix, bbox)
-
-
+    
     def extract_images(self, clip_image_res_ratio:float=3.0):
         '''Extract normal images with ``Page.get_images()``.
 
@@ -121,17 +120,17 @@ class ImagesExtractor:
             item[-1] = 0
 
             # find all occurrences referenced to this image
-            rects = self._page.get_image_rects(item)
+            rects = self._page.get_image_rects(item,True)
             unrotated_page_bbox = self._page.cropbox # note the difference to page.rect
             for bbox in rects:
                 # ignore small images
-                if bbox.get_area()<=4: continue
+                if bbox[0].get_area()<=4: continue
 
                 # ignore images outside page
-                if not unrotated_page_bbox.intersects(bbox): continue
+                if not unrotated_page_bbox.intersects(bbox[0]): continue
 
                 # collect images
-                ic.append((bbox, item))
+                ic.append((bbox[0], item,bbox[1]))
 
         # step 2: group by intersection
         fun = lambda a, b: a[0].intersects(b[0])
@@ -143,11 +142,11 @@ class ImagesExtractor:
             # clip page with the union bbox of all intersected images
             if len(group) > 1:
                 clip_bbox = fitz.Rect()
-                for (bbox, item) in group: clip_bbox |= bbox
+                for (bbox, item, matrix) in group: clip_bbox |= bbox
                 raw_dict = self.clip_page_to_dict(clip_bbox, False, clip_image_res_ratio)
 
             else:
-                bbox, item = group[0]
+                bbox, item, matrix = group[0]
 
                 # Regarding images consist of alpha values only, the turquoise color shown in
                 # the PDF is not part of the image, but part of PDF background.
@@ -173,11 +172,15 @@ class ImagesExtractor:
                 else:
                     # recover image, e.g., handle image with mask, or CMYK color space
                     pix = self._recover_pixmap(doc, item)
-
                     # rotate image with opencv if page is rotated
                     raw_dict = self._to_raw_dict(pix, bbox)
-                    if rotation:
-                        raw_dict['image'] = self._rotate_image(pix, -rotation)
+                    if matrix.b*matrix.c != 0.0 or matrix.a<0 or matrix.d<0:
+                        raw_dict['image']=self._matrix_translate(pix,matrix,bbox.width,bbox.height)
+                        #还要继续处理旋转的页面
+                        if rotation:
+                            pix = fitz.Pixmap(raw_dict['image'])
+                    if rotation: 
+                        raw_dict['image'] = self._rotate_image(pix, -rotation) 
 
             images.append(raw_dict)
 
@@ -254,14 +257,77 @@ class ImagesExtractor:
         Returns:
             dict: Raw dict of the pixmap.
         '''
+        img_result=""
+        try:
+            img_result=image.tobytes()
+        except Exception as e:
+            try:
+                print(e)
+                # need PIL.Image
+                img_result=image.pil_tobytes(format="PNG")
+            except Exception as e:
+                print(e)
         return {
             'type': BlockType.IMAGE.value,
             'bbox': tuple(bbox),
             'width': image.width,
             'height': image.height,
-            'image': image.tobytes()
+            'image': img_result
         }
 
+    @staticmethod
+    def _matrix_translate(pixmap:fitz.Pixmap,matrix:fitz.Matrix,W:float,H:float):
+        import cv2 as cv
+        import numpy as np
+
+        # Convert QPixmap to OpenCV image
+        img = ImagesExtractor._pixmap_to_cv_image(pixmap)
+        h, w = img.shape[:2] # get image height, width
+        
+
+        # Build the affine transformation matrix
+        # TODO: I don't understand why I need an inverse matrix
+        # 虽然我知道opencv图片坐标系是左上角，而pdf是左下角，但是为什么逆矩阵能正确不了解
+        # 因为仿射变换需要逆矩阵，试了下，逆矩阵的结果是正确的
+        inverse_matrix=np.linalg.inv(np.array([
+            [matrix.a/W, matrix.b/H]
+            ,[matrix.c/W, matrix.d/H]]
+            )) 
+        opencv_matrix = np.array([[inverse_matrix[0][0], inverse_matrix[0][1], 0],
+                           [inverse_matrix[1][0], inverse_matrix[1][1], 0]])
+        
+        # Image corners (in the top-left coordinate system)
+        corners = np.array([
+            [0, 0],
+            [w, 0],
+            [w, h],
+            [0, h]
+        ], dtype=np.float32)
+
+        # Apply inverse affine transformation
+        transformed_corners  = cv.transform(np.array([corners]), opencv_matrix)[0]
+        
+        # Find the minimum x and y coordinates after transformation
+        min_x = np.min(transformed_corners[:, 0])
+        min_y = np.min(transformed_corners[:, 1])
+        
+        # Calculate the translation distance
+        tx = -min_x
+        ty = -min_y
+        
+        # Calculate the new image size
+        new_w = int(np.max(transformed_corners[:, 0]) - min_x)
+        new_h = int(np.max(transformed_corners[:, 1]) - min_y)
+        opencv_matrix[0][2]=tx
+        opencv_matrix[1][2]=ty
+        #cv.imshow('Original Image',img)
+        #cv.waitKey(0)
+        transform_img = cv.warpAffine(img, opencv_matrix, (new_w, new_h))
+        #transform_img = cv.warpAffine(img, opencv_matrix, (int(w), int(h)))
+        #cv.imshow('Rotated Image',transform_img)
+        #cv.waitKey(0)
+        _, im_png = cv.imencode('.png', transform_img)
+        return im_png.tobytes()
 
     @staticmethod
     def _rotate_image(pixmap:fitz.Pixmap, rotation:int):
@@ -425,4 +491,6 @@ class ImagesExtractor:
         import cv2 as cv
         import numpy as np
         img_byte = pixmap.tobytes()
-        return cv.imdecode(np.frombuffer(img_byte, np.uint8), cv.IMREAD_COLOR)
+
+        #fix png alpha to black bug
+        return cv.imdecode(np.frombuffer(img_byte, np.uint8), cv.IMREAD_UNCHANGED)
