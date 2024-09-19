@@ -59,6 +59,8 @@ class Lines(ElementCollection):
             to bottom.
         '''
         rows = self.group_by_physical_rows()
+        for row in rows:
+            row.sort_in_reading_order()
 
         # skip if only one row
         num = len(rows)
