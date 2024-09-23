@@ -66,7 +66,10 @@ class Row(Element):
         # to control the layout precisely, set `exact` value, rather than `at least` value
         # the associated steps in MS word: Table Properties -> Row -> Row height -> exactly
         docx_row.height_rule = WD_ROW_HEIGHT.EXACTLY
-        
+
+        if self.height < 0: # to prevent negative height validation
+            self.height = 0
+
         # NOTE: row height is counted from center-line of top border to center line of bottom border
         docx_row.height = Pt(self.height)
 

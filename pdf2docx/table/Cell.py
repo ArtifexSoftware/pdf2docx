@@ -76,7 +76,7 @@ class Cell(Layout):
         n_row, n_col = self.merged_cells
         i, j = indexes
         docx_cell = table.cell(i, j)
-        if n_row*n_col!=1:
+        if n_row*n_col != 1 and ((i+n_row-1) * table._column_count + j+n_col-1) < len(table._cells): # check whether index is over length of cells
             _cell = table.cell(i+n_row-1, j+n_col-1)
             try:
                 docx_cell.merge(_cell)
@@ -133,7 +133,8 @@ class Cell(Layout):
         # merged cells are assumed to have same borders with the main cell
         for m in range(i, i+n_row):
             for n in range(j, j+n_col):
-                docx.set_cell_border(table.cell(m, n), **kwargs)
+                if len(table._cells) > m * table._column_count + n: # check whether index is over length of cells
+                    docx.set_cell_border(table.cell(m, n), **kwargs)
 
         # ---------------------
         # cell bg-color
