@@ -60,6 +60,9 @@ class Lines(ElementCollection):
         '''
         rows = self.group_by_physical_rows()
 
+        for row in rows:
+            row.sort_in_line_order() # sort lines in row
+
         # skip if only one row
         num = len(rows)
         if num==1: return rows
