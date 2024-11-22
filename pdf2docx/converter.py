@@ -359,7 +359,7 @@ class Converter:
         logging.info('Terminated in %.2fs.', perf_counter()-t0)        
 
 
-    def extract_tables(self, start:int=0, end:int=None, pages:list=None, write_to_csv = False, **kwargs):
+    def extract_tables(self, start:int=0, end:int=None, pages:list=None, write_to_csv = False, csv_folder: str= '.', **kwargs):
         '''Extract table contents from specified PDF pages.
 
         Args:
@@ -367,6 +367,7 @@ class Converter:
             end (int, optional): Last page to process. Defaults to None, the last page.
             pages (list, optional): Range of page indexes. Defaults to None.
             write_to_csv (bool, optional): Whether to write each table to its own csv file.
+            csv_folder (str, optional): specify folder name to write csvs to
             kwargs (dict, optional): Configuration parameters. Defaults to None.
         
         Returns:
@@ -383,27 +384,35 @@ class Converter:
             if page.finalized: tables.extend(page.extract_tables(**settings))
 
         if write_to_csv:
-            self.table_to_csv(tables)
+            self.table_to_csv(tables, csv_folder)
             
         return tables
 
-    def table_to_csv(self, tables:List, **kwargs):
+    def table_to_csv(self, tables:List, csv_folder: str= '.', **kwargs):
 
         '''Write each table to a csv file as generated from extract_tables function
         
         Args:
             tables (list): Tables as returned from extract_tables function
-            csv_folder (str, optional): folder to write
+            csv_folder (str, optional): specify folder name to write csvs to
         '''
 
+        os.makedirs(csv_folder, exist_ok=True) 
+
+        written_files = []
         for i, table in enumerate(tables):
-            output_file = f'table_{i+1}.csv'
+            
+            output_file = os.path.join(csv_folder, f'table_{i+1}.csv')
             
             # Open a CSV file for writing
-            with open(output_file, mode='w', newline='', encoding='utf-8') as csvfile:
-                writer = csv.writer(csvfile)
-                # Write each row of the table to the CSV file
-                writer.writerows(table)
+            try:
+                with open(output_file, mode='w', newline='', encoding='utf-8') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerows(table)  # Write rows of the table
+                written_files.append(output_file)
+                logging.info(f"Table {i+1} written to {output_file}")
+            except Exception as e:
+                logging.error(f"Failed to write table {i+1} to {output_file}: {e}")
                 
     def _convert_with_multi_processing(self, docx_filename:str, start:int, end:int, **kwargs):
         '''Parse and create pages based on page indexes with multi-processing.
