@@ -4,13 +4,15 @@ import logging
 import os
 from multiprocessing import Pool, cpu_count
 from time import perf_counter
-from typing import AnyStr, IO, Union
+from typing import AnyStr, IO, Union, List
 
 import fitz
 from docx import Document
 
 from .page.Page import Page
 from .page.Pages import Pages
+import csv
+
 
 # check PyMuPDF version
 # 1.19.0 <= v <= 1.23.8, or v>=1.23.16
@@ -357,13 +359,14 @@ class Converter:
         logging.info('Terminated in %.2fs.', perf_counter()-t0)        
 
 
-    def extract_tables(self, start:int=0, end:int=None, pages:list=None, **kwargs):
+    def extract_tables(self, start:int=0, end:int=None, pages:list=None, write_to_csv = False, **kwargs):
         '''Extract table contents from specified PDF pages.
 
         Args:
             start (int, optional): First page to process. Defaults to 0, the first page.
             end (int, optional): Last page to process. Defaults to None, the last page.
             pages (list, optional): Range of page indexes. Defaults to None.
+            write_to_csv (bool, optional): Whether to write each table to its own csv file.
             kwargs (dict, optional): Configuration parameters. Defaults to None.
         
         Returns:
@@ -379,9 +382,29 @@ class Converter:
         for page in self._pages:
             if page.finalized: tables.extend(page.extract_tables(**settings))
 
+        if write_to_csv:
+            self.table_to_csv(tables)
+            
         return tables
 
-    
+    def table_to_csv(self, tables:List, **kwargs):
+
+        '''Write each table to a csv file as generated from extract_tables function
+        
+        Args:
+            tables (list): Tables as returned from extract_tables function
+            csv_folder (str, optional): folder to write
+        '''
+
+        for i, table in enumerate(tables):
+            output_file = f'table_{i+1}.csv'
+            
+            # Open a CSV file for writing
+            with open(output_file, mode='w', newline='', encoding='utf-8') as csvfile:
+                writer = csv.writer(csvfile)
+                # Write each row of the table to the CSV file
+                writer.writerows(table)
+                
     def _convert_with_multi_processing(self, docx_filename:str, start:int, end:int, **kwargs):
         '''Parse and create pages based on page indexes with multi-processing.
 
