@@ -158,8 +158,11 @@ def rgb_component(srgb:int):
         [int(255*x) for x in fitz.sRGB_to_pdf(x)]
     '''
     # decimal to hex: 0x...
-    s = hex(srgb)[2:].zfill(6)
-    return [int(s[i:i+2], 16) for i in [0, 2, 4]]
+    try:
+        s = hex(srgb)[2:].zfill(6)
+        return [int(s[i:i+2], 16) for i in [0, 2, 4]]
+    except Exception as e:
+        return [0, 0, 0]
 
 
 def rgb_to_value(rgb:list):
