@@ -53,14 +53,14 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.9", "3.10"]
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -76,13 +76,13 @@ jobs:
           pytest -v ./test/test.py::TestConversion --cov=./pdf2docx --cov-report=xml
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with: # Or as an environment variable
           token: ${{ secrets.CODECOV_TOKEN }}
       
       # upload docx for further job
       - name: Archive package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
             name: outputs
             path: ./test/outputs
