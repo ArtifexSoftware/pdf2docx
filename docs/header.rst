@@ -30,15 +30,8 @@
             <a href="https://discord.gg/TSpYGBW4eq" id="findOnDiscord" target=_blank>Find <b>#pymupdf</b> on <b>Discord</b></a>
             <a href="https://discord.gg/TSpYGBW4eq" target=_blank><img src="_images/discord-mark-blue.svg" alt="Discord logo" /></a>
         </div>
-
-        <div class="feedbackLink"><a id="feedbackLinkTop" target=_blank>Do you have any feedback on this page?</b></a></div>
     </div>
     <div>
         <a href="https://pymupdf.readthedocs.io" target=_blank><button class="cta orange" style="text-transform:none;">Try PyMuPDF</button></a>
     </div>
 
-    <script>
-        var url_string = window.location.href;
-        var a = document.getElementById('feedbackLinkTop');
-        a.setAttribute("href", "https://artifex.com/contributor/feedback.php?utm_source=rtd-pdf2docx&utm_medium=rtd&utm_content=header-link&url="+url_string);
-    </script>
