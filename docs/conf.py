@@ -46,8 +46,11 @@ version = get_version('../version.txt')
 # ones.
 extensions = [
     'sphinxcontrib.apidoc',
-    'sphinx_copybutton'
+    'sphinx_copybutton',
+    'sphinx_markdown_builder'
 ]
+
+markdown_http_base = "https://pdf2docx.readthedocs.io/en/latest/markdown"
 
 apidoc_module_dir = '../pdf2docx'
 apidoc_output_dir = 'api'

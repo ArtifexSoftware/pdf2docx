@@ -7,3 +7,4 @@ autodoc
 furo
 sphinx_copybutton
 sphinxcontrib.apidoc
+sphinx_markdown_builder
