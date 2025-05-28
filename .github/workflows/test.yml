@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     
     container:
-      image: python:3.8
+      image: python:3.12
 
     steps:
       - name: Check out code
@@ -53,7 +53,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.11", "3.12"]
 
     steps:
       - name: Check out code
