@@ -42,5 +42,16 @@ Indices and tables
 
 .. include:: footer.rst
 
+.. raw:: html
+
+   <script>
+   document.addEventListener('DOMContentLoaded', function() {
+       const canonical = document.createElement('link');
+       canonical.rel = 'canonical';
+       canonical.href = 'https://pdf2docx.readthedocs.io';
+       document.head.appendChild(canonical);
+   });
+   </script>
+
 
 .. _PyMuPDF: https://pymupdf.io
