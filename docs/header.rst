@@ -34,4 +34,7 @@
     <div>
         <a href="https://pymupdf.readthedocs.io" target=_blank><button class="cta orange" style="text-transform:none;">Try PyMuPDF</button></a>
     </div>
+    <div>
+        <a href="https://pymupdf.readthedocs.io" target=_blank><button class="cta orange" style="text-transform:none;">Try PyMuPDF</button></a>
+    </div>
 
