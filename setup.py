@@ -50,7 +50,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=load_requirements("requirements.txt"),
-    python_requires=">=3.6",
+    python_requires=">=3.10",
     entry_points={
         "console_scripts": [
             "pdf2docx=pdf2docx.main:main"

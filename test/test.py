@@ -247,6 +247,21 @@ class TestConversion:
             ['Description F', '1.00', '0.86', '0.37', '0.78', '0.01']
         ]
         assert table==sample
+    
+    # ------------------------------------------
+    # extract tables with empty/none cells
+    # ------------------------------------------
+    def test_extract_tables_empty_cell(self):
+        '''Test extracting tables from demo-table-empty-cell.pdf (no crash, returns list).'''
+        # Test that extract_tables() handles tables with empty cells correctly.
+        filename = 'demo-table-empty-cell'
+        pdf_file = os.path.join(sample_path, f'{filename}.pdf')
+        cv = Converter(pdf_file)
+        tables = cv.extract_tables()
+        cv.close()
+        assert isinstance(tables, list), 'extract_tables() should return a list'
+        # At least one table expected from this sample
+        assert len(tables) >= 1, f'expected at least 1 table, got {len(tables)}'
 
 
     # ------------------------------------------
