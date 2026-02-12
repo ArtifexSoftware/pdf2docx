@@ -59,7 +59,7 @@ jobs:
       # - app-tag.zip
       # - app-tag-info.whl
       - name: Archive package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
             name: dist
             path: ./dist
@@ -79,7 +79,7 @@ jobs:
 
       # download artifacts from job: build
       - name: Download artifacts from build
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist
@@ -110,7 +110,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download artifacts from release
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist
