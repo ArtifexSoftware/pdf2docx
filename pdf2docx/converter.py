@@ -219,6 +219,7 @@ class Converter:
                 raise ConversionException("Please specify a docx file name or a file-like object to write.")
 
         # create page by page        
+        docx_list = []
         docx_file = Document() 
         num_pages = len(parsed_pages)
         for i, page in enumerate(parsed_pages, start=1):
@@ -226,6 +227,9 @@ class Converter:
             pid = page.id + 1
             logging.info('(%d/%d) Page %d', i, num_pages, pid)
             try:
+                docx_page = Document()
+                page.make_docx(docx_page)
+                docx_list.append(docx_page)
                 page.make_docx(docx_file)
             except Exception as e:
                 if kwargs['raw_exceptions']:
@@ -237,6 +241,7 @@ class Converter:
 
         # save docx
         docx_file.save(filename_or_stream)
+        return docx_list
 
 
     # -----------------------------------------------------------------------
@@ -348,14 +353,15 @@ class Converter:
             raise ConversionException('Multi-processing works for continuous pages '
                                     'specified by "start" and "end" only.')
         
+        docx_list = []
         # convert page by page
         if settings['multi_processing']:
-            self._convert_with_multi_processing(docx_filename, start, end, **settings)
+            docx_list = self._convert_with_multi_processing(docx_filename, start, end, **settings)
         else:
-            self.parse(start, end, pages, **settings).make_docx(docx_filename, **settings)
+            docx_list = self.parse(start, end, pages, **settings).make_docx(docx_filename, **settings)
 
         logging.info('Terminated in %.2fs.', perf_counter()-t0)        
-
+        return docx_list
 
     def extract_tables(self, start:int=0, end:int=None, pages:list=None, **kwargs):
         '''Extract table contents from specified PDF pages.
@@ -407,7 +413,7 @@ class Converter:
             os.remove(filename)
         
         # create docx file
-        self.make_docx(docx_filename, **kwargs)
+        return self.make_docx(docx_filename, **kwargs)
 
 
     @staticmethod
