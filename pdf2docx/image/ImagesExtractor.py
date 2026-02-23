@@ -9,6 +9,7 @@ Both raster images and vector graphics are considered:
 """
 
 import logging
+import math
 import fitz
 from ..common.Collection import Collection
 from ..common.share import BlockType
@@ -93,6 +94,24 @@ class ImagesExtractor:
         )
         return self._to_raw_dict(pix, bbox)
 
+    @staticmethod
+    def _get_image_rotation(matrix) -> int:
+        """Extract rotation angle (0, 90, 180, 270) from image transform matrix.
+
+        Handles 90-degree multiples only. Based on PyMuPDF Matrix format:
+        fitz.Matrix(90) -> (0, 1, -1, 0, ...), Matrix(180) -> (-1, 0, 0, -1, ...).
+        """
+        if matrix is None:
+            return 0
+        try:
+            a, b, c, d = matrix.a, matrix.b, matrix.c, matrix.d
+        except AttributeError:
+            return 0
+        # Round to nearest 90 degrees using atan2
+        angle_rad = math.atan2(b, a)
+        angle_deg = round(math.degrees(angle_rad) / 90) * 90
+        return int(angle_deg % 360)
+
     def extract_images(self, clip_image_res_ratio: float = 3.0):
         """Extract normal images with ``Page.get_images()``.
 
@@ -117,16 +136,23 @@ class ImagesExtractor:
         # extract the equivalent image by clipping the union page region for now.
         # https://github.com/dothinking/pdf2docx/issues/123
 
-        # step 1: collect images: [(bbox, item), ..., ]
+        # step 1: collect images: [(bbox, item, image_rotation), ..., ]
         ic = Collection()
         for item in self._page.get_images(full=True):
             item = list(item)
             item[-1] = 0
+            xref = item[0]
 
             # find all occurrences referenced to this image
             rects = self._page.get_image_rects(item)
+            # get per-image transform (rotation) when available (PyMuPDF 1.19+)
+            rects_with_transform = []
+            try:
+                rects_with_transform = self._page.get_image_rects(xref, transform=True)
+            except (TypeError, AttributeError):
+                pass
             unrotated_page_bbox = self._page.cropbox  # note the difference to page.rect
-            for bbox in rects:
+            for i, bbox in enumerate(rects):
                 # ignore small images
                 if bbox.get_area() <= 4:
                     continue
@@ -135,8 +161,15 @@ class ImagesExtractor:
                 if not unrotated_page_bbox.intersects(bbox):
                     continue
 
-                # collect images
-                ic.append((bbox, item))
+                # extract per-image rotation from transform matrix
+                image_rotation = 0
+                if i < len(rects_with_transform):
+                    entry = rects_with_transform[i]
+                    if isinstance(entry, (list, tuple)) and len(entry) >= 2:
+                        matrix_t = entry[1]
+                        image_rotation = self._get_image_rotation(matrix_t)
+
+                ic.append((bbox, item, image_rotation))
 
         # step 2: group by intersection
         fun = lambda a, b: a[0].intersects(b[0])
@@ -148,14 +181,14 @@ class ImagesExtractor:
             # clip page with the union bbox of all intersected images
             if len(group) > 1:
                 clip_bbox = fitz.Rect()
-                for bbox, item in group:
+                for bbox, item, _ in group:
                     clip_bbox |= bbox
                 raw_dict = self.clip_page_to_dict(
                     clip_bbox, False, clip_image_res_ratio
                 )
 
             else:
-                bbox, item = group[0]
+                bbox, item, image_rotation = group[0]
 
                 # Regarding images consist of alpha values only, the turquoise color shown in
                 # the PDF is not part of the image, but part of PDF background.
@@ -182,10 +215,12 @@ class ImagesExtractor:
                     # recover image, e.g., handle image with mask, or CMYK color space
                     pix = self._recover_pixmap(doc, item)
 
-                    # rotate image with opencv if page is rotated
+                    # rotate image: apply inverse of per-image transform, then page rotation
+                    # (PyMuPDF matrix maps image->page; correct pixmap with inverse: apply -angle)
                     raw_dict = self._to_raw_dict(pix, bbox)
-                    if rotation:
-                        raw_dict["image"] = self._rotate_image(pix, -rotation)
+                    total_rotation = (rotation or 0) - image_rotation
+                    if total_rotation:
+                        raw_dict["image"] = self._rotate_image(pix, total_rotation)
 
             images.append(raw_dict)
 

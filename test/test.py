@@ -277,6 +277,17 @@ class TestConversion:
         # check file
         assert os.path.isfile(docx_file)
 
+    # ------------------------------------------
+    # rotated images (issue 346)
+    # ------------------------------------------
+    def test_rotated_images(self):
+        '''Test converting PDF with rotated images (issue 346).'''
+        filename = 'demo-issue-346'
+        self.convert(filename)
+        docx_file = os.path.join(output_path, f'{filename}.docx')
+        assert os.path.isfile(docx_file), f'Expected output file: {docx_file}'
+        assert os.path.getsize(docx_file) > 0, 'Output docx should not be empty'
+
 
 # We make a separate pytest test for each sample file.
 
