@@ -4,3 +4,4 @@ fonttools>=4.24.0
 numpy>=1.17.2
 opencv-python-headless>=4.5
 fire>=0.3.0
+setuptools==80.9.0
