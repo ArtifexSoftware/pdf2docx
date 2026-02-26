@@ -287,6 +287,25 @@ class TestConversion:
         docx_file = os.path.join(output_path, f'{filename}.docx')
         assert os.path.isfile(docx_file), f'Expected output file: {docx_file}'
         assert os.path.getsize(docx_file) > 0, 'Output docx should not be empty'
+    
+    # ------------------------------------------
+    # non-grayscale/non-RGB images (issue 340)
+    # ------------------------------------------
+    def test_non_grayscale_non_rgb_images(self):
+        '''Test converting PDFs with rotated images and non-RGB colorspace (CMYK, alpha).
+
+        Covers: per-image rotation, pixmap tobytes() for non-grayscale/non-RGB.
+        '''
+        filenames = [
+            'demo-issue-340'
+        ]
+        for filename in filenames:
+            pdf_file = os.path.join(sample_path, f'{filename}.pdf')
+            if not os.path.isfile(pdf_file):
+                continue
+            docx_file = os.path.join(output_path, f'{filename}.docx')
+            parse(pdf_file, docx_file, start=0, end=None)
+            assert os.path.isfile(docx_file), f'Expected output {docx_file}'
 
 
 # We make a separate pytest test for each sample file.
