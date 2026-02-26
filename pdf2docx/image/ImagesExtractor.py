@@ -296,7 +296,31 @@ class ImagesExtractor:
         Returns:
             dict: Raw dict of the pixmap.
         """
-        if image.colorspace.n > 3:  # must convert: we only support PNG
+        """
+        if image.colorspace.n > 3: # must convert: we only support PNG image with alpha channel
+            image = fitz.Pixmap(fitz.csRGB, image)
+        """
+        # added by maksym
+        # Get the colorspace object of the pixmap.
+        # NOTE: colorspace.n (number of channels) is NOT sufficient to decide
+        # whether MuPDF can write this pixmap as PNG.
+        cs = image.colorspace
+        # MuPDF can write PNG only if the colorspace is exactly:
+        #   - DeviceGray (fitz.csGRAY)
+        #   - DeviceRGB  (fitz.csRGB)
+        #
+        # Even if cs.n == 1 or cs.n == 3, the pixmap may still be:
+        #   - ICCBased grayscale/RGB
+        #   - Separation / spot color
+        #   - Indexed colorspace
+        #   - Alpha-only pixmap
+        #
+        # All of these will trigger:
+        #   "pixmap must be grayscale or rgb to write as png"
+        #
+        # Therefore we must convert unless the colorspace object itself
+        # is exactly csGRAY or csRGB.
+        if cs is None or cs not in (fitz.csGRAY, fitz.csRGB):
             image = fitz.Pixmap(fitz.csRGB, image)
         return {
             "type": BlockType.IMAGE.value,
