@@ -402,8 +402,33 @@ class TextSpan(Element):
         # font name
         font_name = self.font
         docx_run.font.name = font_name
-        docx_run._element.rPr.rFonts.set(qn('w:eastAsia'), font_name) # for CJK characters
-        docx_run.font.color.rgb = RGBColor(*rgb_component(self.color))
+        # Avoid forcing CJK text to a Latin-only font (e.g. helv), which can
+        # cause missing glyphs and misplaced underlines in word processors.
+        has_cjk = any(
+            '\u3400' <= ch <= '\u9fff' or '\uf900' <= ch <= '\ufaff'
+            for ch in self.text
+        )
+        latin_aliases = {
+            'helv', 'tiro', 'cour', 'symbol', 'zapfdingbats',
+            'Helvetica', 'Times-Roman', 'Courier', 'Arial', 'Calibri'
+        }
+        if not (has_cjk and font_name in latin_aliases):
+            docx_run._element.rPr.rFonts.set(qn('w:eastAsia'), font_name) # for CJK characters
+
+        has_hyperlink = any(s['type'] == RectType.HYPERLINK.value for s in self.style)
+        if has_hyperlink:
+            link_color = 0
+            for style in self.style:
+                if style['type'] == RectType.HYPERLINK.value and style.get('color'):
+                    link_color = style['color']
+                    break
+
+            # Fallback to standard hyperlink blue only when source color is unknown.
+            color_value = link_color or self.color or rgb_value((0.02, 0.39, 0.76))
+            docx_run.font.color.rgb = RGBColor(*rgb_component(color_value))
+            docx_run.font.underline = True
+        else:
+            docx_run.font.color.rgb = RGBColor(*rgb_component(self.color))
 
         # font size
         # NOTE: only x.0 and x.5 is accepted in docx, so set character scaling accordingly
