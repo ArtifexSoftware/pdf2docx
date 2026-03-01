@@ -352,6 +352,44 @@ class TestConversion:
         assert media_files == []
         assert len(root.findall('.//w:drawing', ns)) == 0
 
+    def test_text_underline_style_strip(self):
+        '''Test non-hyperlink underline strip conversion to text style underline.'''
+        filename = 'demo-text-underline-shape'
+        self.convert(filename)
+        docx_file = os.path.join(output_path, f'{filename}.docx')
+        assert os.path.isfile(docx_file), f'Expected output file: {docx_file}'
+
+        ns = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+        attr_w_val = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val'
+
+        with zipfile.ZipFile(docx_file) as zf:
+            document_xml = zf.read('word/document.xml')
+            media_files = [name for name in zf.namelist() if name.startswith('word/media/')]
+
+        root = ET.fromstring(document_xml)
+
+        # This sample has no hyperlinks.
+        assert len(root.findall('.//w:hyperlink', ns)) == 0
+
+        # Decorative strip should be converted to style shape, not image/drawing.
+        assert media_files == []
+        assert len(root.findall('.//w:drawing', ns)) == 0
+
+        # The target text run should keep underline style.
+        found_underlined = False
+        for run in root.findall('.//w:r', ns):
+            text = ''.join(t.text or '' for t in run.findall('.//w:t', ns))
+            if 'underlined text demo' not in text:
+                continue
+            rpr = run.find('w:rPr', ns)
+            if rpr is None:
+                continue
+            underline = rpr.find('w:u', ns)
+            if underline is not None and underline.attrib.get(attr_w_val) == 'single':
+                found_underlined = True
+                break
+        assert found_underlined
+
 
 # We make a separate pytest test for each sample file.
 

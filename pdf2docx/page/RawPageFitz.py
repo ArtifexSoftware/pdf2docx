@@ -41,8 +41,9 @@ class RawPageFitz(RawPage):
         hyperlinks = self._preprocess_hyperlinks()
 
         shapes, images =  self._preprocess_shapes(**settings)
-        images = self._filter_decorative_shape_images(images, hyperlinks)
+        images, style_shapes = self._filter_text_style_strip_images(images, text_blocks, hyperlinks)
         raw_dict['shapes'] = shapes
+        raw_dict['shapes'].extend(style_shapes)
         raw_dict['blocks'].extend(images)
 
         raw_dict['shapes'].extend(hyperlinks)
@@ -173,43 +174,120 @@ class RawPageFitz(RawPage):
         return hyperlinks
 
 
-    @staticmethod
-    def _filter_decorative_shape_images(images, hyperlinks):
-        """Remove duplicate decorative line-images around hyperlinks.
+    def _filter_text_style_strip_images(self, images, text_blocks, _hyperlinks):
+        """Convert decorative underline-like strips to text style shapes.
 
-        Some PDFs render link underlines as thin vector strips. During vector
-        extraction these strips may become inline images, while hyperlink text
-        is still extracted as text. Keep text semantics and drop those duplicate
-        strips to avoid double-underline artifacts in DOCX/PDF output.
+        Vector extraction may convert decorative underlines into inline image
+        blocks (especially when mixed with non-iso paths). This method detects
+        thin strips in text-baseline positions and converts them to synthetic
+        stroke shapes so normal text style parsing can apply.
         """
-        if not images or not hyperlinks:
-            return images
+        if not images:
+            return images, []
 
-        hyperlink_rects = [fitz.Rect(link['bbox']) for link in hyperlinks if link.get('bbox')]
-        if not hyperlink_rects:
-            return images
-
-        filtered = []
+        text_bboxes = self._collect_text_bboxes(text_blocks)
+        kept_images = []
+        style_shapes = []
         for image in images:
             bbox_raw = image.get('bbox')
             if not bbox_raw:
-                filtered.append(image)
+                kept_images.append(image)
                 continue
 
             bbox = fitz.Rect(bbox_raw)
-            w, h = bbox.width, bbox.height
-            short, long_ = (min(w, h), max(w, h))
-            ratio = long_ / (short or 1.0)
-
-            is_thin_strip = short <= 3.5 and long_ >= 20.0 and ratio >= 12.0
-            overlaps_hyperlink = any(bbox.intersects(rect) for rect in hyperlink_rects)
-
-            if is_thin_strip and overlaps_hyperlink:
+            if not self._is_thin_strip(bbox):
+                kept_images.append(image)
                 continue
 
-            filtered.append(image)
+            baseline_hit = any(self._is_baseline_strip_for_text(bbox, tb) for tb in text_bboxes)
+            if not baseline_hit:
+                kept_images.append(image)
+                continue
 
-        return filtered
+            # Preserve semantics by converting strip image to a stroke shape.
+            style_shapes.append(self._image_strip_to_stroke_shape(image, bbox))
+
+        return kept_images, style_shapes
+
+
+    @staticmethod
+    def _collect_text_bboxes(text_blocks):
+        bboxes = []
+        for block in text_blocks or []:
+            for line in block.get('lines', []):
+                for span in line.get('spans', []):
+                    bbox = fitz.Rect(span.get('bbox', (0, 0, 0, 0)))
+                    if bbox.is_empty:
+                        continue
+                    bboxes.append(bbox)
+        return bboxes
+
+
+    @staticmethod
+    def _is_thin_strip(bbox):
+        w, h = bbox.width, bbox.height
+        short, long_ = (min(w, h), max(w, h))
+        ratio = long_ / (short or 1.0)
+        return short <= 3.5 and long_ >= 8.0 and ratio >= 4.0
+
+
+    @staticmethod
+    def _is_baseline_strip_for_text(strip_bbox, text_bbox):
+        inter = strip_bbox & text_bbox
+        overlap_w = inter.width
+        if overlap_w <= 0:
+            return False
+
+        # Significant horizontal overlap with nearby text.
+        overlap_ratio = overlap_w / (strip_bbox.width or 1.0)
+        if overlap_ratio < 0.60:
+            return False
+
+        text_h = text_bbox.height or 1.0
+        # Underline zone: near the bottom border of text bbox.
+        d = abs(text_bbox.y1 - strip_bbox.y0)
+        near_baseline = d <= max(1.5, 0.35 * text_h)
+        in_lower_band = strip_bbox.y0 >= text_bbox.y0 + 0.55 * text_h
+        short_enough = strip_bbox.width <= text_bbox.width + 8.0
+        return near_baseline and in_lower_band and short_enough
+
+
+    @staticmethod
+    def _image_strip_to_stroke_shape(image, bbox):
+        color = 0
+        image_bytes = image.get('image', b'')
+        if isinstance(image_bytes, str):
+            try:
+                import base64
+                image_bytes = base64.b64decode(image_bytes.encode())
+            except Exception:
+                image_bytes = b''
+
+        if image_bytes:
+            try:
+                pix = fitz.Pixmap(image_bytes)
+                samples = pix.samples
+                n = pix.n
+                if samples and n >= 3:
+                    # Use first non-white pixel as representative color.
+                    for i in range(0, len(samples), n):
+                        r, g, b = samples[i], samples[i + 1], samples[i + 2]
+                        if not (r > 245 and g > 245 and b > 245):
+                            color = (r << 16) + (g << 8) + b
+                            break
+                pix = None
+            except Exception:
+                pass
+
+        y = (bbox.y0 + bbox.y1) / 2.0
+        return {
+            'type': -1,
+            'bbox': tuple(bbox),
+            'color': color,
+            'start': (bbox.x0, y),
+            'end': (bbox.x1, y),
+            'width': bbox.height
+        }
 
 
     @staticmethod
