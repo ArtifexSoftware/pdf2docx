@@ -352,6 +352,37 @@ class TestConversion:
         assert media_files == []
         assert len(root.findall('.//w:drawing', ns)) == 0
 
+    def test_hyperlink_inline_image_strip(self):
+        '''Test hyperlink decorative strip embedded as inline image is removed.'''
+        filename = 'demo-hyperlink-inline-image-strip'
+        self.convert(filename)
+        docx_file = os.path.join(output_path, f'{filename}.docx')
+        assert os.path.isfile(docx_file), f'Expected output file: {docx_file}'
+
+        ns = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+        attr_w_val = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val'
+
+        with zipfile.ZipFile(docx_file) as zf:
+            document_xml = zf.read('word/document.xml')
+            media_files = [name for name in zf.namelist() if name.startswith('word/media/')]
+
+        root = ET.fromstring(document_xml)
+        hyperlinks = root.findall('.//w:hyperlink', ns)
+        assert len(hyperlinks) == 1
+
+        # Decorative strip image should not survive as drawing/media.
+        assert media_files == []
+        assert len(root.findall('.//w:drawing', ns)) == 0
+
+        # Hyperlink text still exists and remains underlined.
+        run = hyperlinks[0].find('w:r', ns)
+        assert run is not None
+        text = ''.join(t.text or '' for t in run.findall('.//w:t', ns))
+        assert 'click here' in text
+
+        underline = run.find('w:rPr/w:u', ns)
+        assert underline is not None and underline.attrib.get(attr_w_val) == 'single'
+
 
 # We make a separate pytest test for each sample file.
 
