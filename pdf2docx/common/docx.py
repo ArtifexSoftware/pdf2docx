@@ -15,6 +15,7 @@ from docx.image.exceptions import UnrecognizedImageError
 from docx.table import _Cell
 from docx.opc.constants import RELATIONSHIP_TYPE
 from .share import rgb_value
+from lxml import etree
 
 
 # ---------------------------------------------------------
@@ -251,22 +252,127 @@ def add_hyperlink(paragraph, url, text):
 
     return r
 
+EMU_PER_PT = 12700
+def pt_to_emu(value_pt):
+    return int(value_pt * EMU_PER_PT)
+
+
+def add_floating_picture_pt(
+    paragraph,
+    image_path,
+    x_pt,
+    y_pt,
+    width_pt,
+    height_pt,
+):
+    """
+    Insert floating image at absolute position using points (pt).
+
+    :param paragraph: target paragraph
+    :param image_path: image path
+    :param x_pt: horizontal position in pt
+    :param y_pt: vertical position in pt
+    :param width_pt: width in pt
+    :param height_pt: height in pt
+    """
+
+    # Convert to EMU
+    x_emu = pt_to_emu(x_pt)
+    y_emu = pt_to_emu(y_pt)
+    width_emu = pt_to_emu(width_pt)
+    height_emu = pt_to_emu(height_pt)
+
+    run = paragraph.add_run()
+    run.add_picture(image_path)
+
+    drawing = run._r.xpath(".//w:drawing")[0]
+    inline = drawing.xpath(".//wp:inline")[0]
+
+    # Update size in wp:extent
+    extent = inline.xpath("./wp:extent")[0]
+    extent.set("cx", str(width_emu))
+    extent.set("cy", str(height_emu))
+
+    # Update size in a:ext (VERY IMPORTANT)
+    a_ext = inline.xpath(".//a:ext")[0]
+    a_ext.set("cx", str(width_emu))
+    a_ext.set("cy", str(height_emu))
+
+    # Extract required elements
+    docPr = inline.xpath("./wp:docPr")[0]
+    cNvGraphicFramePr = inline.xpath("./wp:cNvGraphicFramePr")[0]
+    graphic = inline.xpath("./a:graphic")[0]
+
+    extent_xml = etree.tostring(extent, encoding="unicode")
+    docPr_xml = etree.tostring(docPr, encoding="unicode")
+    cNvGraphicFramePr_xml = etree.tostring(cNvGraphicFramePr, encoding="unicode")
+    graphic_xml = etree.tostring(graphic, encoding="unicode")
+
+    # Build anchor XML
+    anchor_xml = f"""
+    <wp:anchor {nsdecls('wp','a','pic','r')}
+        simplePos="0"
+        relativeHeight="0"
+        behindDoc="0"
+        locked="0"
+        layoutInCell="1"
+        allowOverlap="1">
+
+        <wp:simplePos x="0" y="0"/>
+
+        <wp:positionH relativeFrom="page">
+            <wp:posOffset>{x_emu}</wp:posOffset>
+        </wp:positionH>
+
+        <wp:positionV relativeFrom="page">
+            <wp:posOffset>{y_emu}</wp:posOffset>
+        </wp:positionV>
+
+        {extent_xml}
+
+        <wp:wrapNone/>
+
+        {docPr_xml}
+        {cNvGraphicFramePr_xml}
+        {graphic_xml}
+
+    </wp:anchor>
+    """
+
+    anchor = parse_xml(anchor_xml)
+
+    drawing.remove(inline)
+    drawing.append(anchor)
+
 
 # ---------------------------------------------------------
 # image properties
 # ---------------------------------------------------------
-def add_image(p, image_path_or_stream, width, height):
-    ''' Add image to paragraph.
-    
+def add_image(p, image_path_or_stream, x_pos, y_pos, width, height):
+    '''Add a floating image to a paragraph at a specific position.
+
+    The image is inserted as a floating picture (not inline) using ``add_floating_picture_pt``,
+    anchored to the given paragraph and positioned by ``x_pos`` and ``y_pos`` in Pt.
+
     Args:
         p (Paragraph): ``python-docx`` paragraph instance.
-        image_path_or_stream (str, bytes): Image path or stream.
+        image_path_or_stream (str | bytes): Image file path or in‑memory image stream.
+        x_pos (float): Horizontal position of the image in Pt, relative to the page.
+        y_pos (float): Vertical position of the image in Pt, relative to the page.
         width (float): Image width in Pt.
         height (float): Image height in Pt.
     '''
-    docx_span = p.add_run()
+    #docx_span = p.add_run()
     try:
-        docx_span.add_picture(image_path_or_stream, width=Pt(width), height=Pt(height))
+        #docx_span.add_picture(image_path_or_stream, width=Pt(width), height=Pt(height))
+        add_floating_picture_pt(
+            paragraph=p,
+            image_path=image_path_or_stream,
+            x_pt=x_pos,      # 2 inches
+            y_pt=y_pos,      # 2 inches
+            width_pt=width,  # 3 inches
+            height_pt=height, # 2 inches
+        )
     except UnrecognizedImageError:
         print('Unrecognized Image.')
         return
