@@ -23,7 +23,7 @@ Install from source code remotely
 
 Install ``pdf2docx`` directly from the ``master`` branch::
 
-  $ pip install git+git://github.com/dothinking/pdf2docx.git@master --upgrade
+  $ pip install git+git://github.com/ArtifexSoftware/pdf2docx.git@master --upgrade
 
 .. note::
   In this way, ``pdf2docx`` might have a higher version than PyPI, which is not released yet.
@@ -32,7 +32,7 @@ Install ``pdf2docx`` directly from the ``master`` branch::
 Install from source code locally
 ---------------------------------------
 
-Clone or download `pdf2docx <https://github.com/dothinking/pdf2docx>`_, navigate to the root directory and run::
+Clone or download `pdf2docx <https://github.com/ArtifexSoftware/pdf2docx>`_, navigate to the root directory and run::
 
   $ python setup.py install 
 
