@@ -31,9 +31,11 @@ object. Did not convert`, it might be necessary to follow the instructions at:
 import glob
 import os
 import io
+import zipfile
 import numpy as np
 import cv2 as cv
 import fitz
+import xml.etree.ElementTree as ET
 from pdf2docx import Converter, parse
 import subprocess
 import time
@@ -306,6 +308,99 @@ class TestConversion:
             docx_file = os.path.join(output_path, f'{filename}.docx')
             parse(pdf_file, docx_file, start=0, end=None)
             assert os.path.isfile(docx_file), f'Expected output {docx_file}'
+
+    def test_hyperlink_style_and_structure(self):
+        '''Test hyperlink XML structure and style from decorative vector links.'''
+        filename = 'demo-hyperlink-style-shape'
+        self.convert(filename)
+        docx_file = os.path.join(output_path, f'{filename}.docx')
+        assert os.path.isfile(docx_file), f'Expected output file: {docx_file}'
+
+        ns = {
+            'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main',
+            'r': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
+        }
+        attr_w_val = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val'
+        attr_r_id = '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id'
+
+        with zipfile.ZipFile(docx_file) as zf:
+            document_xml = zf.read('word/document.xml')
+            rels_xml = zf.read('word/_rels/document.xml.rels')
+            media_files = [name for name in zf.namelist() if name.startswith('word/media/')]
+
+        root = ET.fromstring(document_xml)
+        rel_root = ET.fromstring(rels_xml)
+
+        # Hyperlinks must not be wrapped by a run node.
+        wrapped_hyperlinks = 0
+        for run in root.findall('.//w:r', ns):
+            if run.find('w:hyperlink', ns) is not None:
+                wrapped_hyperlinks += 1
+        assert wrapped_hyperlinks == 0
+
+        hyperlinks = root.findall('.//w:hyperlink', ns)
+        assert len(hyperlinks) == 2
+
+        targets = {
+            rel.attrib.get('Id'): rel.attrib.get('Target')
+            for rel in rel_root.findall('.//{*}Relationship')
+            if rel.attrib.get('Type', '').endswith('/hyperlink')
+        }
+        assert len(targets) == 2
+
+        for hyperlink in hyperlinks:
+            rid = hyperlink.attrib.get(attr_r_id)
+            assert rid in targets
+
+            run = hyperlink.find('w:r', ns)
+            assert run is not None
+
+            text = ''.join(t.text or '' for t in run.findall('.//w:t', ns)).strip()
+            assert text in ('click subscribe', 'click collect')
+
+            rpr = run.find('w:rPr', ns)
+            assert rpr is not None
+
+            color = rpr.find('w:color', ns)
+            assert color is not None and color.attrib.get(attr_w_val) == '0000ED'
+
+            underline = rpr.find('w:u', ns)
+            assert underline is not None and underline.attrib.get(attr_w_val) == 'single'
+
+        # Decorative vector strip should not be exported as extra inline image.
+        assert media_files == []
+        assert len(root.findall('.//w:drawing', ns)) == 0
+
+    def test_hyperlink_inline_image_strip(self):
+        '''Test hyperlink decorative strip embedded as inline image is removed.'''
+        filename = 'demo-hyperlink-inline-image-strip'
+        self.convert(filename)
+        docx_file = os.path.join(output_path, f'{filename}.docx')
+        assert os.path.isfile(docx_file), f'Expected output file: {docx_file}'
+
+        ns = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+        attr_w_val = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val'
+
+        with zipfile.ZipFile(docx_file) as zf:
+            document_xml = zf.read('word/document.xml')
+            media_files = [name for name in zf.namelist() if name.startswith('word/media/')]
+
+        root = ET.fromstring(document_xml)
+        hyperlinks = root.findall('.//w:hyperlink', ns)
+        assert len(hyperlinks) == 1
+
+        # Decorative strip image should not survive as drawing/media.
+        assert media_files == []
+        assert len(root.findall('.//w:drawing', ns)) == 0
+
+        # Hyperlink text still exists and remains underlined.
+        run = hyperlinks[0].find('w:r', ns)
+        assert run is not None
+        text = ''.join(t.text or '' for t in run.findall('.//w:t', ns))
+        assert 'click here' in text
+
+        underline = run.find('w:rPr/w:u', ns)
+        assert underline is not None and underline.attrib.get(attr_w_val) == 'single'
 
 
 # We make a separate pytest test for each sample file.
