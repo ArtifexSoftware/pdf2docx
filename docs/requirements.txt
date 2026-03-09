@@ -1,8 +1,7 @@
-pdf2docx
 rst2pdf
 
 # define sphinx versioning
-sphinx==5.3.0
+sphinx
 autodoc
 furo
 sphinx_copybutton
