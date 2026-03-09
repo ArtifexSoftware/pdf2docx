@@ -25,12 +25,6 @@
         </form>
     </div>
 
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;">
-        <div class="discordLink" style="display:flex;align-items:center;margin-top: -5px;">
-            <a href="https://discord.gg/TSpYGBW4eq" id="findOnDiscord" target=_blank>Find <b>#pymupdf</b> on <b>Discord</b></a>
-            <a href="https://discord.gg/TSpYGBW4eq" target=_blank><img src="_images/discord-mark-blue.svg" alt="Discord logo" /></a>
-        </div>
-    </div>
     <div>
         <a href="https://pymupdf.readthedocs.io" target=_blank><button class="cta orange" style="text-transform:none;">Try PyMuPDF</button></a>
     </div>
