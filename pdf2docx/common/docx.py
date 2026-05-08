@@ -14,6 +14,7 @@ from docx.enum.text import WD_COLOR_INDEX
 from docx.image.exceptions import UnrecognizedImageError
 from docx.table import _Cell
 from docx.opc.constants import RELATIONSHIP_TYPE
+from docx.text.run import Run
 from .share import rgb_value
 from lxml import etree
 
@@ -232,25 +233,21 @@ def add_hyperlink(paragraph, url, text):
     # Create a w:r element
     new_run = OxmlElement('w:r')
 
-    # Create a new w:rPr element
+    # Create a new w:rPr element. Keep visual style fully controlled by
+    # parsed PDF text formatting instead of forcing built-in Hyperlink style.
     rPr = OxmlElement('w:rPr')
-
-    # Create a w:rStyle element, note this currently does not add the hyperlink style as its not in
-    # the default template, I have left it here in case someone uses one that has the style in it
-    rStyle = OxmlElement('w:rStyle')
-    rStyle.set(qn('w:val'), 'Hyperlink')
-
-    # Join all the xml elements together add add the required text to the w:r element
-    rPr.append(rStyle)
     new_run.append(rPr)
-    new_run.text = text
+
+    text_node = OxmlElement('w:t')
+    text_node.text = text
+    new_run.append(text_node)
     hyperlink.append(new_run)
 
-    # Create a new Run object and add the hyperlink into it
-    r = paragraph.add_run()
-    r._r.append(hyperlink)
+    # Insert hyperlink directly under paragraph (valid OOXML structure).
+    paragraph._p.append(hyperlink)
 
-    return r
+    # Return a Run proxy for downstream text formatting logic.
+    return Run(new_run, paragraph)
 
 EMU_PER_PT = 12700
 def pt_to_emu(value_pt):
