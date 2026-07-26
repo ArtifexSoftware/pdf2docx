@@ -307,6 +307,22 @@ class TestConversion:
             parse(pdf_file, docx_file, start=0, end=None)
             assert os.path.isfile(docx_file), f'Expected output {docx_file}'
 
+    # ------------------------------------------
+    # zero-area shape group (Shapes._merge_shapes)
+    # ------------------------------------------
+    def test_merge_shapes_zero_area(self):
+        '''Shapes._merge_shapes() must not raise ZeroDivisionError when a group of
+        same-color, overlapping shapes has a merged bounding box with zero area
+        (e.g. degenerate zero-width border rectangles from some real-world PDFs).
+        '''
+        from pdf2docx.shape.Shape import Fill
+        from pdf2docx.shape.Shapes import Shapes
+
+        raw = {'bbox': (10, 10, 10, 10), 'color': 0}
+        shapes = [Fill(raw), Fill(dict(raw))]
+        merged = Shapes._merge_shapes(shapes)
+        assert len(merged) == 2
+
 
 # We make a separate pytest test for each sample file.
 
