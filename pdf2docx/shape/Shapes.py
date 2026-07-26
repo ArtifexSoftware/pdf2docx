@@ -211,7 +211,10 @@ class Shapes(ElementCollection):
         for group in groups:
             merged_area = group.bbox.get_area()
             sum_area = sum(shape.bbox.get_area() for shape in group)
-            if sum_area/merged_area >= constants.FACTOR_ALMOST:
+            # a zero-area merged bbox (e.g. degenerate zero-width shapes) can't be
+            # compared by area ratio -- leave such a group unmerged rather than
+            # dividing by zero
+            if merged_area > 0 and sum_area/merged_area >= constants.FACTOR_ALMOST:
                 merged_shapes.append(group[0].update_bbox(group.bbox))
             else:
                 merged_shapes.extend(group)
