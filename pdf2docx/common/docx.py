@@ -485,6 +485,30 @@ def indent_table(table, indent:float):
         tbl_pr[0].append(e)
 
 
+def set_column_widths(table, widths:list):
+    '''Set the width of table grid columns.
+
+    ``python-docx`` creates the grid (``w:tblGrid``) with equal columns, while the real
+    width is set cell by cell. With fixed layout, editors like MS Word lay out the table
+    by the grid, so the grid must agree with the cells. Cells continuing a vertical merge
+    have no width of their own, so they get the width of the grid columns they span.
+
+    Args:
+        table (Table): ``python-docx`` Table object.
+        widths (list): Width of each grid column in Pt.
+    '''
+    for column, width in zip(table.columns, widths):
+        column.width = Pt(width)
+
+    for tr in table._tbl.tr_lst:
+        idx_col = 0
+        for tc in tr.tc_lst:
+            span = tc.grid_span
+            if tc.vMerge=='continue':
+                tc.width = Pt(sum(widths[idx_col:idx_col+span]))
+            idx_col += span
+
+
 def set_cell_margins(cell:_Cell, **kwargs):
     '''Set cell margins. Provided values are in twentieths of a point (1/1440 of an inch).
     

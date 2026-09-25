@@ -249,6 +249,30 @@ class TestConversion:
         assert table==sample
     
     # ------------------------------------------
+    # table grid
+    # ------------------------------------------
+    def test_table_grid_matches_cell_widths(self):
+        '''With fixed layout, editors lay out the table by the grid (``w:tblGrid``), so
+        each cell must span grid columns as wide as the cell itself.'''
+        from docx import Document
+        from docx.oxml.ns import qn
+
+        filename = 'demo-table'
+        self.convert(filename)
+        doc = Document(os.path.join(output_path, f'{filename}.docx'))
+
+        tables = list(doc.element.body.iter(qn('w:tbl')))
+        assert tables
+        for tbl in tables:
+            grid = [int(col.get(qn('w:w'))) for col in tbl.tblGrid.iterchildren(qn('w:gridCol'))]
+            for tr in tbl.tr_lst:
+                idx_col = 0
+                for tc in tr.tc_lst:
+                    span = tc.grid_span
+                    assert abs(tc.width.twips - sum(grid[idx_col:idx_col+span])) <= span
+                    idx_col += span
+
+    # ------------------------------------------
     # extract tables with empty/none cells
     # ------------------------------------------
     def test_extract_tables_empty_cell(self):

@@ -172,3 +172,27 @@ class TableBlock(Block):
         # set format and contents row by row
         for idx_row in range(len(table.rows)):
             self._rows[idx_row].make_docx(table, idx_row)
+
+        # set grid column widths (after merging cells)
+        widths = self._column_widths()
+        if widths: docx.set_column_widths(table, widths)
+
+
+    def _column_widths(self):
+        '''Width of each column, derived from the left and right borders of the cells.
+
+        Returns:
+            list: Column widths in Pt, or ``None`` if the border of any column is unknown.
+        '''
+        borders = {}
+        for row in self._rows:
+            for idx_col, cell in enumerate(row):
+                if not cell: continue # ignore merged cells
+                x0, _, x1, _ = cell.bbox
+                borders.setdefault(idx_col, x0)
+                borders.setdefault(idx_col+cell.merged_cells[1], x1)
+
+        xs = [borders.get(i) for i in range(self.num_cols+1)]
+        if None in xs: return None
+        widths = [x1-x0 for x0, x1 in zip(xs, xs[1:])]
+        return widths if all(w>0 for w in widths) else None
