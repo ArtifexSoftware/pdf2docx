@@ -54,7 +54,7 @@ Increase it explicitly when fine vector graphics require more detail.
 
 Explicit CLI/API settings override environment defaults. The legacy
 `OFFICECLI_PDF_CLIP_IMAGE_RES_RATIO` is accepted as a fallback environment variable.
-The Java service uses JPEG quality 85 by default; standalone pdf2docx uses 95.
+The Java service defaults to JPEG quality 100 with native pixel dimensions; standalone pdf2docx defaults to preserve and uses quality 95 when encoding is needed.
 
 ```bash
 # Preserve original encoding and pixel dimensions where possible.
