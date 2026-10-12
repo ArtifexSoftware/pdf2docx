@@ -31,9 +31,9 @@ If you are looking for a **full-featured PDF processing library**, consider usin
 
 ![sample_compare.png](https://s1.ax1x.com/2020/08/04/aDryx1.png)
 
-## RainLib image policy
+## Image preservation and compression
 
-This fork avoids inflating embedded JPEG images into PNG. Supported RGB/grayscale
+Embedded JPEG images are preserved without expanding them into PNG. Supported RGB/grayscale
 JPEG and PNG streams without masks are reused at native resolution by default.
 Quarter-turn rotations use DrawingML picture transforms and retain the original encoded streams and pixel dimensions. Downsampling still requires re-encoding.
 Masks, overlapping images, unsupported encodings and vector graphics require
@@ -54,7 +54,7 @@ Increase it explicitly when fine vector graphics require more detail.
 
 Explicit CLI/API settings override environment defaults. The legacy
 `OFFICECLI_PDF_CLIP_IMAGE_RES_RATIO` is accepted as a fallback environment variable.
-The Java service defaults to JPEG quality 100 with native pixel dimensions; standalone pdf2docx defaults to preserve and uses quality 95 when encoding is needed.
+By default, pdf2docx preserves supported image streams and native pixel dimensions; JPEG quality 95 applies only when JPEG encoding is requested.
 
 ```bash
 # Preserve original encoding and pixel dimensions where possible.
