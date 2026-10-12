@@ -76,7 +76,7 @@ class Paths(Collection):
                              min_svg_gap_dy:float=15,
                              min_w:float=2,
                              min_h:float=2,
-                             clip_image_res_ratio:float=3.0):
+                             clip_image_res_ratio:float=1.0, image_settings=None):
         '''Convert paths to iso-oriented shapes or images. The semantic type of path is either
         table/text style or vector graphic. This method is to:
         * detect svg regions -> exist at least one non-iso-oriented path
@@ -102,7 +102,7 @@ class Paths(Collection):
 
         # detect svg with python opencv
         images = []
-        ie = ImagesExtractor(self.parent.page_engine)
+        ie = ImagesExtractor(self.parent.page_engine, image_settings)
         groups = ie.detect_svg_contours(min_svg_gap_dx, min_svg_gap_dy, min_w, min_h)
 
         # `bbox` is the external bbox of current region, while `inner_bboxes` are the inner contours

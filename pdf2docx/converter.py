@@ -75,6 +75,7 @@ class Converter:
     @property
     def default_settings(self):
         '''Default parsing parameters.'''
+        from .image.ImageSettings import image_defaults
         return {
             'debug'                          : False,  # plot layout if True
             'ocr'                            : 0,      # ocr status: 0 - no ocr; 1 - to do ocr; 2 - ocr-ed pdf
@@ -98,7 +99,7 @@ class Converter:
             'lines_left_aligned_threshold'   : 1.0,    # left aligned if d_x0 of two lines is lower than this value (Pt)
             'lines_right_aligned_threshold'  : 1.0,    # right aligned if d_x1 of two lines is lower than this value (Pt)
             'lines_center_aligned_threshold' : 2.0,    # center aligned if delta center of two lines is lower than this value
-            'clip_image_res_ratio'           : 4.0,    # resolution ratio (to 72dpi) when clipping page image
+            'clip_image_res_ratio'           : 1.0,    # resolution ratio (to 72dpi) when clipping page image
             'min_svg_gap_dx'                 : 15.0,   # merge adjacent vector graphics if the horizontal gap is less than this value
             'min_svg_gap_dy'                 : 2.0,    # merge adjacent vector graphics if the vertical gap is less than this value
             'min_svg_w'                      : 2.0,    # ignore vector graphics if the bbox width is less than this value
@@ -109,6 +110,7 @@ class Converter:
             'delete_end_line_hyphen'         : False,  # delete hyphen at the end of a line
             'raw_exceptions'                 : False,  # Don't swallow exceptions
             'list_not_table'                 : True,   # Avoid treating bullet list as table.
+            **image_defaults(),
         }
 
     # -----------------------------------------------------------------------
@@ -127,6 +129,11 @@ class Converter:
             pages (list, optional): Range of page indexes to parse. Defaults to None.
             kwargs (dict, optional): Configuration parameters. 
         '''
+        from .image.ImageSettings import validate_image_settings
+        settings = self.default_settings
+        settings.update(kwargs)
+        validate_image_settings(settings)
+        kwargs = settings
         return self.load_pages(start, end, pages) \
             .parse_document(**kwargs) \
             .parse_pages(**kwargs)
@@ -342,6 +349,8 @@ class Converter:
         logging.info('Start to convert %s', self.filename_pdf)
         settings = self.default_settings
         settings.update(kwargs)
+        from .image.ImageSettings import validate_image_settings
+        validate_image_settings(settings)
 
         # input check
         if pages and settings['multi_processing']:

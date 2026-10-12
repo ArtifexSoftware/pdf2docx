@@ -11,6 +11,7 @@ Both raster images and vector graphics are considered:
 import logging
 import math
 import fitz
+from .ImageSettings import ImageSettings
 from ..common.Collection import Collection
 from ..common.share import BlockType
 from ..common.algorithm import recursive_xy_cut, inner_contours, xy_project_profile
@@ -19,16 +20,17 @@ from ..common.algorithm import recursive_xy_cut, inner_contours, xy_project_prof
 class ImagesExtractor:
     """Extract images from PDF."""
 
-    def __init__(self, page: fitz.Page) -> None:
+    def __init__(self, page: fitz.Page, image_settings=None) -> None:
         """Extract images from PDF page.
 
         Args:
             page (fitz.Page): pdf page to extract images.
         """
         self._page = page
+        self._image_settings = image_settings or ImageSettings()
 
     def clip_page_to_pixmap(
-        self, bbox: fitz.Rect = None, rm_image: bool = False, zoom: float = 3.0
+        self, bbox: fitz.Rect = None, rm_image: bool = False, zoom: float = 1.0
     ):
         """Clip page pixmap according to ``bbox``.
 
@@ -37,7 +39,7 @@ class ImagesExtractor:
                 Note that ``bbox`` depends on un-rotated page CS, while clipping page is based on
                 the final page.
             rm_image (bool): remove images or not.
-            zoom (float, optional): Improve resolution by this rate. Defaults to 3.0.
+            zoom (float, optional): Improve resolution by this rate. Defaults to 1.0.
 
         Returns:
             fitz.Pixmap: The extracted pixmap.
@@ -63,20 +65,17 @@ class ImagesExtractor:
         # - https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-increase-image-resolution
         # - https://github.com/pymupdf/PyMuPDF/issues/181
         matrix = fitz.Matrix(zoom, zoom)
-        pix = self._page.get_pixmap(clip=clip_bbox, matrix=matrix)  # type: fitz.Pixmap
-
-        # recovery page if hide text
-        doc = self._page.parent
-        for xref, stream in stream_dict.items():
-            doc.update_stream(xref, stream)
-
-        return pix
+        try:
+            return self._page.get_pixmap(clip=clip_bbox, matrix=matrix)
+        finally:
+            for xref, stream in stream_dict.items():
+                self._page.parent.update_stream(xref, stream)
 
     def clip_page_to_dict(
         self,
         bbox: fitz.Rect = None,
         rm_image: bool = False,
-        clip_image_res_ratio: float = 3.0,
+        clip_image_res_ratio: float = 1.0,
     ):
         """Clip page pixmap (without text) according to ``bbox`` and convert to source image.
 
@@ -84,7 +83,7 @@ class ImagesExtractor:
             bbox (fitz.Rect, optional): Target area to clip. Defaults to None, i.e. entire page.
             rm_image (bool): remove images or not.
             clip_image_res_ratio (float, optional): Resolution ratio of clipped bitmap.
-                Defaults to 3.0.
+                Defaults to 1.0.
 
         Returns:
             list: A list of image raw dict.
@@ -92,7 +91,7 @@ class ImagesExtractor:
         pix = self.clip_page_to_pixmap(
             bbox=bbox, rm_image=rm_image, zoom=clip_image_res_ratio
         )
-        return self._to_raw_dict(pix, bbox)
+        return self._image_settings.apply(self._to_raw_dict(pix, bbox or self._page.cropbox))
 
     @staticmethod
     def _get_image_rotation(matrix) -> int:
@@ -112,12 +111,12 @@ class ImagesExtractor:
         angle_deg = round(math.degrees(angle_rad) / 90) * 90
         return int(angle_deg % 360)
 
-    def extract_images(self, clip_image_res_ratio: float = 3.0):
+    def extract_images(self, clip_image_res_ratio: float = 1.0):
         """Extract normal images with ``Page.get_images()``.
 
         Args:
             clip_image_res_ratio (float, optional): Resolution ratio of clipped bitmap.
-                Defaults to 3.0.
+                Defaults to 1.0.
 
         Returns:
             list: A list of extracted and recovered image raw dict.
@@ -212,15 +211,24 @@ class ImagesExtractor:
 
                 # normal images
                 else:
-                    # recover image, e.g., handle image with mask, or CMYK color space
-                    pix = self._recover_pixmap(doc, item)
-
-                    # rotate image: apply inverse of per-image transform, then page rotation
-                    # (PyMuPDF matrix maps image->page; correct pixmap with inverse: apply -angle)
-                    raw_dict = self._to_raw_dict(pix, bbox)
+                    # Reuse encoded streams instead of expanding JPEGs into PNG.
+                    # Masks and CMYK still require composition/color conversion.
+                    extracted = doc.extract_image(item[0])
+                    mask_type, _ = doc.xref_get_key(item[0], "Mask")
+                    decode_type, _ = doc.xref_get_key(item[0], "Decode")
+                    if (extracted and extracted['ext'] in ('jpeg', 'jpg', 'png')
+                            and not item[1] and mask_type == 'null'
+                            and decode_type == 'null'
+                            and extracted['colorspace'] in (1, 3)):
+                        raw_dict = {
+                            "type": BlockType.IMAGE.value, "bbox": tuple(bbox),
+                            "width": extracted['width'], "height": extracted['height'],
+                            "image": extracted['image'],
+                        }
+                    else:
+                        raw_dict = self._to_raw_dict(self._recover_pixmap(doc, item), bbox)
                     total_rotation = (rotation or 0) - image_rotation
-                    if total_rotation:
-                        raw_dict["image"] = self._rotate_image(pix, total_rotation)
+                    raw_dict = self._image_settings.apply(raw_dict, total_rotation)
 
             images.append(raw_dict)
 
@@ -329,51 +337,6 @@ class ImagesExtractor:
             "height": image.height,
             "image": image.tobytes(),
         }
-
-    @staticmethod
-    def _rotate_image(pixmap: fitz.Pixmap, rotation: int):
-        """Rotate image represented by image bytes.
-
-        Args:
-            pixmap (fitz.Pixmap): Image to rotate.
-            rotation (int): Rotation angle.
-
-        Return: image bytes.
-        """
-        import cv2 as cv
-        import numpy as np
-
-        # convert to opencv image
-        img = ImagesExtractor._pixmap_to_cv_image(pixmap)
-        h, w = img.shape[:2]  # get image height, width
-
-        # calculate the center of the image
-        x0, y0 = w // 2, h // 2
-
-        # default scale value for now -> might be extracted from PDF page property
-        scale = 1.0
-
-        # rotation matrix
-        matrix = cv.getRotationMatrix2D((x0, y0), rotation, scale)
-
-        # calculate the final dimension
-        cos = np.abs(matrix[0, 0])
-        sin = np.abs(matrix[0, 1])
-
-        # compute the new bounding dimensions of the image
-        W = int((h * sin) + (w * cos))
-        H = int((h * cos) + (w * sin))
-
-        # adjust the rotation matrix to take into account translation
-        matrix[0, 2] += (W / 2) - x0
-        matrix[1, 2] += (H / 2) - y0
-
-        # perform the rotation holding at the center
-        rotated_img = cv.warpAffine(img, matrix, (W, H))
-
-        # convert back to bytes
-        _, im_png = cv.imencode(".png", rotated_img)
-        return im_png.tobytes()
 
     @staticmethod
     def _hide_page_text_and_images(page: fitz.Page, rm_text: bool, rm_image: bool):
