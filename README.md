@@ -72,3 +72,7 @@ python3 -m unittest discover -s test -p test_image_policy.py -v
 When `image_format=jpeg` and `image_jpeg_quality=100`, existing JPEG bytes are reused
 if no rotation or downsampling is needed. PNG-to-JPEG conversion still requires
 lossy JPEG encoding even at quality 100; alpha remains PNG.
+
+New JPEG encodings at quality 100 use 4:4:4 chroma sampling (`subsampling=0`)
+to avoid additional chroma downsampling. JPEG remains mathematically lossy and
+maximum-quality JPEG can be larger than the source PNG; use preserve for lossless retention.

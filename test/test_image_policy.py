@@ -51,6 +51,16 @@ class ImagePolicyTest(unittest.TestCase):
             raw = ImagesExtractor(page, ImageSettings(image_format='jpeg', image_jpeg_quality=100)).extract_images()[0]
         self.assertEqual(data, raw['image'])
 
+    def test_quality_100_uses_full_chroma_for_new_jpeg_encoding(self):
+        from PIL.JpegImagePlugin import get_sampling
+        doc, page = page_with_image(encoded_image('PNG'))
+        with doc:
+            raw = ImagesExtractor(page, ImageSettings(image_format='jpeg', image_jpeg_quality=100)).extract_images()[0]
+        image = Image.open(io.BytesIO(raw['image']))
+        self.assertEqual('JPEG', image.format)
+        self.assertEqual(0, get_sampling(image))
+        self.assertEqual((640, 480), image.size)
+
     def test_native_png_preserves_extracted_stream(self):
         doc, page = page_with_image(encoded_image('PNG'))
         with doc:

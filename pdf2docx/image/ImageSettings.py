@@ -80,6 +80,8 @@ class ImageSettings:
                 image = image.convert('RGB')
             output = BytesIO()
             options = {'quality': self.image_jpeg_quality, 'optimize': True} if target_format == 'JPEG' else {}
+            if target_format == 'JPEG' and self.image_jpeg_quality == 100:
+                options['subsampling'] = 0  # 4:4:4: avoid extra chroma loss at maximum quality.
             if target_format == 'PNG':
                 options['compress_level'] = self.image_png_compress_level
             image.save(output, format=target_format, **options)
