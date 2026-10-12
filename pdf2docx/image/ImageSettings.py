@@ -45,7 +45,7 @@ class ImageSettings:
     def from_settings(cls, settings):
         return cls(**{key: settings[key] for key in cls.__dataclass_fields__ if key in settings})
 
-    def apply(self, raw, rotation=0):
+    def apply(self, raw, rotation=0, display_bbox=None):
         """Preserve supported bytes by default; re-encode only for a requested change.
 
         Alpha is never flattened just to satisfy a JPEG request. Unsupported PDF
@@ -59,23 +59,24 @@ class ImageSettings:
             has_alpha = 'A' in original.getbands() or 'transparency' in original.info
             if has_alpha and target_format == 'JPEG':
                 target_format = 'PNG'
-            width_pt = abs(raw['bbox'][2] - raw['bbox'][0])
-            height_pt = abs(raw['bbox'][3] - raw['bbox'][1])
-            image = original
-            if rotation % 360:
-                image = original.rotate(rotation, expand=True)
+            bbox = display_bbox or raw['bbox']
+            width_pt = abs(bbox[2] - bbox[0])
+            height_pt = abs(bbox[3] - bbox[1])
+            rotated_size = (original.height, original.width) if rotation % 180 else original.size
             scale = 1.0
             if self.image_max_dpi and width_pt and height_pt:
-                scale = min(1.0, width_pt * self.image_max_dpi / (72 * image.width),
-                            height_pt * self.image_max_dpi / (72 * image.height))
+                scale = min(1.0, width_pt * self.image_max_dpi / (72 * rotated_size[0]),
+                            height_pt * self.image_max_dpi / (72 * rotated_size[1]))
+            retain_encoding = self.image_format == 'preserve' or (
+                self.image_format == 'jpeg' and self.image_jpeg_quality == 100)
+            if scale == 1.0 and target_format == source_format and retain_encoding and rotation % 90 == 0:
+                # Rotate the DrawingML picture, not its compressed pixels. This also
+                # preserves JPEGs whose dimensions are not MCU-aligned for jpegtran.
+                return {**raw, 'rotation': (-rotation) % 360}
+            image = original.rotate(rotation, expand=True) if rotation % 360 else original
             if scale < 1.0:
                 image = image.resize((max(1, round(image.width * scale)),
                                       max(1, round(image.height * scale))), Image.Resampling.LANCZOS)
-            unchanged = not rotation % 360 and scale == 1.0 and target_format == source_format
-            # Quality 100 reuses an unchanged JPEG; lower quality explicitly recompresses.
-            if unchanged and (self.image_format == 'preserve'
-                    or (self.image_format == 'jpeg' and self.image_jpeg_quality == 100)):
-                return raw
             if target_format == 'JPEG' and image.mode not in ('RGB', 'L'):
                 image = image.convert('RGB')
             output = BytesIO()
@@ -87,7 +88,7 @@ class ImageSettings:
             if target_format == 'PNG':
                 options['compress_level'] = self.image_png_compress_level
             image.save(output, format=target_format, **options)
-            return {**raw, 'image': output.getvalue(), 'width': image.width, 'height': image.height}
+            return {**raw, 'image': output.getvalue(), 'width': image.width, 'height': image.height, 'rotation': 0}
 
 
 def validate_image_settings(settings):

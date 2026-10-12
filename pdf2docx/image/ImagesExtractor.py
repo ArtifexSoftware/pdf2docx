@@ -91,7 +91,9 @@ class ImagesExtractor:
         pix = self.clip_page_to_pixmap(
             bbox=bbox, rm_image=rm_image, zoom=clip_image_res_ratio
         )
-        return self._image_settings.apply(self._to_raw_dict(pix, bbox or self._page.cropbox))
+        source_bbox = bbox or self._page.cropbox
+        display_bbox = tuple(source_bbox * self._page.rotation_matrix)
+        return self._image_settings.apply(self._to_raw_dict(pix, source_bbox), display_bbox=display_bbox)
 
     @staticmethod
     def _get_image_rotation(matrix) -> int:
@@ -110,6 +112,27 @@ class ImagesExtractor:
         angle_rad = math.atan2(b, a)
         angle_deg = round(math.degrees(angle_rad) / 90) * 90
         return int(angle_deg % 360)
+
+    def _bitmap_clip_ratio(self, group, bbox, fallback):
+        """Composite at native bitmap density, not an arbitrary high/low DPI.
+
+        Bound the canvas to the input pixel budget when overlapping images have
+        very different densities. Vector-only regions still use the clip setting.
+        """
+        ratios, pixel_budget = [], 0
+        for rect, item, angle in group:
+            width, height = item[2], item[3]
+            pixel_budget += width * height
+            if angle % 180:
+                width, height = height, width
+            if rect.width > 0 and rect.height > 0:
+                ratios.append(max(width / rect.width, height / rect.height))
+        ratio = max(ratios, default=fallback)
+        if bbox.get_area() > 0 and pixel_budget > 0:
+            ratio = min(ratio, math.sqrt(pixel_budget / bbox.get_area()))
+        if self._image_settings.image_max_dpi:
+            ratio = min(ratio, self._image_settings.image_max_dpi / 72)
+        return ratio
 
     def extract_images(self, clip_image_res_ratio: float = 1.0):
         """Extract normal images with ``Page.get_images()``.
@@ -182,9 +205,8 @@ class ImagesExtractor:
                 clip_bbox = fitz.Rect()
                 for bbox, item, _ in group:
                     clip_bbox |= bbox
-                raw_dict = self.clip_page_to_dict(
-                    clip_bbox, False, clip_image_res_ratio
-                )
+                native_ratio = self._bitmap_clip_ratio(group, clip_bbox, clip_image_res_ratio)
+                raw_dict = self.clip_page_to_dict(clip_bbox, False, native_ratio)
 
             else:
                 bbox, item, image_rotation = group[0]
@@ -207,7 +229,8 @@ class ImagesExtractor:
                 # (22, 25, 1265, 1303, 8, 'DeviceGray', '', 'Im4', 'DCTDecode', 0)
                 # (23, 0, 1731, 1331, 8, 'DeviceGray', '', 'Im5', 'DCTDecode', 0)
                 if item[5] == "":
-                    raw_dict = self.clip_page_to_dict(bbox, False, clip_image_res_ratio)
+                    native_ratio = self._bitmap_clip_ratio(group, bbox, clip_image_res_ratio)
+                    raw_dict = self.clip_page_to_dict(bbox, False, native_ratio)
 
                 # normal images
                 else:
@@ -227,8 +250,11 @@ class ImagesExtractor:
                         }
                     else:
                         raw_dict = self._to_raw_dict(self._recover_pixmap(doc, item), bbox)
-                    total_rotation = (rotation or 0) - image_rotation
-                    raw_dict = self._image_settings.apply(raw_dict, total_rotation)
+                    # PDF page and image transforms are clockwise in screen coordinates.
+                    # Pillow uses counterclockwise degrees; DrawingML uses clockwise degrees.
+                    total_rotation = -((rotation or 0) + image_rotation)
+                    display_bbox = tuple(bbox * self._page.rotation_matrix)
+                    raw_dict = self._image_settings.apply(raw_dict, total_rotation, display_bbox)
 
             images.append(raw_dict)
 

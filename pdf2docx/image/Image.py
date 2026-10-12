@@ -31,6 +31,7 @@ class Image(Element):
         if raw is None: raw = {}        
         self.width = raw.get('width', 0.0)
         self.height = raw.get('height', 0.0)
+        self.rotation = raw.get('rotation', 0)
 
         # source image bytes
         # - image bytes passed from PyMuPDF -> use it directly
@@ -55,6 +56,7 @@ class Image(Element):
         '''
         self.width = image.width
         self.height = image.height
+        self.rotation = image.rotation
         self.image = image.image
         self.update_bbox(image.bbox)
         return self
@@ -70,6 +72,7 @@ class Image(Element):
         res.update({
             'width': self.width,
             'height': self.height,
+            'rotation': self.rotation,
             'image': base64.b64encode(self.image).decode() # serialize image with base64
         })
 
@@ -91,4 +94,4 @@ class Image(Element):
     def make_docx(self, paragraph):
         '''Add image span to a docx paragraph.'''
         # add image
-        docx.add_image(paragraph, BytesIO(self.image), self.bbox.x0, self.bbox.y0, self.bbox.x1-self.bbox.x0, self.bbox.y1-self.bbox.y0)
+        docx.add_image(paragraph, BytesIO(self.image), self.bbox.x0, self.bbox.y0, self.bbox.x1-self.bbox.x0, self.bbox.y1-self.bbox.y0, rotation=self.rotation)

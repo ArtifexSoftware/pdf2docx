@@ -98,19 +98,40 @@ class ImagePolicyTest(unittest.TestCase):
             raw = ImagesExtractor(page, ImageSettings(image_max_dpi=300)).extract_images()[0]
         self.assertEqual((100, 75), (raw['width'], raw['height']))
 
-    def test_rotation_keeps_jpeg_and_updates_dimensions(self):
-        doc, page = page_with_image(encoded_image(), rotate=90)
+    def test_image_rotation_keeps_jpeg_bytes_and_native_dimensions(self):
+        data = encoded_image()
+        doc, page = page_with_image(data, rotate=90)
         with doc:
             raw = ImagesExtractor(page).extract_images()[0]
         self.assertEqual('JPEG', Image.open(io.BytesIO(raw['image'])).format)
-        self.assertEqual((480, 640), (raw['width'], raw['height']))
+        self.assertEqual((640, 480), (raw['width'], raw['height']))
+        self.assertEqual(270, raw['rotation'])
+        self.assertEqual(data, raw['image'])
 
-    def test_default_composition_does_not_use_fourfold_rasterization(self):
+    def test_default_composition_uses_native_density_without_upscaling(self):
         doc, page = page_with_image(encoded_image())
         with doc:
             page.insert_image(fitz.Rect(100, 100, 300, 250), stream=encoded_image())
             raw = ImagesExtractor(page).extract_images()[0]
-        self.assertEqual((250, 200), (raw['width'], raw['height']))
+        self.assertEqual((800, 640), (raw['width'], raw['height']))
+
+    def test_stencil_composition_keeps_native_pixels(self):
+        with fitz.open() as doc:
+            page = doc.new_page(width=400, height=400)
+            image_xref = doc.get_new_xref()
+            doc.update_object(image_xref, '<< /Type /XObject /Subtype /Image /Width 300 /Height 600 /ImageMask true /BitsPerComponent 1 >>')
+            doc.update_stream(image_xref, b'\x55' * (38 * 600))
+            resource_xref = doc.get_new_xref()
+            doc.update_object(resource_xref, f'<< /XObject << /MaskImage {image_xref} 0 R >> >>')
+            doc.xref_set_key(page.xref, 'Resources', f'{resource_xref} 0 R')
+            stream_xref = doc.get_new_xref()
+            doc.update_object(stream_xref, '<< >>')
+            doc.update_stream(stream_xref, b'q 0 0 1 rg 100 0 0 200 30 50 cm /MaskImage Do Q')
+            doc.xref_set_key(page.xref, 'Contents', f'{stream_xref} 0 R')
+            raw = ImagesExtractor(page).extract_images()[0]
+            self.assertEqual((300, 600), (raw['width'], raw['height']))
+            limited = ImagesExtractor(page, ImageSettings(image_max_dpi=144)).extract_images()[0]
+            self.assertEqual((200, 400), (limited['width'], limited['height']))
 
     def test_vectors_receive_optional_jpeg_policy(self):
         with fitz.open() as doc:
@@ -179,10 +200,11 @@ class ImagePolicyTest(unittest.TestCase):
     def test_rotated_alpha_preserves_transparency(self):
         doc, page = page_with_image(encoded_image('PNG', alpha=True), rotate=90)
         with doc:
-            raw = ImagesExtractor(page, ImageSettings(image_format='jpeg')).extract_images()[0]
+            raw = ImagesExtractor(page, ImageSettings(image_format='jpeg', image_jpeg_quality=100)).extract_images()[0]
         image = Image.open(io.BytesIO(raw['image']))
         self.assertEqual('RGBA', image.mode)
-        self.assertEqual((480, 640), image.size)
+        self.assertEqual((640, 480), image.size)
+        self.assertEqual(270, raw['rotation'])
         self.assertLess(image.getextrema()[3][0], 255)
 
     def test_render_failure_restores_page_streams(self):
@@ -194,6 +216,56 @@ class ImagePolicyTest(unittest.TestCase):
                 with self.assertRaises(RuntimeError):
                     ImagesExtractor(page).clip_page_to_pixmap()
             self.assertEqual(before, {xref: doc.xref_stream(xref) for xref in page.get_contents()})
+
+    def test_page_rotation_preserves_jpeg_bytes_and_drawingml_transform(self):
+        from xml.etree import ElementTree as ET
+        data = encoded_image(size=(641, 479))  # Not MCU-aligned: no cropping is acceptable.
+        with tempfile.TemporaryDirectory() as tmp:
+            pdf, output = Path(tmp) / 'rotated.pdf', Path(tmp) / 'rotated.docx'
+            with fitz.open() as doc:
+                for rotation in (90, 180, 270):
+                    page = doc.new_page(width=400, height=400)
+                    page.insert_image(fitz.Rect(50, 50, 250, 200), stream=data)
+                    page.set_rotation(rotation)
+                    raw = ImagesExtractor(page).extract_images()[0]
+                    self.assertEqual(data, raw['image'])
+                    self.assertEqual(rotation, raw['rotation'])
+                doc.save(pdf)
+            converter = Converter(str(pdf))
+            try:
+                converter.convert(str(output), ignore_page_error=False)
+            finally:
+                converter.close()
+            with zipfile.ZipFile(output) as archive:
+                media = [archive.read(name) for name in archive.namelist() if name.startswith('word/media/')]
+                self.assertEqual([data], media)
+                xml = ET.fromstring(archive.read('word/document.xml'))
+            ns = {'a': 'http://schemas.openxmlformats.org/drawingml/2006/main',
+                  'pic': 'http://schemas.openxmlformats.org/drawingml/2006/picture',
+                  'wp': 'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing'}
+            transforms = xml.findall('.//pic:spPr/a:xfrm', ns)
+            self.assertEqual([90*60000, 180*60000, 270*60000], [int(t.get('rot')) for t in transforms])
+            drawings = xml.findall('.//wp:anchor', ns)
+            self.assertEqual(3, len(drawings))
+            for drawing in drawings:
+                extent = drawing.find('wp:extent', ns)
+                pic_extent = drawing.find('.//pic:spPr/a:xfrm/a:ext', ns)
+                self.assertEqual((extent.get('cx'), extent.get('cy')),
+                                 (pic_extent.get('cx'), pic_extent.get('cy')))
+
+    def test_float_picture_rotation_preserves_original_stream(self):
+        from docx import Document
+        from pdf2docx.common.docx import add_float_image
+        data = encoded_image()
+        document = Document()
+        add_float_image(document.add_paragraph(), io.BytesIO(data), 150, 20, 30, height=200, rotation=90)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'float.docx'
+            document.save(path)
+            with zipfile.ZipFile(path) as archive:
+                media = [archive.read(name) for name in archive.namelist() if name.startswith('word/media/')]
+                self.assertEqual([data], media)
+                self.assertIn(b'rot="5400000"', archive.read('word/document.xml'))
 
     def test_environment_defaults_and_cli_override(self):
         with fitz.open() as doc, tempfile.TemporaryDirectory() as tmp:

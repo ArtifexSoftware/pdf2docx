@@ -35,9 +35,9 @@ If you are looking for a **full-featured PDF processing library**, consider usin
 
 This fork avoids inflating embedded JPEG images into PNG. Supported RGB/grayscale
 JPEG and PNG streams without masks are reused at native resolution by default.
-Rotations and downsampling retain the image format but require re-encoding.
+Quarter-turn rotations use DrawingML picture transforms and retain the original encoded streams and pixel dimensions. Downsampling still requires re-encoding.
 Masks, overlapping images, unsupported encodings and vector graphics require
-composition; these use PNG by default. Transparency is preserved even if JPEG
+composition; these use PNG by default, at native bitmap density rather than upscaling or forcing 72 DPI. Transparency is preserved even if JPEG
 is requested. Images with PDF color transforms are decoded for correctness.
 
 The default `clip_image_res_ratio` is **1.0 (72 DPI)** instead of 4.0. This controls
@@ -70,7 +70,7 @@ python3 -m unittest discover -s test -p test_image_policy.py -v
 ```
 
 When `image_format=jpeg` and `image_jpeg_quality=100`, existing JPEG bytes are reused
-if no rotation or downsampling is needed. PNG-to-JPEG conversion still requires
+if no downsampling is needed; quarter-turns are represented by Word picture transforms. PNG-to-JPEG conversion still requires
 lossy JPEG encoding even at quality 100; alpha remains PNG.
 
 New JPEG encodings at quality 100 use 4:4:4 chroma sampling (`subsampling=0`)
@@ -80,3 +80,13 @@ maximum-quality JPEG can be larger than the source PNG; use preserve for lossles
 Quality 100 uses streaming JPEG encoding rather than Pillow's whole-image Huffman
 optimization buffer. This avoids encoder failures on dense 4:4:4 images without
 lowering quality or pixel dimensions.
+
+Quarter-turn page/image rotations do not decode and re-encode retained images.
+The original JPEG/PNG bytes are embedded, with DrawingML rotation and compensated
+page anchors preserving orientation, aspect ratio and position. This includes
+JPEG dimensions that cannot be rotated losslessly by MCU-based JPEG tools.
+
+Bitmap composition and stencil masks use native source pixel density, bounded by
+the input pixel budget for mixed-density groups. `image_max_dpi=0` retains native
+density; a positive cap permits downsampling. `clip_image_res_ratio` controls
+vector-only or other fallback rasterization, not native embedded bitmap density.
