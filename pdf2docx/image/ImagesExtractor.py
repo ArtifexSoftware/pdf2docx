@@ -134,6 +134,53 @@ class ImagesExtractor:
             ratio = min(ratio, self._image_settings.image_max_dpi / 72)
         return ratio
 
+    def _image_occurrences(self, item, single_resource=False):
+        """Find placement without decoding a single-image page for pixel hashes.
+
+        PyMuPDF's get_image_rects builds Pixmaps to match MD5 digests, even
+        when the encoded image will be preserved. For the unambiguous case,
+        exclude other image sources, check its dimensions against metadata
+        and keep the placement transform.
+        Repeated images, inline images and complex forms use the complete
+        lookup, once per resource instead of twice.
+        """
+        if single_resource and item[-1] == 0 and self._unambiguous_resource_page():
+            try:
+                infos = self._page.get_image_info(hashes=False, xrefs=False)
+                if (len(infos) == 1 and infos[0]['width'] == item[2]
+                        and infos[0]['height'] == item[3]):
+                    bbox = fitz.Rect(infos[0]['bbox'])
+                    if not bbox.is_empty and not bbox.is_infinite:
+                        return [(bbox, fitz.Matrix(infos[0]['transform']))]
+            except (TypeError, AttributeError, ValueError):
+                pass
+        try:
+            return self._page.get_image_rects(item, transform=True)
+        except (TypeError, AttributeError):
+            return [(bbox, None) for bbox in self._page.get_image_rects(item)]
+
+    def _unambiguous_resource_page(self):
+        """Exclude other image sources before using metadata without xref hashes."""
+        try:
+            if (self._page.get_xobjects() or self._page.first_annot is not None
+                    or self._page.first_widget is not None
+                    or b'BI' in self._page.read_contents()):
+                return False
+            # Patterns can contain images outside the page's XObject list.
+            # Also check inherited resource dictionaries on the page tree.
+            doc, xref, visited = self._page.parent, self._page.xref, set()
+            while xref and xref not in visited:
+                visited.add(xref)
+                if doc.xref_get_key(xref, 'Resources/Pattern')[0] != 'null':
+                    return False
+                kind, parent = doc.xref_get_key(xref, 'Parent')
+                if kind != 'xref':
+                    return True
+                xref = int(parent.split()[0])
+            return False
+        except (TypeError, AttributeError, ValueError):
+            return False
+
     def extract_images(self, clip_image_res_ratio: float = 1.0):
         """Extract normal images with ``Page.get_images()``.
 
@@ -160,21 +207,15 @@ class ImagesExtractor:
 
         # step 1: collect images: [(bbox, item, image_rotation), ..., ]
         ic = Collection()
-        for item in self._page.get_images(full=True):
+        # Multiple resource names may refer to one xref. The occurrence lookup
+        # already returns every placement, so process that image only once.
+        image_items = list({item[0]: item for item in self._page.get_images(full=True)}.values())
+        for item in image_items:
+            occurrences = self._image_occurrences(item, len(image_items) == 1)
             item = list(item)
             item[-1] = 0
-            xref = item[0]
-
-            # find all occurrences referenced to this image
-            rects = self._page.get_image_rects(item)
-            # get per-image transform (rotation) when available (PyMuPDF 1.19+)
-            rects_with_transform = []
-            try:
-                rects_with_transform = self._page.get_image_rects(xref, transform=True)
-            except (TypeError, AttributeError):
-                pass
             unrotated_page_bbox = self._page.cropbox  # note the difference to page.rect
-            for i, bbox in enumerate(rects):
+            for bbox, matrix_t in occurrences:
                 # ignore small images
                 if bbox.get_area() <= 4:
                     continue
@@ -184,12 +225,7 @@ class ImagesExtractor:
                     continue
 
                 # extract per-image rotation from transform matrix
-                image_rotation = 0
-                if i < len(rects_with_transform):
-                    entry = rects_with_transform[i]
-                    if isinstance(entry, (list, tuple)) and len(entry) >= 2:
-                        matrix_t = entry[1]
-                        image_rotation = self._get_image_rotation(matrix_t)
+                image_rotation = self._get_image_rotation(matrix_t)
 
                 ic.append((bbox, item, image_rotation))
 

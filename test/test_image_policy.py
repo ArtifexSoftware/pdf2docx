@@ -36,6 +36,44 @@ def page_with_image(data, rotate=0):
 
 
 class ImagePolicyTest(unittest.TestCase):
+    def test_single_image_placement_avoids_pixel_hash_decoding(self):
+        data = encoded_image()
+        doc, page = page_with_image(data, rotate=90)
+        with doc, patch.object(fitz.Page, 'get_image_rects',
+                               side_effect=AssertionError('pixel hashing is unnecessary')):
+            raw = ImagesExtractor(page).extract_images()[0]
+        self.assertEqual(data, raw['image'])
+        self.assertEqual((640, 480), (raw['width'], raw['height']))
+        self.assertEqual(270, raw['rotation'])
+
+    def test_form_image_uses_complete_occurrence_lookup(self):
+        data = encoded_image()
+        source, _ = page_with_image(data)
+        doc = fitz.open()
+        page = doc.new_page(width=400, height=400)
+        page.show_pdf_page(page.rect, source, 0)
+        original = fitz.Page.get_image_rects
+        with source, doc, patch.object(fitz.Page, 'get_image_rects', autospec=True,
+                                      side_effect=original) as lookup:
+            raw = ImagesExtractor(page).extract_images()
+        self.assertEqual(1, len(raw))
+        self.assertEqual(data, raw[0]['image'])
+        self.assertEqual(1, lookup.call_count)
+
+    def test_repeated_image_preserves_all_occurrences_with_one_lookup(self):
+        data = encoded_image()
+        doc, page = page_with_image(data)
+        page.insert_image(fitz.Rect(50, 250, 250, 400), stream=data)
+        original = fitz.Page.get_image_rects
+        with doc, patch.object(fitz.Page, 'get_image_rects', autospec=True,
+                               side_effect=original) as lookup:
+            raw = ImagesExtractor(page).extract_images()
+        self.assertEqual(2, len(raw))
+        for image in raw:
+            self.assertEqual(data, image['image'])
+        self.assertEqual(1, lookup.call_count)
+        self.assertTrue(lookup.call_args.kwargs['transform'])
+
     def test_default_jpeg_preserves_exact_bytes_and_pixels(self):
         data = encoded_image()
         doc, page = page_with_image(data)
