@@ -1,5 +1,6 @@
 """Deterministic image tests without LibreOffice or network dependencies."""
 import io
+import hashlib
 import os
 from pathlib import Path
 import random
@@ -107,7 +108,9 @@ class ImagePolicyTest(unittest.TestCase):
                 converter.close()
             with zipfile.ZipFile(output) as archive:
                 media = [archive.read(n) for n in archive.namelist() if n.startswith('word/media/')]
-            self.assertEqual([jpeg], media)
+            self.assertEqual(1, len(media))
+            self.assertEqual(hashlib.sha256(jpeg).hexdigest(),
+                             hashlib.sha256(media[0]).hexdigest())
 
     def test_single_image_placement_avoids_pixel_hash_decoding(self):
         data = encoded_image()
