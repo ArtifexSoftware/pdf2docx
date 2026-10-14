@@ -10,7 +10,9 @@ Both raster images and vector graphics are considered:
 
 import logging
 import math
+from io import BytesIO
 import fitz
+from PIL import Image
 from .ImageSettings import ImageSettings
 from .MrcLayers import extract_mrc_layers
 from ..common.Collection import Collection
@@ -182,6 +184,34 @@ class ImagesExtractor:
         except (TypeError, AttributeError, ValueError):
             return False
 
+    def _restore_bilevel_png_depth(self, raw, bits_per_component):
+        """Keep PDF binary scans binary after MuPDF's PNG extraction.
+
+        JBIG2 and CCITT cannot keep their PDF streams in a PNG. MuPDF expands
+        these scans to eight-bit gray/RGB even though there are only two colors.
+        Packing those same samples into one-bit PNG is lossless and keeps
+        dimensions unchanged. Never quantize a gray or transparent image.
+        """
+        if bits_per_component != 1 or self._image_settings.image_format == 'jpeg':
+            return raw
+        with Image.open(BytesIO(raw['image'])) as image:
+            if image.format != 'PNG' or 'transparency' in image.info:
+                return raw
+            if image.mode == 'L' and not any(image.histogram()[1:255]):
+                binary = image.convert('1', dither=Image.Dither.NONE)
+            elif image.mode == 'RGB' and image.getcolors(maxcolors=2) is not None:
+                binary = image.quantize(colors=2, method=Image.Quantize.MEDIANCUT,
+                                        dither=Image.Dither.NONE)
+                if binary.convert('RGB').tobytes() != image.tobytes():
+                    return raw
+            else:
+                return raw
+            output = BytesIO()
+            binary.save(output, 'PNG', bits=1,
+                        compress_level=self._image_settings.image_png_compress_level)
+        data = output.getvalue()
+        return {**raw, 'image': data} if len(data) < len(raw['image']) else raw
+
     def extract_images(self, clip_image_res_ratio: float = 1.0):
         """Extract normal images with ``Page.get_images()``.
 
@@ -291,6 +321,7 @@ class ImagesExtractor:
                         }
                     else:
                         raw_dict = self._to_raw_dict(self._recover_pixmap(doc, item), bbox)
+                    raw_dict = self._restore_bilevel_png_depth(raw_dict, item[4])
                     # PDF page and image transforms are clockwise in screen coordinates.
                     # Pillow uses counterclockwise degrees; DrawingML uses clockwise degrees.
                     total_rotation = -((rotation or 0) + image_rotation)

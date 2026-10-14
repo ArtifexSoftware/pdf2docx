@@ -35,6 +35,19 @@ def page_with_image(data, rotate=0):
     return doc, page
 
 
+def page_with_gray_image(image, bits_per_component=8, rotate=0):
+    """Build explicit PDF gray samples; insert_image may auto-index a PNG."""
+    doc = fitz.open()
+    page = doc.new_page(width=400, height=400)
+    xref = doc.get_new_xref()
+    doc.update_object(xref, f'<< /Type /XObject /Subtype /Image /Width {image.width}'
+                           f' /Height {image.height} /ColorSpace /DeviceGray'
+                           f' /BitsPerComponent {bits_per_component} >>')
+    doc.update_stream(xref, image.tobytes())
+    page.insert_image(fitz.Rect(50, 50, 250, 200), xref=xref, rotate=rotate)
+    return doc, page
+
+
 class ImagePolicyTest(unittest.TestCase):
     def test_single_image_placement_avoids_pixel_hash_decoding(self):
         data = encoded_image()
@@ -106,6 +119,95 @@ class ImagePolicyTest(unittest.TestCase):
             raw = ImagesExtractor(page).extract_images()[0]
         self.assertEqual(source, raw['image'])
         self.assertEqual('PNG', Image.open(io.BytesIO(raw['image'])).format)
+
+    def test_binary_pdf_scan_keeps_one_bit_depth_and_exact_pixels(self):
+        image = Image.frombytes('1', (1024, 768), random.Random(23).randbytes(128 * 768))
+        doc, page = page_with_gray_image(image, bits_per_component=1, rotate=90)
+        with doc:
+            item = page.get_images()[0]
+            self.assertEqual(1, item[4])
+            expanded = doc.extract_image(item[0])['image']
+            raw = ImagesExtractor(page).extract_images()[0]
+        restored = Image.open(io.BytesIO(raw['image']))
+        self.assertEqual('PNG', restored.format)
+        self.assertEqual('1', restored.mode)
+        self.assertEqual(image.size, restored.size)
+        self.assertEqual(image.convert('L').tobytes(), restored.convert('L').tobytes())
+        self.assertLess(len(raw['image']), len(expanded))
+        self.assertEqual(270, raw['rotation'])
+
+    def test_eight_bit_gray_png_keeps_original_bytes_even_when_binary(self):
+        image = Image.new('L', (640, 480), 255)
+        image.paste(0, (100, 100, 300, 300))
+        doc, page = page_with_gray_image(image)
+        with doc:
+            item = page.get_images()[0]
+            self.assertEqual(8, item[4])
+            source = doc.extract_image(item[0])['image']
+            raw = ImagesExtractor(page).extract_images()[0]
+        self.assertEqual(source, raw['image'])
+
+    def test_indexed_one_bit_pdf_keeps_two_exact_colors_in_png(self):
+        image = Image.frombytes('1', (1024, 768), random.Random(25).randbytes(128 * 768))
+        doc, page = page_with_gray_image(image, bits_per_component=1)
+        with doc:
+            xref = page.get_images()[0][0]
+            # Include adjacent palette values to catch accidental color quantization.
+            doc.xref_set_key(xref, 'ColorSpace', '[/Indexed /DeviceRGB 1 <102030102031>]')
+            expanded = doc.extract_image(xref)['image']
+            raw = ImagesExtractor(page).extract_images()[0]
+        before, after = Image.open(io.BytesIO(expanded)), Image.open(io.BytesIO(raw['image']))
+        self.assertEqual('PNG', after.format)
+        self.assertEqual('P', after.mode)
+        self.assertEqual(1, raw['image'][24])  # IHDR bit depth
+        self.assertEqual(before.size, after.size)
+        self.assertEqual(before.convert('RGB').tobytes(), after.convert('RGB').tobytes())
+        self.assertLess(len(raw['image']), len(expanded))
+
+    def test_inverted_binary_pdf_keeps_decoded_pixel_values(self):
+        image = Image.frombytes('1', (1024, 768), random.Random(26).randbytes(128 * 768))
+        doc, page = page_with_gray_image(image, bits_per_component=1)
+        with doc:
+            xref = page.get_images()[0][0]
+            doc.xref_set_key(xref, 'Decode', '[1 0]')
+            expected = fitz.Pixmap(doc, xref).samples
+            raw = ImagesExtractor(page).extract_images()[0]
+        restored = Image.open(io.BytesIO(raw['image']))
+        self.assertEqual(expected, restored.convert('L').tobytes())
+        self.assertEqual(image.size, restored.size)
+
+    def test_bilevel_recovery_never_quantizes_gray_or_transparency(self):
+        with fitz.open() as doc:
+            page = doc.new_page()
+            extractor = ImagesExtractor(page)
+            for value, transparency in ((128, None), (0, 0)):
+                with self.subTest(value=value, transparency=transparency):
+                    stream = io.BytesIO()
+                    options = {} if transparency is None else {'transparency': transparency}
+                    Image.new('L', (100, 80), value).save(stream, 'PNG', **options)
+                    raw = {'image': stream.getvalue()}
+                    self.assertIs(raw, extractor._restore_bilevel_png_depth(raw, 1))
+
+    def test_rgb_image_with_three_colors_is_never_reduced_to_two(self):
+        image = Image.new('RGB', (100, 80), (0, 0, 0))
+        image.putpixel((1, 1), (255, 255, 255))
+        image.putpixel((2, 2), (255, 0, 0))
+        stream = io.BytesIO()
+        image.save(stream, 'PNG')
+        raw = {'image': stream.getvalue()}
+        with fitz.open() as doc:
+            page = doc.new_page()
+            self.assertIs(raw, ImagesExtractor(page)._restore_bilevel_png_depth(raw, 1))
+
+    def test_binary_pdf_scan_respects_explicit_jpeg_policy(self):
+        stream = io.BytesIO()
+        Image.new('1', (640, 480), 1).save(stream, 'PNG')
+        doc, page = page_with_image(stream.getvalue())
+        with doc:
+            raw = ImagesExtractor(page, ImageSettings(image_format='jpeg')).extract_images()[0]
+        image = Image.open(io.BytesIO(raw['image']))
+        self.assertEqual('JPEG', image.format)
+        self.assertEqual((640, 480), image.size)
 
     def test_smasks_remain_transparent_even_with_jpeg_requested(self):
         doc, page = page_with_image(encoded_image('PNG', alpha=True))

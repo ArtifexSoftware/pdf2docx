@@ -51,6 +51,13 @@ Masks, overlapping images, unsupported encodings and vector graphics require
 composition; these use PNG by default, at native bitmap density rather than upscaling or forcing 72 DPI. Transparency is preserved even if JPEG
 is requested. Images with PDF color transforms are decoded for correctness.
 
+One-bit PDF scans (including JBIG2, CCITT and two-color indexed images) use one-bit
+lossless PNG when extraction would otherwise expand them into eight-bit gray/RGB.
+This keeps every pixel and the native dimensions; it does not quantize gray or
+transparent images.
+PNG and PDF scan compression have different ratios, so `preserve` does not
+guarantee that the DOCX will be as small as the source PDF.
+
 The default `clip_image_res_ratio` is **1.0 (72 DPI)** instead of 4.0. This controls
 only page regions that must be rasterized, not the resolution of embedded images.
 Increase it explicitly when fine vector graphics require more detail.
