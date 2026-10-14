@@ -44,6 +44,7 @@ jobs:
       - name: Run unit test
         run: |
           python -m unittest discover -s test -p test_image_policy.py -v
+          python -m unittest discover -s test -p test_mrc_layers.py -v
           pytest -v ./test/test.py::TestConversion
 
 

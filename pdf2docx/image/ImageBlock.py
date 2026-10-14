@@ -75,7 +75,9 @@ class ImageBlock(Image, Block):
         '''
         if self.is_float_image_block:
             x0, y0, x1, y1 = self.bbox
-            add_float_image(p, BytesIO(self.image), width=x1-x0, pos_x=x0, pos_y=y0, height=y1-y0, rotation=self.rotation)
+            add_float_image(p, BytesIO(self.image), width=x1-x0, pos_x=x0, pos_y=y0,
+                            height=y1-y0, rotation=self.rotation, z_order=self.z_order,
+                            mrc=self.mrc)
         else:
             super().make_docx(p)
         return p

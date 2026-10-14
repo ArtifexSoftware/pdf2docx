@@ -12,6 +12,7 @@ import logging
 import math
 import fitz
 from .ImageSettings import ImageSettings
+from .MrcLayers import extract_mrc_layers
 from ..common.Collection import Collection
 from ..common.share import BlockType
 from ..common.algorithm import recursive_xy_cut, inner_contours, xy_project_profile
@@ -195,6 +196,10 @@ class ImagesExtractor:
             ``Page.get_images()`` contains each image only once, which may less than the
             real count of images in a page.
         """
+        layers = extract_mrc_layers(self._page, self._image_settings)
+        if layers is not None:
+            return layers
+
         # pdf document
         doc = self._page.parent
         rotation = self._page.rotation

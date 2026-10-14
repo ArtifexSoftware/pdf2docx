@@ -33,6 +33,17 @@ If you are looking for a **full-featured PDF processing library**, consider usin
 
 ## Image preservation and compression
 
+Simple layered scans with a JPEG backdrop and binary stencil overlays retain their
+original layer pixels and painting order. The JPEG stream stays unchanged; CCITT
+stencils use lossless indexed PNGs with transparency because Word cannot embed PDF
+stencil streams. This avoids turning a compact scanned page into a large RGB PNG.
+Complex clipping, forms, or graphics states continue to use the composition path.
+Each floating layer carries `pdf2docx:mrc-v1` metadata in its DrawingML description
+with page, bounds, native pixels, and painting order. Consumers that OCR or redact
+embedded media should recognize the composited group and project masks to every
+intersecting layer. Identical layers on different pages remain separate media parts
+so replacing one page cannot change another page.
+
 Embedded JPEG images are preserved without expanding them into PNG. Supported RGB/grayscale
 JPEG and PNG streams without masks are reused at native resolution by default.
 Quarter-turn rotations use DrawingML picture transforms and retain the original encoded streams and pixel dimensions. Downsampling still requires re-encoding.

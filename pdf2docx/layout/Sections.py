@@ -30,7 +30,13 @@ class Sections(BaseCollection):
 
     def make_docx(self, doc):
         '''Create sections in docx.'''        
-        if not self: return
+        if not self:
+            if self.parent.float_images:
+                p = doc.add_paragraph()
+                reset_paragraph_format(p, line_spacing=Pt(constants.MIN_LINE_SPACING))
+                for image in self.parent.float_images:
+                    image.make_docx(p)
+            return
 
         # mark paragraph index before creating current page
         n = len(doc.paragraphs)

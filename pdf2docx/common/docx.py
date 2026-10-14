@@ -463,7 +463,7 @@ class _CT_Anchor(BaseOxmlElement):
 register_element_cls('wp:anchor', _CT_Anchor)
 
 
-def add_float_image(p, image_path_or_stream, width, pos_x=None, pos_y=None, height=None, rotation=0):
+def add_float_image(p, image_path_or_stream, width, pos_x=None, pos_y=None, height=None, rotation=0, z_order=None, mrc=None):
     '''Add float image behind text.
     
     Args:
@@ -475,7 +475,16 @@ def add_float_image(p, image_path_or_stream, width, pos_x=None, pos_y=None, heig
     '''
     run = p.add_run()
     # parameters for picture, e.g. id, name
-    rId, image = run.part.get_or_add_image(image_path_or_stream)
+    if mrc is None:
+        rId, image = run.part.get_or_add_image(image_path_or_stream)
+    else:
+        # Independent page layers must remain independently replaceable even
+        # when two pages contain identical bytes (python-docx normally dedups).
+        from docx.image.image import Image as DocxImage
+        from docx.opc.constants import RELATIONSHIP_TYPE
+        image = DocxImage.from_file(image_path_or_stream)
+        image_part = run.part.package.image_parts._add_image_part(image)
+        rId = run.part.relate_to(image_part, RELATIONSHIP_TYPE.IMAGE)
     if height is None and rotation % 360 in (90, 270):
         unrotated_cx, unrotated_cy = image.scaled_dimensions(None, Pt(width))
         cx, cy = unrotated_cy, unrotated_cx
@@ -490,6 +499,11 @@ def add_float_image(p, image_path_or_stream, width, pos_x=None, pos_y=None, heig
         cx, cy = cy, cx
     shape_id, filename = run.part.next_id, image.filename
     anchor = _CT_Anchor.new_pic_anchor(shape_id, rId, filename, cx, cy, pos_x_emu, pos_y_emu)
+    if z_order is not None:
+        anchor.set('relativeHeight', str(z_order))
+    if mrc is not None:
+        import json
+        anchor.docPr.set('descr', 'pdf2docx:mrc-v1:' + json.dumps(mrc, separators=(',', ':')))
     _set_picture_rotation(anchor, rotation)
     run._r.add_drawing(anchor)
 
