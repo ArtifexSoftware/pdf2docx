@@ -348,7 +348,7 @@ def add_floating_picture_pt(
 # ---------------------------------------------------------
 # image properties
 # ---------------------------------------------------------
-def add_image(p, image_path_or_stream, x_pos, y_pos, width, height):
+def add_image(p, image_path_or_stream, x_pos, y_pos, width, height, rotation=0):
     '''Add a floating image to a paragraph at a specific position.
 
     The image is inserted as a floating picture (not inline) using ``add_floating_picture_pt``,
@@ -362,9 +362,15 @@ def add_image(p, image_path_or_stream, x_pos, y_pos, width, height):
         width (float): Image width in Pt.
         height (float): Image height in Pt.
     '''
+    if rotation % 360:
+        add_float_image(p, image_path_or_stream, width, pos_x=x_pos, pos_y=y_pos,
+                        height=height, rotation=rotation)
+        p.paragraph_format.line_spacing = 1.00
+        return
     docx_span = p.add_run()
     try:
-        docx_span.add_picture(image_path_or_stream, width=Pt(width), height=Pt(height))
+        picture = docx_span.add_picture(image_path_or_stream, width=Pt(width), height=Pt(height))
+        _set_picture_rotation(picture._inline, rotation)
         '''
         add_floating_picture_pt(
             paragraph=p,
@@ -381,6 +387,15 @@ def add_image(p, image_path_or_stream, x_pos, y_pos, width, height):
     
     # exactly line spacing will destroy image display, so set single line spacing instead
     p.paragraph_format.line_spacing = 1.00
+
+
+def _set_picture_rotation(drawing, rotation):
+    """Apply a clockwise DrawingML transform to original image bytes."""
+    rotation = rotation % 360
+    if not rotation:
+        return
+    xfrm = drawing.xpath('.//pic:spPr/a:xfrm')[0]
+    xfrm.set('rot', str(int(rotation * 60000)))
 
 
 class _CT_Anchor(BaseOxmlElement):
@@ -448,7 +463,7 @@ class _CT_Anchor(BaseOxmlElement):
 register_element_cls('wp:anchor', _CT_Anchor)
 
 
-def add_float_image(p, image_path_or_stream, width, pos_x=None, pos_y=None):
+def add_float_image(p, image_path_or_stream, width, pos_x=None, pos_y=None, height=None, rotation=0, z_order=None, mrc=None):
     '''Add float image behind text.
     
     Args:
@@ -460,10 +475,36 @@ def add_float_image(p, image_path_or_stream, width, pos_x=None, pos_y=None):
     '''
     run = p.add_run()
     # parameters for picture, e.g. id, name
-    rId, image = run.part.get_or_add_image(image_path_or_stream)
-    cx, cy = image.scaled_dimensions(Pt(width), None)
+    if mrc is None:
+        rId, image = run.part.get_or_add_image(image_path_or_stream)
+    else:
+        # Independent page layers must remain independently replaceable even
+        # when two pages contain identical bytes (python-docx normally dedups).
+        from docx.image.image import Image as DocxImage
+        from docx.opc.constants import RELATIONSHIP_TYPE
+        image = DocxImage.from_file(image_path_or_stream)
+        image_part = run.part.package.image_parts._add_image_part(image)
+        rId = run.part.relate_to(image_part, RELATIONSHIP_TYPE.IMAGE)
+    if height is None and rotation % 360 in (90, 270):
+        unrotated_cx, unrotated_cy = image.scaled_dimensions(None, Pt(width))
+        cx, cy = unrotated_cy, unrotated_cx
+    else:
+        cx, cy = image.scaled_dimensions(Pt(width), Pt(height) if height is not None else None)
+    pos_x_emu, pos_y_emu = int(Pt(pos_x)), int(Pt(pos_y))
+    if rotation % 360 in (90, 270):
+        # Word stores unrotated extents and rotates around their center. Anchor
+        # compensation keeps the visible bounds at the PDF's original position.
+        pos_x_emu += (int(cx) - int(cy)) // 2
+        pos_y_emu += (int(cy) - int(cx)) // 2
+        cx, cy = cy, cx
     shape_id, filename = run.part.next_id, image.filename
-    anchor = _CT_Anchor.new_pic_anchor(shape_id, rId, filename, cx, cy, Pt(pos_x), Pt(pos_y))
+    anchor = _CT_Anchor.new_pic_anchor(shape_id, rId, filename, cx, cy, pos_x_emu, pos_y_emu)
+    if z_order is not None:
+        anchor.set('relativeHeight', str(z_order))
+    if mrc is not None:
+        import json
+        anchor.docPr.set('descr', 'pdf2docx:mrc-v1:' + json.dumps(mrc, separators=(',', ':')))
+    _set_picture_rotation(anchor, rotation)
     run._r.add_drawing(anchor)
 
 

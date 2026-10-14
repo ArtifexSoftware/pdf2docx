@@ -41,8 +41,7 @@ class PDF2DOCX:
             cv.convert(docx_file, start, end, pages, **kwargs)
         except Exception as e:
             logging.error(e)
-            if kwargs['raw_exceptions']:
-                raise
+            raise  # CLI failures must return non-zero to callers such as officecli.
         finally:
             cv.close()
 

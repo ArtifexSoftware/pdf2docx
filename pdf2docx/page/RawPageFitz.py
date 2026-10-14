@@ -8,6 +8,7 @@ import fitz
 import logging
 from .RawPage import RawPage
 from ..image.ImagesExtractor import ImagesExtractor
+from ..image.ImageSettings import ImageSettings
 from ..shape.Paths import Paths
 from ..common.constants import FACTOR_A_HALF
 from ..common.Element import Element
@@ -125,7 +126,7 @@ class RawPageFitz(RawPage):
         # ignore image if ocr-ed pdf: get ocr-ed text only
         if settings['ocr']==2: return []
         
-        return ImagesExtractor(self.page_engine).extract_images(settings['clip_image_res_ratio'])
+        return ImagesExtractor(self.page_engine, ImageSettings.from_settings(settings)).extract_images(settings['clip_image_res_ratio'])
 
 
     def _preprocess_shapes(self, **settings):
@@ -136,7 +137,7 @@ class RawPageFitz(RawPage):
             settings['min_svg_gap_dy'], 
             settings['min_svg_w'], 
             settings['min_svg_h'], 
-            settings['clip_image_res_ratio'])
+            settings['clip_image_res_ratio'], ImageSettings.from_settings(settings))
     
 
     @debug_plot('Source Paths')
