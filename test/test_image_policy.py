@@ -48,7 +48,67 @@ def page_with_gray_image(image, bits_per_component=8, rotate=0):
     return doc, page
 
 
+def page_with_jpeg_soft_mask(jpeg, samples, inverted=False):
+    doc, page = page_with_image(jpeg)
+    with Image.open(io.BytesIO(jpeg)) as image:
+        width, height = image.size
+    image_xref = page.get_images()[0][0]
+    mask = doc.get_new_xref()
+    decode = '/Decode [1 0]' if inverted else ''
+    doc.update_object(mask, f'<< /Type /XObject /Subtype /Image /Width {width}'
+                           f' /Height {height} /ColorSpace /DeviceGray'
+                           f' /BitsPerComponent 8 {decode} >>')
+    doc.update_stream(mask, samples, compress=True)
+    doc.xref_set_key(image_xref, 'SMask', f'{mask} 0 R')
+    data = doc.tobytes()
+    doc.close()
+    reopened = fitz.open(stream=data, filetype='pdf')
+    return reopened, reopened[0]
+
+
 class ImagePolicyTest(unittest.TestCase):
+    def test_fully_opaque_soft_mask_keeps_native_jpeg_without_rgb_composition(self):
+        jpeg = encoded_image()
+        for inverted in (False, True):
+            with self.subTest(inverted=inverted):
+                samples = bytes([0 if inverted else 255]) * (640 * 480)
+                doc, page = page_with_jpeg_soft_mask(jpeg, samples, inverted)
+                with doc, patch.object(ImagesExtractor, '_recover_pixmap',
+                                       side_effect=AssertionError('opaque mask needs no RGB composition')):
+                    raw = ImagesExtractor(page).extract_images()[0]
+                self.assertEqual(jpeg, raw['image'])
+                self.assertEqual((640, 480), (raw['width'], raw['height']))
+
+    def test_almost_opaque_soft_mask_retains_exact_transparency(self):
+        jpeg = encoded_image()
+        for samples, minimum in ((b'\xff' * (640 * 480 - 1) + b'\x00', 0),
+                                 (b'\xfe' * (640 * 480), 254)):
+            with self.subTest(minimum=minimum):
+                doc, page = page_with_jpeg_soft_mask(jpeg, samples)
+                with doc:
+                    raw = ImagesExtractor(page).extract_images()[0]
+                with Image.open(io.BytesIO(raw['image'])) as image:
+                    self.assertEqual('PNG', image.format)
+                    self.assertEqual('RGBA', image.mode)
+                    self.assertEqual((640, 480), image.size)
+                    self.assertEqual(minimum, image.getextrema()[3][0])
+
+    def test_docx_with_opaque_soft_mask_embeds_exact_jpeg_bytes(self):
+        jpeg = encoded_image()
+        with tempfile.TemporaryDirectory() as tmp:
+            pdf, output = Path(tmp) / 'opaque.pdf', Path(tmp) / 'opaque.docx'
+            doc, _ = page_with_jpeg_soft_mask(jpeg, b'\xff' * (640 * 480))
+            with doc:
+                doc.save(pdf)
+            converter = Converter(str(pdf))
+            try:
+                converter.convert(str(output), image_format='preserve', ignore_page_error=False)
+            finally:
+                converter.close()
+            with zipfile.ZipFile(output) as archive:
+                media = [archive.read(n) for n in archive.namelist() if n.startswith('word/media/')]
+            self.assertEqual([jpeg], media)
+
     def test_single_image_placement_avoids_pixel_hash_decoding(self):
         data = encoded_image()
         doc, page = page_with_image(data, rotate=90)

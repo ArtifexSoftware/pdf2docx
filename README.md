@@ -50,6 +50,9 @@ Quarter-turn rotations use DrawingML picture transforms and retain the original 
 Masks, overlapping images, unsupported encodings and vector graphics require
 composition; these use PNG by default, at native bitmap density rather than upscaling or forcing 72 DPI. Transparency is preserved even if JPEG
 is requested. Images with PDF color transforms are decoded for correctness.
+Soft masks whose decoded samples are all fully opaque do not require composition:
+their JPEG/PNG stream stays unchanged. Actual transparency, including a single
+transparent or partly transparent pixel, still uses the lossless PNG path.
 
 One-bit PDF scans (including JBIG2, CCITT and two-color indexed images) use one-bit
 lossless PNG when extraction would otherwise expand them into eight-bit gray/RGB.

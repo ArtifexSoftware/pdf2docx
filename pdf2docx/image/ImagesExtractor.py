@@ -212,6 +212,19 @@ class ImagesExtractor:
         data = output.getvalue()
         return {**raw, 'image': data} if len(data) < len(raw['image']) else raw
 
+    def _soft_mask_is_opaque(self, item):
+        """An all-255, same-size soft mask does not change the source pixels.
+
+        Some scanners attach these masks to every JPEG. Decode only the mask
+        before deciding whether to retain the compressed JPEG; real transparency
+        still requires the existing composition path.
+        """
+        mask = fitz.Pixmap(self._page.parent, item[1])
+        if mask.n != 1 or (mask.width, mask.height) != (item[2], item[3]):
+            return False
+        samples = mask.samples
+        return samples.count(255) == len(samples)
+
     def extract_images(self, clip_image_res_ratio: float = 1.0):
         """Extract normal images with ``Page.get_images()``.
 
@@ -311,9 +324,10 @@ class ImagesExtractor:
                     mask_type, _ = doc.xref_get_key(item[0], "Mask")
                     decode_type, _ = doc.xref_get_key(item[0], "Decode")
                     if (extracted and extracted['ext'] in ('jpeg', 'jpg', 'png')
-                            and not item[1] and mask_type == 'null'
+                            and mask_type == 'null'
                             and decode_type == 'null'
-                            and extracted['colorspace'] in (1, 3)):
+                            and extracted['colorspace'] in (1, 3)
+                            and (not item[1] or self._soft_mask_is_opaque(item))):
                         raw_dict = {
                             "type": BlockType.IMAGE.value, "bbox": tuple(bbox),
                             "width": extracted['width'], "height": extracted['height'],
