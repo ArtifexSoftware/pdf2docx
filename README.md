@@ -37,6 +37,9 @@ Simple layered scans with a JPEG backdrop and binary stencil overlays retain the
 original layer pixels and painting order. The JPEG stream stays unchanged; CCITT
 stencils use lossless indexed PNGs with transparency because Word cannot embed PDF
 stencil streams. This avoids turning a compact scanned page into a large RGB PNG.
+NUL-padded content streams and JPEG backdrops within one point of the page edges
+keep this layer path too. Backdrops retain their original positions and native
+pixels; small overscan is clipped by the page edge rather than resized.
 Complex clipping, forms, or graphics states continue to use the composition path.
 Each floating layer carries `pdf2docx:mrc-v1` metadata in its DrawingML description
 with page, bounds, native pixels, and painting order. Consumers that OCR or redact

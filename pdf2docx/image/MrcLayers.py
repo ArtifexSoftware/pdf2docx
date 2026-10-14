@@ -9,7 +9,10 @@ from PIL import Image
 from ..common.share import BlockType
 
 
-_TOKEN = re.compile(rb'\s+|%[^\r\n]*|/[^\s()<>{}\[\]/%]+|[-+]?(?:\d+\.\d*|\.\d+|\d+)|[A-Za-z]+')
+# NUL is PDF whitespace too. Scanners often pad image-only content streams with
+# it, including between an image name and Do; Python's bytes.isspace excludes it.
+_WHITESPACE = b'\x00\t\n\f\r '
+_TOKEN = re.compile(rb'[\x00\t\n\f\r ]+|%[^\r\n]*|/[^\x00\t\n\f\r ()<>{}\[\]/%]+|[-+]?(?:\d+\.\d*|\.\d+|\d+)|[A-Za-z]+')
 
 
 def _image_paints(content):
@@ -23,7 +26,7 @@ def _image_paints(content):
             return None
         value = token.group()
         offset = token.end()
-        if value.isspace() or value.startswith(b'%'):
+        if not value.strip(_WHITESPACE) or value.startswith(b'%'):
             continue
         if value.startswith(b'/'):
             try:
@@ -109,7 +112,7 @@ def extract_mrc_layers(page, settings):
         if len(occurrences) != 1:
             return None
         bbox, transform = occurrences[0]
-        if (bbox.is_empty or bbox.is_infinite or not page.cropbox.contains(bbox)
+        if (bbox.is_empty or bbox.is_infinite
                 or transform.a <= 0 or transform.d <= 0
                 or transform.b != 0 or transform.c != 0):
             return None
@@ -123,10 +126,14 @@ def extract_mrc_layers(page, settings):
             image = extracted['image']
             background_bbox = bbox
             full_page = fitz.Rect(0, 0, page.cropbox.width, page.cropbox.height)
+            # Scanner page dimensions can be rounded differently from the image
+            # transform. Keep sub-point overscan at its original anchor position;
+            # the page edge clips it without resampling or stretching any layer.
             if any(abs(a - b) > 1.0 for a, b in zip(bbox, full_page)):
                 return None
         else:
-            if not stencil or item[4] != 1 or not background_bbox.contains(bbox):
+            if (not stencil or item[4] != 1 or not page.cropbox.contains(bbox)
+                    or not background_bbox.contains(bbox)):
                 return None
             kind, decode = doc.xref_get_key(xref, 'Decode')
             if kind != 'null' and (kind != 'array' or decode not in ('[0 1]', '[1 0]')):
@@ -136,7 +143,10 @@ def extract_mrc_layers(page, settings):
                 return None
             indices = mask.samples.translate(bytes([0] + [1] * 255))
             png = Image.frombytes('P', (mask.width, mask.height), indices)
-            png.putpalette([0, 0, 0, *color] + [0] * (256 * 3 - 6))
+            # Keep RGB constant even under transparent pixels. Word/LibreOffice
+            # can interpolate palette RGB and alpha separately when scaling;
+            # transparent black would produce dark fringes on colored stencils.
+            png.putpalette([*color, *color] + [0] * (256 * 3 - 6))
             output = BytesIO()
             png.save(output, 'PNG', bits=1, transparency=0,
                      compress_level=settings.image_png_compress_level)
