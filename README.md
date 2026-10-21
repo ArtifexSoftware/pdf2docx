@@ -25,8 +25,8 @@ If you are looking for a **full-featured PDF processing library**, consider usin
     - [Command Line Interface](https://pdf2docx.readthedocs.io/en/latest/quickstart.cli.html)
     - [Graphic User Interface](https://pdf2docx.readthedocs.io/en/latest/quickstart.gui.html)
 - [Technical Documentation (In Chinese)](https://pdf2docx.readthedocs.io/en/latest/techdoc.html)
-- [API Documentation](https://pdf2docx.readthedocs.io/en/latest/modules.html)
+- [API Documentation](https://pdf2docx.readthedocs.io/en/latest/api/modules.html)
 
 ## Sample
 
-![sample_compare.png](https://s1.ax1x.com/2020/08/04/aDryx1.png)
+![sample_compare.png](https://raw.githubusercontent.com/ArtifexSoftware/pdf2docx/master/docs/images/intro.png)
